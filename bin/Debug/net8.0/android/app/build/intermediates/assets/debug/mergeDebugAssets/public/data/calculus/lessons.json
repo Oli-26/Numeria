@@ -1,0 +1,290 @@
+[
+  {
+    "id": "calc-01",
+    "topicId": "calculus",
+    "order": 1,
+    "title": "Limits & Continuity",
+    "description": "What happens as we approach a value?",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "calc-01-c1",
+        "title": "What is a Limit?",
+        "contentHtml": "<p>A <strong>limit</strong> describes what value a function approaches as its input gets closer and closer to some number.</p><p>Think of it like walking toward a door -- the limit is what's on the other side, even if you never actually step through.</p><p>We write it as:</p>",
+        "mathExpressions": ["\\lim_{x \\to a} f(x) = L"],
+        "visualizationType": "limit-approach",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "calc-01-c2",
+        "title": "Left and Right Limits",
+        "contentHtml": "<p>Sometimes a function approaches <strong>different values</strong> depending on which direction you come from.</p><p>The <strong>left-hand limit</strong> is what happens as you approach from below (from the left on the number line). The <strong>right-hand limit</strong> is from above.</p><p>A limit only exists if both sides agree!</p>",
+        "mathExpressions": ["\\lim_{x \\to a^-} f(x) \\quad \\text{(from left)}", "\\lim_{x \\to a^+} f(x) \\quad \\text{(from right)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-01-c3",
+        "title": "Continuity",
+        "contentHtml": "<p>A function is <strong>continuous</strong> at a point if you can draw it without lifting your pen.</p><p>More precisely, f(x) is continuous at x = a when three things are true:</p><p>1. f(a) exists (the function is defined there)<br>2. The limit as x approaches a exists<br>3. The limit equals f(a)</p><p>If any of these fail, we have a <strong>discontinuity</strong> -- a break, hole, or jump in the graph.</p>",
+        "mathExpressions": ["\\lim_{x \\to a} f(x) = f(a)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q01", "calc-q02", "calc-q03", "calc-q04", "calc-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-02",
+    "topicId": "calculus",
+    "order": 2,
+    "title": "Derivatives",
+    "description": "The mathematics of change",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "calc-02-c1",
+        "title": "Slope of the Tangent Line",
+        "contentHtml": "<p>The <strong>derivative</strong> measures how fast a function is changing at any point.</p><p>Imagine zooming in on a curve until it looks like a straight line. The slope of that line is the derivative.</p><p>We find it by taking two points on the curve, drawing a line between them (a <strong>secant line</strong>), then sliding the points closer and closer together.</p>",
+        "mathExpressions": ["f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"],
+        "visualizationType": "tangent-line",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "calc-02-c2",
+        "title": "The Power Rule",
+        "contentHtml": "<p>The most useful derivative rule: for any power of x, bring the exponent down as a multiplier and reduce the power by one.</p><p>Examples:</p><p>x\u00B3 becomes 3x\u00B2<br>x\u2075 becomes 5x\u2074<br>x\u00B9 becomes 1 (which is just 1)<br>x\u00B2 becomes 2x</p><p>This simple pattern handles a huge number of functions!</p>",
+        "mathExpressions": ["\\frac{d}{dx} x^n = n \\cdot x^{n-1}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-02-c3",
+        "title": "Derivative as a Function",
+        "contentHtml": "<p>The derivative itself is a <strong>new function</strong> -- it tells you the slope at every point.</p><p>If f(x) = x\u00B2, then f'(x) = 2x. This means:</p><p>At x = 1, the slope is 2<br>At x = 3, the slope is 6<br>At x = -2, the slope is -4</p><p>Where the derivative is <strong>positive</strong>, the original function is increasing. Where it's <strong>negative</strong>, the function is decreasing. Where it's <strong>zero</strong>, we might have a peak or valley.</p>",
+        "mathExpressions": ["f(x) = x^2 \\implies f'(x) = 2x"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q06", "calc-q07", "calc-q08", "calc-q09", "calc-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-03",
+    "topicId": "calculus",
+    "order": 3,
+    "title": "Integration",
+    "description": "Finding the area under curves",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "calc-03-c1",
+        "title": "Area Under a Curve",
+        "contentHtml": "<p>How do you find the area of a shape with curved edges? You can't just use length \u00D7 width.</p><p>The key idea: fill the area with <strong>rectangles</strong>. The more rectangles you use, the better the approximation. These are called <strong>Riemann sums</strong>.</p><p>As the number of rectangles approaches infinity, the sum approaches the exact area. This is the <strong>integral</strong>.</p>",
+        "mathExpressions": ["\\int_a^b f(x)\\, dx = \\lim_{n \\to \\infty} \\sum_{i=1}^{n} f(x_i) \\Delta x"],
+        "visualizationType": "riemann-sums",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "calc-03-c2",
+        "title": "Definite vs Indefinite Integrals",
+        "contentHtml": "<p>A <strong>definite integral</strong> has bounds (from a to b) and gives you a number -- the area.</p><p>An <strong>indefinite integral</strong> has no bounds and gives you a function -- the antiderivative. It answers: \"What function has this as its derivative?\"</p><p>Don't forget the + C! Since the derivative of any constant is zero, there are infinitely many antiderivatives.</p>",
+        "mathExpressions": ["\\int_0^3 x^2\\, dx = 9 \\quad \\text{(definite -- a number)}", "\\int x^2\\, dx = \\frac{x^3}{3} + C \\quad \\text{(indefinite -- a function)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-03-c3",
+        "title": "The Fundamental Theorem",
+        "contentHtml": "<p>The <strong>Fundamental Theorem of Calculus</strong> is one of the most beautiful results in mathematics. It says:</p><p><strong>Differentiation and integration are opposites.</strong></p><p>If you integrate a function then differentiate the result, you get back to where you started. This connects the two main ideas of calculus into one unified theory.</p>",
+        "mathExpressions": ["\\frac{d}{dx} \\int_a^x f(t)\\, dt = f(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q11", "calc-q12", "calc-q13", "calc-q14", "calc-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-04",
+    "topicId": "calculus",
+    "order": 4,
+    "title": "Applications",
+    "description": "Calculus in the real world",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "calc-04-c1",
+        "title": "Optimization",
+        "contentHtml": "<p>One of the most practical uses of calculus: finding the <strong>maximum or minimum</strong> of a quantity.</p><p>The recipe:<br>1. Write the quantity to optimize as a function<br>2. Take its derivative<br>3. Set the derivative equal to zero and solve<br>4. Check which solutions are maxima vs minima</p><p>This works because at a peak or valley, the slope is flat (zero).</p>",
+        "mathExpressions": ["f'(x) = 0 \\implies \\text{possible max or min}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-04-c2",
+        "title": "Related Rates",
+        "contentHtml": "<p>When two quantities are related and both changing over time, calculus lets us connect their rates of change.</p><p>Classic example: a balloon inflating. The radius is growing at some rate. How fast is the volume growing?</p><p>Since V = (4/3)\u03C0r\u00B3, we differentiate both sides with respect to time and substitute the known rate.</p>",
+        "mathExpressions": ["\\frac{dV}{dt} = 4\\pi r^2 \\cdot \\frac{dr}{dt}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-04-c3",
+        "title": "Why Calculus Matters",
+        "contentHtml": "<p>Calculus is the language of <strong>change</strong>, and change is everywhere:</p><p><strong>Physics:</strong> velocity, acceleration, forces<br><strong>Biology:</strong> population growth, spread of disease<br><strong>Economics:</strong> marginal cost, optimization of profit<br><strong>Engineering:</strong> signal processing, structural analysis<br><strong>Machine Learning:</strong> gradient descent (training neural networks!)</p><p>Every time something changes smoothly, calculus is the tool to analyze it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q16", "calc-q17", "calc-q18", "calc-q19", "calc-q20"],
+    "puzzleId": "calc-p01"
+  },
+  {
+    "id": "calc-05",
+    "topicId": "calculus",
+    "order": 5,
+    "title": "Chain Rule & Product Rule",
+    "description": "Derivatives of composed and multiplied functions",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "calc-05-c1",
+        "title": "The Product Rule",
+        "contentHtml": "<p>When two functions are <strong>multiplied together</strong>, the derivative isn't just the product of their derivatives. Instead:</p><p><em>\"First times derivative of second, plus second times derivative of first.\"</em></p><p>Example: d/dx [x\u00b2 \u00b7 sin(x)] = x\u00b2 cos(x) + 2x sin(x)</p><p>Intuitively: both factors are changing simultaneously, and each contributes to the total rate of change.</p>",
+        "mathExpressions": ["(fg)' = f'g + fg'"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-05-c2",
+        "title": "The Chain Rule",
+        "contentHtml": "<p>The <strong>chain rule</strong> handles <strong>nested functions</strong> \u2014 a function inside another function.</p><p>Think of it as peeling an onion: differentiate the outer layer, then multiply by the derivative of the inner layer.</p><p>Example: d/dx [sin(x\u00b2)] = cos(x\u00b2) \u00b7 2x</p><p>This is arguably the most important derivative rule. It appears everywhere in multivariable calculus and machine learning (backpropagation is repeated application of the chain rule!).</p>",
+        "mathExpressions": ["\\frac{d}{dx} f(g(x)) = f'(g(x)) \\cdot g'(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-05-c3",
+        "title": "The Quotient Rule",
+        "contentHtml": "<p>For a fraction of two functions, the <strong>quotient rule</strong> gives:</p><p><em>\"Low d-high minus high d-low, all over the square of what's below.\"</em></p><p>Many students just rewrite f/g as f \u00b7 g\u207b\u00b9 and use the product + chain rules instead. Both approaches give the same answer.</p>",
+        "mathExpressions": ["\\left(\\frac{f}{g}\\right)' = \\frac{f'g - fg'}{g^2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q21", "calc-q22", "calc-q23", "calc-q24", "calc-q25"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-06",
+    "topicId": "calculus",
+    "order": 6,
+    "title": "Taylor Series",
+    "description": "Approximating any function with polynomials",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "calc-06-c1",
+        "title": "Polynomial Approximation",
+        "contentHtml": "<p>Polynomials are easy to compute \u2014 just addition and multiplication. What if we could <strong>approximate any function</strong> using a polynomial?</p><p>That's exactly what a <strong>Taylor series</strong> does. Around a point a, we build a polynomial that matches the function's value, slope, curvature, and higher derivatives at that point.</p><p>The more terms we include, the better the approximation over a wider range.</p>",
+        "mathExpressions": ["f(x) = \\sum_{n=0}^{\\infty} \\frac{f^{(n)}(a)}{n!}(x-a)^n"],
+        "visualizationType": "taylor-approx",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "calc-06-c2",
+        "title": "Famous Taylor Series",
+        "contentHtml": "<p>Some Taylor series are so important they're worth memorizing:</p><p><strong>e\u02e3</strong> = 1 + x + x\u00b2/2! + x\u00b3/3! + \u2026 (converges everywhere!)</p><p><strong>sin(x)</strong> = x - x\u00b3/3! + x\u2075/5! - \u2026 (only odd powers)</p><p><strong>cos(x)</strong> = 1 - x\u00b2/2! + x\u2074/4! - \u2026 (only even powers)</p><p><strong>1/(1-x)</strong> = 1 + x + x\u00b2 + x\u00b3 + \u2026 (geometric series, |x| < 1)</p>",
+        "mathExpressions": ["e^x = \\sum_{n=0}^\\infty \\frac{x^n}{n!}", "\\sin(x) = \\sum_{n=0}^\\infty \\frac{(-1)^n x^{2n+1}}{(2n+1)!}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-06-c3",
+        "title": "Convergence & Euler's Identity",
+        "contentHtml": "<p>A Taylor series may converge (give the correct value) only within a certain <strong>radius of convergence</strong>.</p><p>The geometric series 1/(1-x) only converges for |x| < 1. But e\u02e3, sin, and cos converge for <em>all</em> x.</p><p>The ultimate payoff: combining the series for e\u02e3, sin, and cos with imaginary numbers gives <strong>Euler's identity</strong>, often called the most beautiful equation in mathematics.</p>",
+        "mathExpressions": ["e^{i\\pi} + 1 = 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q26", "calc-q27", "calc-q28", "calc-q29", "calc-q30"],
+    "puzzleId": "calc-p02"
+  },
+  {
+    "id": "calc-07",
+    "topicId": "calculus",
+    "order": 7,
+    "title": "Differential Equations",
+    "description": "Equations involving derivatives",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "calc-07-c1",
+        "title": "What is a Differential Equation?",
+        "contentHtml": "<p>A <strong>differential equation</strong> (DE) is an equation that involves a function and its derivatives.</p><p>Instead of solving for a number, you solve for a <strong>function</strong>.</p><p>Example: dy/dx = 2x. What function has derivative 2x? Answer: y = x\u00b2 + C.</p><p>DEs model everything from population growth to radioactive decay to the motion of planets.</p>",
+        "mathExpressions": ["\\frac{dy}{dx} = f(x, y)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-07-c2",
+        "title": "Separation of Variables",
+        "contentHtml": "<p>The simplest technique: if you can get all the y's on one side and all the x's on the other, you can integrate both sides separately.</p><p>Example: dy/dx = ky (exponential growth)</p><p>Separate: dy/y = k dx</p><p>Integrate: ln|y| = kx + C</p><p>Solve: y = Ae\u1d4f\u02e3</p><p>This gives the <strong>exponential growth model</strong> \u2014 the solution to the simplest differential equation.</p>",
+        "mathExpressions": ["\\frac{dy}{dx} = ky \\implies y = Ae^{kx}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-07-c3",
+        "title": "Second-Order & Oscillation",
+        "contentHtml": "<p>A <strong>second-order</strong> DE involves the second derivative. The most famous one describes a spring:</p><p>y'' = -\u03c9\u00b2y</p><p>\"Acceleration is proportional to displacement but opposite in direction.\" The solution is <strong>sinusoidal oscillation</strong>: y = A cos(\u03c9t) + B sin(\u03c9t).</p><p>This single equation explains pendulums, vibrating strings, AC circuits, and even quantum wavefunctions.</p>",
+        "mathExpressions": ["y'' + \\omega^2 y = 0 \\implies y = A\\cos(\\omega t) + B\\sin(\\omega t)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q31", "calc-q32", "calc-q33", "calc-q34", "calc-q35"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-08",
+    "topicId": "calculus",
+    "order": 8,
+    "title": "Multivariable Calculus",
+    "description": "Calculus in higher dimensions",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "calc-08-c1",
+        "title": "Partial Derivatives",
+        "contentHtml": "<p>When a function has <strong>multiple inputs</strong>, like f(x, y) = x\u00b2y + 3y, we can take a derivative with respect to one variable <strong>while holding the others constant</strong>.</p><p>\u2202f/\u2202x treats y as a constant and differentiates with respect to x.</p><p>\u2202f/\u2202y treats x as a constant and differentiates with respect to y.</p><p>For f(x,y) = x\u00b2y + 3y: \u2202f/\u2202x = 2xy, \u2202f/\u2202y = x\u00b2 + 3.</p>",
+        "mathExpressions": ["\\frac{\\partial f}{\\partial x} = 2xy, \\quad \\frac{\\partial f}{\\partial y} = x^2 + 3"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-08-c2",
+        "title": "The Gradient",
+        "contentHtml": "<p>The <strong>gradient</strong> collects all partial derivatives into a vector. It points in the direction of <strong>steepest ascent</strong>.</p><p>For f(x,y): \u2207f = (\u2202f/\u2202x, \u2202f/\u2202y)</p><p>This is the foundation of <strong>gradient descent</strong> in machine learning: to minimize a loss function, you move in the direction <em>opposite</em> to the gradient.</p><p>The gradient's magnitude tells you <em>how steep</em> the hill is.</p>",
+        "mathExpressions": ["\\nabla f = \\left(\\frac{\\partial f}{\\partial x}, \\frac{\\partial f}{\\partial y}\\right)"],
+        "visualizationType": "gradient-field",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "calc-08-c3",
+        "title": "Multiple Integrals & Beyond",
+        "contentHtml": "<p>Just as single integrals find area under curves, <strong>double integrals</strong> find volume under surfaces, and <strong>triple integrals</strong> find hypervolume.</p><p>The major theorems of multivariable calculus \u2014 <strong>Green's</strong>, <strong>Stokes'</strong>, and the <strong>Divergence theorem</strong> \u2014 all generalize the Fundamental Theorem of Calculus to higher dimensions.</p><p>They connect integrals over regions to integrals over their boundaries, and are essential in physics and engineering.</p>",
+        "mathExpressions": ["\\iint_R f(x,y)\\, dA, \\quad \\oint_C \\mathbf{F} \\cdot d\\mathbf{r} = \\iint_R \\left(\\frac{\\partial Q}{\\partial x} - \\frac{\\partial P}{\\partial y}\\right) dA"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q36", "calc-q37", "calc-q38", "calc-q39", "calc-q40"],
+    "puzzleId": "calc-p03"
+  }
+]

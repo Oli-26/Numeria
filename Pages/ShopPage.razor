@@ -1,0 +1,366 @@
+@page "/shop"
+@inject IShopRepository ShopRepo
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IThemeService ThemeService
+@inject IJSRuntime JS
+
+<div class="shop-header">
+    <h1>Shop</h1>
+    @if (profile != null)
+    {
+        <span class="xp-badge points-badge">\uD83D\uDC8E @profile.Points</span>
+    }
+</div>
+
+@if (profile != null)
+{
+    <div class="tab-bar">
+        @foreach (var cat in categories)
+        {
+            <button class="tab @(activeCategory == cat ? "active" : "")" @onclick="() => activeCategory = cat">
+                @GetCategoryIcon(cat) @GetCategoryName(cat)
+            </button>
+        }
+    </div>
+
+    <div class="shop-grid">
+        @foreach (var item in items.Where(i => i.Category == activeCategory))
+        {
+            var owned = profile.ShopPurchases.Contains(item.Id);
+            var active = IsActive(item);
+            var canAfford = profile.Points >= item.Price;
+            var isPowerup = item.Category == "powerup";
+
+            <div class="card shop-card @(owned && !isPowerup ? "owned" : "") @(active ? "active-item" : "")">
+                <div class="shop-card-top">
+                    <div class="shop-card-icon">@GetItemEmoji(item)</div>
+                    <div class="shop-card-info">
+                        <strong>@item.Name</strong>
+                        <small>@item.Description</small>
+                    </div>
+                </div>
+                <div class="shop-card-bottom">
+                    @if (active)
+                    {
+                        <span class="active-badge">Equipped</span>
+                    }
+                    else if (owned && !isPowerup)
+                    {
+                        <button class="btn btn-sm btn-primary" @onclick="() => ActivateItem(item)">Equip</button>
+                    }
+                    else
+                    {
+                        <div class="price-tag @(!canAfford ? "unaffordable" : "")">
+                            <span>\uD83D\uDC8E @item.Price</span>
+                        </div>
+                        <button class="btn btn-sm @(canAfford ? "btn-accent" : "btn-outline")"
+                                disabled="@(!canAfford)"
+                                @onclick="() => BuyItem(item)">
+                            @(isPowerup && owned ? "Buy Again" : "Buy")
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (activeCategory == "powerup" && profile != null)
+    {
+        <div class="section" style="margin-top: 16px">
+            <h3>Your Inventory</h3>
+            <div class="inventory">
+                <div class="inventory-item">
+                    <span class="inv-icon">\uD83D\uDCA1</span>
+                    <span class="inv-label">Hints</span>
+                    <strong class="inv-count">@GetHintCount()</strong>
+                </div>
+                <div class="inventory-item">
+                    <span class="inv-icon">\uD83D\uDE80</span>
+                    <span class="inv-label">XP Boosts</span>
+                    <strong class="inv-count">@profile.XpBoostsActive</strong>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="loading">Loading shop...</div>
+}
+
+@code {
+    private UserProfile? profile;
+    private List<ShopItem> items = new();
+    private List<string> categories = new();
+    private string activeCategory = "theme";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            profile = await Progress.GetProfileAsync();
+            items = await ShopRepo.GetShopItemsAsync();
+            categories = items.Select(i => i.Category).Distinct().ToList();
+            if (categories.Count > 0) activeCategory = categories[0];
+            StateHasChanged();
+        }
+    }
+
+    private string GetCategoryName(string cat) => cat switch
+    {
+        "theme" => "Themes",
+        "avatar" => "Avatars",
+        "title" => "Titles",
+        "powerup" => "Power-ups",
+        _ => cat
+    };
+
+    private string GetCategoryIcon(string cat) => cat switch
+    {
+        "theme" => "\uD83C\uDFA8",
+        "avatar" => "\uD83E\uDDD1",
+        "title" => "\uD83D\uDCDC",
+        "powerup" => "\u26A1",
+        _ => "\u2728"
+    };
+
+    private string GetItemEmoji(ShopItem item)
+    {
+        if (item.UnlockData.ContainsKey("hints")) return "\uD83D\uDCA1";
+        if (item.UnlockData.ContainsKey("boostMultiplier")) return "\uD83D\uDE80";
+        if (item.UnlockData.ContainsKey("freezeDays")) return "\uD83D\uDEE1\uFE0F";
+        return item.Category switch
+        {
+            "theme" => item.Id switch
+            {
+                "theme-dark" => "\uD83C\uDF19",
+                "theme-chalkboard" => "\uD83D\uDCDD",
+                "theme-neon" => "\uD83D\uDD2E",
+                "theme-blueprint" => "\uD83D\uDCD0",
+                _ => "\uD83C\uDFA8"
+            },
+            "avatar" => "\uD83E\uDDD1\u200D\uD83C\uDF93",
+            "title" => "\uD83C\uDFC5",
+            _ => "\u2728"
+        };
+    }
+
+    private bool IsActive(ShopItem item)
+    {
+        if (profile == null) return false;
+        return item.Category switch
+        {
+            "theme" => profile.SelectedTheme == item.Id.Replace("theme-", ""),
+            "avatar" => profile.SelectedAvatar == item.Id,
+            "title" => item.UnlockData.ContainsKey("title") && profile.SelectedTitle == item.UnlockData["title"],
+            _ => false
+        };
+    }
+
+    private int GetHintCount()
+    {
+        if (profile == null) return 0;
+        var totalBought = 0;
+        foreach (var purchase in profile.ShopPurchases)
+        {
+            var item = items.FirstOrDefault(i => i.Id == purchase);
+            if (item?.UnlockData.ContainsKey("hints") == true && int.TryParse(item.UnlockData["hints"], out var h))
+                totalBought += h;
+        }
+        return totalBought - profile.HintsUsed;
+    }
+
+    private async Task BuyItem(ShopItem item)
+    {
+        if (profile == null) return;
+        var success = await Gamification.SpendPointsAsync(item.Price);
+        if (success)
+        {
+            profile.ShopPurchases.Add(item.Id);
+
+            // Handle powerup activations
+            if (item.UnlockData.ContainsKey("boostMultiplier") && int.TryParse(item.UnlockData.GetValueOrDefault("boostQuizzes"), out var quizzes))
+            {
+                profile.XpBoostsActive += quizzes;
+            }
+
+            await Progress.SaveProfileAsync(profile);
+            await JS.InvokeVoidAsync("showToast", $"Purchased {item.Name}!", "");
+
+            if (item.Category != "powerup")
+                await ActivateItem(item);
+
+            profile = await Progress.GetProfileAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ActivateItem(ShopItem item)
+    {
+        if (profile == null) return;
+        switch (item.Category)
+        {
+            case "theme":
+                var themeId = item.Id.Replace("theme-", "");
+                await ThemeService.ApplyThemeAsync(themeId);
+                break;
+            case "avatar":
+                profile.SelectedAvatar = item.Id;
+                await Progress.SaveProfileAsync(profile);
+                break;
+            case "title":
+                if (item.UnlockData.ContainsKey("title"))
+                {
+                    profile.SelectedTitle = item.UnlockData["title"];
+                    await Progress.SaveProfileAsync(profile);
+                }
+                break;
+        }
+        StateHasChanged();
+    }
+}
+
+<style>
+    .shop-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .shop-header h1 { margin: 0; }
+
+    .points-badge {
+        font-size: 1.05rem !important;
+        padding: 8px 16px !important;
+    }
+
+    .tab-bar {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        overflow-x: auto;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 8px 6px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.8rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
+    }
+
+    .tab.active {
+        background: var(--bg-card);
+        color: var(--primary);
+        box-shadow: 0 1px 4px var(--shadow);
+    }
+
+    .shop-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .shop-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px;
+        transition: border-color 0.2s ease;
+    }
+
+    .shop-card:hover { transform: none; }
+
+    .shop-card.owned {
+        border-color: var(--primary-light);
+        opacity: 0.85;
+    }
+
+    .shop-card.active-item {
+        border-color: var(--success);
+        opacity: 1;
+    }
+
+    .shop-card-top {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .shop-card-icon {
+        font-size: 1.8rem;
+        flex-shrink: 0;
+        width: 40px;
+        text-align: center;
+    }
+
+    .shop-card-info {
+        flex: 1;
+    }
+
+    .shop-card-info small {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-top: 2px;
+    }
+
+    .shop-card-bottom {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .price-tag {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--accent);
+    }
+
+    .price-tag.unaffordable {
+        color: var(--text-muted);
+    }
+
+    .active-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: rgba(76, 175, 80, 0.15);
+        color: var(--success);
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .inventory {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .inventory-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+    }
+
+    .inv-icon { font-size: 1.3rem; }
+    .inv-label { flex: 1; color: var(--text-secondary); font-size: 0.85rem; }
+    .inv-count { font-size: 1.2rem; color: var(--primary); }
+</style>

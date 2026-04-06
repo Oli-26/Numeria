@@ -1,0 +1,92 @@
+@inject NavigationManager Nav
+
+<nav class="bottom-nav">
+    <a class="nav-item @(IsActive("/") ? "active" : "")" href="/" @onclick:preventDefault @onclick='() => Navigate("/")'>
+        <span class="nav-icon">\uD83C\uDFE0</span>
+        <span class="nav-label">Home</span>
+    </a>
+    <a class="nav-item @(IsActive("/profile") ? "active" : "")" href="/profile" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
+        <span class="nav-icon">\uD83D\uDC64</span>
+        <span class="nav-label">Profile</span>
+    </a>
+    <a class="nav-item @(IsActive("/leaderboard") ? "active" : "")" href="/leaderboard" @onclick:preventDefault @onclick='() => Navigate("/leaderboard")'>
+        <span class="nav-icon">\uD83C\uDFC6</span>
+        <span class="nav-label">Ranks</span>
+    </a>
+    <a class="nav-item @(IsActive("/shop") ? "active" : "")" href="/shop" @onclick:preventDefault @onclick='() => Navigate("/shop")'>
+        <span class="nav-icon">\uD83D\uDC8E</span>
+        <span class="nav-label">Shop</span>
+    </a>
+    <a class="nav-item @(IsActive("/settings") ? "active" : "")" href="/settings" @onclick:preventDefault @onclick='() => Navigate("/settings")'>
+        <span class="nav-icon">\u2699\uFE0F</span>
+        <span class="nav-label">Settings</span>
+    </a>
+</nav>
+
+@code {
+    private string currentUri = "";
+
+    protected override void OnInitialized()
+    {
+        currentUri = Nav.ToBaseRelativePath(Nav.Uri);
+        Nav.LocationChanged += (_, _) =>
+        {
+            currentUri = Nav.ToBaseRelativePath(Nav.Uri);
+            StateHasChanged();
+        };
+    }
+
+    private bool IsActive(string path)
+    {
+        var relative = "/" + currentUri;
+        if (path == "/") return relative == "/";
+        return relative.StartsWith(path);
+    }
+
+    private void Navigate(string path)
+    {
+        Nav.NavigateTo(path);
+    }
+}
+
+<style>
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-around;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border);
+        padding: 8px 0;
+        z-index: 100;
+        box-shadow: 0 -2px 10px var(--shadow);
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        padding: 4px 12px;
+        border-radius: 8px;
+        transition: color 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-item.active {
+        color: var(--primary);
+    }
+
+    .nav-icon {
+        font-size: 1.4rem;
+        margin-bottom: 2px;
+    }
+
+    .nav-label {
+        font-weight: 500;
+    }
+</style>

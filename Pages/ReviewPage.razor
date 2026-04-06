@@ -1,0 +1,221 @@
+@page "/review"
+@inject IReviewService ReviewService
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>\u2190</button>
+    <h1>Review</h1>
+</div>
+
+@if (state == ReviewState.Loading)
+{
+    <div class="loading">Loading review cards...</div>
+}
+else if (state == ReviewState.Empty)
+{
+    <div class="empty-state card">
+        <div class="empty-icon">\u2705</div>
+        <h2>All caught up!</h2>
+        <p>No cards due for review. Keep learning and questions will appear here based on how well you remember them.</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Back to Home</button>
+    </div>
+}
+else if (state == ReviewState.Active)
+{
+    <div class="review-container">
+        <div class="review-header">
+            <span class="review-count">@(currentIndex + 1) / @dueCards.Count</span>
+            <span class="chip">Spaced Repetition</span>
+        </div>
+
+        @if (currentQuestion != null)
+        {
+            <div class="card review-card">
+                <p class="question-prompt">@currentQuestion.Prompt</p>
+
+                @if (currentQuestion.MathExpression != null)
+                {
+                    <div class="math-display" id="review-math"></div>
+                }
+
+                @if (!revealed)
+                {
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 16px" @onclick="Reveal">
+                        Show Answer
+                    </button>
+                }
+                else
+                {
+                    <div class="review-answer">
+                        <strong>@(currentQuestion.CorrectAnswer ?? "See explanation")</strong>
+                        @if (currentQuestion.Explanation != null)
+                        {
+                            <p>@currentQuestion.Explanation</p>
+                        }
+                    </div>
+
+                    <p class="review-rate-prompt">How well did you remember?</p>
+                    <div class="review-buttons">
+                        <button class="btn review-btn forgot" @onclick="() => Rate(false)">
+                            Forgot
+                            <small>Review soon</small>
+                        </button>
+                        <button class="btn review-btn remembered" @onclick="() => Rate(true)">
+                            Remembered
+                            <small>Review later</small>
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+else if (state == ReviewState.Complete)
+{
+    <div class="card review-complete">
+        <div class="complete-icon">\uD83C\uDF1F</div>
+        <h2>Review Complete!</h2>
+        <div class="review-stats-row">
+            <div class="review-stat">
+                <span class="review-stat-val correct-color">@rememberedCount</span>
+                <small>Remembered</small>
+            </div>
+            <div class="review-stat">
+                <span class="review-stat-val error-color">@forgotCount</span>
+                <small>Forgot</small>
+            </div>
+            <div class="review-stat">
+                <span class="review-stat-val">+@xpEarned</span>
+                <small>XP</small>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px" @onclick='() => Nav.NavigateTo("/")'>
+            Done
+        </button>
+    </div>
+}
+
+@code {
+    private enum ReviewState { Loading, Empty, Active, Complete }
+    private ReviewState state = ReviewState.Loading;
+
+    private List<ReviewCard> dueCards = new();
+    private int currentIndex;
+    private Question? currentQuestion;
+    private bool revealed;
+    private int rememberedCount;
+    private int forgotCount;
+    private int xpEarned;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dueCards = await ReviewService.GetDueCardsAsync(15);
+            if (dueCards.Count == 0)
+            {
+                state = ReviewState.Empty;
+            }
+            else
+            {
+                state = ReviewState.Active;
+                await LoadCurrentQuestion();
+            }
+            StateHasChanged();
+        }
+
+        if (state == ReviewState.Active && currentQuestion?.MathExpression != null)
+        {
+            await JS.InvokeVoidAsync("renderMath", "review-math", currentQuestion.MathExpression, true);
+        }
+    }
+
+    private async Task LoadCurrentQuestion()
+    {
+        if (currentIndex >= dueCards.Count) return;
+        var card = dueCards[currentIndex];
+        var questions = await Content.GetQuestionsAsync(card.TopicId);
+        currentQuestion = questions.FirstOrDefault(q => q.Id == card.QuestionId);
+        revealed = false;
+    }
+
+    private void Reveal()
+    {
+        revealed = true;
+    }
+
+    private async Task Rate(bool remembered)
+    {
+        var card = dueCards[currentIndex];
+        await ReviewService.UpdateCardAsync(card.QuestionId, remembered);
+
+        if (remembered)
+        {
+            rememberedCount++;
+            var earned = 10;
+            xpEarned += earned;
+            await Gamification.AwardXpAsync(earned);
+        }
+        else
+        {
+            forgotCount++;
+        }
+
+        currentIndex++;
+        if (currentIndex >= dueCards.Count)
+        {
+            state = ReviewState.Complete;
+        }
+        else
+        {
+            await LoadCurrentQuestion();
+        }
+    }
+}
+
+<style>
+    .review-container { max-width: 600px; margin: 0 auto; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .review-count { color: var(--text-muted); font-size: 0.9rem; }
+
+    .review-card { padding: 24px; }
+    .question-prompt { font-size: 1.1rem; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+
+    .review-answer {
+        margin-top: 16px; padding: 14px; background: var(--bg-surface);
+        border-radius: var(--radius-sm); border-left: 4px solid var(--primary);
+    }
+    .review-answer strong { font-size: 1.1rem; color: var(--primary); }
+    .review-answer p { margin: 8px 0 0; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
+
+    .review-rate-prompt { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 16px 0 8px; }
+
+    .review-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .review-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        padding: 14px; border-radius: var(--radius-sm); font-weight: 600;
+        border: none; cursor: pointer; transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .review-btn:active { transform: scale(0.97); }
+    .review-btn small { font-weight: 400; font-size: 0.75rem; opacity: 0.8; }
+    .review-btn.forgot { background: rgba(239, 83, 80, 0.12); color: var(--error); }
+    .review-btn.remembered { background: rgba(76, 175, 80, 0.12); color: var(--success); }
+
+    .empty-state { text-align: center; padding: 40px 24px; }
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { color: var(--text-secondary); margin: 8px 0 20px; line-height: 1.6; }
+
+    .review-complete { text-align: center; padding: 32px 24px; }
+    .complete-icon { font-size: 3rem; margin-bottom: 8px; }
+    .review-stats-row { display: flex; justify-content: center; gap: 24px; margin: 16px 0; }
+    .review-stat { display: flex; flex-direction: column; align-items: center; }
+    .review-stat-val { font-size: 1.5rem; font-weight: 700; }
+    .correct-color { color: var(--success); }
+    .error-color { color: var(--error); }
+    .review-stat small { color: var(--text-muted); font-size: 0.8rem; }
+</style>

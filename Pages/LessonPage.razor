@@ -1,0 +1,300 @@
+@page "/topic/{TopicId}/lesson/{LessonId}"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject ISessionStateService SessionState
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@implements IDisposable
+
+<div class="page-header">
+    <button class="back-btn" @onclick="GoBack">\u2190</button>
+    <h1>@(lesson?.Title ?? "Lesson")</h1>
+</div>
+
+@if (lesson != null)
+{
+    @if (!showQuiz)
+    {
+        <div class="concept-viewer">
+            <!-- Progress dots -->
+            <div class="concept-dots">
+                @for (int i = 0; i < lesson.Concepts.Count; i++)
+                {
+                    var idx = i;
+                    var isActive = i == currentConceptIndex;
+                    var isViewed = profile?.ConceptsViewed.Contains(lesson.Concepts[i].Id) ?? false;
+                    <button class="concept-dot @(isActive ? "active" : "") @(isViewed ? "viewed" : "")"
+                            @onclick="() => JumpToConcept(idx)">
+                        @(idx + 1)
+                    </button>
+                }
+                <button class="concept-dot quiz-dot @(currentConceptIndex >= lesson.Concepts.Count ? "active" : "")"
+                        @onclick="StartQuiz">\u26A1</button>
+            </div>
+
+            @if (currentConceptIndex < lesson.Concepts.Count)
+            {
+                var concept = lesson.Concepts[currentConceptIndex];
+                <div class="concept-card card anim-slide">
+                    <h2>@concept.Title</h2>
+
+                    <div class="concept-content">
+                        @((MarkupString)concept.ContentHtml)
+                    </div>
+
+                    @if (concept.MathExpressions.Count > 0)
+                    {
+                        @foreach (var (expr, i) in concept.MathExpressions.Select((e, i) => (e, i)))
+                        {
+                            <div class="math-display" id="math-@concept.Id-@i"></div>
+                        }
+                    }
+
+                    @if (concept.VisualizationType != null)
+                    {
+                        <CanvasVisualization CanvasId="@($"viz-{concept.Id}")"
+                                             VisualizationType="@concept.VisualizationType" />
+                    }
+
+                    <div class="concept-nav">
+                        @if (currentConceptIndex > 0)
+                        {
+                            <button class="btn btn-outline" @onclick="PrevConcept">\u2190 Previous</button>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+                        @if (currentConceptIndex < lesson.Concepts.Count - 1)
+                        {
+                            <button class="btn btn-primary" @onclick="NextConcept">Next \u2192</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-accent" @onclick="StartQuiz">Take Quiz \u26A1</button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <QuizComponent TopicId="@TopicId" LessonId="@LessonId" OnComplete="OnQuizComplete" />
+    }
+}
+else
+{
+    <div class="loading">Loading lesson...</div>
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+    [Parameter] public string LessonId { get; set; } = "";
+
+    private Lesson? lesson;
+    private UserProfile? profile;
+    private int currentConceptIndex;
+    private bool showQuiz;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            lesson = await Content.GetLessonAsync(TopicId, LessonId);
+            profile = await Progress.GetProfileAsync();
+
+            // Restore saved session state
+            var session = await SessionState.LoadSessionStateAsync();
+            if (session != null && session.ActiveTopicId == TopicId && session.ActiveLessonId == LessonId)
+            {
+                currentConceptIndex = Math.Min(session.ConceptIndex, (lesson?.Concepts.Count ?? 1) - 1);
+                showQuiz = session.InQuiz;
+            }
+
+            StateHasChanged();
+        }
+
+        if (lesson != null && !showQuiz && currentConceptIndex < lesson.Concepts.Count)
+        {
+            var concept = lesson.Concepts[currentConceptIndex];
+            for (int i = 0; i < concept.MathExpressions.Count; i++)
+            {
+                await JS.InvokeVoidAsync("renderMath", $"math-{concept.Id}-{i}", concept.MathExpressions[i], true);
+            }
+        }
+    }
+
+    private async Task SaveState()
+    {
+        await SessionState.SaveLessonStateAsync(TopicId, LessonId, currentConceptIndex, showQuiz);
+    }
+
+    private async Task NextConcept()
+    {
+        if (lesson == null) return;
+        var concept = lesson.Concepts[currentConceptIndex];
+        await Progress.MarkConceptViewedAsync(concept.Id);
+        currentConceptIndex++;
+        await SaveState();
+    }
+
+    private async Task PrevConcept()
+    {
+        if (currentConceptIndex > 0)
+            currentConceptIndex--;
+        await SaveState();
+    }
+
+    private async Task JumpToConcept(int index)
+    {
+        if (lesson == null || index == currentConceptIndex) return;
+        // Mark current as viewed before jumping
+        if (currentConceptIndex < lesson.Concepts.Count)
+            await Progress.MarkConceptViewedAsync(lesson.Concepts[currentConceptIndex].Id);
+        currentConceptIndex = index;
+        await SaveState();
+    }
+
+    private async Task StartQuiz()
+    {
+        if (lesson == null) return;
+        var concept = lesson.Concepts[currentConceptIndex];
+        await Progress.MarkConceptViewedAsync(concept.Id);
+        showQuiz = true;
+        await SaveState();
+    }
+
+    private async Task GoBack()
+    {
+        await SessionState.ClearSessionStateAsync();
+        Nav.NavigateTo($"/topic/{TopicId}");
+    }
+
+    private async Task OnQuizComplete(int xpEarned)
+    {
+        if (lesson == null) return;
+        await Progress.MarkLessonCompletedAsync(lesson.Id);
+
+        var topics = await Content.GetTopicsAsync();
+        var topic = topics.FirstOrDefault(t => t.Id == TopicId);
+        if (topic != null)
+        {
+            var lessons = await Content.GetLessonsAsync(TopicId);
+            var profile = await Progress.GetProfileAsync();
+            if (lessons.All(l => profile.LessonsCompleted.Contains(l.Id)))
+            {
+                if (!profile.TopicsCompleted.Contains(TopicId))
+                {
+                    profile.TopicsCompleted.Add(TopicId);
+                    await Progress.SaveProfileAsync(profile);
+                }
+            }
+        }
+
+        await SessionState.ClearSessionStateAsync();
+        Nav.NavigateTo($"/topic/{TopicId}");
+    }
+
+    public void Dispose() { }
+}
+
+<style>
+    .concept-viewer {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .concept-card {
+        padding: 20px;
+    }
+
+    .concept-progress {
+        text-align: right;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    .concept-content {
+        line-height: 1.7;
+        color: var(--text-secondary);
+        margin: 12px 0;
+    }
+
+    .concept-content p {
+        margin-bottom: 12px;
+    }
+
+    .concept-content strong {
+        color: var(--text-primary);
+    }
+
+    .concept-nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        gap: 12px;
+    }
+
+    /* Progress dots */
+    .concept-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .concept-dot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .concept-dot.viewed {
+        border-color: var(--primary-light);
+        color: var(--primary);
+        background: rgba(74, 95, 224, 0.08);
+    }
+
+    .concept-dot.active {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+        transform: scale(1.15);
+        box-shadow: 0 2px 8px rgba(74, 95, 224, 0.3);
+    }
+
+    .quiz-dot {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .quiz-dot.active {
+        background: var(--accent);
+        color: white;
+    }
+
+    /* Slide animation */
+    .anim-slide {
+        animation: slideIn 0.25s ease;
+    }
+
+    @@keyframes slideIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>

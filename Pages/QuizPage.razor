@@ -1,0 +1,35 @@
+@page "/quiz/{Scope}/{Id}"
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>&#x2190;</button>
+    <h1>@GetTitle()</h1>
+</div>
+
+<QuizComponent TopicId="@GetTopicId()" LessonId="@GetLessonId()" OnComplete="OnComplete" />
+
+@code {
+    [Parameter] public string Scope { get; set; } = "";
+    [Parameter] public string Id { get; set; } = "";
+
+    private string? GetTopicId() => Scope switch
+    {
+        "topic" => Id,
+        "lesson" => Id.Contains("/") ? Id.Split("/")[0] : null,
+        _ => null
+    };
+
+    private string? GetLessonId() => Scope == "lesson" && Id.Contains("/") ? Id.Split("/")[1] : null;
+
+    private string GetTitle() => Scope switch
+    {
+        "mixed" => "Quick Quiz",
+        "topic" => $"{Id} Quiz",
+        _ => "Quiz"
+    };
+
+    private void OnComplete(int xpEarned)
+    {
+        Nav.NavigateTo("/");
+    }
+}

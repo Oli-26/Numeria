@@ -1,0 +1,146 @@
+[
+  {
+    "id": "gt-01",
+    "topicId": "graph-theory",
+    "order": 1,
+    "title": "Graphs & Connectivity",
+    "description": "Vertices, edges, and paths",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "gt-01-c1",
+        "title": "What is a Graph?",
+        "contentHtml": "<p>A <strong>graph</strong> is a set of <strong>vertices</strong> (points) connected by <strong>edges</strong> (lines). That's it!</p><p>Graphs model relationships: people connected by friendships, cities connected by roads, web pages connected by links.</p><p>Key vocabulary:</p><p>\u2022 <strong>Degree</strong> of a vertex: number of edges touching it<br>\u2022 <strong>Path</strong>: a sequence of edges connecting two vertices<br>\u2022 <strong>Connected</strong>: every pair of vertices has a path between them</p>",
+        "mathExpressions": ["G = (V, E), \\quad \\sum_{v \\in V} \\deg(v) = 2|E|"],
+        "visualizationType": "graph-basic",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "gt-01-c2",
+        "title": "The Handshaking Lemma",
+        "contentHtml": "<p>The <strong>Handshaking Lemma</strong>: the sum of all vertex degrees equals twice the number of edges.</p><p>Why? Each edge contributes 1 to the degree of each of its two endpoints.</p><p>Consequence: the number of vertices with <strong>odd degree</strong> must be even. (Try it! You can't draw a graph where exactly 3 vertices have odd degree.)</p><p>This simple observation is surprisingly powerful for proving impossibility results.</p>",
+        "mathExpressions": ["\\sum_{v \\in V} \\deg(v) = 2|E|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-01-c3",
+        "title": "Special Graphs",
+        "contentHtml": "<p><strong>Complete graph K\u2099:</strong> every pair of vertices is connected. K\u2083 is a triangle, K\u2084 has 6 edges, K\u2085 has 10.</p><p><strong>Bipartite graph:</strong> vertices split into two groups, edges only between groups. Think of matching students to projects.</p><p><strong>Tree:</strong> a connected graph with no cycles. n vertices, n-1 edges. Trees are the \"most efficient\" connected graphs.</p><p><strong>Planar graph:</strong> can be drawn on a plane without edges crossing.</p>",
+        "mathExpressions": ["|E(K_n)| = \\binom{n}{2} = \\frac{n(n-1)}{2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gt-q01", "gt-q02", "gt-q03", "gt-q04", "gt-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "gt-02",
+    "topicId": "graph-theory",
+    "order": 2,
+    "title": "Eulerian & Hamiltonian Paths",
+    "description": "Can you traverse every edge? Every vertex?",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "gt-02-c1",
+        "title": "The K\u00f6nigsberg Bridge Problem",
+        "contentHtml": "<p>In 1736, Euler asked: can you walk through K\u00f6nigsberg crossing each bridge exactly once?</p><p>He proved it was <strong>impossible</strong> \u2014 and in doing so, invented graph theory.</p><p>An <strong>Eulerian path</strong> traverses every <em>edge</em> exactly once. An <strong>Eulerian circuit</strong> does so and returns to the start.</p><p><strong>Euler's Theorem:</strong> An Eulerian circuit exists iff every vertex has even degree. An Eulerian path exists iff exactly 0 or 2 vertices have odd degree.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-02-c2",
+        "title": "Hamiltonian Paths",
+        "contentHtml": "<p>A <strong>Hamiltonian path</strong> visits every <em>vertex</em> exactly once. A <strong>Hamiltonian cycle</strong> does so and returns to the start.</p><p>Unlike Euler paths, there is <strong>no simple criterion</strong> for when Hamiltonian paths exist. Checking is NP-complete \u2014 one of the hardest problems in computer science!</p><p>The <strong>Travelling Salesman Problem (TSP)</strong>: find the shortest Hamiltonian cycle through a set of cities. It's NP-hard, and billions of dollars depend on approximate solutions (logistics, chip design, DNA sequencing).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-02-c3",
+        "title": "Euler vs Hamilton Comparison",
+        "contentHtml": "<p>A useful comparison:</p><p><strong>Eulerian:</strong> Visit every <em>edge</em> once. Easy to check (degree condition). Polynomial-time algorithm.</p><p><strong>Hamiltonian:</strong> Visit every <em>vertex</em> once. Hard to check. NP-complete.</p><p>The gap between these two similar-sounding problems is one of the great mysteries of computer science. It's closely related to the P vs NP problem \u2014 another Millennium Prize question!</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gt-q06", "gt-q07", "gt-q08", "gt-q09", "gt-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "gt-03",
+    "topicId": "graph-theory",
+    "order": 3,
+    "title": "Graph Coloring",
+    "description": "How many colors do you need?",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "gt-03-c1",
+        "title": "Vertex Coloring",
+        "contentHtml": "<p><strong>Graph coloring</strong>: assign colors to vertices so that no two adjacent vertices share a color.</p><p>The <strong>chromatic number</strong> \u03c7(G) is the minimum number of colors needed.</p><p>\u03c7(K\u2099) = n (complete graphs need one color per vertex).<br>\u03c7(tree) = 2 (trees are always 2-colorable).<br>\u03c7(cycle of even length) = 2, odd length = 3.</p><p>Practical use: scheduling! Courses that share students can't be at the same time \u2014 this is graph coloring.</p>",
+        "mathExpressions": ["\\chi(K_n) = n, \\quad \\chi(\\text{tree}) = 2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-03-c2",
+        "title": "The Four Color Theorem",
+        "contentHtml": "<p>The <strong>Four Color Theorem</strong>: every planar graph can be properly colored with at most 4 colors.</p><p>This means any map can be colored with 4 colors so that neighboring regions have different colors. Conjectured in 1852, proved in 1976 \u2014 the first major theorem proved by <strong>computer</strong>.</p><p>The proof checked 1,936 configurations by machine. This was controversial: can a proof no human can verify really be trusted? The debate shaped philosophy of mathematics.</p>",
+        "mathExpressions": ["\\chi(G) \\leq 4 \\quad \\text{for all planar } G"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-03-c3",
+        "title": "Chromatic Polynomials",
+        "contentHtml": "<p>The <strong>chromatic polynomial</strong> P(G, k) counts the number of proper colorings using at most k colors.</p><p>For a complete graph: P(K\u2099, k) = k(k-1)(k-2)...(k-n+1).</p><p>For a tree with n vertices: P(T, k) = k(k-1)\u207f\u207b\u00b9.</p><p>These polynomials encode deep structural information about the graph and connect graph theory to algebra.</p>",
+        "mathExpressions": ["P(K_3, k) = k(k-1)(k-2)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gt-q11", "gt-q12", "gt-q13", "gt-q14", "gt-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "gt-04",
+    "topicId": "graph-theory",
+    "order": 4,
+    "title": "Trees, Networks, & Algorithms",
+    "description": "Spanning trees, shortest paths, and real-world networks",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "gt-04-c1",
+        "title": "Spanning Trees",
+        "contentHtml": "<p>A <strong>spanning tree</strong> of a graph G is a tree that includes all vertices and is a subgraph of G.</p><p>Every connected graph has a spanning tree (possibly many). A <strong>minimum spanning tree</strong> (MST) minimizes total edge weight.</p><p><strong>Kruskal's algorithm:</strong> sort edges by weight, greedily add the lightest edge that doesn't create a cycle.<br><strong>Prim's algorithm:</strong> grow the tree one edge at a time, always choosing the cheapest connection to a new vertex.</p><p>MSTs are used in network design, clustering, and circuit wiring.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-04-c2",
+        "title": "Shortest Paths",
+        "contentHtml": "<p><strong>Dijkstra's algorithm</strong> finds the shortest path from a source vertex to all other vertices in a weighted graph (with non-negative weights).</p><p>It's a greedy algorithm: always extend the path to the nearest unvisited vertex.</p><p>Used by: GPS navigation, network routing, game AI pathfinding.</p><p>For graphs with negative edges, use <strong>Bellman-Ford</strong>. For all-pairs shortest paths, use <strong>Floyd-Warshall</strong>.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gt-04-c3",
+        "title": "Real-World Networks",
+        "contentHtml": "<p>Graph theory is the mathematics of networks:</p><p><strong>Social networks:</strong> Small-world phenomenon \u2014 ~6 degrees of separation. Power-law degree distributions (few hubs, many low-degree nodes).</p><p><strong>The internet:</strong> Routers as vertices, connections as edges. BGP routing is graph algorithms in real time.</p><p><strong>Biology:</strong> Protein interaction networks, neural networks, food webs. Graph analysis reveals functional modules and vulnerabilities.</p><p><strong>PageRank:</strong> Google's original algorithm models the web as a graph and ranks pages by the structure of incoming links (this connects back to eigenvalues!).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gt-q16", "gt-q17", "gt-q18", "gt-q19", "gt-q20"],
+    "puzzleId": "gt-p01"
+  }
+]

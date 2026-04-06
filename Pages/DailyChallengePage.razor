@@ -1,0 +1,97 @@
+@page "/daily"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>\u2190</button>
+    <h1>Daily Challenge</h1>
+</div>
+
+@if (alreadyDone)
+{
+    <div class="card done-state">
+        <div class="done-icon">\u2705</div>
+        <h2>Challenge Complete!</h2>
+        <p>Come back tomorrow for a new challenge. Your streak keeps growing!</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Back Home</button>
+    </div>
+}
+else if (ready)
+{
+    <div class="daily-intro" style="@(started ? "display:none" : "")">
+        <div class="card daily-card">
+            <div class="daily-icon">\u2B50</div>
+            <h2>Today's Challenge</h2>
+            <p>5 questions from your completed topics</p>
+            <p class="daily-bonus">1.5x XP Bonus!</p>
+            <button class="btn btn-accent btn-lg" style="width: 100%; margin-top: 12px" @onclick="Start">
+                Let's Go!
+            </button>
+        </div>
+    </div>
+
+    @if (started)
+    {
+        <QuizComponent TopicId="@null" LessonId="@null" OnComplete="OnComplete" />
+    }
+}
+else
+{
+    <div class="card done-state">
+        <div class="done-icon">\uD83D\uDCDA</div>
+        <h2>Complete Some Lessons First</h2>
+        <p>Finish at least one topic's lessons to unlock the daily challenge.</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Start Learning</button>
+    </div>
+}
+
+@code {
+    private bool alreadyDone;
+    private bool ready;
+    private bool started;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+            alreadyDone = profile.DailyChallengeDate == today && profile.DailyChallengeCompleted;
+
+            // Check if user has any completed lessons
+            ready = profile.LessonsCompleted.Count > 0;
+
+            StateHasChanged();
+        }
+    }
+
+    private void Start()
+    {
+        started = true;
+    }
+
+    private async Task OnComplete(int xpEarned)
+    {
+        var profile = await Progress.GetProfileAsync();
+        profile.DailyChallengeDate = DateTime.Now.ToString("yyyy-MM-dd");
+        profile.DailyChallengeCompleted = true;
+        await Progress.SaveProfileAsync(profile);
+        Nav.NavigateTo("/");
+    }
+}
+
+<style>
+    .daily-intro { max-width: 500px; margin: 0 auto; }
+    .daily-card { text-align: center; padding: 32px 24px; }
+    .daily-icon { font-size: 3rem; margin-bottom: 8px; }
+    .daily-card p { color: var(--text-secondary); margin: 4px 0; }
+    .daily-bonus {
+        color: var(--accent); font-weight: 700; font-size: 1.2rem;
+        margin-top: 8px !important;
+    }
+    .done-state { text-align: center; padding: 40px 24px; }
+    .done-icon { font-size: 3rem; margin-bottom: 8px; }
+    .done-state p { color: var(--text-secondary); margin: 8px 0 20px; line-height: 1.6; }
+</style>

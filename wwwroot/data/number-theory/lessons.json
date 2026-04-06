@@ -1,0 +1,146 @@
+[
+  {
+    "id": "nt-01",
+    "topicId": "number-theory",
+    "order": 1,
+    "title": "Primes & Divisibility",
+    "description": "The atoms of arithmetic",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "nt-01-c1",
+        "title": "Prime Numbers",
+        "contentHtml": "<p>A <strong>prime number</strong> is a natural number greater than 1 that has no divisors other than 1 and itself.</p><p>2, 3, 5, 7, 11, 13, 17, 19, 23, 29, ...</p><p>Primes are the <strong>atoms</strong> of arithmetic \u2014 every integer greater than 1 can be built by multiplying primes together, and this factorization is <strong>unique</strong> (the Fundamental Theorem of Arithmetic).</p><p>There are <strong>infinitely many</strong> primes \u2014 Euclid proved this over 2,300 years ago with an elegant proof by contradiction.</p>",
+        "mathExpressions": ["60 = 2^2 \\times 3 \\times 5"],
+        "visualizationType": "prime-sieve",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "nt-01-c2",
+        "title": "Divisibility Rules & GCD",
+        "contentHtml": "<p>The <strong>greatest common divisor</strong> (GCD) of two numbers is the largest number that divides both.</p><p>The <strong>Euclidean algorithm</strong> computes GCD efficiently: repeatedly replace the larger number with the remainder of dividing the two. When the remainder is 0, the other number is the GCD.</p><p>Example: GCD(48, 18) \u2192 48 = 2\u00d718 + 12 \u2192 18 = 1\u00d712 + 6 \u2192 12 = 2\u00d76 + 0 \u2192 GCD = 6</p>",
+        "mathExpressions": ["\\gcd(a, b) = \\gcd(b, a \\bmod b)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-01-c3",
+        "title": "The Fundamental Theorem of Arithmetic",
+        "contentHtml": "<p>Every integer greater than 1 has a <strong>unique</strong> prime factorization (up to the order of factors).</p><p>This sounds obvious, but it's remarkably powerful. It means the primes are a complete \"basis\" for multiplication, just like basis vectors span a vector space.</p><p>Fun fact: this theorem <strong>fails</strong> in some other number systems! In \u2124[\u221a-5], the number 6 = 2\u00d73 = (1+\u221a-5)(1-\u221a-5) has two distinct factorizations. This failure led to the invention of ideals and algebraic number theory.</p>",
+        "mathExpressions": ["n = p_1^{a_1} \\cdot p_2^{a_2} \\cdots p_k^{a_k} \\quad \\text{(unique)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q01", "nt-q02", "nt-q03", "nt-q04", "nt-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "nt-02",
+    "topicId": "number-theory",
+    "order": 2,
+    "title": "Modular Arithmetic",
+    "description": "Clock math and remainders",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "nt-02-c1",
+        "title": "Thinking in Remainders",
+        "contentHtml": "<p><strong>Modular arithmetic</strong> is arithmetic where numbers \"wrap around\" after reaching a certain value, like a clock.</p><p>We write a \u2261 b (mod n) to mean a and b have the same remainder when divided by n.</p><p>17 \u2261 2 (mod 5) because both leave remainder 2 when divided by 5.</p><p>On a 12-hour clock: 15:00 \u2261 3:00 (mod 12).</p>",
+        "mathExpressions": ["a \\equiv b \\pmod{n} \\iff n \\mid (a - b)"],
+        "visualizationType": "mod-clock",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "nt-02-c2",
+        "title": "Modular Operations",
+        "contentHtml": "<p>You can add, subtract, and multiply modularly:</p><p>(a + b) mod n = ((a mod n) + (b mod n)) mod n</p><p>(a \u00d7 b) mod n = ((a mod n) \u00d7 (b mod n)) mod n</p><p>This means you never need to work with big numbers \u2014 reduce at every step!</p><p>Division is trickier: you need <strong>modular inverses</strong>. a\u207b\u00b9 mod n exists only when gcd(a, n) = 1.</p>",
+        "mathExpressions": ["7 \\times 8 \\equiv 56 \\equiv 6 \\pmod{10}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-02-c3",
+        "title": "Fermat's Little Theorem",
+        "contentHtml": "<p>If p is prime and a is not divisible by p, then:</p><p>a^(p-1) \u2261 1 (mod p)</p><p>This is <strong>Fermat's Little Theorem</strong> \u2014 a cornerstone of number theory.</p><p>Example: 2\u2076 = 64 \u2261 1 (mod 7). Check: 64 = 9\u00d77 + 1. \u2713</p><p>This theorem is the foundation of RSA cryptography and primality testing.</p>",
+        "mathExpressions": ["a^{p-1} \\equiv 1 \\pmod{p}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q06", "nt-q07", "nt-q08", "nt-q09", "nt-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "nt-03",
+    "topicId": "number-theory",
+    "order": 3,
+    "title": "Cryptography",
+    "description": "Secrets built on prime numbers",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nt-03-c1",
+        "title": "Public Key Cryptography",
+        "contentHtml": "<p>The brilliant idea: create a <strong>public key</strong> anyone can use to encrypt, but only you can decrypt with your <strong>private key</strong>.</p><p>This relies on <strong>one-way functions</strong> \u2014 operations easy to do but hard to undo.</p><p>Multiplying two large primes is easy. Factoring the result back into those primes is astronomically hard. This asymmetry is the backbone of internet security.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-03-c2",
+        "title": "RSA Algorithm",
+        "contentHtml": "<p><strong>RSA</strong> (Rivest-Shamir-Adleman) works like this:</p><p>1. Pick two large primes p, q. Compute n = pq.</p><p>2. Compute \u03c6(n) = (p-1)(q-1) (Euler's totient).</p><p>3. Choose e coprime to \u03c6(n). Public key = (n, e).</p><p>4. Find d such that ed \u2261 1 (mod \u03c6(n)). Private key = d.</p><p>Encrypt: c = m^e mod n. Decrypt: m = c^d mod n.</p><p>Security depends entirely on the difficulty of factoring n.</p>",
+        "mathExpressions": ["c = m^e \\bmod n, \\quad m = c^d \\bmod n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-03-c3",
+        "title": "The Factoring Problem",
+        "contentHtml": "<p>The security of RSA rests on our inability to factor large numbers efficiently.</p><p>The best known classical algorithms are sub-exponential but still impractical for 2048-bit numbers.</p><p><strong>Shor's algorithm</strong> on a quantum computer could factor in polynomial time \u2014 this is why \"post-quantum cryptography\" is a hot research area.</p><p>The relationship between primes and complexity is one of the deepest open questions in mathematics.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q11", "nt-q12", "nt-q13", "nt-q14", "nt-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "nt-04",
+    "topicId": "number-theory",
+    "order": 4,
+    "title": "Famous Conjectures",
+    "description": "Unsolved mysteries of the integers",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nt-04-c1",
+        "title": "The Twin Prime Conjecture",
+        "contentHtml": "<p><strong>Twin primes</strong> are pairs of primes that differ by 2: (3,5), (5,7), (11,13), (17,19), (29,31), ...</p><p>The <strong>Twin Prime Conjecture</strong> states there are infinitely many twin prime pairs. Despite being one of the oldest unsolved problems, it remains open.</p><p>In 2013, Yitang Zhang proved there are infinitely many prime pairs with gap at most 70,000,000. This has since been reduced to 246 \u2014 but 2 remains elusive.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-04-c2",
+        "title": "Goldbach's Conjecture",
+        "contentHtml": "<p>Every even integer greater than 2 is the sum of two primes.</p><p>4=2+2, 6=3+3, 8=3+5, 10=3+7=5+5, 12=5+7, ...</p><p>Verified by computer for all even numbers up to 4\u00d710\u00b9\u2078, yet <strong>no proof exists</strong>. It's been open since 1742.</p><p>The \"weak\" version (every odd number > 5 is the sum of three primes) was proved by Harald Helfgott in 2013.</p>",
+        "mathExpressions": ["2n = p + q \\quad \\text{for primes } p, q"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-04-c3",
+        "title": "The Riemann Hypothesis",
+        "contentHtml": "<p>The <strong>Riemann Hypothesis</strong> is arguably the most important unsolved problem in mathematics. It concerns the Riemann zeta function:</p><p>\u03b6(s) = 1 + 1/2\u02e2 + 1/3\u02e2 + 1/4\u02e2 + ...</p><p>The conjecture: all non-trivial zeros of \u03b6(s) have real part 1/2.</p><p>Why does this matter? The zeros control the distribution of prime numbers. A proof would give us exact knowledge of how primes are distributed \u2014 with consequences across all of mathematics. There's a $1 million Millennium Prize waiting.</p>",
+        "mathExpressions": ["\\zeta(s) = \\sum_{n=1}^{\\infty} \\frac{1}{n^s}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q16", "nt-q17", "nt-q18", "nt-q19", "nt-q20"],
+    "puzzleId": "nt-p01"
+  }
+]

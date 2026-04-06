@@ -1,0 +1,290 @@
+[
+  {
+    "id": "la-01",
+    "topicId": "linear-algebra",
+    "order": 1,
+    "title": "Vectors & Spaces",
+    "description": "Arrows, directions, and dimensions",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "la-01-c1",
+        "title": "What is a Vector?",
+        "contentHtml": "<p>A <strong>vector</strong> is a quantity with both <strong>magnitude</strong> (size) and <strong>direction</strong>.</p><p>Visually, it's an arrow pointing from one place to another. Mathematically, it's a list of numbers -- its components.</p><p>In 2D, a vector has two components: how far right/left and how far up/down.</p>",
+        "mathExpressions": ["\\vec{v} = \\begin{pmatrix} 3 \\\\ 2 \\end{pmatrix}"],
+        "visualizationType": "vector-basic",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "la-01-c2",
+        "title": "Vector Addition & Scaling",
+        "contentHtml": "<p><strong>Adding</strong> vectors: place them tip-to-tail. The result goes from the start of the first to the end of the last. Component-wise, just add each component.</p><p><strong>Scaling</strong> (scalar multiplication): multiply each component by a number. This stretches or shrinks the arrow.</p>",
+        "mathExpressions": ["\\begin{pmatrix} 2 \\\\ 1 \\end{pmatrix} + \\begin{pmatrix} 1 \\\\ 3 \\end{pmatrix} = \\begin{pmatrix} 3 \\\\ 4 \\end{pmatrix}", "2 \\cdot \\begin{pmatrix} 3 \\\\ 1 \\end{pmatrix} = \\begin{pmatrix} 6 \\\\ 2 \\end{pmatrix}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-01-c3",
+        "title": "Basis & Span",
+        "contentHtml": "<p>A <strong>basis</strong> is a minimal set of vectors that can generate every vector in a space through addition and scaling.</p><p>The standard basis in 2D is <strong>i\u0302</strong> = (1,0) and <strong>j\u0302</strong> = (0,1). Every 2D vector is some combination of these two.</p><p>The set of all combinations you can make is called the <strong>span</strong>. Two non-parallel vectors span all of 2D space.</p>",
+        "mathExpressions": ["\\hat{i} = \\begin{pmatrix} 1 \\\\ 0 \\end{pmatrix}, \\quad \\hat{j} = \\begin{pmatrix} 0 \\\\ 1 \\end{pmatrix}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q01", "la-q02", "la-q03", "la-q04", "la-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-02",
+    "topicId": "linear-algebra",
+    "order": 2,
+    "title": "Matrices as Transformations",
+    "description": "How matrices reshape space",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "la-02-c1",
+        "title": "Matrices Transform Space",
+        "contentHtml": "<p>A <strong>matrix</strong> is not just a grid of numbers -- it's a <strong>function</strong> that transforms vectors.</p><p>A 2\u00d72 matrix takes every point in 2D space and moves it to a new location. The entire grid of space gets warped.</p><p>To apply the transformation: multiply the matrix by a vector.</p>",
+        "mathExpressions": ["\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} \\begin{pmatrix} x \\\\ y \\end{pmatrix} = \\begin{pmatrix} ax + by \\\\ cx + dy \\end{pmatrix}"],
+        "visualizationType": "matrix-transform",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "la-02-c2",
+        "title": "Common Transformations",
+        "contentHtml": "<p><strong>Rotation by 90\u00b0:</strong> Turns everything counterclockwise.</p><p><strong>Reflection:</strong> Flips across an axis.</p><p><strong>Scaling:</strong> Stretches or squishes along axes.</p><p><strong>Shear:</strong> Slants space -- like pushing the top of a book sideways.</p><p>Each of these is represented by a specific 2\u00d72 matrix!</p>",
+        "mathExpressions": ["\\text{Rotate 90\u00b0: } \\begin{pmatrix} 0 & -1 \\\\ 1 & 0 \\end{pmatrix}", "\\text{Reflect x-axis: } \\begin{pmatrix} 1 & 0 \\\\ 0 & -1 \\end{pmatrix}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-02-c3",
+        "title": "Matrix Multiplication = Composition",
+        "contentHtml": "<p>Applying two transformations in sequence is the same as multiplying their matrices.</p><p>If A rotates and B scales, then BA means: first apply A, then apply B.</p><p>Note the order matters! Matrix multiplication is <strong>not commutative</strong> -- AB \u2260 BA in general.</p>",
+        "mathExpressions": ["(BA)\\vec{v} = B(A\\vec{v})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q06", "la-q07", "la-q08", "la-q09", "la-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-03",
+    "topicId": "linear-algebra",
+    "order": 3,
+    "title": "Systems of Equations",
+    "description": "Where lines meet",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "la-03-c1",
+        "title": "Lines as Equations",
+        "contentHtml": "<p>A system of two linear equations in 2D is just two lines. The <strong>solution</strong> is where they intersect.</p><p>Three possibilities:</p><p>1. <strong>One solution:</strong> The lines cross at a single point<br>2. <strong>No solution:</strong> The lines are parallel (never meet)<br>3. <strong>Infinite solutions:</strong> The lines are the same line</p>",
+        "mathExpressions": ["\\begin{cases} 2x + y = 5 \\\\ x - y = 1 \\end{cases}"],
+        "visualizationType": "system-lines",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "la-03-c2",
+        "title": "Gaussian Elimination",
+        "contentHtml": "<p><strong>Gaussian elimination</strong> is a systematic method for solving systems. You perform row operations on an augmented matrix to reach <strong>row echelon form</strong>.</p><p>Allowed operations:<br>1. Swap two rows<br>2. Multiply a row by a nonzero constant<br>3. Add a multiple of one row to another</p><p>Then back-substitute to find the solution.</p>",
+        "mathExpressions": ["\\left(\\begin{array}{cc|c} 2 & 1 & 5 \\\\ 1 & -1 & 1 \\end{array}\\right) \\to \\left(\\begin{array}{cc|c} 1 & -1 & 1 \\\\ 0 & 3 & 3 \\end{array}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-03-c3",
+        "title": "The Determinant",
+        "contentHtml": "<p>The <strong>determinant</strong> of a matrix tells you how much the transformation scales area.</p><p>If det = 0, the transformation squishes space down to a lower dimension -- and the system has no unique solution.</p><p>If det \u2260 0, the matrix is <strong>invertible</strong> and there's exactly one solution.</p>",
+        "mathExpressions": ["\\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q11", "la-q12", "la-q13", "la-q14", "la-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-04",
+    "topicId": "linear-algebra",
+    "order": 4,
+    "title": "Eigenvalues & Eigenvectors",
+    "description": "The vectors that stay on their line",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "la-04-c1",
+        "title": "What Are Eigenvectors?",
+        "contentHtml": "<p>When you apply a matrix transformation, most vectors change direction. But some special vectors only get <strong>scaled</strong> -- they stay on the same line.</p><p>These are <strong>eigenvectors</strong>. The scaling factor is the <strong>eigenvalue</strong>.</p><p>\"Eigen\" is German for \"own\" or \"characteristic.\"</p>",
+        "mathExpressions": ["A\\vec{v} = \\lambda\\vec{v}"],
+        "visualizationType": "eigen-demo",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "la-04-c2",
+        "title": "Finding Eigenvalues",
+        "contentHtml": "<p>To find eigenvalues, solve the <strong>characteristic equation</strong>:</p><p>Rearrange A\u20D7v = \u03BB\u20D7v to (A - \u03BBI)\u20D7v = 0. For non-trivial solutions, the determinant must be zero.</p><p>For a 2\u00d72 matrix, this gives a quadratic equation in \u03BB.</p>",
+        "mathExpressions": ["\\det(A - \\lambda I) = 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-04-c3",
+        "title": "Why Eigenvalues Matter",
+        "contentHtml": "<p>Eigenvalues appear everywhere in applied math:</p><p><strong>Stability analysis:</strong> If all eigenvalues have negative real parts, a system is stable<br><strong>Google's PageRank:</strong> The ranking is the eigenvector of the web's link matrix<br><strong>Quantum mechanics:</strong> Observable quantities are eigenvalues of operators<br><strong>PCA:</strong> Eigenvectors of the covariance matrix give principal components</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q16", "la-q17", "la-q18", "la-q19", "la-q20"],
+    "puzzleId": "la-p01"
+  },
+  {
+    "id": "la-05",
+    "topicId": "linear-algebra",
+    "order": 5,
+    "title": "Abstract Vector Spaces",
+    "description": "Beyond arrows -- polynomials, functions, and more",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "la-05-c1",
+        "title": "What Counts as a Vector Space?",
+        "contentHtml": "<p>Vectors don't have to be arrows! A <strong>vector space</strong> is any collection of objects where you can <strong>add</strong> them and <strong>scale</strong> them, and certain rules hold.</p><p>Surprising examples of vector spaces:</p><p>\u2022 All polynomials of degree \u2264 n<br>\u2022 All continuous functions on [0,1]<br>\u2022 All 2\u00d72 matrices<br>\u2022 Solutions to a homogeneous linear DE</p><p>All the theorems about bases, dimension, and linear maps apply to <em>all</em> of these!</p>",
+        "mathExpressions": ["\\text{Vector space axioms: } \\vec{u} + \\vec{v} = \\vec{v} + \\vec{u}, \\quad c(\\vec{u} + \\vec{v}) = c\\vec{u} + c\\vec{v}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-05-c2",
+        "title": "Subspaces",
+        "contentHtml": "<p>A <strong>subspace</strong> is a vector space living inside a bigger one. It must contain the zero vector, and be closed under addition and scaling.</p><p>Key subspaces of a matrix A:</p><p><strong>Column space</strong> Col(A): all possible outputs of the transformation A\u20D7v. This tells you what the matrix can \"reach.\"</p><p><strong>Null space</strong> Null(A): all vectors that A sends to zero. These are the inputs the matrix \"ignores.\"</p>",
+        "mathExpressions": ["\\text{Col}(A) = \\{A\\vec{x} : \\vec{x} \\in \\mathbb{R}^n\\}", "\\text{Null}(A) = \\{\\vec{x} : A\\vec{x} = \\vec{0}\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-05-c3",
+        "title": "Dimension & the Rank-Nullity Theorem",
+        "contentHtml": "<p>The <strong>dimension</strong> of a vector space is the number of vectors in any basis (they all have the same size).</p><p>For an m\u00d7n matrix A:</p><p><strong>Rank</strong> = dimension of the column space (how many independent directions the output covers)</p><p><strong>Nullity</strong> = dimension of the null space (how many dimensions get squished to zero)</p><p>The beautiful <strong>Rank-Nullity Theorem</strong>: rank + nullity = n (the number of columns). Nothing is lost \u2014 every input dimension either reaches the output or gets collapsed.</p>",
+        "mathExpressions": ["\\text{rank}(A) + \\text{nullity}(A) = n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q21", "la-q22", "la-q23", "la-q24", "la-q25"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-06",
+    "topicId": "linear-algebra",
+    "order": 6,
+    "title": "Orthogonality & Projections",
+    "description": "Perpendicularity, dot products, and least squares",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "la-06-c1",
+        "title": "The Dot Product",
+        "contentHtml": "<p>The <strong>dot product</strong> of two vectors measures how much they point in the same direction.</p><p>Compute it by multiplying corresponding components and summing: (a,b)\u00b7(c,d) = ac + bd.</p><p>Key properties:</p><p>\u2022 If the dot product is <strong>0</strong>, the vectors are <strong>perpendicular</strong> (orthogonal)<br>\u2022 It relates to the angle: u\u00b7v = |u||v|cos\u03b8<br>\u2022 u\u00b7u = |u|\u00b2 (the squared length)</p>",
+        "mathExpressions": ["\\vec{u} \\cdot \\vec{v} = u_1 v_1 + u_2 v_2 + \\cdots + u_n v_n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-06-c2",
+        "title": "Projections",
+        "contentHtml": "<p>The <strong>projection</strong> of vector b onto vector a is the shadow of b cast onto the line of a.</p><p>This gives the closest point on the line of a to the tip of b.</p><p>Projections are the foundation of <strong>least squares</strong> \u2014 when a system Ax = b has no exact solution (more equations than unknowns), the best approximate solution minimizes the distance to b by projecting onto the column space of A.</p>",
+        "mathExpressions": ["\\text{proj}_\\vec{a} \\vec{b} = \\frac{\\vec{a} \\cdot \\vec{b}}{\\vec{a} \\cdot \\vec{a}} \\vec{a}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-06-c3",
+        "title": "Orthogonal Bases & Gram-Schmidt",
+        "contentHtml": "<p>An <strong>orthogonal basis</strong> is one where every pair of basis vectors is perpendicular. This makes projections and decompositions trivially easy.</p><p>The <strong>Gram-Schmidt process</strong> takes any basis and produces an orthogonal one:</p><p>1. Keep the first vector<br>2. Subtract its projection from the second vector<br>3. Subtract both projections from the third, and so on</p><p>If you also normalize each vector to length 1, you get an <strong>orthonormal</strong> basis \u2014 the gold standard.</p>",
+        "mathExpressions": ["\\vec{u}_2 = \\vec{v}_2 - \\text{proj}_{\\vec{u}_1} \\vec{v}_2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q26", "la-q27", "la-q28", "la-q29", "la-q30"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-07",
+    "topicId": "linear-algebra",
+    "order": 7,
+    "title": "Diagonalization & SVD",
+    "description": "Decomposing matrices into simpler pieces",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "la-07-c1",
+        "title": "Diagonalization",
+        "contentHtml": "<p>If a matrix A has n linearly independent eigenvectors, we can write A = PDP\u207b\u00b9, where D is a <strong>diagonal matrix</strong> of eigenvalues and P's columns are the eigenvectors.</p><p>Why is this useful? Diagonal matrices are trivial to work with:</p><p>\u2022 A\u00b2 = PD\u00b2P\u207b\u00b9 (just square the diagonal entries!)<br>\u2022 A\u00b9\u2070\u2070 = PD\u00b9\u2070\u2070P\u207b\u00b9 (instant power computation)<br>\u2022 e^A = Pe^D P\u207b\u00b9 (matrix exponentials for DEs)</p>",
+        "mathExpressions": ["A = PDP^{-1}, \\quad A^k = PD^k P^{-1}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-07-c2",
+        "title": "Singular Value Decomposition (SVD)",
+        "contentHtml": "<p>Not every matrix can be diagonalized. But <strong>every</strong> matrix \u2014 even rectangular ones \u2014 has an SVD: A = U\u03A3V\u1D40.</p><p>U and V are orthogonal matrices (rotations/reflections), and \u03A3 is diagonal with non-negative <strong>singular values</strong>.</p><p>Interpretation: every linear transformation is a rotation, then a scaling along axes, then another rotation. The singular values are the scaling factors.</p>",
+        "mathExpressions": ["A = U\\Sigma V^T"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-07-c3",
+        "title": "Applications of SVD",
+        "contentHtml": "<p>SVD is arguably the most important factorization in applied math:</p><p><strong>Image compression:</strong> Keep only the largest singular values \u2014 a rank-k approximation uses far less storage.</p><p><strong>PCA:</strong> Principal Component Analysis finds the directions of maximum variance via SVD of the data matrix.</p><p><strong>Recommender systems:</strong> Netflix prize \u2014 SVD factors the user-movie rating matrix to predict missing entries.</p><p><strong>Pseudoinverse:</strong> SVD gives the best solution to unsolvable systems.</p>",
+        "mathExpressions": ["A \\approx U_k \\Sigma_k V_k^T \\quad \\text{(rank-k approximation)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q31", "la-q32", "la-q33", "la-q34", "la-q35"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-08",
+    "topicId": "linear-algebra",
+    "order": 8,
+    "title": "Inner Product Spaces & Beyond",
+    "description": "Generalized geometry and the spectral theorem",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "la-08-c1",
+        "title": "Inner Product Spaces",
+        "contentHtml": "<p>The dot product is just one example of an <strong>inner product</strong>. An inner product space is any vector space with a way to measure angles and lengths.</p><p>For functions on [0,1], we define: \u27e8f, g\u27e9 = \u222b\u2080\u00b9 f(x)g(x) dx</p><p>This lets us talk about \"perpendicular functions\" and \"length of a function\" \u2014 the foundation of Fourier analysis!</p>",
+        "mathExpressions": ["\\langle f, g \\rangle = \\int_0^1 f(x)g(x)\\, dx"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-08-c2",
+        "title": "Symmetric Matrices & the Spectral Theorem",
+        "contentHtml": "<p>A <strong>symmetric matrix</strong> (A = A\u1D40) has magical properties:</p><p>\u2022 All eigenvalues are <strong>real</strong> (not complex)<br>\u2022 Eigenvectors for different eigenvalues are <strong>orthogonal</strong><br>\u2022 It's always diagonalizable: A = Q\u039BQ\u1D40 with Q orthogonal</p><p>This is the <strong>Spectral Theorem</strong> \u2014 one of the most beautiful results in linear algebra. It says every symmetric transformation is just scaling along perpendicular axes.</p>",
+        "mathExpressions": ["A = A^T \\implies A = Q\\Lambda Q^T"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-08-c3",
+        "title": "Positive Definite Matrices",
+        "contentHtml": "<p>A symmetric matrix is <strong>positive definite</strong> if x\u1D40Ax > 0 for every nonzero x. Equivalently, all eigenvalues are positive.</p><p>Positive definite matrices are everywhere:</p><p>\u2022 Covariance matrices in statistics<br>\u2022 Hessians at minima in optimization<br>\u2022 Metric tensors in differential geometry<br>\u2022 Kernel matrices in machine learning</p><p>They represent \"bowl-shaped\" quadratic forms \u2014 always curving upward, with a unique minimum.</p>",
+        "mathExpressions": ["\\vec{x}^T A \\vec{x} > 0 \\quad \\forall\\, \\vec{x} \\neq \\vec{0}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q36", "la-q37", "la-q38", "la-q39", "la-q40"],
+    "puzzleId": "la-p02"
+  }
+]

@@ -1,0 +1,148 @@
+@page "/topic/{TopicId}"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>&#x2190;</button>
+    <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
+</div>
+
+@if (lessons != null && topic != null)
+{
+    <div class="lessons-list">
+        @foreach (var lesson in lessons)
+        {
+            var isCompleted = profile?.LessonsCompleted.Contains(lesson.Id) ?? false;
+            var isLocked = !CanAccessLesson(lesson);
+            <div class="card @(isLocked ? "locked" : "card-clickable") lesson-card"
+                 @onclick="() => OpenLesson(lesson, isLocked)">
+                <div class="lesson-header">
+                    <div class="lesson-number" style="background: @(isCompleted ? "var(--success)" : isLocked ? "var(--text-muted)" : topic.Color)">
+                        @if (isCompleted)
+                        {
+                            <span>&#x2713;</span>
+                        }
+                        else if (isLocked)
+                        {
+                            <span>&#x1F512;</span>
+                        }
+                        else
+                        {
+                            <span>@lesson.Order</span>
+                        }
+                    </div>
+                    <div class="lesson-info">
+                        <h3>@lesson.Title</h3>
+                        <p>@lesson.Description</p>
+                    </div>
+                    <div class="lesson-xp">
+                        <span class="xp-badge">+@lesson.XpReward XP</span>
+                    </div>
+                </div>
+                @if (!isLocked)
+                {
+                    var conceptsDone = lesson.Concepts.Count(c => profile?.ConceptsViewed.Contains(c.Id) ?? false);
+                    var total = lesson.Concepts.Count;
+                    var pct = total > 0 ? (double)conceptsDone / total * 100 : 0;
+                    <div class="progress-bar-container" style="margin-top: 8px">
+                        <div class="progress-bar-fill" style="width: @pct.ToString("F0")%; background: linear-gradient(90deg, @topic.Color, @topic.Color)"></div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="loading">Loading lessons...</div>
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+
+    private Topic? topic;
+    private List<Lesson>? lessons;
+    private UserProfile? profile;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            topic = await Content.GetTopicAsync(TopicId);
+            lessons = await Content.GetLessonsAsync(TopicId);
+            profile = await Progress.GetProfileAsync();
+            StateHasChanged();
+        }
+    }
+
+    private bool CanAccessLesson(Lesson lesson)
+    {
+        if (lesson.Order == 1) return true;
+        if (lessons == null || profile == null) return false;
+        var prev = lessons.FirstOrDefault(l => l.Order == lesson.Order - 1);
+        return prev != null && profile.LessonsCompleted.Contains(prev.Id);
+    }
+
+    private void OpenLesson(Lesson lesson, bool isLocked)
+    {
+        if (isLocked) return;
+        Nav.NavigateTo($"/topic/{TopicId}/lesson/{lesson.Id}");
+    }
+}
+
+<style>
+    .lessons-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .lesson-card.locked {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .lesson-card.locked:hover {
+        transform: none;
+        box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .lesson-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .lesson-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .lesson-info {
+        flex: 1;
+    }
+
+    .lesson-info h3 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .lesson-info p {
+        margin: 2px 0 0;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .lesson-xp {
+        flex-shrink: 0;
+    }
+</style>

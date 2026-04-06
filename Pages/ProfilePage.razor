@@ -1,0 +1,393 @@
+@page "/profile"
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IAchievementRepository AchievementRepo
+@inject IContentRepository Content
+
+<h1>Profile</h1>
+
+@if (profile != null)
+{
+    <div class="profile-header card">
+        <div class="avatar-display">
+            <div class="avatar-circle">
+                @profile.DisplayName[0]
+            </div>
+            @if (!string.IsNullOrEmpty(profile.SelectedTitle))
+            {
+                <div class="title-badge">@profile.SelectedTitle</div>
+            }
+        </div>
+        <h2>@profile.DisplayName</h2>
+        <div class="level-display">Level @level</div>
+
+        <div class="xp-section">
+            <div class="progress-bar-container" style="height: 14px">
+                <div class="progress-bar-fill accent" style="width: @xpPct.ToString("F0")%"></div>
+            </div>
+            <small>@xpInLevel / @xpNeeded XP to Level @(level + 1)</small>
+        </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="tab-bar">
+        <button class="tab @(activeTab == "overview" ? "active" : "")" @onclick='() => activeTab = "overview"'>Overview</button>
+        <button class="tab @(activeTab == "topics" ? "active" : "")" @onclick='() => activeTab = "topics"'>Topics</button>
+        <button class="tab @(activeTab == "history" ? "active" : "")" @onclick='() => activeTab = "history"'>History</button>
+        <button class="tab @(activeTab == "achievements" ? "active" : "")" @onclick='() => activeTab = "achievements"'>Awards</button>
+    </div>
+
+    @if (activeTab == "overview")
+    {
+        <div class="stats-grid section">
+            <div class="stat-tile card">
+                <span class="stat-value">@profile.TotalXp</span>
+                <span class="stat-name">Total XP</span>
+            </div>
+            <div class="stat-tile card">
+                <span class="stat-value">@profile.Points</span>
+                <span class="stat-name">Points</span>
+            </div>
+            <div class="stat-tile card">
+                <span class="stat-value streak-val">\uD83D\uDD25 @profile.CurrentStreak</span>
+                <span class="stat-name">Streak</span>
+            </div>
+            <div class="stat-tile card">
+                <span class="stat-value">@profile.LessonsCompleted.Count</span>
+                <span class="stat-name">Lessons</span>
+            </div>
+            <div class="stat-tile card">
+                <span class="stat-value">@profile.TotalQuestionsAnswered</span>
+                <span class="stat-name">Questions</span>
+            </div>
+            <div class="stat-tile card">
+                <span class="stat-value">@overallAccuracy%</span>
+                <span class="stat-name">Accuracy</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>More Stats</h3>
+            <div class="detail-stats">
+                <div class="detail-row">
+                    <span>Longest Streak</span>
+                    <strong>@profile.LongestStreak days</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Quizzes Taken</span>
+                    <strong>@profile.QuizHistory.Count</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Best Quiz Score</span>
+                    <strong>@(profile.QuizHistory.Count > 0 ? profile.QuizHistory.Max(q => q.Score) : 0)%</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Average Score</span>
+                    <strong>@(profile.QuizHistory.Count > 0 ? ((int)profile.QuizHistory.Average(q => q.Score)) : 0)%</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Study Time</span>
+                    <strong>@FormatTime(profile.TotalStudyMinutes)</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Perfect Quizzes</span>
+                    <strong>@profile.QuizHistory.Count(q => q.Score == 100)</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Hints Used</span>
+                    <strong>@profile.HintsUsed</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity heatmap (last 28 days) -->
+        <div class="section">
+            <h3>Activity (Last 4 Weeks)</h3>
+            <div class="heatmap">
+                @foreach (var day in last28Days)
+                {
+                    var xp = profile.DailyXpLog.ContainsKey(day.date) ? profile.DailyXpLog[day.date] : 0;
+                    var intensity = xp == 0 ? "none" : xp < 50 ? "low" : xp < 150 ? "med" : xp < 300 ? "high" : "max";
+                    <div class="heatmap-cell @intensity" title="@day.date: @xp XP">
+                        <span class="heatmap-label">@day.label</span>
+                    </div>
+                }
+            </div>
+            <div class="heatmap-legend">
+                <small>Less</small>
+                <div class="heatmap-cell none legend-cell"></div>
+                <div class="heatmap-cell low legend-cell"></div>
+                <div class="heatmap-cell med legend-cell"></div>
+                <div class="heatmap-cell high legend-cell"></div>
+                <div class="heatmap-cell max legend-cell"></div>
+                <small>More</small>
+            </div>
+        </div>
+    }
+
+    @if (activeTab == "topics")
+    {
+        <div class="section">
+            @if (topics != null)
+            {
+                @foreach (var topic in topics)
+                {
+                    var ts = profile.TopicStatistics.ContainsKey(topic.Id) ? profile.TopicStatistics[topic.Id] : null;
+                    var accuracy = ts != null && ts.QuestionsAnswered > 0 ? ts.CorrectAnswers * 100 / ts.QuestionsAnswered : 0;
+                    var progress = topicProgress.ContainsKey(topic.Id) ? topicProgress[topic.Id] : 0;
+
+                    <div class="card topic-stat-card">
+                        <div class="topic-stat-header" style="border-left: 4px solid @topic.Color; padding-left: 12px">
+                            <h3 style="color: @topic.Color; margin: 0">@topic.Name</h3>
+                            <div class="progress-bar-container" style="margin-top: 6px">
+                                <div class="progress-bar-fill" style="width: @progress.ToString("F0")%; background: @topic.Color"></div>
+                            </div>
+                            <small>@progress.ToString("F0")% complete</small>
+                        </div>
+                        <div class="topic-stat-grid">
+                            <div class="topic-mini-stat">
+                                <span class="mini-val">@(ts?.QuestionsAnswered ?? 0)</span>
+                                <span class="mini-label">Questions</span>
+                            </div>
+                            <div class="topic-mini-stat">
+                                <span class="mini-val">@accuracy%</span>
+                                <span class="mini-label">Accuracy</span>
+                            </div>
+                            <div class="topic-mini-stat">
+                                <span class="mini-val">@(ts?.QuizzesTaken ?? 0)</span>
+                                <span class="mini-label">Quizzes</span>
+                            </div>
+                            <div class="topic-mini-stat">
+                                <span class="mini-val">@(ts?.BestScore ?? 0)%</span>
+                                <span class="mini-label">Best</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if (activeTab == "history")
+    {
+        <div class="section">
+            @if (profile.QuizHistory.Count == 0)
+            {
+                <div class="empty-state">No quizzes taken yet. Start a lesson to see your history!</div>
+            }
+            else
+            {
+                @foreach (var quiz in profile.QuizHistory.OrderByDescending(q => q.Date).ThenByDescending(q => q.XpEarned).Take(30))
+                {
+                    var topicName = topics?.FirstOrDefault(t => t.Id == quiz.TopicId)?.Name ?? "Mixed";
+                    var topicColor = topics?.FirstOrDefault(t => t.Id == quiz.TopicId)?.Color ?? "var(--primary)";
+                    <div class="card history-item">
+                        <div class="history-left">
+                            <div class="history-score @(quiz.Score >= 80 ? "great" : quiz.Score >= 50 ? "ok" : "low")">
+                                @quiz.Score%
+                            </div>
+                        </div>
+                        <div class="history-info">
+                            <strong style="color: @topicColor">@topicName</strong>
+                            <small>@quiz.Date \u00b7 @quiz.CorrectCount/@quiz.QuestionsCount correct \u00b7 +@quiz.XpEarned XP</small>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if (activeTab == "achievements")
+    {
+        <div class="section">
+            <div class="achievement-summary">
+                <span class="xp-badge">@profile.AchievementsUnlocked.Count / @allAchievements.Count unlocked</span>
+            </div>
+            <div class="achievements-grid">
+                @foreach (var a in allAchievements.OrderByDescending(a => profile.AchievementsUnlocked.Contains(a.Id)))
+                {
+                    var unlocked = profile.AchievementsUnlocked.Contains(a.Id);
+                    <div class="achievement-tile card @(unlocked ? "unlocked" : "locked")">
+                        <div class="achievement-icon">@(unlocked ? "\uD83C\uDFC6" : "\uD83D\uDD12")</div>
+                        <div class="achievement-info">
+                            <strong>@a.Name</strong>
+                            <small>@a.Description</small>
+                            @if (unlocked)
+                            {
+                                <small class="achievement-xp">+@a.XpReward XP</small>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="loading">Loading profile...</div>
+}
+
+@code {
+    private UserProfile? profile;
+    private List<Achievement> allAchievements = new();
+    private List<Topic>? topics;
+    private Dictionary<string, double> topicProgress = new();
+    private int level;
+    private int xpInLevel;
+    private int xpNeeded;
+    private double xpPct;
+    private int overallAccuracy;
+    private string activeTab = "overview";
+    private List<(string date, string label)> last28Days = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            profile = await Progress.GetProfileAsync();
+            allAchievements = await AchievementRepo.GetAchievementsAsync();
+            topics = await Content.GetTopicsAsync();
+
+            foreach (var topic in topics)
+                topicProgress[topic.Id] = await Progress.GetTopicProgressAsync(topic.Id);
+
+            level = Gamification.GetLevel(profile.TotalXp);
+            xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
+            xpNeeded = Gamification.GetXpForNextLevel(level);
+            xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
+            overallAccuracy = profile.TotalQuestionsAnswered > 0
+                ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0;
+
+            // Build last 28 days
+            for (int i = 27; i >= 0; i--)
+            {
+                var d = DateTime.Now.AddDays(-i);
+                last28Days.Add((d.ToString("yyyy-MM-dd"), d.ToString("dd")));
+            }
+
+            await Progress.TickSessionTimeAsync();
+            StateHasChanged();
+        }
+    }
+
+    private string FormatTime(int minutes)
+    {
+        if (minutes < 60) return $"{minutes}m";
+        var h = minutes / 60;
+        var m = minutes % 60;
+        return m > 0 ? $"{h}h {m}m" : $"{h}h";
+    }
+}
+
+<style>
+    .profile-header {
+        text-align: center;
+        padding: 24px;
+        margin-bottom: 16px;
+    }
+
+    .avatar-display { margin-bottom: 12px; }
+
+    .avatar-circle {
+        width: 72px; height: 72px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white; display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: 700; margin: 0 auto 8px;
+    }
+
+    .title-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        color: var(--xp-text); padding: 2px 12px; border-radius: 12px;
+        font-size: 0.8rem; font-weight: 600;
+    }
+
+    .level-display { color: var(--primary); font-weight: 700; font-size: 1.1rem; margin: 4px 0 12px; }
+    .xp-section { max-width: 280px; margin: 0 auto; }
+    .xp-section small { color: var(--text-muted); }
+
+    /* Tabs */
+    .tab-bar {
+        display: flex; gap: 4px; margin-bottom: 16px;
+        background: var(--bg-surface); border-radius: var(--radius-md); padding: 4px;
+    }
+    .tab {
+        flex: 1; padding: 8px 4px; border: none; background: transparent;
+        color: var(--text-muted); font-weight: 600; font-size: 0.85rem;
+        border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow); }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat-tile { text-align: center; padding: 12px 8px; }
+    .stat-tile:hover { transform: none; }
+    .stat-value { display: block; font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+    .stat-name { font-size: 0.75rem; color: var(--text-muted); }
+    .streak-val { color: var(--warning); }
+
+    /* Detail stats */
+    .detail-stats { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .detail-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 14px; background: var(--bg-card);
+    }
+    .detail-row span { color: var(--text-secondary); font-size: 0.9rem; }
+    .detail-row strong { color: var(--text-primary); }
+
+    /* Heatmap */
+    .heatmap {
+        display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+    }
+    .heatmap-cell {
+        aspect-ratio: 1; border-radius: 3px; position: relative;
+    }
+    .heatmap-cell.none { background: var(--bg-surface); }
+    .heatmap-cell.low { background: rgba(74, 95, 224, 0.2); }
+    .heatmap-cell.med { background: rgba(74, 95, 224, 0.4); }
+    .heatmap-cell.high { background: rgba(74, 95, 224, 0.65); }
+    .heatmap-cell.max { background: var(--primary); }
+    .heatmap-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.6rem; color: var(--text-muted); }
+    .heatmap-cell.high .heatmap-label, .heatmap-cell.max .heatmap-label { color: white; }
+    .heatmap-legend { display: flex; align-items: center; gap: 3px; justify-content: flex-end; margin-top: 6px; }
+    .heatmap-legend small { color: var(--text-muted); font-size: 0.7rem; }
+    .legend-cell { width: 14px; height: 14px; }
+
+    /* Topic stats */
+    .topic-stat-card { margin-bottom: 10px; padding: 14px; }
+    .topic-stat-card:hover { transform: none; }
+    .topic-stat-card small { color: var(--text-muted); font-size: 0.8rem; }
+    .topic-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+    .topic-mini-stat { text-align: center; }
+    .mini-val { display: block; font-weight: 700; font-size: 1.05rem; color: var(--primary); }
+    .mini-label { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* History */
+    .history-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 8px; }
+    .history-item:hover { transform: none; }
+    .history-left { flex-shrink: 0; }
+    .history-score {
+        width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.85rem;
+    }
+    .history-score.great { background: rgba(76, 175, 80, 0.15); color: var(--success); }
+    .history-score.ok { background: rgba(255, 152, 0, 0.15); color: var(--warning); }
+    .history-score.low { background: rgba(239, 83, 80, 0.15); color: var(--error); }
+    .history-info { display: flex; flex-direction: column; gap: 2px; }
+    .history-info small { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* Achievements */
+    .achievement-summary { text-align: center; margin-bottom: 12px; }
+    .achievements-grid { display: flex; flex-direction: column; gap: 8px; }
+    .achievement-tile { display: flex; align-items: center; gap: 12px; padding: 12px; }
+    .achievement-tile:hover { transform: none; }
+    .achievement-tile.locked { opacity: 0.45; }
+    .achievement-tile.unlocked { border-color: var(--accent); }
+    .achievement-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .achievement-info { display: flex; flex-direction: column; }
+    .achievement-info small { color: var(--text-muted); font-size: 0.8rem; }
+    .achievement-xp { color: var(--accent) !important; font-weight: 600; }
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+</style>

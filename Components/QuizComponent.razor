@@ -1,0 +1,983 @@
+@inject IQuizEngine QuizEngine
+@inject IGamificationService Gamification
+@inject IProgressService Progress
+@inject ISessionStateService SessionState
+@inject IReviewService ReviewService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (quizState == QuizState.Loading)
+{
+    <div class="loading">Preparing quiz...</div>
+}
+else if (quizState == QuizState.InProgress)
+{
+    <Notepad />
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <span class="quiz-progress">Question @(currentIndex + 1) / @questions.Count</span>
+            <div class="quiz-score">
+                <span class="correct-count">@correctCount correct</span>
+                <span class="wrong-count">@wrongCount wrong</span>
+            </div>
+        </div>
+
+        <div class="progress-bar-container" style="margin-bottom: 16px">
+            <div class="progress-bar-fill" style="width: @(((double)(currentIndex) / questions.Count * 100).ToString("F0"))%"></div>
+        </div>
+
+        @{
+            var q = questions[currentIndex];
+        }
+
+        <div class="question-section">
+            <p class="question-prompt">@q.Prompt</p>
+
+            @if (q.MathExpression != null)
+            {
+                <div class="math-display" id="quiz-math-@currentIndex"></div>
+            }
+            @if (!answerSubmitted && !hintShown && hintsAvailable > 0 && q.CorrectAnswer != null)
+            {
+                <button class="hint-btn" @onclick="UseHint">\uD83D\uDCA1 Use Hint (@hintsAvailable left)</button>
+            }
+            @if (hintShown && q.CorrectAnswer != null)
+            {
+                <div class="hint-reveal">Answer: <strong>@q.CorrectAnswer</strong></div>
+            }
+        </div>
+
+        @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.VisualIdentify)
+        {
+            <div class="options-grid">
+                @if (q.Options != null)
+                {
+                    @foreach (var option in q.Options)
+                    {
+                        var optionClass = GetOptionClass(option);
+                        <button class="option-btn @optionClass"
+                                @onclick="() => SelectOption(option)"
+                                disabled="@answerSubmitted">
+                            @option
+                        </button>
+                    }
+                }
+            </div>
+        }
+        else if (q.Type == QuestionType.FillIn)
+        {
+            <div class="fill-in-section">
+                <input type="text" class="fill-input" @bind="fillInAnswer" @bind:event="oninput"
+                       placeholder="Type your answer..." disabled="@answerSubmitted"
+                       @onkeydown="HandleFillInKeydown" />
+                @if (!answerSubmitted)
+                {
+                    <button class="btn btn-primary" @onclick="SubmitFillIn"
+                            disabled="@string.IsNullOrWhiteSpace(fillInAnswer)">Submit</button>
+                }
+            </div>
+        }
+        else if (q.Type == QuestionType.ProofOrdering)
+        {
+            <div class="ordering-section">
+                <p class="ordering-hint">Tap items to move them up in order:</p>
+                @for (int i = 0; i < orderedSteps.Count; i++)
+                {
+                    var idx = i;
+                    <div class="order-item @(answerSubmitted ? (IsStepCorrect(idx) ? "correct" : "incorrect") : "")"
+                         @onclick="() => MoveStepUp(idx)">
+                        <span class="order-num">@(idx + 1)</span>
+                        <span>@orderedSteps[idx]</span>
+                    </div>
+                }
+                @if (!answerSubmitted)
+                {
+                    <button class="btn btn-primary" style="margin-top: 12px" @onclick="SubmitOrdering">Check Order</button>
+                }
+            </div>
+        }
+        else if (q.Type == QuestionType.ConceptMatch)
+        {
+            <div class="matching-section">
+                <p class="matching-hint">
+                    @if (selectedLeft == null)
+                    {
+                        <span>Tap an item on the left to start matching</span>
+                    }
+                    else
+                    {
+                        <span>Now tap the matching item on the right for <strong>@selectedLeft</strong></span>
+                    }
+                </p>
+
+                @if (q.Pairs != null)
+                {
+                    <div class="match-pairs-list">
+                        @foreach (var pair in q.Pairs)
+                        {
+                            var left = pair.Left;
+                            var isLeftSelected = selectedLeft == left;
+                            var hasMatch = userMatches.ContainsKey(left);
+                            var matchedRight = hasMatch ? userMatches[left] : null;
+                            var leftClass = isLeftSelected ? "active" : hasMatch ? "matched" : "";
+                            var resultClass = answerSubmitted && matchResults.ContainsKey(left)
+                                ? (matchResults[left] ? "correct" : "incorrect") : "";
+
+                            <div class="match-row @resultClass">
+                                <button class="match-item left @leftClass"
+                                        @onclick="() => SelectLeft(left)"
+                                        disabled="@answerSubmitted">
+                                    @left
+                                </button>
+                                <span class="match-arrow @(hasMatch ? "connected" : "")">
+                                    @(hasMatch ? "\u2194" : "\u2022\u2022\u2022")
+                                </span>
+                                @if (hasMatch)
+                                {
+                                    <span class="match-item right matched" @onclick="() => ClearMatch(left)">
+                                        @matchedRight
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="match-item right empty">?</span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (!answerSubmitted)
+                    {
+                        <div class="match-options">
+                            <p class="matching-label">Available answers:</p>
+                            <div class="match-options-grid">
+                                @foreach (var right in shuffledRights)
+                                {
+                                    var isUsed = userMatches.ContainsValue(right);
+                                    <button class="match-option-btn @(isUsed ? "used" : "") @(selectedLeft != null && !isUsed ? "available" : "")"
+                                            @onclick="() => SelectRight(right)"
+                                            disabled="@(answerSubmitted || selectedLeft == null || isUsed)">
+                                        @right
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (!answerSubmitted && userMatches.Count == q.Pairs.Count)
+                    {
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 12px" @onclick="SubmitMatching">Check Matches</button>
+                    }
+                }
+            </div>
+        }
+
+        @if (answerSubmitted)
+        {
+            <div class="feedback @(lastCorrect ? "feedback-correct anim-correct" : "feedback-incorrect anim-incorrect")">
+                <span class="feedback-icon">@(lastCorrect ? "\u2713" : "\u2717")</span>
+                <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
+                @if (!lastCorrect && q.CorrectAnswer != null)
+                {
+                    <span class="correct-answer">Answer: @q.CorrectAnswer</span>
+                }
+            </div>
+            @if (q.Explanation != null)
+            {
+                <div class="explanation">@q.Explanation</div>
+            }
+            @if (!lastCorrect && TopicId != null && q.LessonId != null)
+            {
+                <button class="btn btn-sm btn-outline review-concept-btn" @onclick="() => ReviewConcept(q.LessonId)">
+                    \uD83D\uDCD6 Review this concept
+                </button>
+            }
+            <button class="btn btn-primary" style="width: 100%; margin-top: 8px" @onclick="NextQuestion">
+                @(currentIndex < questions.Count - 1 ? "Next Question" : "See Results")
+            </button>
+        }
+    </div>
+}
+else if (quizState == QuizState.Complete)
+{
+    <div class="quiz-results card">
+        <h2>Quiz Complete!</h2>
+
+        <div class="results-stats">
+            <div class="stat-card correct-stat">
+                <span class="stat-number">@correctCount</span>
+                <span class="stat-label">Correct</span>
+            </div>
+            <div class="stat-card wrong-stat">
+                <span class="stat-number">@wrongCount</span>
+                <span class="stat-label">Wrong</span>
+            </div>
+            <div class="stat-card score-stat">
+                <span class="stat-number">@(questions.Count > 0 ? (correctCount * 100 / questions.Count) : 0)%</span>
+                <span class="stat-label">Score</span>
+            </div>
+        </div>
+
+        <div class="xp-earned">
+            <span class="xp-badge" style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
+        </div>
+
+        @if (quizEvent?.LeveledUp == true)
+        {
+            <div class="level-up-banner">
+                Level Up! You're now Level @quizEvent.NewLevel
+            </div>
+        }
+
+        @if (quizEvent?.NewAchievements.Count > 0)
+        {
+            <div class="new-achievements">
+                @foreach (var a in quizEvent.NewAchievements)
+                {
+                    <div class="achievement-unlock">
+                        @a.Name -- @a.Description
+                    </div>
+                }
+            </div>
+        }
+
+        <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px" @onclick="Finish">
+            Continue
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter] public string? TopicId { get; set; }
+    [Parameter] public string? LessonId { get; set; }
+    [Parameter] public EventCallback<int> OnComplete { get; set; }
+
+    private enum QuizState { Loading, InProgress, Complete }
+    private QuizState quizState = QuizState.Loading;
+
+    private List<Question> questions = new();
+    private List<QuizResult> results = new();
+    private int currentIndex;
+    private int correctCount;
+    private int wrongCount;
+    private bool answerSubmitted;
+    private bool lastCorrect;
+    private string fillInAnswer = "";
+    private int totalXpEarned;
+    private GamificationEvent? quizEvent;
+
+    // Matching state
+    private string? selectedLeft;
+    private Dictionary<string, string> userMatches = new();
+    private Dictionary<string, bool> matchResults = new();
+    private List<string> shuffledRights = new();
+
+    // Hint state
+    private int hintsAvailable;
+    private bool hintShown;
+
+    // Ordering state
+    private List<string> orderedSteps = new();
+
+    private static readonly Random _random = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Try to restore saved quiz state
+            var session = await SessionState.LoadSessionStateAsync();
+            var restored = false;
+
+            if (session?.QuizState != null && session.InQuiz)
+            {
+                var qs = session.QuizState;
+                if (qs.TopicId == TopicId && qs.LessonId == LessonId && qs.QuestionIds.Count > 0)
+                {
+                    // Reload the same questions in the same order
+                    var allQuestions = TopicId != null
+                        ? await QuizEngine.GenerateQuizAsync(TopicId, LessonId, 100)
+                        : await QuizEngine.GenerateMixedQuizAsync(100);
+
+                    var questionLookup = allQuestions.ToDictionary(q => q.Id);
+                    var restoredQuestions = new List<Question>();
+                    foreach (var id in qs.QuestionIds)
+                    {
+                        if (questionLookup.TryGetValue(id, out var q))
+                            restoredQuestions.Add(q);
+                    }
+
+                    if (restoredQuestions.Count == qs.QuestionIds.Count)
+                    {
+                        questions = restoredQuestions;
+                        currentIndex = qs.CurrentIndex;
+                        correctCount = qs.CorrectCount;
+                        wrongCount = qs.WrongCount;
+
+                        // Rebuild results from saved data
+                        for (int i = 0; i < Math.Min(qs.UserAnswers.Count, qs.Results.Count); i++)
+                        {
+                            results.Add(new QuizResult
+                            {
+                                Question = questions[i],
+                                UserAnswer = qs.UserAnswers[i],
+                                IsCorrect = qs.Results[i],
+                                XpEarned = qs.Results[i] ? questions[i].XpReward : 0
+                            });
+                        }
+
+                        quizState = QuizState.InProgress;
+                        InitQuestion();
+                        restored = true;
+                    }
+                }
+            }
+
+            if (!restored)
+            {
+                if (TopicId != null && LessonId != null)
+                    questions = await QuizEngine.GenerateQuizAsync(TopicId, LessonId, 5);
+                else if (TopicId != null)
+                    questions = await QuizEngine.GenerateQuizAsync(TopicId, null, 5);
+                else
+                    questions = await QuizEngine.GenerateMixedQuizAsync(10);
+
+                if (questions.Count > 0)
+                {
+                    quizState = QuizState.InProgress;
+                    InitQuestion();
+                    await SaveQuizState();
+                }
+            }
+
+            await LoadHintCount();
+            StateHasChanged();
+        }
+
+        if (quizState == QuizState.InProgress && currentIndex < questions.Count)
+        {
+            var q = questions[currentIndex];
+            if (q.MathExpression != null)
+            {
+                await JS.InvokeVoidAsync("renderMath", $"quiz-math-{currentIndex}", q.MathExpression, true);
+            }
+        }
+    }
+
+    private async Task SaveQuizState()
+    {
+        await SessionState.SaveQuizStateAsync(new QuizSessionState
+        {
+            TopicId = TopicId,
+            LessonId = LessonId,
+            QuestionIds = questions.Select(q => q.Id).ToList(),
+            CurrentIndex = currentIndex,
+            CorrectCount = correctCount,
+            WrongCount = wrongCount,
+            UserAnswers = results.Select(r => r.UserAnswer).ToList(),
+            Results = results.Select(r => r.IsCorrect).ToList()
+        });
+    }
+
+    private async Task LoadHintCount()
+    {
+        var p = await Progress.GetProfileAsync();
+        var allItems = new List<ShopItem>(); // we count from purchases
+        var totalBought = 0;
+        foreach (var purchase in p.ShopPurchases)
+        {
+            if (purchase.StartsWith("hint-pack"))
+            {
+                var count = purchase.Contains("10") ? 10 : 3;
+                totalBought += count;
+            }
+        }
+        hintsAvailable = totalBought - p.HintsUsed;
+    }
+
+    private async Task UseHint()
+    {
+        if (hintsAvailable <= 0 || answerSubmitted) return;
+        hintShown = true;
+        hintsAvailable--;
+        var p = await Progress.GetProfileAsync();
+        p.HintsUsed++;
+        await Progress.SaveProfileAsync(p);
+    }
+
+    private void InitQuestion()
+    {
+        answerSubmitted = false;
+        fillInAnswer = "";
+        selectedLeft = null;
+        hintShown = false;
+        userMatches.Clear();
+        matchResults.Clear();
+
+        var q = questions[currentIndex];
+        if (q.Type == QuestionType.ProofOrdering && q.Steps != null)
+        {
+            orderedSteps = q.Steps.OrderBy(_ => _random.Next()).ToList();
+        }
+        if (q.Type == QuestionType.ConceptMatch && q.Pairs != null)
+        {
+            shuffledRights = q.Pairs.Select(p => p.Right).OrderBy(_ => _random.Next()).ToList();
+        }
+    }
+
+    private async Task SelectOption(string option)
+    {
+        if (answerSubmitted) return;
+        var result = QuizEngine.ValidateAnswer(questions[currentIndex], option);
+        await RecordResult(result);
+    }
+
+    private async Task SubmitFillIn()
+    {
+        if (answerSubmitted || string.IsNullOrWhiteSpace(fillInAnswer)) return;
+        var result = QuizEngine.ValidateAnswer(questions[currentIndex], fillInAnswer);
+        await RecordResult(result);
+    }
+
+    private async Task HandleFillInKeydown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SubmitFillIn();
+    }
+
+    private async Task SubmitOrdering()
+    {
+        var q = questions[currentIndex];
+        bool correct = q.Steps != null && orderedSteps.SequenceEqual(q.Steps);
+        var result = new QuizResult
+        {
+            Question = q,
+            UserAnswer = string.Join(" -> ", orderedSteps),
+            IsCorrect = correct,
+            XpEarned = correct ? q.XpReward : 0
+        };
+        await RecordResult(result);
+    }
+
+    private async Task SubmitMatching()
+    {
+        var q = questions[currentIndex];
+        int correctMatches = 0;
+        matchResults.Clear();
+        if (q.Pairs != null)
+        {
+            foreach (var pair in q.Pairs)
+            {
+                var isCorrect = userMatches.ContainsKey(pair.Left) && userMatches[pair.Left] == pair.Right;
+                matchResults[pair.Left] = isCorrect;
+                if (isCorrect) correctMatches++;
+            }
+        }
+        bool allCorrect = correctMatches == (q.Pairs?.Count ?? 0);
+        var result = new QuizResult
+        {
+            Question = q,
+            UserAnswer = string.Join(", ", userMatches.Select(kv => $"{kv.Key}={kv.Value}")),
+            IsCorrect = allCorrect,
+            XpEarned = allCorrect ? q.XpReward : 0
+        };
+        await RecordResult(result);
+    }
+
+    private async Task RecordResult(QuizResult result)
+    {
+        results.Add(result);
+        lastCorrect = result.IsCorrect;
+        answerSubmitted = true;
+        if (result.IsCorrect) correctCount++;
+        else wrongCount++;
+        await Progress.RecordQuestionAnsweredAsync(TopicId, result.IsCorrect);
+
+        // Feed into spaced repetition
+        if (TopicId != null)
+        {
+            await ReviewService.AddToReviewAsync(result.Question.Id, TopicId, result.Question.LessonId, result.IsCorrect);
+        }
+
+        await SaveQuizState();
+    }
+
+    private void ReviewConcept(string lessonId)
+    {
+        if (TopicId != null)
+            Nav.NavigateTo($"/topic/{TopicId}/lesson/{lessonId}");
+    }
+
+    private async Task NextQuestion()
+    {
+        currentIndex++;
+        if (currentIndex >= questions.Count)
+        {
+            await FinishQuiz();
+        }
+        else
+        {
+            InitQuestion();
+        }
+    }
+
+    private async Task FinishQuiz()
+    {
+        var profile = await Progress.GetProfileAsync();
+        totalXpEarned = QuizEngine.CalculateQuizXp(results, profile.CurrentStreak);
+        quizEvent = await Gamification.AwardXpAsync(totalXpEarned);
+
+        var score = questions.Count > 0 ? correctCount * 100 / questions.Count : 0;
+        var quizId = LessonId ?? TopicId ?? "mixed";
+        await Progress.RecordQuizResultAsync(quizId, TopicId, score, correctCount, questions.Count, totalXpEarned);
+
+        quizState = QuizState.Complete;
+        await SessionState.ClearSessionStateAsync();
+    }
+
+    private async Task Finish()
+    {
+        await OnComplete.InvokeAsync(totalXpEarned);
+    }
+
+    private string GetOptionClass(string option)
+    {
+        if (!answerSubmitted) return "";
+        var q = questions[currentIndex];
+        if (option == q.CorrectAnswer) return "correct";
+        if (results.LastOrDefault()?.UserAnswer == option && !lastCorrect) return "incorrect";
+        return "";
+    }
+
+    private void MoveStepUp(int index)
+    {
+        if (answerSubmitted || index == 0) return;
+        (orderedSteps[index], orderedSteps[index - 1]) = (orderedSteps[index - 1], orderedSteps[index]);
+    }
+
+    private bool IsStepCorrect(int index)
+    {
+        var q = questions[currentIndex];
+        return q.Steps != null && index < q.Steps.Count && orderedSteps[index] == q.Steps[index];
+    }
+
+    private void SelectLeft(string left)
+    {
+        if (answerSubmitted) return;
+        // Toggle: tap again to deselect
+        if (selectedLeft == left)
+            selectedLeft = null;
+        else
+            selectedLeft = left;
+    }
+
+    private void SelectRight(string right)
+    {
+        if (answerSubmitted || selectedLeft == null) return;
+        // If this right was already matched to something else, remove that match
+        var existingKey = userMatches.FirstOrDefault(kv => kv.Value == right).Key;
+        if (existingKey != null)
+            userMatches.Remove(existingKey);
+        userMatches[selectedLeft] = right;
+        selectedLeft = null;
+    }
+
+    private void ClearMatch(string left)
+    {
+        if (answerSubmitted) return;
+        userMatches.Remove(left);
+    }
+}
+
+<style>
+    .quiz-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .quiz-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .quiz-progress {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .quiz-score {
+        display: flex;
+        gap: 12px;
+        font-weight: 600;
+    }
+
+    .correct-count { color: var(--success); }
+    .wrong-count { color: var(--error); }
+
+    .question-section {
+        margin-bottom: 16px;
+    }
+
+    .question-prompt {
+        font-size: 1.1rem;
+        font-weight: 600;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+
+    .options-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .fill-in-section {
+        display: flex;
+        gap: 10px;
+    }
+
+    .fill-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 1rem;
+        font-family: var(--font-main);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .fill-input:focus {
+        border-color: var(--primary);
+    }
+
+    .ordering-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ordering-hint {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .order-item:hover { border-color: var(--primary-light); }
+    .order-item.correct { border-color: var(--success); background: rgba(76, 175, 80, 0.08); }
+    .order-item.incorrect { border-color: var(--error); background: rgba(239, 83, 80, 0.08); }
+
+    .order-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    /* Matching section - redesigned */
+    .matching-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .matching-hint {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 8px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+        margin: 0;
+    }
+
+    .matching-hint strong {
+        color: var(--primary);
+    }
+
+    .matching-label {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin: 0 0 6px;
+    }
+
+    .match-pairs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .match-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px;
+        border-radius: var(--radius-sm);
+    }
+
+    .match-row.correct {
+        background: rgba(76, 175, 80, 0.08);
+    }
+
+    .match-row.incorrect {
+        background: rgba(239, 83, 80, 0.08);
+    }
+
+    .match-item {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        text-align: center;
+        border: 2px solid var(--border);
+        background: var(--bg-card);
+        transition: all 0.2s ease;
+    }
+
+    .match-item.left {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .match-item.left.active {
+        border-color: var(--primary);
+        background: rgba(74, 95, 224, 0.08);
+        box-shadow: 0 0 0 2px rgba(74, 95, 224, 0.2);
+    }
+
+    .match-item.left.matched {
+        border-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .match-item.right.matched {
+        border-color: var(--primary-light);
+        background: rgba(74, 95, 224, 0.05);
+        cursor: pointer;
+    }
+
+    .match-item.right.empty {
+        border-style: dashed;
+        color: var(--text-muted);
+        background: var(--bg-surface);
+    }
+
+    .match-arrow {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        width: 28px;
+        text-align: center;
+    }
+
+    .match-arrow.connected {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .match-options {
+        border-top: 1px solid var(--border);
+        padding-top: 12px;
+    }
+
+    .match-options-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .match-option-btn {
+        padding: 8px 14px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .match-option-btn.available {
+        border-color: var(--primary-light);
+        background: rgba(74, 95, 224, 0.05);
+    }
+
+    .match-option-btn.available:hover {
+        background: rgba(74, 95, 224, 0.12);
+    }
+
+    .match-option-btn.used {
+        opacity: 0.4;
+        text-decoration: line-through;
+        cursor: default;
+    }
+
+    .feedback {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        margin-top: 12px;
+    }
+
+    .feedback-correct {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--success);
+        border: 1px solid var(--success);
+    }
+
+    .feedback-incorrect {
+        background: rgba(239, 83, 80, 0.1);
+        color: var(--error);
+        border: 1px solid var(--error);
+    }
+
+    .feedback-icon { font-size: 1.2rem; }
+    .correct-answer { margin-left: auto; font-weight: 500; }
+
+    .explanation {
+        background: var(--bg-surface);
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        margin-top: 8px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .quiz-results {
+        text-align: center;
+        padding: 24px;
+    }
+
+    .results-stats {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 20px 0;
+    }
+
+    .stat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 20px;
+        border-radius: var(--radius-md);
+        min-width: 80px;
+    }
+
+    .correct-stat { background: rgba(76, 175, 80, 0.1); color: var(--success); }
+    .wrong-stat { background: rgba(239, 83, 80, 0.1); color: var(--error); }
+    .score-stat { background: rgba(74, 95, 224, 0.1); color: var(--primary); }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+
+    .xp-earned {
+        margin: 16px 0;
+    }
+
+    .level-up-banner {
+        background: linear-gradient(135deg, var(--success), #2E7D32);
+        color: white;
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        margin: 12px 0;
+    }
+
+    .new-achievements {
+        margin: 12px 0;
+    }
+
+    .review-concept-btn {
+        width: 100%;
+        margin-top: 8px;
+        border-style: dashed;
+    }
+
+    .anim-correct { animation: popCorrect 0.4s ease; }
+    .anim-incorrect { animation: shakeWrong 0.4s ease; }
+
+    @@keyframes popCorrect {
+        0% { transform: scale(0.9); opacity: 0; }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @@keyframes shakeWrong {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-5px); }
+        80% { transform: translateX(5px); }
+    }
+
+    .hint-btn {
+        display: inline-block;
+        padding: 6px 14px;
+        border: 1px dashed var(--accent);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--accent);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 4px;
+        transition: background 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .hint-btn:hover { background: rgba(240, 160, 48, 0.08); }
+
+    .hint-reveal {
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: rgba(240, 160, 48, 0.1);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        color: var(--accent);
+    }
+
+    .achievement-unlock {
+        background: rgba(74, 95, 224, 0.08);
+        padding: 10px;
+        border-radius: var(--radius-sm);
+        margin: 6px 0;
+        font-weight: 500;
+        color: var(--primary);
+    }
+</style>

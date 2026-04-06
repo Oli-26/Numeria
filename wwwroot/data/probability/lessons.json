@@ -1,0 +1,146 @@
+[
+  {
+    "id": "prob-01",
+    "topicId": "probability",
+    "order": 1,
+    "title": "Fundamentals of Probability",
+    "description": "Sample spaces, events, and counting",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "prob-01-c1",
+        "title": "What is Probability?",
+        "contentHtml": "<p><strong>Probability</strong> is a number between 0 and 1 that measures how likely an event is to occur.</p><p>0 = impossible, 1 = certain, 0.5 = equally likely to happen or not.</p><p>For equally likely outcomes: P(event) = (favorable outcomes) / (total outcomes).</p><p>Roll a fair die: P(getting a 3) = 1/6. P(getting an even) = 3/6 = 1/2.</p>",
+        "mathExpressions": ["P(A) = \\frac{|A|}{|S|} = \\frac{\\text{favorable}}{\\text{total}}"],
+        "visualizationType": "dice-probability",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "prob-01-c2",
+        "title": "Combinations & Permutations",
+        "contentHtml": "<p><strong>Permutations</strong>: order matters. How many ways to arrange 3 books from 5? P(5,3) = 5\u00d74\u00d73 = 60.</p><p><strong>Combinations</strong>: order doesn't matter. How many ways to choose 3 books from 5? C(5,3) = 60/6 = 10.</p><p>The formula: C(n,k) = n! / (k!(n-k)!) -- the <strong>binomial coefficient</strong>, written (n choose k).</p><p>These counting tools are essential for computing probabilities of complex events.</p>",
+        "mathExpressions": ["\\binom{n}{k} = \\frac{n!}{k!(n-k)!}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-01-c3",
+        "title": "Independence & Conditional Probability",
+        "contentHtml": "<p>Two events are <strong>independent</strong> if one happening doesn't affect the other. Then P(A and B) = P(A) \u00d7 P(B).</p><p>Flipping two coins: P(both heads) = 1/2 \u00d7 1/2 = 1/4.</p><p><strong>Conditional probability</strong> P(A|B) is the probability of A <em>given</em> B has occurred. It narrows the sample space.</p><p>P(A|B) = P(A and B) / P(B)</p>",
+        "mathExpressions": ["P(A|B) = \\frac{P(A \\cap B)}{P(B)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q01", "prob-q02", "prob-q03", "prob-q04", "prob-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "prob-02",
+    "topicId": "probability",
+    "order": 2,
+    "title": "Bayes' Theorem",
+    "description": "Updating beliefs with evidence",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "prob-02-c1",
+        "title": "The Theorem",
+        "contentHtml": "<p><strong>Bayes' Theorem</strong> lets you <em>reverse</em> conditional probabilities. If you know P(B|A), you can find P(A|B).</p><p>This is the mathematical foundation of <strong>updating beliefs with evidence</strong>.</p><p>Prior belief \u00d7 Evidence = Posterior belief (normalized).</p>",
+        "mathExpressions": ["P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-02-c2",
+        "title": "The Medical Test Problem",
+        "contentHtml": "<p>Classic example: A disease affects 1% of people. A test is 95% accurate (both ways). You test positive. What's the probability you have the disease?</p><p>Most people guess ~95%. The actual answer: about <strong>16%</strong>!</p><p>Why? With 1000 people: 10 have the disease (9.5 test positive). 990 don't (49.5 false positives). So 9.5/(9.5+49.5) \u2248 16%.</p><p>This is the <strong>base rate fallacy</strong> \u2014 ignoring how rare the disease is leads to wildly wrong intuitions.</p>",
+        "mathExpressions": ["P(\\text{disease}|+) = \\frac{0.95 \\times 0.01}{0.95 \\times 0.01 + 0.05 \\times 0.99} \\approx 0.16"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-02-c3",
+        "title": "Bayesian Thinking",
+        "contentHtml": "<p>Bayes' theorem is not just a formula \u2014 it's a <strong>way of thinking</strong>.</p><p><strong>Prior:</strong> Your initial belief before seeing evidence.<br><strong>Likelihood:</strong> How well the evidence fits each hypothesis.<br><strong>Posterior:</strong> Your updated belief after seeing evidence.</p><p>Bayesian reasoning is used in spam filters, medical diagnosis, machine learning, court cases, and scientific reasoning.</p>",
+        "mathExpressions": ["\\text{posterior} \\propto \\text{likelihood} \\times \\text{prior}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q06", "prob-q07", "prob-q08", "prob-q09", "prob-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "prob-03",
+    "topicId": "probability",
+    "order": 3,
+    "title": "Distributions",
+    "description": "The shapes of randomness",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "prob-03-c1",
+        "title": "Discrete Distributions",
+        "contentHtml": "<p>A <strong>probability distribution</strong> tells you how likely each possible outcome is.</p><p><strong>Bernoulli:</strong> One trial, success or failure. (Coin flip.)</p><p><strong>Binomial:</strong> n independent Bernoulli trials. \"How many heads in 10 flips?\" P(k successes) = C(n,k)p\u1d4f(1-p)\u207f\u207b\u1d4f.</p><p><strong>Poisson:</strong> Counts rare events in a fixed interval. \"How many emails per hour?\" Characterized by rate \u03bb.</p>",
+        "mathExpressions": ["P(X=k) = \\binom{n}{k} p^k (1-p)^{n-k}"],
+        "visualizationType": "distribution-plot",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "prob-03-c2",
+        "title": "The Normal Distribution",
+        "contentHtml": "<p>The <strong>normal (Gaussian) distribution</strong> is the bell curve \u2014 the most important distribution in statistics.</p><p>Characterized by mean \u03bc (center) and standard deviation \u03c3 (spread).</p><p>The <strong>68-95-99.7 rule:</strong><br>\u2022 68% of data within 1\u03c3 of the mean<br>\u2022 95% within 2\u03c3<br>\u2022 99.7% within 3\u03c3</p><p>Heights, test scores, measurement errors, and countless natural phenomena follow this distribution.</p>",
+        "mathExpressions": ["f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-03-c3",
+        "title": "Expected Value & Variance",
+        "contentHtml": "<p><strong>Expected value</strong> E[X] is the long-run average: what you'd get if you repeated the experiment infinitely many times.</p><p>For a die: E[X] = (1+2+3+4+5+6)/6 = 3.5. You never actually roll 3.5, but it's the average.</p><p><strong>Variance</strong> Var(X) = E[(X - \u03bc)\u00b2] measures spread. Standard deviation \u03c3 = \u221aVar is in the same units as X.</p>",
+        "mathExpressions": ["E[X] = \\sum_x x \\cdot P(X=x), \\quad \\text{Var}(X) = E[(X-\\mu)^2]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q11", "prob-q12", "prob-q13", "prob-q14", "prob-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "prob-04",
+    "topicId": "probability",
+    "order": 4,
+    "title": "The Central Limit Theorem",
+    "description": "Why the bell curve is everywhere",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "prob-04-c1",
+        "title": "The CLT",
+        "contentHtml": "<p>The <strong>Central Limit Theorem</strong> is one of the most remarkable results in mathematics:</p><p>Take <em>any</em> distribution (dice, coins, anything). Average many independent samples. As the sample size grows, the distribution of the average approaches a <strong>normal distribution</strong>.</p><p>This works regardless of the original distribution! Uniform, exponential, Poisson \u2014 average enough samples and you get a bell curve.</p>",
+        "mathExpressions": ["\\bar{X}_n = \\frac{1}{n}\\sum_{i=1}^n X_i \\xrightarrow{d} N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-04-c2",
+        "title": "Why the Bell Curve Appears Everywhere",
+        "contentHtml": "<p>The CLT explains why so many things in nature follow bell curves:</p><p><strong>Height:</strong> influenced by many genes + environment, each contributing a little \u2192 sum of many small effects \u2192 normal.</p><p><strong>Measurement errors:</strong> many tiny random factors combine \u2192 normal.</p><p><strong>Stock returns:</strong> many traders making decisions \u2192 approximately normal (though with fat tails in reality).</p><p>Whenever a quantity is the sum of many independent small contributions, expect a bell curve.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-04-c3",
+        "title": "Confidence Intervals & Hypothesis Testing",
+        "contentHtml": "<p>The CLT enables the two pillars of statistical inference:</p><p><strong>Confidence intervals:</strong> \"The true mean is between 4.8 and 5.2 with 95% confidence.\" The CLT guarantees the sample mean is approximately normal, so we can compute these intervals.</p><p><strong>Hypothesis testing:</strong> \"Is this difference real or just noise?\" The CLT lets us compute p-values \u2014 the probability of seeing data this extreme if the null hypothesis were true.</p>",
+        "mathExpressions": ["\\bar{x} \\pm z_{\\alpha/2} \\frac{\\sigma}{\\sqrt{n}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q16", "prob-q17", "prob-q18", "prob-q19", "prob-q20"],
+    "puzzleId": "prob-p01"
+  }
+]

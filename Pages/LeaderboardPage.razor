@@ -1,0 +1,312 @@
+@page "/leaderboard"
+@inject ILeaderboardService Leaderboard
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IContentRepository Content
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>\u2190</button>
+    <h1>Leaderboard</h1>
+</div>
+
+@if (!Leaderboard.IsConfigured)
+{
+    <div class="demo-banner card">
+        <small>Demo data \u2014 connect Dreamlo to see real scores</small>
+    </div>
+}
+
+@if (profile != null)
+{
+    <!-- Your stats card -->
+    <div class="card your-score-card">
+        <div class="your-score-left">
+            <div class="your-avatar">@profile.DisplayName[0]</div>
+            <div class="your-info">
+                <strong>@profile.DisplayName</strong>
+                <small>Level @myLevel \u00b7 @profile.TopicsCompleted.Count topics completed</small>
+            </div>
+        </div>
+        <div class="your-score-right">
+            <span class="your-xp">@profile.TotalXp XP</span>
+        </div>
+    </div>
+
+    <!-- Submit / Update score -->
+    <div class="submit-section">
+        @if (!submitted)
+        {
+            <div class="name-input-row">
+                <input type="text" class="fill-input" @bind="playerName" placeholder="Your display name..."
+                       maxlength="20" />
+                <button class="btn btn-accent" @onclick="SubmitScore" disabled="@(submitting || string.IsNullOrWhiteSpace(playerName))">
+                    @(submitting ? "Sending..." : "Submit Score")
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="submitted-msg">\u2705 Score submitted!</div>
+        }
+    </div>
+}
+
+<!-- Leaderboard table -->
+<div class="section">
+    @if (loading)
+    {
+        <div class="loading">Loading leaderboard...</div>
+    }
+    else if (entries.Count == 0)
+    {
+        <div class="empty-state card">
+            <p>No scores yet. Be the first!</p>
+        </div>
+    }
+    else
+    {
+        <div class="lb-list">
+            @for (int i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                var rank = i + 1;
+                var isYou = profile != null && entry.Name.Replace("_", " ") == profile.DisplayName.Replace(" ", "_").Replace("_", " ");
+
+                <div class="lb-row @(isYou ? "lb-you" : "") @(rank <= 3 ? "lb-top" : "")">
+                    <div class="lb-rank">
+                        @if (rank == 1)
+                        {
+                            <span class="medal gold">\uD83E\uDD47</span>
+                        }
+                        else if (rank == 2)
+                        {
+                            <span class="medal silver">\uD83E\uDD48</span>
+                        }
+                        else if (rank == 3)
+                        {
+                            <span class="medal bronze">\uD83E\uDD49</span>
+                        }
+                        else
+                        {
+                            <span class="rank-num">#@rank</span>
+                        }
+                    </div>
+                    <div class="lb-player">
+                        <div class="lb-avatar" style="background: @GetAvatarColor(rank)">@entry.Name[0]</div>
+                        <div class="lb-name-col">
+                            <strong>@entry.Name.Replace("_", " ")</strong>
+                            <small>Lvl @entry.Seconds \u00b7 @entry.Text</small>
+                        </div>
+                    </div>
+                    <div class="lb-score">
+                        <span class="lb-xp">@entry.Score.ToString("N0")</span>
+                        <small>XP</small>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private UserProfile? profile;
+    private List<LeaderboardEntry> entries = new();
+    private bool loading = true;
+    private string playerName = "";
+    private bool submitting;
+    private bool submitted;
+    private int myLevel;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            profile = await Progress.GetProfileAsync();
+            playerName = profile.DisplayName;
+            myLevel = Gamification.GetLevel(profile.TotalXp);
+
+            entries = await Leaderboard.GetLeaderboardAsync(50);
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SubmitScore()
+    {
+        if (profile == null || string.IsNullOrWhiteSpace(playerName)) return;
+        submitting = true;
+        StateHasChanged();
+
+        // Update display name if changed
+        if (playerName != profile.DisplayName)
+        {
+            profile.DisplayName = playerName;
+            await Progress.SaveProfileAsync(profile);
+        }
+
+        var topicsText = $"{profile.TopicsCompleted.Count} topics";
+        var success = await Leaderboard.SubmitScoreAsync(playerName, profile.TotalXp, myLevel, topicsText);
+
+        if (success)
+        {
+            submitted = true;
+            await JS.InvokeVoidAsync("showToast", "Score submitted!", "");
+            // Refresh leaderboard
+            entries = await Leaderboard.GetLeaderboardAsync(50);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showToast", "Failed to submit. Check connection.", "");
+        }
+
+        submitting = false;
+        StateHasChanged();
+    }
+
+    private string GetAvatarColor(int rank) => rank switch
+    {
+        1 => "linear-gradient(135deg, #FFD700, #FFA000)",
+        2 => "linear-gradient(135deg, #C0C0C0, #909090)",
+        3 => "linear-gradient(135deg, #CD7F32, #A0522D)",
+        _ => "linear-gradient(135deg, var(--primary), var(--primary-light))"
+    };
+}
+
+<style>
+    .demo-banner {
+        text-align: center;
+        padding: 8px;
+        background: rgba(240, 160, 48, 0.1);
+        border-color: var(--accent);
+        margin-bottom: 12px;
+    }
+    .demo-banner small { color: var(--accent); }
+
+    .your-score-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        border-left: 4px solid var(--primary);
+    }
+    .your-score-card:hover { transform: none; }
+    .your-score-left { display: flex; align-items: center; gap: 12px; }
+    .your-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white; display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1.2rem;
+    }
+    .your-info { display: flex; flex-direction: column; }
+    .your-info small { color: var(--text-muted); font-size: 0.8rem; }
+    .your-xp { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+
+    .submit-section { margin-bottom: 16px; }
+    .name-input-row { display: flex; gap: 10px; }
+    .name-input-row .fill-input { flex: 1; }
+    .submitted-msg {
+        text-align: center; padding: 10px;
+        color: var(--success); font-weight: 600;
+    }
+
+    .lb-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: var(--border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    .lb-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg-card);
+        transition: background 0.2s ease;
+    }
+
+    .lb-row.lb-you {
+        background: rgba(74, 95, 224, 0.08);
+        border-left: 3px solid var(--primary);
+    }
+
+    .lb-row.lb-top {
+        padding: 12px 14px;
+    }
+
+    .lb-rank {
+        width: 36px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .medal { font-size: 1.4rem; }
+    .rank-num { color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+
+    .lb-player {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .lb-avatar {
+        width: 34px; height: 34px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+    }
+
+    .lb-name-col {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .lb-name-col strong {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .lb-name-col small {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+    }
+
+    .lb-score {
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .lb-xp {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--accent);
+    }
+
+    .lb-score small {
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        display: block;
+    }
+
+    .empty-state { text-align: center; padding: 40px; }
+    .empty-state p { color: var(--text-muted); }
+
+    .fill-input {
+        padding: 10px 14px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.95rem;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        outline: none;
+    }
+    .fill-input:focus { border-color: var(--primary); }
+</style>

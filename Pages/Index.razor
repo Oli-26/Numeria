@@ -1,0 +1,292 @@
+@page "/"
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IContentRepository Content
+@inject ISessionStateService SessionState
+@inject IReviewService ReviewService
+@inject NavigationManager Nav
+
+<div class="dashboard">
+    @if (savedSession != null && savedSession.ActiveTopicId != null && savedSession.ActiveLessonId != null)
+    {
+        <div class="card resume-banner card-clickable" @onclick="ResumeSession">
+            <div class="resume-content">
+                <strong>Continue where you left off</strong>
+                <small>@(savedSession.InQuiz ? "Quiz in progress" : "Lesson in progress")</small>
+            </div>
+            <span class="resume-arrow">\u2192</span>
+        </div>
+    }
+
+    <div class="welcome-section">
+        <h1>MathVoyager</h1>
+        @if (profile != null)
+        {
+            <div class="stats-row">
+                <div class="streak-display">
+                    &#x1F525; @profile.CurrentStreak day@(profile.CurrentStreak != 1 ? "s" : "")
+                </div>
+                <div class="xp-badge">
+                    &#x2B50; @profile.TotalXp XP
+                </div>
+                <div class="chip">
+                    Lvl @(Gamification.GetLevel(profile.TotalXp))
+                </div>
+            </div>
+
+            <div class="xp-progress">
+                @{
+                    var level = Gamification.GetLevel(profile.TotalXp);
+                    var xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
+                    var xpNeeded = Gamification.GetXpForNextLevel(level);
+                    var pct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
+                }
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill accent" style="width: @pct.ToString("F0")%"></div>
+                </div>
+                <small>@xpInLevel / @xpNeeded XP to Level @(level + 1)</small>
+            </div>
+        }
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>Topics</h2>
+        </div>
+
+        @if (topics != null)
+        {
+            <div class="topics-grid">
+                @foreach (var topic in topics)
+                {
+                    <div class="card card-clickable topic-card" style="border-left: 4px solid @topic.Color" @onclick="() => NavigateToTopic(topic.Id)">
+                        <div class="topic-icon" style="color: @topic.Color">@GetTopicIcon(topic.Id)</div>
+                        <h3>@topic.Name</h3>
+                        <p class="topic-desc">@topic.Description</p>
+                        <div class="topic-meta">
+                            <span class="chip">@topic.LessonCount lessons</span>
+                            <span class="chip">@topic.Difficulty</span>
+                        </div>
+                        @if (topicProgress.ContainsKey(topic.Id))
+                        {
+                            <div class="progress-bar-container" style="margin-top: 8px">
+                                <div class="progress-bar-fill" style="width: @topicProgress[topic.Id].ToString("F0")%"></div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="loading">Loading topics...</div>
+        }
+    </div>
+
+    <div class="section action-buttons">
+        @if (!dailyDone)
+        {
+            <button class="btn btn-accent btn-lg action-btn" @onclick='() => Nav.NavigateTo("/daily")'>
+                \u2B50 Daily Challenge
+                <small>1.5x XP</small>
+            </button>
+        }
+        else
+        {
+            <div class="btn btn-outline btn-lg action-btn daily-done-btn" style="cursor: default; opacity: 0.6">
+                \u2705 Daily Done!
+            </div>
+        }
+
+        @if (reviewDueCount > 0)
+        {
+            <button class="btn btn-primary btn-lg action-btn" @onclick='() => Nav.NavigateTo("/review")'>
+                \uD83E\uDDE0 Review (@reviewDueCount due)
+            </button>
+        }
+
+        <button class="btn btn-outline btn-lg action-btn" @onclick="StartQuickQuiz">
+            \u26A1 Quick Quiz
+        </button>
+    </div>
+</div>
+
+@code {
+    private UserProfile? profile;
+    private List<Topic>? topics;
+    private Dictionary<string, double> topicProgress = new();
+    private SessionState? savedSession;
+    private int reviewDueCount;
+    private bool dailyDone;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Progress.UpdateStreakAsync();
+            await Progress.StartSessionAsync();
+            profile = await Progress.GetProfileAsync();
+            topics = await Content.GetTopicsAsync();
+            savedSession = await SessionState.LoadSessionStateAsync();
+            reviewDueCount = await ReviewService.GetDueCountAsync();
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+            dailyDone = profile.DailyChallengeDate == today && profile.DailyChallengeCompleted;
+
+            foreach (var topic in topics)
+            {
+                topicProgress[topic.Id] = await Progress.GetTopicProgressAsync(topic.Id);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void ResumeSession()
+    {
+        if (savedSession?.ActiveTopicId != null && savedSession.ActiveLessonId != null)
+        {
+            Nav.NavigateTo($"/topic/{savedSession.ActiveTopicId}/lesson/{savedSession.ActiveLessonId}");
+        }
+    }
+
+    private string GetTopicIcon(string topicId) => topicId switch
+    {
+        "calculus" => "\u222B",
+        "linear-algebra" => "\u27E8\u27E9",
+        "topology" => "\u223E",
+        "number-theory" => "\u2119",
+        "probability" => "\u2684",
+        "group-theory" => "\u2B21",
+        "graph-theory" => "\u25CB\u2014\u25CB",
+        _ => "\u2211"
+    };
+
+    private void NavigateToTopic(string topicId)
+    {
+        Nav.NavigateTo($"/topic/{topicId}");
+    }
+
+    private void StartQuickQuiz()
+    {
+        Nav.NavigateTo("/quiz/mixed/all");
+    }
+}
+
+<style>
+    .dashboard {
+        padding-top: 8px;
+    }
+
+    .welcome-section {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .welcome-section h1 {
+        font-size: 2rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 12px;
+    }
+
+    .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .xp-progress {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .xp-progress small {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    .topics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .topic-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .topic-icon {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .topic-desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .topic-meta {
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .action-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .action-btn small {
+        background: rgba(255,255,255,0.2);
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+    }
+
+    .daily-done-btn {
+        border-color: var(--success) !important;
+        color: var(--success) !important;
+    }
+
+    .resume-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        border-left: 4px solid var(--accent);
+        background: var(--bg-card);
+    }
+
+    .resume-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .resume-content small {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    .resume-arrow {
+        font-size: 1.3rem;
+        color: var(--accent);
+    }
+</style>
