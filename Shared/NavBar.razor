@@ -1,8 +1,23 @@
 @implements IDisposable
 @inject NavigationManager Nav
+@inject IGamificationService Gamification
+@inject IProgressService Progress
 @inject IJSRuntime JS
 
 <nav class="bottom-nav">
+    <div class="nav-brand" @onclick='() => Navigate("/")'>
+        <span class="nav-brand-icon">N</span>
+        <span class="nav-brand-name">Numeria</span>
+        @if (level > 0)
+        {
+            <div class="nav-level-badge">
+                <span class="nav-level">Lvl @level</span>
+                <div class="nav-xp-bar">
+                    <div class="nav-xp-fill" style="width: @xpPct.ToString("F0")%"></div>
+                </div>
+            </div>
+        }
+    </div>
     <a class="nav-item @(IsActive("/") ? "active" : "")" href="/" @onclick:preventDefault @onclick='() => Navigate("/")'>
         <span class="nav-icon"><Icon Name="home" Size="22" /></span>
         <span class="nav-label">Home</span>
@@ -16,7 +31,7 @@
         <span class="nav-label">Ranks</span>
     </a>
     <a class="nav-item @(IsActive("/shop") ? "active" : "")" href="/shop" @onclick:preventDefault @onclick='() => Navigate("/shop")'>
-        <span class="nav-icon"><Icon Name="gem" Size="22" /></span>
+        <span class="nav-icon"><Icon Name="phi" Size="22" /></span>
         <span class="nav-label">Shop</span>
     </a>
     <a class="nav-item @(IsActive("/settings") ? "active" : "")" href="/settings" @onclick:preventDefault @onclick='() => Navigate("/settings")'>
@@ -27,6 +42,8 @@
 
 @code {
     private string currentUri = "";
+    private int level;
+    private double xpPct;
 
     protected override void OnInitialized()
     {
@@ -34,10 +51,29 @@
         Nav.LocationChanged += OnLocationChanged;
     }
 
-    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadStats();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadStats()
+    {
+        var profile = await Progress.GetProfileAsync();
+        level = Gamification.GetLevel(profile.TotalXp);
+        var xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
+        var xpNeeded = Gamification.GetXpForNextLevel(level);
+        xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         currentUri = Nav.ToBaseRelativePath(Nav.Uri);
-        StateHasChanged();
+        await LoadStats();
+        await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
@@ -133,5 +169,119 @@
 
     .nav-label {
         font-weight: 500;
+    }
+
+    /* Brand - hidden on mobile */
+    .nav-brand { display: none; }
+
+    /* Desktop: convert to sidebar */
+    @@media (min-width: 1024px) {
+        .bottom-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: auto;
+            width: 220px;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 16px 12px;
+            gap: 4px;
+            border-top: none;
+            border-right: 1px solid var(--border);
+            box-shadow: none;
+        }
+
+        .nav-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 8px 16px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-brand-name {
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text-primary);
+        }
+
+        .nav-level-badge {
+            width: 100%;
+            text-align: center;
+        }
+
+        .nav-level {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .nav-xp-bar {
+            height: 4px;
+            background: var(--bg-surface);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .nav-xp-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .nav-item {
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-surface);
+        }
+
+        .nav-item.active {
+            background: rgba(74, 95, 224, 0.08);
+        }
+
+        .nav-item.active::before {
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            margin-bottom: 0;
+        }
     }
 </style>

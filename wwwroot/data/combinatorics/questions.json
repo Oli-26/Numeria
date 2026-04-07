@@ -1,0 +1,775 @@
+[
+  {
+    "id": "comb-q01",
+    "lessonId": "comb-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "A restaurant offers 4 appetizers and 5 main courses. If you choose one appetizer AND one main course, how many different meals are possible?",
+    "options": ["9", "20", "10", "25"],
+    "correctAnswer": "20",
+    "explanation": "By the multiplication rule, when you make two independent choices, the total outcomes are the product: 4 × 5 = 20. The addition rule (4 + 5 = 9) would apply if you chose an appetizer OR a main course, not both. 10 and 25 don't correspond to any valid operation on these numbers.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q02",
+    "lessonId": "comb-01",
+    "type": "FillIn",
+    "difficulty": 1,
+    "prompt": "How many 4-digit PINs can be formed from digits 0-9 if digits may be repeated?",
+    "correctAnswer": "10000",
+    "acceptableAnswers": ["10000", "10,000"],
+    "explanation": "Each of the 4 positions can be any of 10 digits (0-9), and repetition is allowed. By the multiplication rule: 10 × 10 × 10 × 10 = 10^4 = 10,000. This is counting with repetition: n^k = 10^4.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q03",
+    "lessonId": "comb-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Using complementary counting: how many 3-letter strings from A-Z contain at least one vowel (A, E, I, O, U)?",
+    "options": ["8315", "15625", "17576", "11375"],
+    "correctAnswer": "8315",
+    "explanation": "Total 3-letter strings: 26^3 = 17,576. Strings with NO vowels: 21^3 = 9,261 (using only the 21 consonants). By the subtraction principle: 17,576 - 9,261 = 8,315. Counting directly (strings with exactly 1, 2, or 3 vowels) works but is much more tedious.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q04",
+    "lessonId": "comb-01",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "True or False: The addition rule for counting requires that the two sets of outcomes are mutually exclusive (no overlap).",
+    "correctAnswer": "True",
+    "explanation": "The basic addition rule states |A ∪ B| = |A| + |B| only when A ∩ B = ∅ (mutually exclusive). If the sets overlap, you must subtract the intersection: |A ∪ B| = |A| + |B| - |A ∩ B|. This correction for overlap is the beginning of the inclusion-exclusion principle.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q05",
+    "lessonId": "comb-01",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "How many ways can 3 runners finish a race from a field of 10 (gold, silver, bronze)? Order matters and no ties.",
+    "correctAnswer": "720",
+    "acceptableAnswers": ["720"],
+    "explanation": "This is counting without repetition where order matters: 10 × 9 × 8 = 720. The first place can be any of 10, second place any of the remaining 9, third place any of the remaining 8. This is P(10,3) = 10!/(10-3)! = 10!/7! = 720.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q06",
+    "lessonId": "comb-01",
+    "type": "ConceptMatch",
+    "difficulty": 1,
+    "prompt": "Match each counting principle to its formula:",
+    "pairs": [
+      { "left": "Addition rule", "right": "|A| + |B| when A ∩ B = ∅" },
+      { "left": "Multiplication rule", "right": "|A| × |B|" },
+      { "left": "Subtraction principle", "right": "|S| - |bad outcomes|" }
+    ],
+    "correctAnswer": null,
+    "explanation": "The addition rule counts 'or' situations (choose from A or B) when the options don't overlap. The multiplication rule counts 'and' situations (choose from A then B independently). The subtraction principle counts by removing unwanted outcomes from the total. These three rules are the foundation of all combinatorial counting.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q07",
+    "lessonId": "comb-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A license plate has 3 letters followed by 3 digits. How many plates are possible if repetition is allowed?",
+    "options": ["17,576,000", "11,232,000", "15,600,000", "1,757,600"],
+    "correctAnswer": "17,576,000",
+    "explanation": "By the multiplication rule: 26 × 26 × 26 × 10 × 10 × 10 = 26^3 × 10^3 = 17,576 × 1,000 = 17,576,000. Each letter position has 26 choices and each digit position has 10 choices, all independent with repetition allowed.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q08",
+    "lessonId": "comb-01",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is 8! (8 factorial)?",
+    "correctAnswer": "40320",
+    "acceptableAnswers": ["40320", "40,320"],
+    "explanation": "8! = 8 × 7 × 6 × 5 × 4 × 3 × 2 × 1 = 40,320. Factorials grow extremely fast and count the number of ways to arrange n distinct objects in a line. Knowing small factorials (up to about 10!) by heart or by quick computation is very useful in combinatorics.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q09",
+    "lessonId": "comb-02",
+    "type": "FillIn",
+    "difficulty": 1,
+    "prompt": "How many ways can you choose 3 people from a group of 10 for a committee (order doesn't matter)?",
+    "mathExpression": "\\binom{10}{3} = ?",
+    "correctAnswer": "120",
+    "acceptableAnswers": ["120"],
+    "explanation": "C(10,3) = 10! / (3! × 7!) = (10 × 9 × 8) / (3 × 2 × 1) = 720/6 = 120. Since the committee has no ranked positions, order doesn't matter, so we use combinations, not permutations. If order mattered (president, VP, secretary), it would be P(10,3) = 720.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q10",
+    "lessonId": "comb-02",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "What is the key difference between permutations and combinations?",
+    "options": ["Permutations allow repetition, combinations don't", "Permutations consider order, combinations don't", "Permutations are for large sets, combinations for small sets", "There is no difference"],
+    "correctAnswer": "Permutations consider order, combinations don't",
+    "explanation": "The fundamental distinction is whether order matters. Permutations count ordered arrangements (ABC ≠ BAC), while combinations count unordered selections ({A,B,C} = {B,A,C}). Both can be with or without repetition. This is the single most important question to ask in any counting problem.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q11",
+    "lessonId": "comb-02",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Using stars and bars, how many ways can you distribute 5 identical cookies among 3 children?",
+    "mathExpression": "\\binom{5+3-1}{5} = \\binom{7}{5} = ?",
+    "correctAnswer": "21",
+    "acceptableAnswers": ["21"],
+    "explanation": "This is combinations with repetition (multiset). Using stars and bars: we need to place 5 identical stars (cookies) into 3 categories (children) using 2 bars as dividers. The answer is C(5+3-1, 5) = C(7,5) = C(7,2) = 21. Equivalently, we're counting non-negative integer solutions to x₁ + x₂ + x₃ = 5.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q12",
+    "lessonId": "comb-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What is the sum of all entries in row 5 of Pascal's triangle (starting from row 0)?",
+    "options": ["16", "32", "64", "25"],
+    "correctAnswer": "32",
+    "explanation": "Row n of Pascal's triangle contains C(n,0), C(n,1), ..., C(n,n). Their sum equals 2^n (set x=1 in the binomial theorem: (1+1)^n = 2^n). For row 5: C(5,0)+C(5,1)+C(5,2)+C(5,3)+C(5,4)+C(5,5) = 1+5+10+10+5+1 = 32 = 2^5.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q13",
+    "lessonId": "comb-02",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is the coefficient of x³ in the expansion of (1 + x)^7?",
+    "mathExpression": "\\binom{7}{3} = ?",
+    "correctAnswer": "35",
+    "acceptableAnswers": ["35"],
+    "explanation": "By the Binomial Theorem, the coefficient of x^k in (1+x)^n is C(n,k). So the coefficient of x³ in (1+x)^7 is C(7,3) = 7!/(3!4!) = 35. Each term in the expansion comes from choosing which 3 of the 7 factors contribute an x (and the other 4 contribute a 1).",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q14",
+    "lessonId": "comb-02",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "True or False: C(n, k) = C(n, n-k) for all valid n and k.",
+    "correctAnswer": "True",
+    "explanation": "This is the symmetry property of binomial coefficients. Choosing k items to include is the same as choosing n-k items to exclude. For example, C(10,3) = C(10,7) = 120. Algebraically: n!/(k!(n-k)!) = n!/((n-k)!k!). This symmetry is visible in Pascal's triangle, which is symmetric about its center.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q15",
+    "lessonId": "comb-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "P(8, 3) equals:",
+    "mathExpression": "P(8,3) = \\frac{8!}{(8-3)!} = ?",
+    "options": ["56", "336", "512", "120"],
+    "correctAnswer": "336",
+    "explanation": "P(8,3) = 8!/(8-3)! = 8!/5! = 8 × 7 × 6 = 336. This counts ordered arrangements of 3 items from 8. Note that P(8,3) = C(8,3) × 3! = 56 × 6 = 336, confirming the relationship between permutations and combinations.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q16",
+    "lessonId": "comb-02",
+    "type": "FindTheError",
+    "difficulty": 2,
+    "prompt": "Find the error in this calculation of C(6, 2):",
+    "steps": [
+      "C(6, 2) = 6! / (2! × (6-2)!)",
+      "= 6! / (2! × 4!)",
+      "= 720 / (2 × 4)",
+      "= 720 / 8 = 90"
+    ],
+    "correctAnswer": "3",
+    "explanation": "The error is in Step 3. The denominator should be 2! × 4! = 2 × 24 = 48, not 2 × 4 = 8. The mistake was computing 4! as 4 instead of 24. The correct answer is 720/48 = 15. Always remember that n! means n factorial (the product of all integers from 1 to n), not just n itself.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q17",
+    "lessonId": "comb-03",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "If 13 people are in a room, what can we guarantee by the pigeonhole principle?",
+    "options": ["At least 2 share the same birthday", "At least 2 share the same birth month", "Everyone has a different birth month", "At least 3 share the same birth month"],
+    "correctAnswer": "At least 2 share the same birth month",
+    "explanation": "There are 12 months (pigeonholes) and 13 people (pigeons). Since 13 > 12, by the pigeonhole principle, at least 2 people must share a birth month. We can't guarantee shared birthdays (365 days) with only 13 people, and we can't guarantee 3 sharing a month (that would need 25 people).",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q18",
+    "lessonId": "comb-03",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "If 50 students score between 0 and 9 (10 possible scores) on a quiz, at least how many students must share the same score?",
+    "correctAnswer": "5",
+    "acceptableAnswers": ["5"],
+    "explanation": "By the generalized pigeonhole principle, at least ⌈50/10⌉ = ⌈5⌉ = 5 students must share the same score. If scores were spread as evenly as possible, each score would have exactly 5 students -- so 5 is the guaranteed minimum.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q19",
+    "lessonId": "comb-03",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "True or False: Among any 5 points placed inside a unit square, at least two of them must be within distance √2/2 of each other.",
+    "correctAnswer": "True",
+    "explanation": "Divide the unit square into 4 equal sub-squares, each of size 1/2 × 1/2. By the pigeonhole principle (5 points, 4 sub-squares), at least 2 points must lie in the same sub-square. The maximum distance between two points in a 1/2 × 1/2 square is the diagonal: √((1/2)² + (1/2)²) = √(1/2) = √2/2 ≈ 0.707.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q20",
+    "lessonId": "comb-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Among any n+1 numbers chosen from the set {1, 2, ..., 2n}, what must be true?",
+    "options": ["Some two numbers sum to 2n", "Some two numbers are consecutive", "Some number divides another", "All of the above"],
+    "correctAnswer": "All of the above",
+    "explanation": "All three can be proved using the pigeonhole principle with different choices of 'pigeonholes.' For divisibility: write each number as 2^a × q (q odd); the odd parts form n pigeonholes. For consecutive numbers: the n pairs {1,2}, {3,4}, ..., {2n-1,2n} are pigeonholes. For sum = 2n+1 (which implies some sum to at least 2n): the n pairs {1,2n}, {2,2n-1}, ... work. Actually the sum result gives pairs summing to 2n+1, but consecutive is direct.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q21",
+    "lessonId": "comb-03",
+    "type": "FillIn",
+    "difficulty": 1,
+    "prompt": "If you have 7 pairs of socks (7 different colors) in a dark drawer, how many individual socks must you pull out to guarantee a matching pair?",
+    "correctAnswer": "8",
+    "acceptableAnswers": ["8"],
+    "explanation": "There are 7 colors (pigeonholes). By the pigeonhole principle, pulling 7 + 1 = 8 socks guarantees at least two are the same color. With 7 socks, you might have exactly one of each color. The 8th sock must match one already drawn.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q22",
+    "lessonId": "comb-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "The generalized pigeonhole principle states that if n objects are in k boxes, some box has at least:",
+    "options": ["n/k objects", "⌈n/k⌉ objects", "⌊n/k⌋ objects", "n - k + 1 objects"],
+    "correctAnswer": "⌈n/k⌉ objects",
+    "explanation": "The generalized pigeonhole principle guarantees at least ⌈n/k⌉ (ceiling of n/k) objects in some box. The ceiling function rounds up, which is necessary because you can't split objects. For example, 7 objects in 3 boxes: ⌈7/3⌉ = 3, and indeed some box must have at least 3 objects (distributing 2,2,3 is the most even split).",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q23",
+    "lessonId": "comb-03",
+    "type": "ProofOrdering",
+    "difficulty": 2,
+    "prompt": "Order the steps to prove: among any 5 integers, some pair has a difference divisible by 4.",
+    "steps": [
+      "Consider the 4 possible remainders when dividing by 4: {0, 1, 2, 3}",
+      "We have 5 integers (pigeons) and 4 remainder classes (holes)",
+      "By the pigeonhole principle, at least 2 integers share the same remainder mod 4",
+      "If a ≡ b (mod 4), then 4 divides (a - b)",
+      "Therefore some pair has a difference divisible by 4"
+    ],
+    "correctAnswer": null,
+    "explanation": "The proof assigns each integer to one of 4 pigeonholes based on its remainder mod 4. With 5 integers and only 4 pigeonholes, some pigeonhole must contain at least 2 integers. Those two integers have the same remainder, so their difference is divisible by 4.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q24",
+    "lessonId": "comb-03",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each pigeonhole principle application to its setup:",
+    "pairs": [
+      { "left": "13 people, 12 months", "right": "Two share a birth month" },
+      { "left": "5 points in unit square (4 sub-squares)", "right": "Two points within √2/2" },
+      { "left": "n+1 integers, n remainder classes", "right": "Two have same remainder mod n" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each application carefully identifies the 'pigeons' and 'pigeonholes.' With 13 people and 12 months, some month is shared. With 5 points in 4 sub-squares, some sub-square has 2 points close together. With n+1 integers and n remainder classes mod n, some two share a remainder, so their difference is divisible by n.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q25",
+    "lessonId": "comb-04",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In a class of 100 students, 60 play basketball, 45 play soccer, and 20 play both. How many play at least one sport?",
+    "options": ["105", "85", "80", "100"],
+    "correctAnswer": "85",
+    "explanation": "By inclusion-exclusion for two sets: |A ∪ B| = |A| + |B| - |A ∩ B| = 60 + 45 - 20 = 85. Simply adding 60 + 45 = 105 overcounts the 20 students who play both, so we subtract them once. This is the most basic application of the inclusion-exclusion principle.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q26",
+    "lessonId": "comb-04",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "How many derangements are there of {1, 2, 3, 4}? (Permutations with no element in its original position.)",
+    "correctAnswer": "9",
+    "acceptableAnswers": ["9"],
+    "explanation": "D₄ = 4!(1 - 1/1! + 1/2! - 1/3! + 1/4!) = 24(1 - 1 + 1/2 - 1/6 + 1/24) = 24(12/24 - 4/24 + 1/24) = 24 × 9/24 = 9. You can verify by listing: the 9 derangements of {1,2,3,4} are: 2143, 2341, 2413, 3142, 3412, 3421, 4123, 4312, 4321.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q27",
+    "lessonId": "comb-04",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "True or False: As n grows large, the probability that a random permutation of n elements is a derangement approaches 1/e ≈ 0.3679.",
+    "correctAnswer": "True",
+    "explanation": "D_n/n! = Σ_{k=0}^{n} (-1)^k/k!, which is exactly the partial sum of the Taylor series for e^{-1}. As n → ∞, this converges to e^{-1} = 1/e ≈ 0.3679. Remarkably, even for small n (like n = 5), the approximation is already very close: D₅/5! = 44/120 ≈ 0.3667.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q28",
+    "lessonId": "comb-04",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is Euler's totient φ(12)?",
+    "mathExpression": "\\phi(12) = 12\\left(1 - \\frac{1}{2}\\right)\\left(1 - \\frac{1}{3}\\right) = ?",
+    "correctAnswer": "4",
+    "acceptableAnswers": ["4"],
+    "explanation": "12 = 2² × 3, so φ(12) = 12 × (1 - 1/2) × (1 - 1/3) = 12 × 1/2 × 2/3 = 4. The integers from 1 to 12 that are coprime to 12 are {1, 5, 7, 11}, confirming φ(12) = 4. Each of these shares no prime factors with 12.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q29",
+    "lessonId": "comb-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "How many integers from 1 to 30 are NOT divisible by 2, 3, or 5?",
+    "options": ["8", "10", "12", "6"],
+    "correctAnswer": "8",
+    "explanation": "By inclusion-exclusion: |div by 2| = 15, |div by 3| = 10, |div by 5| = 6, |div by 2&3| = 5, |div by 2&5| = 3, |div by 3&5| = 2, |div by 2&3&5| = 1. Union = 15+10+6-5-3-2+1 = 22. So NOT divisible by any = 30 - 22 = 8. These 8 numbers are: 1, 7, 11, 13, 17, 19, 23, 29. Note: this equals φ(30) = 30(1-1/2)(1-1/3)(1-1/5) = 8.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q30",
+    "lessonId": "comb-04",
+    "type": "FindTheError",
+    "difficulty": 2,
+    "prompt": "Find the error in this derangement computation for D₅:",
+    "steps": [
+      "D₅ = 5!(1 - 1/1! + 1/2! - 1/3! + 1/4! - 1/5!)",
+      "= 120(1 - 1 + 0.5 - 0.1667 + 0.0417 - 0.0083)",
+      "= 120(0.3667)",
+      "= 120 × 0.3667 = 43"
+    ],
+    "correctAnswer": "4",
+    "explanation": "The error is in Step 4. Computing 120 × 0.3667 = 44.004, which rounds to 44, not 43. The exact computation gives D₅ = 120(1 - 1 + 1/2 - 1/6 + 1/24 - 1/120) = 120 × (60-20+5-1)/120 = 44. The derangement formula always produces an exact integer. The student made an arithmetic error in the final multiplication.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q31",
+    "lessonId": "comb-04",
+    "type": "ProofOrdering",
+    "difficulty": 2,
+    "prompt": "Order the steps of inclusion-exclusion for |A ∪ B ∪ C|:",
+    "steps": [
+      "Start with |A| + |B| + |C|",
+      "Subtract the pairwise overlaps: |A∩B| + |A∩C| + |B∩C|",
+      "Add back the triple overlap: |A∩B∩C|",
+      "Result: |A∪B∪C| = |A|+|B|+|C| - |A∩B| - |A∩C| - |B∩C| + |A∩B∩C|"
+    ],
+    "correctAnswer": null,
+    "explanation": "Inclusion-exclusion works in alternating layers: first include individual sets (overcounts), then exclude pairwise intersections (corrects double-counting but now undercounts triple overlaps), then include the triple intersection. The pattern of alternating signs continues for more sets.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q32",
+    "lessonId": "comb-04",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is Euler's totient φ(30)?",
+    "mathExpression": "\\phi(30) = 30\\left(1-\\frac{1}{2}\\right)\\left(1-\\frac{1}{3}\\right)\\left(1-\\frac{1}{5}\\right) = ?",
+    "correctAnswer": "8",
+    "acceptableAnswers": ["8"],
+    "explanation": "30 = 2 × 3 × 5, so φ(30) = 30 × (1-1/2) × (1-1/3) × (1-1/5) = 30 × 1/2 × 2/3 × 4/5 = 30 × 8/30 = 8. The 8 integers from 1 to 30 coprime to 30 are: 1, 7, 11, 13, 17, 19, 23, 29.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q33",
+    "lessonId": "comb-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What is the ordinary generating function for the constant sequence 1, 1, 1, 1, ...?",
+    "mathExpression": "\\sum_{n=0}^{\\infty} x^n = ?",
+    "options": ["1/(1-x)", "1/(1+x)", "e^x", "x/(1-x)"],
+    "correctAnswer": "1/(1-x)",
+    "explanation": "The geometric series gives Σ x^n = 1/(1-x). This is the most fundamental generating function identity. 1/(1+x) generates the alternating sequence 1,-1,1,-1,...; e^x is the exponential generating function for 1,1,1,...; and x/(1-x) generates 0,1,1,1,... (shifted by one).",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q34",
+    "lessonId": "comb-05",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "The generating function for the Fibonacci numbers is x/(1 - x - x²). What is the coefficient of x⁴? (i.e., F₄ = ?)",
+    "correctAnswer": "3",
+    "acceptableAnswers": ["3"],
+    "explanation": "The Fibonacci sequence with F₀=0, F₁=1 goes: 0, 1, 1, 2, 3, 5, 8, .... So F₄ = 3. We can verify: F₂ = F₁+F₀ = 1, F₃ = F₂+F₁ = 2, F₄ = F₃+F₂ = 3. The generating function x/(1-x-x²) encodes this entire sequence.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q35",
+    "lessonId": "comb-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "How many partitions does the integer 4 have? (Recall: order doesn't matter, e.g. 3+1 = 1+3.)",
+    "options": ["4", "5", "7", "8"],
+    "correctAnswer": "5",
+    "explanation": "The partitions of 4 are: 4, 3+1, 2+2, 2+1+1, 1+1+1+1. That's 5 partitions. Note that 3+1 and 1+3 are the same partition since order doesn't matter. This is p(4) = 5, where p is the partition function whose generating function is the infinite product Π 1/(1-x^k).",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q36",
+    "lessonId": "comb-05",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "True or False: Multiplying two generating functions A(x)·B(x) corresponds to convolving their coefficient sequences.",
+    "correctAnswer": "True",
+    "explanation": "If A(x) = Σ aₙxⁿ and B(x) = Σ bₙxⁿ, then A(x)·B(x) = Σ cₙxⁿ where cₙ = Σ_{k=0}^{n} aₖbₙ₋ₖ. This is exactly the convolution of the sequences (aₙ) and (bₙ). Convolution arises naturally when combining independent choices, making multiplication of generating functions correspond to combining combinatorial objects.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q37",
+    "lessonId": "comb-05",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is the generating function for the sequence 0, 1, 2, 3, 4, ... (where aₙ = n)?",
+    "correctAnswer": "x/(1-x)^2",
+    "acceptableAnswers": ["x/(1-x)^2", "x/(1-x)²"],
+    "explanation": "Differentiating the geometric series 1/(1-x) = Σ xⁿ gives 1/(1-x)² = Σ (n+1)xⁿ = Σ nxⁿ⁻¹. Multiplying by x gives x/(1-x)² = Σ nxⁿ, which generates 0, 1, 2, 3, 4, .... Differentiation of generating functions is a powerful technique for handling sequences involving n as a factor.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q38",
+    "lessonId": "comb-05",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The generating function for the number of ways to make change using coins of value 1 and 2 is:",
+    "options": ["1/((1-x)(1-x²))", "(1+x)(1+x²)", "1/(1-x-x²)", "1/(1-x)²"],
+    "correctAnswer": "1/((1-x)(1-x²))",
+    "explanation": "Each coin denomination contributes a factor to the generating function. For coins of value 1: Σ x^n = 1/(1-x) (you can use 0, 1, 2, ... pennies). For coins of value 2: Σ x^{2n} = 1/(1-x²). The product 1/((1-x)(1-x²)) encodes choosing any number of 1-cent and 2-cent coins independently. The coefficient of x^n gives the number of ways to make n cents.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q39",
+    "lessonId": "comb-05",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each generating function to its sequence:",
+    "pairs": [
+      { "left": "1/(1-x)", "right": "1, 1, 1, 1, ..." },
+      { "left": "1/(1-x)²", "right": "1, 2, 3, 4, ..." },
+      { "left": "x/(1-x-x²)", "right": "0, 1, 1, 2, 3, 5, ..." },
+      { "left": "(1+x)ⁿ", "right": "C(n,0), C(n,1), ..., C(n,n)" }
+    ],
+    "correctAnswer": null,
+    "explanation": "These are four of the most important generating functions. 1/(1-x) is the geometric series. 1/(1-x)² generates n+1 (the natural numbers starting from 1). x/(1-x-x²) generates the Fibonacci numbers. (1+x)ⁿ is the binomial theorem, generating binomial coefficients. Knowing these by heart is essential for working with generating functions.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q40",
+    "lessonId": "comb-05",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "How many partitions does the integer 7 have?",
+    "options": ["11", "15", "13", "17"],
+    "correctAnswer": "15",
+    "explanation": "The 15 partitions of 7 are: 7; 6+1; 5+2; 5+1+1; 4+3; 4+2+1; 4+1+1+1; 3+3+1; 3+2+2; 3+2+1+1; 3+1+1+1+1; 2+2+2+1; 2+2+1+1+1; 2+1+1+1+1+1; 1+1+1+1+1+1+1. Counting partitions by hand becomes tedious fast; the generating function Π 1/(1-x^k) provides a systematic approach.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q41",
+    "lessonId": "comb-06",
+    "type": "FillIn",
+    "difficulty": 1,
+    "prompt": "What is F₁₀, the 10th Fibonacci number? (With F₀ = 0, F₁ = 1.)",
+    "correctAnswer": "55",
+    "acceptableAnswers": ["55"],
+    "explanation": "Computing the Fibonacci sequence: F₀=0, F₁=1, F₂=1, F₃=2, F₄=3, F₅=5, F₆=8, F₇=13, F₈=21, F₉=34, F₁₀=55. Each term is the sum of the two before it: 34 + 21 = 55.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q42",
+    "lessonId": "comb-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What is the characteristic equation for the recurrence aₙ = 5aₙ₋₁ - 6aₙ₋₂?",
+    "options": ["r² - 5r + 6 = 0", "r² + 5r - 6 = 0", "r² - 5r - 6 = 0", "r² + 5r + 6 = 0"],
+    "correctAnswer": "r² - 5r + 6 = 0",
+    "explanation": "To find the characteristic equation, substitute aₙ = rⁿ into the recurrence: rⁿ = 5rⁿ⁻¹ - 6rⁿ⁻², then divide by rⁿ⁻²: r² = 5r - 6, or r² - 5r + 6 = 0. This factors as (r-2)(r-3) = 0, giving roots r = 2 and r = 3. The general solution is aₙ = A·2ⁿ + B·3ⁿ.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q43",
+    "lessonId": "comb-06",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "The characteristic equation for the Fibonacci recurrence is r² - r - 1 = 0. What is the golden ratio φ (the positive root)? Give the exact form.",
+    "correctAnswer": "(1+√5)/2",
+    "acceptableAnswers": ["(1+√5)/2", "(1+sqrt(5))/2", "(1 + √5)/2", "(1 + sqrt(5))/2"],
+    "explanation": "Using the quadratic formula on r² - r - 1 = 0: r = (1 ± √(1+4))/2 = (1 ± √5)/2. The positive root is φ = (1+√5)/2 ≈ 1.618, the golden ratio. The negative root is ψ = (1-√5)/2 ≈ -0.618. Binet's formula gives Fₙ = (φⁿ - ψⁿ)/√5.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q44",
+    "lessonId": "comb-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "For merge sort with recurrence T(n) = 2T(n/2) + O(n), what is the asymptotic complexity?",
+    "options": ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    "correctAnswer": "O(n log n)",
+    "explanation": "Using the Master Theorem with a = 2, b = 2, d = 1: log₂(2) = 1 = d. This is Case 2 (log_b(a) = d), giving T(n) = O(n^d log n) = O(n log n). Merge sort splits into 2 subproblems of half size and does linear work to merge, yielding the optimal comparison-based sorting complexity.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q45",
+    "lessonId": "comb-06",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "True or False: The recurrence T(n) = 4T(n/2) + O(n) has solution T(n) = O(n²).",
+    "correctAnswer": "True",
+    "explanation": "By the Master Theorem: a = 4, b = 2, d = 1. We compute log₂(4) = 2 > 1 = d. This is Case 3 (log_b(a) > d), so T(n) = O(n^{log_b(a)}) = O(n²). The recursive subproblems dominate the O(n) combining step. The 4 subproblems of half-size contribute more work at each level than the merging step.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q46",
+    "lessonId": "comb-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "The Tower of Hanoi recurrence is T(n) = 2T(n-1) + 1 with T(1) = 1. What is T(n)?",
+    "options": ["2ⁿ", "2ⁿ - 1", "2ⁿ + 1", "n²"],
+    "correctAnswer": "2ⁿ - 1",
+    "explanation": "T(1)=1, T(2)=3, T(3)=7, T(4)=15 -- the pattern is 2ⁿ-1. To prove it: let Sₙ = Tₙ+1. Then Sₙ = 2Sₙ₋₁ with S₁ = 2, giving Sₙ = 2ⁿ, so Tₙ = 2ⁿ-1. This grows exponentially, showing that moving n disks requires at least 2ⁿ-1 moves.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q47",
+    "lessonId": "comb-06",
+    "type": "FindTheError",
+    "difficulty": 2,
+    "prompt": "Find the error in solving aₙ = 4aₙ₋₁ - 4aₙ₋₂ with a₀ = 1, a₁ = 4:",
+    "steps": [
+      "Characteristic equation: r² - 4r + 4 = 0",
+      "Factor: (r - 2)² = 0, so r = 2 is a repeated root",
+      "General solution: aₙ = A·2ⁿ + B·2ⁿ",
+      "From a₀ = 1: A + B = 1. From a₁ = 4: 2A + 2B = 4, so A + B = 2",
+      "Contradiction! The system has no solution"
+    ],
+    "correctAnswer": "3",
+    "explanation": "The error is in Step 3. For a repeated root r, the general solution is aₙ = A·rⁿ + B·n·rⁿ, NOT aₙ = A·rⁿ + B·rⁿ (which would just be (A+B)·rⁿ, a single parameter). The correct solution is aₙ = A·2ⁿ + B·n·2ⁿ. Then a₀ = A = 1, and a₁ = 2A + 2B = 4, giving B = 1. So aₙ = (1+n)·2ⁿ.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q48",
+    "lessonId": "comb-06",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each recurrence to its closed-form solution:",
+    "pairs": [
+      { "left": "aₙ = 2aₙ₋₁ (a₀ = 1)", "right": "aₙ = 2ⁿ" },
+      { "left": "Fₙ = Fₙ₋₁ + Fₙ₋₂", "right": "(φⁿ - ψⁿ)/√5 (Binet)" },
+      { "left": "T(n) = 2T(n-1) + 1, T(1) = 1", "right": "T(n) = 2ⁿ - 1" },
+      { "left": "T(n) = 2T(n/2) + n", "right": "O(n log n)" }
+    ],
+    "correctAnswer": null,
+    "explanation": "The geometric recurrence aₙ = 2aₙ₋₁ has solution 2ⁿ (the simplest exponential growth). Fibonacci has Binet's formula involving the golden ratio. The Tower of Hanoi gives 2ⁿ - 1 (exponential, showing the problem is inherently hard). Merge sort's recurrence falls under the Master Theorem's Case 2, giving O(n log n).",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q49",
+    "lessonId": "comb-07",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "By Cayley's formula, how many labeled trees are there on 6 vertices?",
+    "mathExpression": "6^{6-2} = 6^4 = ?",
+    "correctAnswer": "1296",
+    "acceptableAnswers": ["1296"],
+    "explanation": "Cayley's formula states that the number of labeled trees on n vertices is n^{n-2}. For n = 6: 6^4 = 1296. This can be proved using Prüfer sequences: each labeled tree on n vertices corresponds uniquely to a sequence of n-2 elements from {1,...,n}, and there are n^{n-2} such sequences.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q50",
+    "lessonId": "comb-07",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is the 5th Catalan number C₅?",
+    "mathExpression": "C_5 = \\frac{1}{6}\\binom{10}{5} = ?",
+    "correctAnswer": "42",
+    "acceptableAnswers": ["42"],
+    "explanation": "C₅ = (1/(5+1)) × C(10,5) = (1/6) × 252 = 42. Alternatively, using the recurrence: C₀=1, C₁=1, C₂=2, C₃=5, C₄=14, and C₅ = C₀C₄ + C₁C₃ + C₂C₂ + C₃C₁ + C₄C₀ = 14 + 5 + 4 + 5 + 14 = 42. The Catalan numbers count balanced parentheses, binary trees, Dyck paths, and many other structures.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q51",
+    "lessonId": "comb-07",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Which of the following is NOT counted by the Catalan numbers?",
+    "options": ["Number of balanced parenthesizations of n pairs", "Number of full binary trees with n+1 leaves", "Number of partitions of the integer n", "Number of non-crossing partitions of {1,...,n}"],
+    "correctAnswer": "Number of partitions of the integer n",
+    "explanation": "Integer partitions are counted by the partition function p(n), not Catalan numbers. For n=4: p(4)=5 but C₄=14. The Catalan number Cₙ counts balanced parenthesizations, full binary trees with n+1 leaves, Dyck paths of length 2n, non-crossing partitions, triangulations of a polygon with n+2 sides, and over 200 other combinatorial families.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q52",
+    "lessonId": "comb-07",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "True or False: A Latin square of order n has every symbol appearing exactly once in each row and exactly once in each column.",
+    "correctAnswer": "True",
+    "explanation": "By definition, a Latin square of order n is an n×n array filled with n different symbols such that each symbol appears exactly once in each row and exactly once in each column. This is the defining property. Sudoku grids are Latin squares of order 9 with additional block constraints.",
+    "xpReward": 20
+  },
+  {
+    "id": "comb-q53",
+    "lessonId": "comb-07",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In a BIBD(v, b, r, k, λ), the relation bk = vr means:",
+    "options": ["Total elements equals total blocks", "Total block-slots equals total element-appearances", "Each element is in exactly k blocks", "The design is symmetric"],
+    "correctAnswer": "Total block-slots equals total element-appearances",
+    "explanation": "Each of the b blocks has k elements, so bk counts the total number of (element, block) incidences. Each of the v elements appears in r blocks, giving vr incidences. These count the same thing from two perspectives, so bk = vr. This is a basic double-counting argument, one of the most common techniques in combinatorics.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q54",
+    "lessonId": "comb-07",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "The Fano plane is a Steiner system S(2, 3, 7). How many blocks (lines) does it have?",
+    "correctAnswer": "7",
+    "acceptableAnswers": ["7"],
+    "explanation": "In S(2, 3, 7), every pair of 7 points determines a unique block of size 3. The number of pairs is C(7,2) = 21. Each block of size 3 covers C(3,2) = 3 pairs. So the number of blocks is 21/3 = 7. The Fano plane has a beautiful symmetric structure: 7 points and 7 lines, with 3 points on each line and 3 lines through each point.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q55",
+    "lessonId": "comb-07",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Steiner triple systems S(2, 3, n) exist if and only if:",
+    "options": ["n is prime", "n ≡ 1 or 3 (mod 6)", "n is odd", "n ≡ 0 (mod 3)"],
+    "correctAnswer": "n ≡ 1 or 3 (mod 6)",
+    "explanation": "The necessary conditions for S(2,3,n) are that n(n-1) must be divisible by 6 (since each block covers 3 pairs, and C(n,2) pairs must be evenly covered). This requires n ≡ 1 or 3 (mod 6). Kirkman proved in 1847 that these conditions are also sufficient. For example, n = 7 (≡ 1 mod 6) gives the Fano plane, and n = 9 (≡ 3 mod 6) gives a system with 12 blocks.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q56",
+    "lessonId": "comb-07",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to count labeled trees on n vertices using Prüfer sequences:",
+    "steps": [
+      "Start with a labeled tree on vertices {1, 2, ..., n}",
+      "Repeatedly remove the leaf with the smallest label and record the label of its neighbor",
+      "After n-2 removals, two vertices remain -- the sequence of n-2 recorded labels is the Prüfer sequence",
+      "This process is reversible: every sequence of n-2 elements from {1,...,n} gives a unique tree",
+      "There are n^{n-2} such sequences, so there are n^{n-2} labeled trees"
+    ],
+    "correctAnswer": null,
+    "explanation": "The Prüfer sequence provides a bijection between labeled trees on n vertices and sequences of length n-2 from {1,...,n}. The encoding removes the smallest leaf repeatedly, recording its neighbor. The decoding reconstructs the tree from the sequence. Since there are n choices for each of n-2 positions, the total count is n^{n-2}, proving Cayley's formula.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q57",
+    "lessonId": "comb-08",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "The probabilistic method, pioneered by Erdős, proves the existence of an object by showing:",
+    "options": ["An explicit construction of the object", "That a random object has the desired property with probability > 0", "That all objects have the desired property", "A computer search finds the object"],
+    "correctAnswer": "That a random object has the desired property with probability > 0",
+    "explanation": "The probabilistic method proves existence non-constructively: if a randomly chosen object has the desired property with positive probability, then such an object must exist. This doesn't tell you which specific object works -- just that one does. This revolutionary approach allows proving results that seem impossible to show constructively.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q58",
+    "lessonId": "comb-08",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Using Burnside's lemma, how many distinct necklaces can be made from 4 beads, each colored either black or white? (Consider rotational symmetry only, not reflections.)",
+    "correctAnswer": "6",
+    "acceptableAnswers": ["6"],
+    "explanation": "The rotation group of 4 beads has 4 elements: identity (0°), 90°, 180°, 270° rotations. Fixed colorings: identity fixes all 2⁴=16; 90° fixes 2 (all same color); 180° fixes 2²=4 (opposite beads match); 270° fixes 2. By Burnside: (16+2+4+2)/4 = 24/4 = 6 distinct necklaces.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q59",
+    "lessonId": "comb-08",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What is the Ramsey number R(3, 3)?",
+    "options": ["5", "6", "8", "9"],
+    "correctAnswer": "6",
+    "explanation": "R(3,3) = 6 means: any 2-coloring of the edges of K₆ contains a monochromatic triangle, but there exists a 2-coloring of K₅ with no monochromatic triangle. The K₅ counterexample colors edges of a pentagon red and the star inside blue. For K₆, a classic proof shows every vertex has ≥ 3 edges of one color, forming a triangle among those 3 neighbors or among the vertex and two of them.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q60",
+    "lessonId": "comb-08",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "True or False: R(5, 5) is known exactly.",
+    "correctAnswer": "False",
+    "explanation": "R(5,5) is one of the most famous open problems in combinatorics. As of 2025, we only know 43 ≤ R(5,5) ≤ 48. Computing Ramsey numbers is extraordinarily difficult: R(3,3)=6, R(4,4)=18, and R(5,5) has resisted decades of effort. Erdős famously said that computing R(6,6) would be harder than fighting an alien invasion.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q61",
+    "lessonId": "comb-08",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In Burnside's lemma, |X/G| represents:",
+    "options": ["The size of the group", "The total number of colorings", "The number of distinct objects up to symmetry (orbits)", "The number of fixed points of one group element"],
+    "correctAnswer": "The number of distinct objects up to symmetry (orbits)",
+    "explanation": "|X/G| is the number of orbits under the group action -- that is, the number of truly distinct objects when we consider objects related by a symmetry in G as identical. Burnside's lemma computes this as the average number of fixed points: |X/G| = (1/|G|) Σ |Xᵍ|. This converts the hard problem of counting orbits into the easier problem of counting fixed points.",
+    "xpReward": 25
+  },
+  {
+    "id": "comb-q62",
+    "lessonId": "comb-08",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each concept to its description:",
+    "pairs": [
+      { "left": "Probabilistic method", "right": "Existence proof via positive probability" },
+      { "left": "Burnside's lemma", "right": "Count orbits as average of fixed points" },
+      { "left": "Pólya enumeration", "right": "Count colorings by weight using the cycle index" },
+      { "left": "Ramsey theory", "right": "Order must appear in sufficiently large structures" }
+    ],
+    "correctAnswer": null,
+    "explanation": "The probabilistic method (Erdős) proves existence non-constructively. Burnside's lemma counts distinct objects under symmetry by averaging fixed points over group elements. Pólya enumeration extends Burnside to track weights/colors using the cycle index polynomial. Ramsey theory proves that complete disorder is impossible: large enough structures always contain organized sub-patterns.",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q63",
+    "lessonId": "comb-08",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this application of Burnside's lemma to count distinct 3-bead necklaces with 2 colors (rotations only):",
+    "steps": [
+      "The rotation group has 3 elements: 0°, 120°, 240°",
+      "Identity (0°) fixes all 2³ = 8 colorings",
+      "120° rotation: a coloring is fixed only if all 3 beads are the same color, so 2 fixed",
+      "240° rotation: same argument as 120°, so 2 fixed",
+      "Burnside: (8 + 2 + 2) / 2 = 12 / 2 = 6 distinct necklaces"
+    ],
+    "correctAnswer": "5",
+    "explanation": "The error is in Step 5: the denominator should be |G| = 3 (the number of group elements), not 2. The correct computation is (8 + 2 + 2) / 3 = 12/3 = 4 distinct necklaces. The 4 necklaces with 2 colors on 3 beads are: BBB, WWW, BBW, BWW (where the last two are distinct even under rotation).",
+    "xpReward": 30
+  },
+  {
+    "id": "comb-q64",
+    "lessonId": "comb-08",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of the probabilistic proof that R(k,k) ≥ 2^{k/2}:",
+    "steps": [
+      "Color each edge of Kₙ red or blue independently with probability 1/2",
+      "For any fixed set S of k vertices, P(S is monochromatic) = 2 · (1/2)^{C(k,2)} = 2^{1-C(k,2)}",
+      "By the union bound, P(some k-set is monochromatic) ≤ C(n,k) · 2^{1-C(k,2)}",
+      "If n < 2^{k/2}, this probability is less than 1",
+      "So a 2-coloring with no monochromatic Kₖ exists, meaning R(k,k) > n, hence R(k,k) ≥ 2^{k/2}"
+    ],
+    "correctAnswer": null,
+    "explanation": "This is Erdős's landmark 1947 proof. We randomly color edges and bound the probability of failure (some monochromatic Kₖ). Each k-set has C(k,2) edges, all must match color, giving probability 2·2^{-C(k,2)}. Union bound over C(n,k) sets. When n is small enough (n < 2^{k/2}), the failure probability is < 1, so a good coloring exists. This non-constructive proof revolutionized combinatorics.",
+    "xpReward": 30
+  }
+]

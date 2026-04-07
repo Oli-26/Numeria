@@ -328,6 +328,7 @@ else if (quizState == QuizState.Complete)
     // Hint state
     private int hintsAvailable;
     private bool hintShown;
+    private bool showHintsByDefault;
 
     // Find the error state
     private int errorSelectedStep = -1;
@@ -446,6 +447,7 @@ else if (quizState == QuizState.Complete)
     private async Task LoadHintCount()
     {
         var p = await Progress.GetProfileAsync();
+        showHintsByDefault = p.ShowHintsByDefault;
         var totalBought = 0;
         foreach (var purchase in p.ShopPurchases)
         {
@@ -475,6 +477,13 @@ else if (quizState == QuizState.Complete)
         userMatches.Clear();
         matchResults.Clear();
 
+        if (showHintsByDefault && hintsAvailable > 0)
+        {
+            hintShown = true;
+            hintsAvailable--;
+            _ = DeductHintAsync();
+        }
+
         var q = questions[currentIndex];
         if (q.Type == QuestionType.ProofOrdering && q.Steps != null)
         {
@@ -484,6 +493,13 @@ else if (quizState == QuizState.Complete)
         {
             shuffledRights = q.Pairs.Select(p => p.Right).OrderBy(_ => _random.Next()).ToList();
         }
+    }
+
+    private async Task DeductHintAsync()
+    {
+        var p = await Progress.GetProfileAsync();
+        p.HintsUsed++;
+        await Progress.SaveProfileAsync(p);
     }
 
     private async Task SelectOption(string option)

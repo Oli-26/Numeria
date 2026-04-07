@@ -1,0 +1,216 @@
+[
+  {
+    "id": "mastery-calc-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "In the epsilon-delta definition of lim_{x->a} f(x) = L, which of the following is the correct logical structure?",
+    "options": [
+      "For every delta > 0, there exists epsilon > 0 such that 0 < |x - a| < delta implies |f(x) - L| < epsilon",
+      "For every epsilon > 0, there exists delta > 0 such that 0 < |x - a| < delta implies |f(x) - L| < epsilon",
+      "There exists epsilon > 0 such that for every delta > 0, 0 < |x - a| < delta implies |f(x) - L| < epsilon",
+      "For every epsilon > 0 and every delta > 0, 0 < |x - a| < delta implies |f(x) - L| < epsilon"
+    ],
+    "correctAnswer": "For every epsilon > 0, there exists delta > 0 such that 0 < |x - a| < delta implies |f(x) - L| < epsilon",
+    "explanation": "The epsilon-delta definition is: for all epsilon > 0, there exists delta > 0 such that whenever 0 < |x - a| < delta, we have |f(x) - L| < epsilon. The order of quantifiers matters critically. Epsilon (the tolerance on the output) is universally quantified first; delta (the tolerance on the input) is existentially quantified second and may depend on epsilon. Swapping the quantifiers gives a much stronger condition (uniform continuity-like), and the other options either reverse the roles or change the logical structure entirely.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-2",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Evaluate the improper integral: integral from 0 to infinity of x * e^(-x^2) dx. Give an exact answer as a fraction or integer.",
+    "mathExpression": "\\int_0^{\\infty} x e^{-x^2} \\, dx",
+    "correctAnswer": "1/2",
+    "acceptableAnswers": ["1/2", "0.5", "0.50"],
+    "explanation": "Use the substitution u = x^2, so du = 2x dx and x dx = du/2. When x = 0, u = 0; when x -> infinity, u -> infinity. The integral becomes (1/2) * integral from 0 to infinity of e^(-u) du = (1/2) * [-e^(-u)] from 0 to infinity = (1/2)(0 - (-1)) = 1/2. This is a standard Gaussian-related integral. Note that unlike the full Gaussian integral from -infinity to infinity of e^(-x^2) dx = sqrt(pi), this integral has an extra factor of x that makes it elementary.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-3",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: The series sum_{n=1}^{infinity} (-1)^n / sqrt(n) converges absolutely.",
+    "correctAnswer": "False",
+    "explanation": "The series converges conditionally by the Alternating Series Test (1/sqrt(n) decreases to 0), but it does NOT converge absolutely. The absolute value series sum 1/sqrt(n) = sum n^(-1/2) is a p-series with p = 1/2 < 1, which diverges. This is a classic example distinguishing conditional from absolute convergence. Many students confuse these: passing the AST only guarantees conditional convergence, not absolute.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each convergence test to the type of series it is BEST suited for:",
+    "pairs": [
+      { "left": "Ratio Test", "right": "Series with factorials or exponentials" },
+      { "left": "Integral Test", "right": "Series where f(n) is positive, decreasing, and integrable" },
+      { "left": "Alternating Series Test", "right": "Series with (-1)^n factor and decreasing terms" },
+      { "left": "Comparison Test", "right": "Series resembling a known p-series" },
+      { "left": "Root Test", "right": "Series with terms raised to the nth power" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each convergence test has a natural domain of applicability. The Ratio Test shines when consecutive terms have factorials or exponentials (e.g., n!/3^n) since the ratio simplifies. The Integral Test converts sum estimation to integration, needing a positive decreasing continuous function. The Alternating Series Test requires strictly alternating signs with decreasing magnitude approaching zero. The Comparison Test leverages known results (e.g., p-series) for similar series. The Root Test is optimal when the general term has the form a_n^n or similar nth-power structure, since the nth root simplifies cleanly.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-5",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this evaluation of an improper integral:",
+    "steps": [
+      "Evaluate integral from -1 to 1 of 1/x^2 dx",
+      "Find antiderivative: F(x) = -1/x",
+      "Apply FTC: F(1) - F(-1) = -1/1 - (-1/(-1)) = -1 - 1 = -2",
+      "Therefore the integral equals -2"
+    ],
+    "correctAnswer": "1",
+    "explanation": "The error is in Step 1 (treating it as a proper integral). The function 1/x^2 has a non-integrable singularity at x = 0, which lies in the interval [-1, 1]. This is an improper integral that must be split at x = 0 and evaluated as limits. Both one-sided integrals diverge to +infinity (since 1/x^2 > 0), so the integral diverges. The 'answer' of -2 is nonsensical because it's negative yet the integrand is everywhere positive. This is a famous trap: blindly applying the Fundamental Theorem of Calculus across a singularity gives an incorrect finite answer.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-calc-6",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Arrange the steps to prove: if f is differentiable at a, then f is continuous at a.",
+    "steps": [
+      "We want to show lim_{x->a} f(x) = f(a), i.e., lim_{x->a} [f(x) - f(a)] = 0.",
+      "Write f(x) - f(a) = [(f(x) - f(a))/(x - a)] * (x - a) for x != a.",
+      "Take the limit: lim_{x->a} [f(x) - f(a)] = lim_{x->a} [(f(x) - f(a))/(x - a)] * lim_{x->a} (x - a).",
+      "Since f is differentiable at a, lim_{x->a} (f(x) - f(a))/(x - a) = f'(a), which exists and is finite.",
+      "And lim_{x->a} (x - a) = 0.",
+      "Therefore lim_{x->a} [f(x) - f(a)] = f'(a) * 0 = 0, so f is continuous at a."
+    ],
+    "correctAnswer": null,
+    "explanation": "This is the standard proof that differentiability implies continuity. The key algebraic trick is multiplying and dividing by (x - a) to introduce the difference quotient. The product rule for limits applies because one factor converges to a finite limit f'(a) and the other to 0. Note: we use the fact that the limit of a product is the product of limits WHEN both limits exist (and at least one is finite). The converse fails: |x| is continuous at 0 but not differentiable there.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-calc-7",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Let f(x, y) = e^(xy) and let x = t^2, y = sin(t). By the multivariable chain rule, what is df/dt?",
+    "options": [
+      "e^(xy) * (2t * sin(t) + t^2 * cos(t))",
+      "e^(xy) * (y * 2t + x * cos(t))",
+      "e^(xy) * (2t * cos(t))",
+      "2t * sin(t) * e^(xy)"
+    ],
+    "correctAnswer": "e^(xy) * (y * 2t + x * cos(t))",
+    "explanation": "By the multivariable chain rule: df/dt = (partial f/partial x)(dx/dt) + (partial f/partial y)(dy/dt). We have partial f/partial x = y*e^(xy), partial f/partial y = x*e^(xy), dx/dt = 2t, dy/dt = cos(t). So df/dt = y*e^(xy)*2t + x*e^(xy)*cos(t) = e^(xy)(2ty + x*cos(t)). Option A is a common error where students substitute x and y into the derivatives but forget partial derivatives yield y and x respectively. The chain rule for compositions with multiple intermediate variables requires summing over all paths of dependence.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-8",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: If sum_{n=1}^{infinity} a_n converges, then lim_{n->infinity} n * a_n = 0.",
+    "correctAnswer": "False",
+    "explanation": "This is a subtle and commonly believed falsehood. While convergence of sum a_n implies a_n -> 0, it does NOT generally imply n*a_n -> 0. Counterexample: define a_n = 1/n for n that are perfect squares, and a_n = 0 otherwise. Then sum a_n = sum_{k=1}^{infinity} 1/k^2 = pi^2/6, which converges. But along the subsequence n = k^2, we have n*a_n = k^2 * (1/k^2) = 1, so n*a_n does not converge to 0. The statement would be true with the additional hypothesis that a_n is monotonically decreasing (this is a consequence of the Cauchy condensation test).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the radius of convergence of the power series sum_{n=0}^{infinity} n! * x^n?",
+    "mathExpression": "\\sum_{n=0}^{\\infty} n! \\, x^n",
+    "correctAnswer": "0",
+    "acceptableAnswers": ["0", "0.0"],
+    "explanation": "Apply the Ratio Test: |a_{n+1}/a_n| = |(n+1)! * x^{n+1}| / |n! * x^n| = (n+1)|x|. As n -> infinity, this ratio goes to infinity for any x != 0. So the series diverges for all x != 0 and converges only at x = 0. The radius of convergence is 0. This illustrates that factorials grow faster than any exponential: n! >> R^n for any fixed R, making the terms explode. The function sum n! x^n is a famous example of a formal power series that doesn't represent an analytic function on any neighborhood of 0.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-10",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this proof that the integral from 0 to infinity of sin(x)/x dx diverges:",
+    "steps": [
+      "Consider integral from 0 to infinity of sin(x)/x dx",
+      "For large x, |sin(x)/x| <= 1/x",
+      "The integral from 1 to infinity of 1/x dx diverges (harmonic integral)",
+      "By the Comparison Test, integral from 0 to infinity of sin(x)/x dx also diverges"
+    ],
+    "correctAnswer": "4",
+    "explanation": "The error is in Step 4. The Comparison Test for integrals requires that the integrand be non-negative to conclude divergence from a lower bound. Here, sin(x)/x oscillates in sign and achieves significant cancellation. The bound |sin(x)/x| <= 1/x only tells us the integral does NOT converge absolutely (which is true), but the integral of sin(x)/x itself DOES converge conditionally to pi/2 (the Dirichlet integral). This is analogous to the alternating harmonic series: sum (-1)^n/n converges even though sum 1/n diverges. The comparison test with 1/x proves non-absolute convergence, not divergence.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-calc-11",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which of the following integrals can be evaluated using Stokes' theorem by converting a surface integral to a line integral (or vice versa)?",
+    "options": [
+      "The integral of curl(F) dot dS over a closed surface with no boundary",
+      "The integral of curl(F) dot dS over a hemisphere, converted to a line integral around its equatorial circle",
+      "The integral of div(F) dV over a solid ball",
+      "The integral of f(x,y) dA over a rectangle in the plane"
+    ],
+    "correctAnswer": "The integral of curl(F) dot dS over a hemisphere, converted to a line integral around its equatorial circle",
+    "explanation": "Stokes' theorem states: integral of curl(F) dot dS over surface S = integral of F dot dr over boundary curve dS. This requires S to have a boundary. A hemisphere has boundary = its equatorial circle, so Stokes' applies. A closed surface has no boundary, so the integral of curl(F) dot dS = 0 (useful fact, but not a conversion). The div(F) integral uses the Divergence Theorem (Gauss), not Stokes'. The double integral of f dA is just a standard area integral with no curl involved. Key insight: Stokes' theorem relates a 2D surface integral of a curl to a 1D line integral over the boundary.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-12",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each integral theorem to its correct statement:",
+    "pairs": [
+      { "left": "Green's Theorem", "right": "Relates a line integral around a simple closed curve to a double integral over the enclosed region in R^2" },
+      { "left": "Stokes' Theorem", "right": "Relates the surface integral of curl(F) to the line integral of F around the boundary curve" },
+      { "left": "Divergence Theorem", "right": "Relates the flux integral over a closed surface to the triple integral of div(F) over the enclosed volume" },
+      { "left": "Fundamental Theorem of Line Integrals", "right": "The line integral of a gradient field depends only on the endpoints" }
+    ],
+    "correctAnswer": null,
+    "explanation": "These four theorems are all manifestations of the generalized Stokes' theorem from differential geometry. Green's Theorem is the 2D special case of Stokes' Theorem restricted to planar regions. Stokes' Theorem in its classical form connects surface integrals of curl to boundary line integrals in R^3. The Divergence Theorem (Gauss) goes one dimension higher, connecting volume integrals of divergence to surface flux integrals. The Fundamental Theorem of Line Integrals is the 1D case: if F = grad(f), then integral of F dot dr = f(b) - f(a). Each theorem says: integral of a derivative over a region = integral of the function over the boundary.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-13",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Arrange the steps to prove: the harmonic series sum_{n=1}^{infinity} 1/n diverges, using the integral test.",
+    "steps": [
+      "Let f(x) = 1/x, which is positive, continuous, and decreasing on [1, infinity).",
+      "By the Integral Test, sum_{n=1}^{infinity} 1/n converges if and only if integral from 1 to infinity of 1/x dx converges.",
+      "Compute the integral: integral from 1 to R of 1/x dx = ln(R) - ln(1) = ln(R).",
+      "Take the limit: lim_{R->infinity} ln(R) = infinity.",
+      "Since the integral diverges, the Integral Test guarantees that sum_{n=1}^{infinity} 1/n also diverges."
+    ],
+    "correctAnswer": null,
+    "explanation": "The Integral Test provides a powerful bridge between series and integrals. The key hypothesis is that f must be positive, continuous, and eventually decreasing -- all satisfied by 1/x on [1, infinity). The integral of 1/x yields ln(x), which diverges logarithmically. This is the slowest-growing standard divergence: the partial sums of the harmonic series grow like ln(n) + gamma (where gamma ~ 0.5772 is the Euler-Mascheroni constant). This proof is cleaner than Oresme's original grouping argument and generalizes to show sum 1/n^p diverges for p <= 1.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-calc-14",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Evaluate the integral: integral from 0 to infinity of 1/(1 + x^2) dx. Give an exact answer.",
+    "mathExpression": "\\int_0^{\\infty} \\frac{1}{1+x^2} \\, dx",
+    "correctAnswer": "pi/2",
+    "acceptableAnswers": ["pi/2", "π/2", "Pi/2"],
+    "explanation": "The antiderivative of 1/(1+x^2) is arctan(x). Evaluating: lim_{R->infinity} arctan(R) - arctan(0) = pi/2 - 0 = pi/2. This is one of the most fundamental improper integrals in mathematics. It shows that a function can have a finite integral over an infinite domain -- the 'tail' of 1/(1+x^2) decays fast enough (like 1/x^2 for large x) to be integrable. This integral also arises as the normalization constant for the Cauchy distribution in probability theory.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-calc-15",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: If f is continuous on [a, b] and differentiable on (a, b), and f(a) = f(b) = 0, then there exists some c in (a, b) where f''(c) = 0.",
+    "correctAnswer": "False",
+    "explanation": "This is false without additional hypotheses. Counterexample: f(x) = x(1 - x) on [0, 1]. We have f(0) = f(1) = 0, f is infinitely differentiable, and f''(x) = -2 everywhere -- it's never zero. The statement confuses Rolle's Theorem (which guarantees f'(c) = 0 for some c) with a claim about f''. To guarantee f'' = 0, you would need additional conditions, such as a third point where f vanishes (by applying Rolle's theorem twice). The Mean Value Theorem hierarchy requires each successive derivative claim to have one more root of f as input.",
+    "xpReward": 40
+  }
+]

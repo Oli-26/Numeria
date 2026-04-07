@@ -1,0 +1,251 @@
+[
+  {
+    "id": "mastery-four-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Parseval's theorem for Fourier series states that if f ∈ L²([0,2π]) has Fourier coefficients c_n, then (1/2π)∫₀²π |f(x)|² dx = Σ|c_n|². What does this imply physically for a signal?",
+    "options": [
+      "The signal's frequency is the sum of its harmonics",
+      "The total energy in the time domain equals the total energy in the frequency domain",
+      "The signal can be recovered from its magnitude spectrum alone",
+      "Higher harmonics always carry more energy"
+    ],
+    "correctAnswer": "The total energy in the time domain equals the total energy in the frequency domain",
+    "explanation": "Parseval's theorem is an energy conservation law: the L² norm (total energy) computed in the time domain equals the ℓ² norm of the Fourier coefficients (energy in the frequency domain). It is an isometry statement — the Fourier transform is a unitary operator on L².",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Gibbs phenomenon disappears if you use Cesàro (Fejér) summation instead of ordinary partial sums of a Fourier series.",
+    "correctAnswer": "True",
+    "explanation": "Fejér's theorem states that the Cesàro means σ_N(f) = (1/N)Σ_{n=0}^{N-1} S_n(f) converge uniformly to f for any continuous function on the circle, with no overshoot. The Gibbs phenomenon is specific to ordinary partial sums S_N — the ~9% overshoot persists as N→∞. Cesàro summation averages out these oscillations, eliminating the Gibbs phenomenon entirely.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Gibbs phenomenon causes an overshoot near a jump discontinuity of a Fourier partial sum. The limiting overshoot percentage (as N→∞) is approximately (2/π)∫₀^π (sin t/t)dt - 1 ≈ 0.0895. As a percentage of the jump, this is about:",
+    "acceptableAnswers": [
+      "9%",
+      "8.95%",
+      "9"
+    ],
+    "correctAnswer": "9%",
+    "explanation": "The Gibbs overshoot converges to (1/π)∫₀^π (sin t/t)dt ≈ 1.0895 times the half-jump, giving about 8.95% ≈ 9% overshoot beyond the function value. This is a fundamental limitation of pointwise convergence of Fourier series at jumps and persists no matter how many terms are taken.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-4",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about the Fourier transform of distributions.",
+    "steps": [
+      "The Schwartz space S(R) consists of smooth functions whose derivatives all decay faster than any polynomial.",
+      "The Fourier transform maps S(R) bijectively onto itself.",
+      "Tempered distributions S'(R) are the continuous linear functionals on S(R).",
+      "The Fourier transform extends to S'(R) by duality: ⟨F̂(T), φ⟩ = ⟨T, φ̂⟩.",
+      "The Dirac delta δ is a tempered distribution with Fourier transform δ̂ = 0 (the zero distribution).",
+      "Therefore, the Fourier transform is well-defined on all tempered distributions."
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is wrong. The Fourier transform of the Dirac delta δ is the constant function 1, NOT the zero distribution. We have ⟨δ̂, φ⟩ = ⟨δ, φ̂⟩ = φ̂(0) = ∫φ(x)dx = ⟨1, φ⟩. So δ̂ = 1. This is one of the most important distribution Fourier transform pairs: a point mass transforms to a constant.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-four-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Poisson summation formula states that Σ_{n∈Z} f(n) = Σ_{n∈Z} f̂(n) for f in the Schwartz space. Which of these is a direct consequence?",
+    "options": [
+      "The Prime Number Theorem",
+      "The functional equation of the Jacobi theta function θ(t) = Σ e^{-πn²t}",
+      "The Heisenberg uncertainty principle",
+      "Convergence of Fourier series for L¹ functions"
+    ],
+    "correctAnswer": "The functional equation of the Jacobi theta function θ(t) = Σ e^{-πn²t}",
+    "explanation": "Applying Poisson summation to f(x) = e^{-πtx²}, whose Fourier transform is f̂(ξ) = t^{-1/2}e^{-πξ²/t}, yields θ(t) = t^{-1/2}θ(1/t). This functional equation is the key ingredient in Riemann's proof of the functional equation for ζ(s). While related to PNT, the direct consequence is the theta function identity.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-6",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each function space with its key property in Fourier analysis.",
+    "pairs": [
+      {
+        "left": "L¹(R)",
+        "right": "Fourier transform exists pointwise, is continuous, vanishes at ∞ (Riemann-Lebesgue)"
+      },
+      {
+        "left": "L²(R)",
+        "right": "Fourier transform is an isometric isomorphism (Plancherel theorem)"
+      },
+      {
+        "left": "Schwartz space S(R)",
+        "right": "Fourier transform is an automorphism; functions decay faster than any polynomial"
+      },
+      {
+        "left": "Tempered distributions S'(R)",
+        "right": "Largest natural space where Fourier transform is defined by duality"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "L¹ gives a well-defined pointwise FT but the image is not all of C_0. L² is the natural isometry setting (Plancherel). Schwartz space is the 'perfect' space closed under FT, and tempered distributions extend the FT maximally via duality. Each inclusion S ⊂ L² ⊂ S' gives increasing generality.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-7",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps proving the Riemann-Lebesgue lemma: if f ∈ L¹(R), then f̂(ξ) → 0 as |ξ| → ∞.",
+    "steps": [
+      "First prove the result for indicator functions f = 1_{[a,b]}: f̂(ξ) = (e^{-2πibξ} - e^{-2πiaξ})/(2πiξ) → 0 as |ξ| → ∞.",
+      "By linearity, the result holds for all step functions (finite linear combinations of indicator functions).",
+      "Given f ∈ L¹(R) and ε > 0, approximate f by a step function g with ||f - g||₁ < ε.",
+      "Then |f̂(ξ) - ĝ(ξ)| ≤ ||f - g||₁ < ε for all ξ.",
+      "Since ĝ(ξ) → 0 as |ξ| → ∞, there exists N such that |ĝ(ξ)| < ε for |ξ| > N.",
+      "Therefore |f̂(ξ)| ≤ |f̂(ξ) - ĝ(ξ)| + |ĝ(ξ)| < 2ε for |ξ| > N, completing the proof."
+    ],
+    "correctAnswer": null,
+    "explanation": "This is a standard density argument: prove the result for a dense subclass (step functions), then use the fact that the Fourier transform is a bounded operator from L¹ to L^∞ to extend to all of L¹. The key estimate is |f̂(ξ)| ≤ ||f||₁ (the FT is a contraction from L¹ to L^∞).",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-four-8",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Fourier series of an L¹ function on [0,2π] always converges pointwise almost everywhere.",
+    "correctAnswer": "False",
+    "explanation": "This is false for L¹. Kolmogorov (1926) constructed an L¹ function whose Fourier series diverges everywhere. The pointwise a.e. convergence result (Carleson's theorem, 1966) requires f ∈ L²; it was extended to L^p for p > 1 by Hunt. For L¹, pointwise convergence can fail spectacularly.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Fourier transform of a Gaussian f(x) = e^{-πx²} is f̂(ξ) = ?",
+    "acceptableAnswers": [
+      "e^{-πξ²}",
+      "e^(-πξ²)",
+      "e^(-pi*xi^2)",
+      "exp(-πξ²)"
+    ],
+    "correctAnswer": "e^{-πξ²}",
+    "explanation": "The Gaussian e^{-πx²} is an eigenfunction of the Fourier transform with eigenvalue 1. This is the unique (up to scaling) fixed point of the FT in L². The normalization with π in the exponent is chosen precisely to make this clean: the Gaussian is its own Fourier transform. This also achieves equality in the Heisenberg uncertainty principle.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which statement about the Schwartz space S(R) is FALSE?",
+    "options": [
+      "S(R) is closed under multiplication by polynomials",
+      "S(R) is closed under differentiation",
+      "S(R) is a Banach space with a single norm",
+      "S(R) is dense in L^p(R) for all 1 ≤ p < ∞"
+    ],
+    "correctAnswer": "S(R) is a Banach space with a single norm",
+    "explanation": "S(R) is NOT a Banach space — it is a Fréchet space, whose topology is defined by the countable family of seminorms ||f||_{α,β} = sup_x |x^α D^β f(x)|. No single norm suffices. The other statements are all true: S(R) is closed under polynomial multiplication and differentiation, and is dense in every L^p for finite p.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-11",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Fourier transform of a Gaussian e^(-ax²) is:",
+    "options": [
+      "Another Gaussian: √(π/a) e^(-ξ²/(4a))",
+      "A sinc function: sin(ξ)/ξ",
+      "A Dirac delta: δ(ξ)",
+      "A rectangle function: rect(ξ/a)"
+    ],
+    "correctAnswer": "Another Gaussian: √(π/a) e^(-ξ²/(4a))",
+    "explanation": "The Gaussian is the unique function (up to scaling) that is its own Fourier transform. Specifically, F[e^(-ax²)](ξ) = √(π/a) e^(-ξ²/(4a)). This remarkable self-duality is fundamental to quantum mechanics and probability theory.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-12",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each convergence result with the function space it applies to.",
+    "pairs": [
+      {
+        "left": "Carleson's theorem (pointwise a.e. convergence)",
+        "right": "L² (and L^p, p > 1)"
+      },
+      {
+        "left": "Kolmogorov's counterexample (divergence everywhere)",
+        "right": "L¹"
+      },
+      {
+        "left": "Uniform convergence of Fourier series",
+        "right": "C¹ (continuously differentiable)"
+      },
+      {
+        "left": "Convergence in L² norm",
+        "right": "L² (always, by orthogonality)"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "Carleson (1966) proved pointwise a.e. convergence for L² functions — one of the hardest results in harmonic analysis. Kolmogorov showed L¹ is not enough. Continuously differentiable functions have uniformly convergent Fourier series (by rapid coefficient decay). L² norm convergence is elementary by Hilbert space theory.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-13",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Fourier transform of a compactly supported smooth function is entire (extends to an entire function on C).",
+    "correctAnswer": "True",
+    "explanation": "If f ∈ C_c^∞(R), then f̂(ξ) = ∫f(x)e^{-2πixξ}dx extends to ξ ∈ C because the integrand is entire in ξ and the integral is over a compact set. By the Paley-Wiener theorem, f̂ is an entire function of exponential type. The converse also holds: entire functions of exponential type that are L² on the real line are exactly the Fourier transforms of L² functions with compact support.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-14",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Heisenberg uncertainty principle states that for a normalized f ∈ L²(R), (∫x²|f|²dx)(∫ξ²|f̂|²dξ) ≥ C. What is the sharp constant C?",
+    "acceptableAnswers": [
+      "1/(16π²)",
+      "1/16π²"
+    ],
+    "correctAnswer": "1/(16π²)",
+    "explanation": "With the convention f̂(ξ) = ∫f(x)e^{-2πixξ}dx, the sharp uncertainty principle is (∫x²|f|²dx)(∫ξ²|f̂|²dξ) ≥ 1/(16π²) for ||f||₂ = 1. Equality holds exactly for Gaussians f(x) = Ce^{-αx²}. With the alternative convention using ℏ, this becomes ΔxΔp ≥ ℏ/2 in physics.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-four-15",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps deriving the Poisson summation formula from the Fourier inversion theorem.",
+    "steps": [
+      "Let f ∈ S(R) (Schwartz space). Define the periodization g(x) = Σ_{n∈Z} f(x+n).",
+      "g is periodic with period 1, so it has a Fourier series: g(x) = Σ_{k∈Z} c_k e^{2πikx}.",
+      "Compute c_k = ∫₀¹ g(x)e^{-2πikx}dx = ∫₀¹ Σ_n f(x+n) e^{-2πikx}dx.",
+      "Interchange sum and integral (justified by rapid decay of f): c_k = Σ_n ∫₀¹ f(x+n)e^{-2πikx}dx = ∫_{-∞}^{∞} f(x)e^{-2πikx}dx = f̂(k).",
+      "Therefore g(x) = Σ_k f̂(k)e^{2πikx}. Evaluating at x=0: Σ_n f(n) = Σ_k f̂(k).",
+      "This is the Poisson summation formula: the sum of f over integers equals the sum of f̂ over integers."
+    ],
+    "correctAnswer": null,
+    "explanation": "The proof works by periodizing f, computing Fourier coefficients of the periodic function, and recognizing them as samples of f̂. The swap of sum and integral is justified by the rapid decay of Schwartz functions. Evaluating at x=0 gives the classical formula.",
+    "xpReward": 50
+  }
+]

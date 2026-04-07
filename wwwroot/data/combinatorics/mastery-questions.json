@@ -1,0 +1,188 @@
+[
+  {
+    "id": "mastery-comb-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Stirling number of the second kind S(n,k) counts the number of ways to partition a set of n elements into exactly k non-empty subsets. What is S(5, 3)?",
+    "options": ["15", "25", "10", "20"],
+    "correctAnswer": "25",
+    "explanation": "S(5,3) counts partitions of {1,2,3,4,5} into 3 non-empty subsets. Using the recurrence S(n,k) = k·S(n-1,k) + S(n-1,k-1): S(5,3) = 3·S(4,3) + S(4,2) = 3·6 + 7 = 25. These can be enumerated: there are C(5,3)=10 ways to choose a 3-element block (leaving a pair), plus C(5,2)·(1/2)·... but the recurrence is more systematic. The Stirling numbers appear in the expansion of falling factorials and in moment calculations in probability.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-2",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "How many surjections (onto functions) are there from a 4-element set to a 3-element set?",
+    "correctAnswer": "36",
+    "acceptableAnswers": ["36"],
+    "explanation": "The number of surjections from an n-set to a k-set is k! · S(n,k), where S(n,k) is the Stirling number of the second kind. Alternatively, by inclusion-exclusion: Σ_{i=0}^{k} (-1)^i C(k,i)(k-i)^n. For n=4, k=3: 3⁴ - C(3,1)·2⁴ + C(3,2)·1⁴ = 81 - 48 + 3 = 36. Equivalently, 3! · S(4,3) = 6 · 6 = 36.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-3",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Using the cycle index of the rotation group of a square (Z₄), how many distinct 2-colorings of the vertices are there, counting rotations as equivalent?",
+    "options": ["4", "6", "8", "16"],
+    "correctAnswer": "6",
+    "explanation": "The rotation group of a square has 4 elements. Cycle index: Z = (1/4)(p₁⁴ + p₄ + p₂² + p₄). Setting each pᵢ = 2 (for 2 colors): (1/4)(2⁴ + 2 + 2² + 2) = (1/4)(16+2+4+2) = 24/4 = 6. The 6 necklaces are: BBBB, BBBW, BBWW (adjacent), BWBW (alternating), BWWW, WWWW. This is Burnside/Pólya enumeration in action.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-4",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: The number of derangements D_n satisfies the recurrence D_n = (n-1)(D_{n-1} + D_{n-2}).",
+    "correctAnswer": "True",
+    "explanation": "This elegant recurrence can be proved combinatorially. Consider element 1: it must go to some position k (n-1 choices). Then either element k goes to position 1 (creating a 2-cycle, leaving D_{n-2} derangements of the rest) or element k goes elsewhere (equivalent to a derangement of n-1 elements where k plays the role of 1, giving D_{n-1}). So D_n = (n-1)(D_{n-1} + D_{n-2}).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-5",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Using generating functions, find the number of ways to select 10 items from 3 types where you must take at least 2 of type A and at most 4 of type B (type C is unrestricted). Items within a type are identical.",
+    "correctAnswer": "35",
+    "acceptableAnswers": ["35"],
+    "explanation": "We need non-negative integer solutions to a+b+c = 10 with a ≥ 2, 0 ≤ b ≤ 4, c ≥ 0. Substitute a' = a-2: a'+b+c = 8 with a' ≥ 0, 0 ≤ b ≤ 4, c ≥ 0. The generating function is [x⁸ in] (1/(1-x))·(1+x+x²+x³+x⁴)·(1/(1-x)). For each value of b, a'+c = 8-b has (8-b+1) non-negative integer solutions. Summing over b = 0,1,2,3,4: 9+8+7+6+5 = 35.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-6",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The exponential generating function (EGF) for the Bell numbers B_n (which count the total number of partitions of an n-set) is:",
+    "options": ["e^(e^x - 1)", "1/(1 - x)", "e^x / (1 - x)", "(1 + x)^n"],
+    "correctAnswer": "e^(e^x - 1)",
+    "explanation": "The Bell number B_n = Σ_{k=0}^{n} S(n,k) counts all partitions of {1,...,n}. Its EGF is Σ B_n x^n/n! = e^{e^x - 1}. This follows from the EGF for Stirling numbers: the EGF for partitions into exactly k blocks is (e^x - 1)^k / k!, and summing over k gives e^{e^x - 1}. The first Bell numbers are 1, 1, 2, 5, 15, 52, 203.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-7",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this Burnside's lemma calculation for coloring the faces of a cube with 2 colors (up to rotation):",
+    "steps": [
+      "The rotation group of a cube has 24 elements",
+      "Identity: fixes all 2⁶ = 64 colorings",
+      "6 face rotations (90° and 270° about face axes): each fixes 2³ = 8 colorings",
+      "Total: (64 + 6·8) / 24 = (64 + 48) / 24 = 112/24 which is not an integer, so something is wrong",
+      "The error must be in our group size; the rotation group actually has 12 elements"
+    ],
+    "correctAnswer": "5",
+    "explanation": "The error is in Step 5. The rotation group of a cube does indeed have 24 elements, not 12. The real problem is that Step 3 only accounts for 6 of the 23 non-identity rotations. The full count must include: 6 face rotations (90°/270°), 3 face rotations (180°), 8 vertex rotations (120°/240°), and 6 edge rotations (180°). A correct Burnside computation gives (64 + 6·8 + 3·16 + 8·4 + 6·8)/24 = (64+48+48+32+48)/24 = 240/24 = 10 distinct colorings.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-comb-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Ramsey number R(3, 4) equals:",
+    "options": ["7", "8", "9", "10"],
+    "correctAnswer": "9",
+    "explanation": "R(3,4) = 9 means any 2-coloring of K₉ edges contains a red triangle or a blue K₄, but there exists a 2-coloring of K₈ avoiding both. This is proven using the recursive bound R(s,t) ≤ R(s-1,t) + R(s,t-1) and specific constructions. The value R(3,4) = 9 was established by Greenwood and Gleason in 1955.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Möbius function μ(n) is a multiplicative function used in the Möbius inversion formula. What is μ(30)?",
+    "correctAnswer": "-1",
+    "acceptableAnswers": ["-1"],
+    "explanation": "30 = 2 × 3 × 5 is a product of 3 distinct primes. The Möbius function gives μ(n) = (-1)^k when n is a product of k distinct primes, and μ(n) = 0 when n has a squared prime factor. Since 30 has 3 distinct prime factors, μ(30) = (-1)³ = -1. The Möbius function is fundamental to number-theoretic sieves and is related to inclusion-exclusion through the Möbius inversion formula: if g(n) = Σ_{d|n} f(d), then f(n) = Σ_{d|n} μ(n/d)g(d).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-10",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to derive the closed form for the Catalan numbers using generating functions:",
+    "steps": [
+      "Define C(x) = Σ Cₙ xⁿ as the generating function for Catalan numbers",
+      "From the recurrence Cₙ = Σ Cᵢ Cₙ₋₁₋ᵢ, observe that C(x) = 1 + x·C(x)²",
+      "Solve the quadratic: C(x) = (1 - √(1-4x)) / (2x) (choosing the root with C(0)=1)",
+      "Expand √(1-4x) using the generalized binomial theorem",
+      "Extract coefficients to get Cₙ = (1/(n+1))·C(2n, n)"
+    ],
+    "correctAnswer": null,
+    "explanation": "The generating function approach to Catalan numbers starts with encoding the recurrence as a functional equation C(x) = 1 + xC(x)². Solving the quadratic in C(x) and choosing the correct root (the one analytic at x=0), we get C(x) = (1-√(1-4x))/(2x). Expanding the square root via the generalized binomial series and extracting the coefficient of xⁿ yields the beautiful closed form Cₙ = C(2n,n)/(n+1).",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-comb-11",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The chromatic polynomial P(G, k) counts the number of proper k-colorings of graph G. For the complete graph K₄, P(K₄, k) equals:",
+    "options": ["k⁴", "k(k-1)(k-2)(k-3)", "k⁴ - 4k³ + 6k² - 3k", "k(k-1)³"],
+    "correctAnswer": "k(k-1)(k-2)(k-3)",
+    "explanation": "In K₄, every pair of vertices is adjacent, so all 4 vertices must receive different colors. The first vertex has k choices, the second k-1, the third k-2, the fourth k-3. So P(K₄, k) = k(k-1)(k-2)(k-3) = k!/(k-4)! for k ≥ 4. The other options are wrong: k⁴ ignores adjacency constraints entirely, k(k-1)³ would apply to a star graph K_{1,3}, and the third option has incorrect coefficients.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-12",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: The Lovász Local Lemma can prove the existence of a good coloring even when the expected number of bad events exceeds 1, as long as the bad events have limited mutual dependence.",
+    "correctAnswer": "True",
+    "explanation": "This is precisely the power of the Lovász Local Lemma (LLL). The standard probabilistic method with a union bound fails when the expected number of bad events is ≥ 1. The LLL handles this by exploiting the fact that if each bad event has limited dependence on others (even though there may be exponentially many), the probability that none occur is still positive. Specifically, if P(Aᵢ) ≤ p and each event is independent of all but d others, then p·e·(d+1) ≤ 1 suffices to guarantee P(∩ Āᵢ) > 0.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-13",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Stirling number of the first kind |s(n,k)| (unsigned) counts permutations of n elements with exactly k cycles. What is |s(4, 2)|?",
+    "correctAnswer": "11",
+    "acceptableAnswers": ["11"],
+    "explanation": "We need permutations of {1,2,3,4} with exactly 2 cycles. These fall into two cycle-type categories: (1) one 3-cycle and one fixed point: C(4,1)·2 = 8 (choose the fixed point, then 2 distinct 3-cycles on the remaining 3 elements). (2) two 2-cycles: C(4,2)/2·... = 3 (partition 4 elements into 2 pairs: there are C(4,2)/2 = 3 ways). Total: 8 + 3 = 11. These Stirling numbers of the first kind satisfy the recurrence |s(n,k)| = (n-1)·|s(n-1,k)| + |s(n-1,k-1)|.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comb-14",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the key ideas in proving Van der Waerden's theorem (any finite coloring of ℤ contains arbitrarily long monochromatic arithmetic progressions):",
+    "steps": [
+      "Define W(k, r) as the smallest N such that any r-coloring of {1,...,N} has a monochromatic AP of length k",
+      "Base case: W(2, r) = r+1 follows from the pigeonhole principle",
+      "Use double induction on k and r, reducing to previous cases",
+      "The Hales-Jewett theorem provides a more general combinatorial framework",
+      "Conclude: for all k and r, W(k,r) is finite, so arbitrarily long monochromatic APs exist"
+    ],
+    "correctAnswer": null,
+    "explanation": "Van der Waerden's theorem guarantees that no matter how you color the integers with finitely many colors, you cannot avoid monochromatic arithmetic progressions of any prescribed length. The proof uses double induction: first on the progression length k, then on the number of colors r. The base case uses pigeonhole. The Hales-Jewett theorem generalizes this to combinatorial lines in high-dimensional cubes, providing a structural foundation for the result.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-comb-15",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which identity relates the Stirling numbers of the second kind to powers of integers? Specifically, xⁿ = Σ S(n,k)·x(x-1)···(x-k+1), which means:",
+    "options": [
+      "Ordinary powers can be expressed as sums of falling factorials weighted by Stirling numbers",
+      "Falling factorials can be expressed as sums of ordinary powers",
+      "Stirling numbers count the number of cycles in a permutation",
+      "Stirling numbers give the coefficients of the Taylor series of eˣ"
+    ],
+    "correctAnswer": "Ordinary powers can be expressed as sums of falling factorials weighted by Stirling numbers",
+    "explanation": "The identity xⁿ = Σ_{k=0}^{n} S(n,k)·x^{\\underline{k}} expresses the n-th ordinary power as a linear combination of falling factorials, with Stirling numbers of the second kind S(n,k) as coefficients. This is the fundamental connection between Stirling numbers and polynomial bases. The inverse relation uses (signed) Stirling numbers of the first kind: x^{\\underline{n}} = Σ s(n,k)·xᵏ. Together, the two kinds of Stirling numbers form change-of-basis matrices between the two most natural polynomial bases.",
+    "xpReward": 40
+  }
+]

@@ -1,0 +1,218 @@
+[
+  {
+    "id": "mastery-frac-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Hausdorff dimension of the Sierpinski triangle is:",
+    "options": [
+      "log(2)/log(3) ≈ 0.631",
+      "log(3)/log(2) ≈ 1.585",
+      "log(4)/log(3) ≈ 1.262",
+      "log(3)/log(3) = 1"
+    ],
+    "correctAnswer": "log(3)/log(2) ≈ 1.585",
+    "explanation": "The Sierpinski triangle is a self-similar set with 3 copies scaled by factor 1/2. By Moran's equation, the similarity dimension satisfies 3·(1/2)^d = 1, giving d = log(3)/log(2) ≈ 1.585. Since the IFS satisfies the open set condition, Hausdorff dimension equals similarity dimension.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Hausdorff dimension of a set can exceed its topological dimension.",
+    "correctAnswer": "True",
+    "explanation": "This is a defining characteristic of fractals in Mandelbrot's informal sense. For example, the Sierpinski triangle has topological dimension 1 (it's a connected set with no interior) but Hausdorff dimension log(3)/log(2) ≈ 1.585. More generally, dim_H(X) ≥ dim_top(X) always, with strict inequality for many fractal sets.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "An IFS consists of N=4 contractions each with ratio r=1/3 satisfying the open set condition. What is the similarity dimension?",
+    "acceptableAnswers": ["log(4)/log(3)", "log4/log3", "ln(4)/ln(3)"],
+    "correctAnswer": "log(4)/log(3)",
+    "explanation": "The similarity dimension d satisfies Σ r_i^d = 1. With N=4 maps each of ratio 1/3: 4·(1/3)^d = 1 ⟹ (1/3)^d = 1/4 ⟹ d = log(4)/log(3) ≈ 1.2619. Under the open set condition, this equals the Hausdorff dimension.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-4",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this computation of the Hausdorff dimension of the Cantor set.",
+    "steps": [
+      "The middle-thirds Cantor set C is constructed by iteratively removing the open middle third of each interval.",
+      "At step n, we have 2^n intervals each of length 3^{-n}.",
+      "C is self-similar: it consists of 2 copies of itself, each scaled by factor 1/3.",
+      "The similarity dimension satisfies 2·(1/3)^d = 1.",
+      "Solving: (1/3)^d = 1/2, so d = log(2)/log(1/3) = -log(2)/log(3).",
+      "Therefore dim_H(C) = -log(2)/log(3) ≈ -0.631."
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 has an algebraic error. From (1/3)^d = 1/2, we take logarithms: d·log(1/3) = log(1/2), so d = log(1/2)/log(1/3) = (-log 2)/(-log 3) = log(2)/log(3) ≈ 0.631. The negative signs cancel. Dimensions are always non-negative.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-frac-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Lyapunov exponent λ of a one-dimensional map f at a point x_0 measures the average exponential rate of separation of nearby orbits. For the doubling map f(x) = 2x mod 1, what is λ?",
+    "options": [
+      "0",
+      "ln(2) ≈ 0.693",
+      "1",
+      "2"
+    ],
+    "correctAnswer": "ln(2) ≈ 0.693",
+    "explanation": "The Lyapunov exponent is λ = lim (1/n) Σ ln|f'(x_k)|. For the doubling map, f'(x) = 2 everywhere, so λ = lim (1/n)·n·ln(2) = ln(2). This positive exponent confirms the map is chaotic: nearby orbits diverge exponentially at rate ln(2).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-6",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each fractal with its Hausdorff dimension.",
+    "pairs": [
+      {"left": "Middle-thirds Cantor set", "right": "log(2)/log(3) ≈ 0.631"},
+      {"left": "Sierpinski carpet", "right": "log(8)/log(3) ≈ 1.893"},
+      {"left": "Koch snowflake curve", "right": "log(4)/log(3) ≈ 1.262"},
+      {"left": "Menger sponge", "right": "log(20)/log(3) ≈ 2.727"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Each is computed via the similarity dimension formula Σ r_i^d = 1. Cantor: 2 copies at ratio 1/3. Koch: 4 copies at 1/3. Sierpinski carpet: 8 copies at 1/3. Menger sponge: 20 copies at 1/3. All satisfy the open set condition.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-7",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps proving that the attractor of an IFS is unique (Hutchinson's theorem).",
+    "steps": [
+      "Let {f_1, ..., f_N} be an IFS of contractions on a complete metric space (X,d), each with ratio r_i < 1.",
+      "Define the Hutchinson operator F(A) = f_1(A) ∪ f_2(A) ∪ ... ∪ f_N(A) on compact subsets.",
+      "Equip the space of nonempty compact subsets K(X) with the Hausdorff metric d_H.",
+      "(K(X), d_H) is a complete metric space when (X,d) is complete.",
+      "Show F is a contraction on (K(X), d_H) with ratio r = max(r_i): d_H(F(A), F(B)) ≤ r · d_H(A,B).",
+      "By the Banach fixed-point theorem, F has a unique fixed point A* = F(A*).",
+      "A* is the attractor of the IFS, and iterating F on any nonempty compact set converges to A*."
+    ],
+    "correctAnswer": null,
+    "explanation": "Hutchinson's theorem lifts the contraction mapping principle to the hyperspace of compact sets. The key step is showing the Hutchinson operator is a contraction in the Hausdorff metric. The unique fixed point is the fractal attractor, and the chaos game converges to it from any starting compact set.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-frac-8",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The box-counting dimension and Hausdorff dimension always agree for self-similar sets satisfying the open set condition.",
+    "correctAnswer": "True",
+    "explanation": "For self-similar sets satisfying the open set condition (OSC), the Hausdorff dimension, box-counting (Minkowski) dimension, and similarity dimension all coincide. Without OSC (e.g., with heavy overlaps), they can differ. This equivalence is a fundamental result in fractal geometry.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The logistic map f(x) = rx(1-x) exhibits period-doubling bifurcations as r increases. The Feigenbaum constant δ, the limiting ratio of successive bifurcation intervals, is approximately:",
+    "acceptableAnswers": ["4.669", "4.6692", "4.66920"],
+    "correctAnswer": "4.669",
+    "explanation": "The Feigenbaum constant δ ≈ 4.66920... is universal across a wide class of one-dimensional maps undergoing period-doubling cascades. It is defined as δ = lim (r_n - r_{n-1})/(r_{n+1} - r_n) where r_n is the parameter value of the n-th period-doubling bifurcation. This universality is one of the deepest results in chaos theory.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "In symbolic dynamics, the shift space associated with the Cantor set (middle-thirds) is the full shift on which alphabet?",
+    "options": [
+      "{0, 1} — binary sequences",
+      "{0, 1, 2} — ternary sequences using all three symbols",
+      "{0, 2} — ternary sequences omitting the digit 1",
+      "{1, 2} — ternary sequences omitting the digit 0"
+    ],
+    "correctAnswer": "{0, 2} — ternary sequences omitting the digit 1",
+    "explanation": "The middle-thirds Cantor set consists of all numbers in [0,1] whose ternary expansion contains only digits 0 and 2 (no 1s). This gives a natural coding as the full shift on {0,2}, which is conjugate to the full 2-shift on {0,1}. Removing middle thirds exactly corresponds to forbidding the digit 1.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-11",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this analysis of the Hénon strange attractor.",
+    "steps": [
+      "The Hénon map is (x,y) ↦ (1 - ax² + y, bx) with classical parameters a=1.4, b=0.3.",
+      "The Jacobian has determinant |det(J)| = |b| = 0.3, so the map is area-contracting.",
+      "The attractor has two Lyapunov exponents: λ_1 ≈ 0.42 > 0 and λ_2 ≈ -1.62 < 0.",
+      "Since λ_1 > 0, nearby orbits diverge — the system is chaotic.",
+      "The Kaplan-Yorke dimension is d_KY = 1 + λ_1/λ_2 = 1 + 0.42/(-1.62) ≈ 0.74.",
+      "This is consistent with the attractor being a fractal curve."
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 has the wrong formula application. The Kaplan-Yorke dimension is d_KY = j + (Σ_{i=1}^{j} λ_i)/|λ_{j+1}| where j is the largest index such that the partial sum of exponents is non-negative. Here j=1 (since λ_1 > 0), so d_KY = 1 + λ_1/|λ_2| = 1 + 0.42/1.62 ≈ 1.26, not 0.74. The division should be by |λ_2|, not λ_2.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-frac-12",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each concept with its role in fractal/chaos theory.",
+    "pairs": [
+      {"left": "Lyapunov exponent", "right": "Rate of exponential divergence of nearby orbits"},
+      {"left": "Hausdorff measure", "right": "Assigns 'volume' at a fractional dimension"},
+      {"left": "Symbolic dynamics", "right": "Encodes orbits as sequences over a finite alphabet"},
+      {"left": "Open set condition", "right": "Ensures IFS pieces do not overlap too much"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Lyapunov exponents quantify sensitive dependence on initial conditions. Hausdorff measure generalizes length/area/volume to non-integer dimensions. Symbolic dynamics provides a combinatorial framework for studying chaotic maps. The OSC is the key technical condition ensuring the similarity dimension equals the Hausdorff dimension.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-13",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The boundary of the Mandelbrot set has Hausdorff dimension 2 (the same as its ambient space R²).",
+    "correctAnswer": "True",
+    "explanation": "Shishikura (1998) proved that the boundary of the Mandelbrot set has Hausdorff dimension exactly 2. This is remarkable: despite being a 'curve' (the boundary of a connected compact set), it is so complicated that it fills area in the dimension sense. However, it is conjectured (but not proven) to have zero 2-dimensional Lebesgue measure.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-14",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "For the Lorenz system with standard parameters (σ=10, ρ=28, β=8/3), the sum of all three Lyapunov exponents equals -(σ + 1 + β). What is this value?",
+    "acceptableAnswers": ["-13.667", "-13.67", "-41/3"],
+    "correctAnswer": "-41/3",
+    "explanation": "The sum of Lyapunov exponents equals the trace of the Jacobian averaged over the attractor. For the Lorenz system, the divergence of the flow is ∂ẋ/∂x + ∂ẏ/∂y + ∂ż/∂z = -σ - 1 - β = -10 - 1 - 8/3 = -41/3 ≈ -13.667. This constant negative divergence means volumes contract at a uniform rate.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-frac-15",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps proving that a positive Lyapunov exponent implies sensitive dependence on initial conditions.",
+    "steps": [
+      "Let f be a smooth map and λ = lim (1/n) ln||(Df^n)(x_0)|| > 0 be the maximal Lyapunov exponent.",
+      "This means ||(Df^n)(x_0)|| grows approximately as e^{λn} for large n.",
+      "For two initial points x_0 and x_0 + δ with |δ| small, the linearized separation after n steps is approximately ||(Df^n)(x_0)|| · |δ|.",
+      "The separation grows as |δ|·e^{λn}, which exceeds any fixed threshold ε when n > (1/λ)·ln(ε/|δ|).",
+      "Therefore, no matter how close two initial conditions are (|δ| > 0), their orbits eventually separate by at least ε.",
+      "This is exactly sensitive dependence on initial conditions: the hallmark of chaos."
+    ],
+    "correctAnswer": null,
+    "explanation": "The positive Lyapunov exponent gives exponential divergence of nearby orbits in the linearized approximation. While the nonlinear terms eventually matter (preventing unbounded growth on a compact attractor), the initial exponential separation guarantees sensitive dependence in the formal sense.",
+    "xpReward": 50
+  }
+]

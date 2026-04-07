@@ -1,0 +1,1387 @@
+[
+  {
+    "id": "proof-01",
+    "title": "Sum of First n Natural Numbers",
+    "topicId": "calculus",
+    "difficulty": 1,
+    "goal": "Prove by induction that 1 + 2 + ... + n = n(n+1)/2",
+    "goalMath": "\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}",
+    "availableBlocks": [
+      {
+        "id": "p01-a",
+        "text": "Base case: When n = 1, the left side is 1.",
+        "type": "given"
+      },
+      {
+        "id": "p01-b",
+        "text": "The right side is 1(1+1)/2 = 1. So the base case holds.",
+        "type": "step"
+      },
+      {
+        "id": "p01-c",
+        "text": "Inductive hypothesis: Assume the formula holds for some k, i.e. 1 + 2 + ... + k = k(k+1)/2.",
+        "type": "step"
+      },
+      {
+        "id": "p01-d",
+        "text": "We must show it holds for k+1: 1 + 2 + ... + k + (k+1) = (k+1)(k+2)/2.",
+        "type": "step"
+      },
+      {
+        "id": "p01-e",
+        "text": "By the inductive hypothesis, 1 + 2 + ... + k + (k+1) = k(k+1)/2 + (k+1).",
+        "type": "step"
+      },
+      {
+        "id": "p01-f",
+        "text": "Factor out (k+1): = (k+1)[k/2 + 1] = (k+1)(k+2)/2.",
+        "type": "step"
+      },
+      {
+        "id": "p01-g",
+        "text": "This matches the formula for n = k+1. By induction, the formula holds for all n.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p01-x1",
+        "text": "Assume the formula fails for some n. Then there exists a smallest counterexample.",
+        "type": "distractor"
+      },
+      {
+        "id": "p01-x2",
+        "text": "Substitute n = 0 to get 0 = 0, confirming the base case.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p01-a",
+      "p01-b",
+      "p01-c",
+      "p01-d",
+      "p01-e",
+      "p01-f",
+      "p01-g"
+    ],
+    "givenIds": [
+      "p01-a"
+    ],
+    "explanation": "This is the classic proof by mathematical induction. The key insight is using the inductive hypothesis to rewrite the sum up to k, then algebraically showing it equals the formula evaluated at k+1.",
+    "xpReward": 40
+  },
+  {
+    "id": "proof-02",
+    "title": "√2 is Irrational",
+    "topicId": "number-theory",
+    "difficulty": 2,
+    "goal": "Prove that √2 cannot be expressed as a fraction p/q in lowest terms",
+    "goalMath": "\\sqrt{2} \\notin \\mathbb{Q}",
+    "availableBlocks": [
+      {
+        "id": "p02-a",
+        "text": "Assume for contradiction that √2 = p/q where p, q are integers with no common factors.",
+        "type": "given"
+      },
+      {
+        "id": "p02-b",
+        "text": "Squaring both sides: 2 = p²/q², so p² = 2q².",
+        "type": "step"
+      },
+      {
+        "id": "p02-c",
+        "text": "Since p² = 2q², p² is even. Therefore p must be even (since odd² is odd).",
+        "type": "step"
+      },
+      {
+        "id": "p02-d",
+        "text": "Write p = 2m for some integer m.",
+        "type": "step"
+      },
+      {
+        "id": "p02-e",
+        "text": "Substituting: (2m)² = 2q², so 4m² = 2q², giving q² = 2m².",
+        "type": "step"
+      },
+      {
+        "id": "p02-f",
+        "text": "So q² is even, meaning q is also even.",
+        "type": "step"
+      },
+      {
+        "id": "p02-g",
+        "text": "But p and q are both even, contradicting our assumption they share no common factors.",
+        "type": "step"
+      },
+      {
+        "id": "p02-h",
+        "text": "Therefore √2 is irrational.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p02-x1",
+        "text": "Since p² = 2q², we can take the square root to get p = q√2.",
+        "type": "distractor"
+      },
+      {
+        "id": "p02-x2",
+        "text": "By the rational root theorem, √2 has no rational roots.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p02-a",
+      "p02-b",
+      "p02-c",
+      "p02-d",
+      "p02-e",
+      "p02-f",
+      "p02-g",
+      "p02-h"
+    ],
+    "givenIds": [
+      "p02-a"
+    ],
+    "explanation": "This proof by contradiction is one of the oldest and most elegant in mathematics, dating back to ancient Greece. The key trick is showing that both p and q must be even, which contradicts the assumption that the fraction is in lowest terms.",
+    "xpReward": 50
+  },
+  {
+    "id": "proof-03",
+    "title": "Infinitely Many Primes",
+    "topicId": "number-theory",
+    "difficulty": 2,
+    "goal": "Prove that there are infinitely many prime numbers (Euclid's proof)",
+    "goalMath": "|\\{p \\in \\mathbb{N} : p \\text{ is prime}\\}| = \\infty",
+    "availableBlocks": [
+      {
+        "id": "p03-a",
+        "text": "Assume for contradiction that there are only finitely many primes: p₁, p₂, ..., pₙ.",
+        "type": "given"
+      },
+      {
+        "id": "p03-b",
+        "text": "Consider the number N = p₁ × p₂ × ... × pₙ + 1.",
+        "type": "step"
+      },
+      {
+        "id": "p03-c",
+        "text": "N is greater than 1, so it has at least one prime factor.",
+        "type": "step"
+      },
+      {
+        "id": "p03-d",
+        "text": "For any prime pᵢ in our list, N divided by pᵢ leaves remainder 1.",
+        "type": "step"
+      },
+      {
+        "id": "p03-e",
+        "text": "So no prime in our list divides N.",
+        "type": "step"
+      },
+      {
+        "id": "p03-f",
+        "text": "But N must have a prime factor — which is not in our list.",
+        "type": "step"
+      },
+      {
+        "id": "p03-g",
+        "text": "This contradicts our assumption that the list contained all primes. Therefore there are infinitely many primes.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p03-x1",
+        "text": "N itself must be prime since no listed prime divides it.",
+        "type": "distractor"
+      },
+      {
+        "id": "p03-x2",
+        "text": "By the prime number theorem, primes become increasingly rare.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p03-a",
+      "p03-b",
+      "p03-c",
+      "p03-d",
+      "p03-e",
+      "p03-f",
+      "p03-g"
+    ],
+    "givenIds": [
+      "p03-a"
+    ],
+    "explanation": "Euclid's elegant proof (circa 300 BC) is a masterpiece. Note: N isn't necessarily prime itself — it just must have a prime factor NOT in the original list. A common mistake is claiming N must be prime.",
+    "xpReward": 50
+  },
+  {
+    "id": "proof-04",
+    "title": "A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C)",
+    "topicId": "set-theory",
+    "difficulty": 1,
+    "goal": "Prove the distributive law of sets: intersection distributes over union",
+    "goalMath": "A \\cap (B \\cup C) = (A \\cap B) \\cup (A \\cap C)",
+    "availableBlocks": [
+      {
+        "id": "p04-a",
+        "text": "Let x ∈ A ∩ (B ∪ C). Then x ∈ A and x ∈ B ∪ C.",
+        "type": "given"
+      },
+      {
+        "id": "p04-b",
+        "text": "Since x ∈ B ∪ C, either x ∈ B or x ∈ C (or both).",
+        "type": "step"
+      },
+      {
+        "id": "p04-c",
+        "text": "Case 1: If x ∈ B, then x ∈ A and x ∈ B, so x ∈ A ∩ B.",
+        "type": "step"
+      },
+      {
+        "id": "p04-d",
+        "text": "Case 2: If x ∈ C, then x ∈ A and x ∈ C, so x ∈ A ∩ C.",
+        "type": "step"
+      },
+      {
+        "id": "p04-e",
+        "text": "In either case, x ∈ (A ∩ B) ∪ (A ∩ C). So A ∩ (B ∪ C) ⊆ (A ∩ B) ∪ (A ∩ C).",
+        "type": "step"
+      },
+      {
+        "id": "p04-f",
+        "text": "Conversely, let x ∈ (A ∩ B) ∪ (A ∩ C). Then x ∈ A ∩ B or x ∈ A ∩ C.",
+        "type": "step"
+      },
+      {
+        "id": "p04-g",
+        "text": "In either case, x ∈ A and x ∈ B ∪ C, so x ∈ A ∩ (B ∪ C).",
+        "type": "step"
+      },
+      {
+        "id": "p04-h",
+        "text": "Both inclusions hold, so A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C).",
+        "type": "conclusion"
+      },
+      {
+        "id": "p04-x1",
+        "text": "This follows immediately from De Morgan's law.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p04-a",
+      "p04-b",
+      "p04-c",
+      "p04-d",
+      "p04-e",
+      "p04-f",
+      "p04-g",
+      "p04-h"
+    ],
+    "givenIds": [
+      "p04-a"
+    ],
+    "explanation": "Set equality proofs typically show both ⊆ and ⊇. The forward direction uses case analysis, and the reverse direction reassembles the pieces.",
+    "xpReward": 40
+  },
+  {
+    "id": "proof-05",
+    "title": "Every Convergent Sequence is Bounded",
+    "topicId": "calculus",
+    "difficulty": 2,
+    "goal": "If a sequence (aₙ) converges to L, then it is bounded",
+    "goalMath": "a_n \\to L \\implies \\exists M > 0 : |a_n| \\le M \\; \\forall n",
+    "availableBlocks": [
+      {
+        "id": "p05-a",
+        "text": "Let (aₙ) converge to L. By definition, for ε = 1, there exists N such that |aₙ - L| < 1 for all n > N.",
+        "type": "given"
+      },
+      {
+        "id": "p05-b",
+        "text": "For n > N: |aₙ| = |aₙ - L + L| ≤ |aₙ - L| + |L| < 1 + |L|.",
+        "type": "step"
+      },
+      {
+        "id": "p05-c",
+        "text": "For n ≤ N, there are only finitely many terms: a₁, a₂, ..., a_N.",
+        "type": "step"
+      },
+      {
+        "id": "p05-d",
+        "text": "Let M = max{|a₁|, |a₂|, ..., |a_N|, 1 + |L|}.",
+        "type": "step"
+      },
+      {
+        "id": "p05-e",
+        "text": "Then |aₙ| ≤ M for all n, so the sequence is bounded.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p05-x1",
+        "text": "Since aₙ → L, eventually all terms equal L, so the sequence is bounded by |L|.",
+        "type": "distractor"
+      },
+      {
+        "id": "p05-x2",
+        "text": "Apply the Bolzano-Weierstrass theorem to extract a bounded subsequence.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p05-a",
+      "p05-b",
+      "p05-c",
+      "p05-d",
+      "p05-e"
+    ],
+    "givenIds": [
+      "p05-a"
+    ],
+    "explanation": "The trick is handling the 'tail' (n > N, which is near L) separately from the 'head' (finitely many early terms). The maximum of these finite values and the tail bound gives a universal bound.",
+    "xpReward": 45
+  },
+  {
+    "id": "proof-06",
+    "title": "Subgroup Test",
+    "topicId": "group-theory",
+    "difficulty": 2,
+    "goal": "A non-empty subset H of a group G is a subgroup if and only if ab⁻¹ ∈ H for all a, b ∈ H",
+    "goalMath": "H \\le G \\iff (\\forall a,b \\in H : ab^{-1} \\in H)",
+    "availableBlocks": [
+      {
+        "id": "p06-a",
+        "text": "Let H be non-empty and suppose ab⁻¹ ∈ H for all a, b ∈ H.",
+        "type": "given"
+      },
+      {
+        "id": "p06-b",
+        "text": "Identity: Pick any a ∈ H (H is non-empty). Then aa⁻¹ = e ∈ H.",
+        "type": "step"
+      },
+      {
+        "id": "p06-c",
+        "text": "Inverses: For any a ∈ H, we have ea⁻¹ = a⁻¹ ∈ H (using e, a ∈ H).",
+        "type": "step"
+      },
+      {
+        "id": "p06-d",
+        "text": "Closure: For a, b ∈ H, we know b⁻¹ ∈ H. Then a(b⁻¹)⁻¹ = ab ∈ H.",
+        "type": "step"
+      },
+      {
+        "id": "p06-e",
+        "text": "H has the identity, is closed under the group operation and inverses. So H is a subgroup.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p06-x1",
+        "text": "Since H ⊆ G and G is a group, H automatically inherits associativity.",
+        "type": "distractor"
+      },
+      {
+        "id": "p06-x2",
+        "text": "By Lagrange's theorem, |H| divides |G|, so H is a subgroup.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p06-a",
+      "p06-b",
+      "p06-c",
+      "p06-d",
+      "p06-e"
+    ],
+    "givenIds": [
+      "p06-a"
+    ],
+    "explanation": "The one-step subgroup test is elegant: a single condition (ab⁻¹ ∈ H) implies identity, inverses, and closure. Note the distractor about Lagrange's theorem is circular — Lagrange assumes H is already a subgroup.",
+    "xpReward": 45
+  },
+  {
+    "id": "proof-07",
+    "title": "Euler's Formula for Planar Graphs",
+    "topicId": "graph-theory",
+    "difficulty": 2,
+    "goal": "For a connected planar graph: V - E + F = 2",
+    "goalMath": "V - E + F = 2",
+    "availableBlocks": [
+      {
+        "id": "p07-a",
+        "text": "Base case: A tree on n vertices has n-1 edges and 1 face. V - E + F = n - (n-1) + 1 = 2. ✓",
+        "type": "given"
+      },
+      {
+        "id": "p07-b",
+        "text": "Any connected planar graph can be built from a spanning tree by adding edges one at a time.",
+        "type": "step"
+      },
+      {
+        "id": "p07-c",
+        "text": "Each new edge we add is not in the tree, so it creates exactly one new cycle.",
+        "type": "step"
+      },
+      {
+        "id": "p07-d",
+        "text": "This new cycle divides an existing face into two, so F increases by 1.",
+        "type": "step"
+      },
+      {
+        "id": "p07-e",
+        "text": "E also increases by 1, while V stays the same.",
+        "type": "step"
+      },
+      {
+        "id": "p07-f",
+        "text": "So V - E + F changes by 0 - 1 + 1 = 0 with each edge added.",
+        "type": "step"
+      },
+      {
+        "id": "p07-g",
+        "text": "Starting from V - E + F = 2 for the tree, the quantity remains 2 for the full graph.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p07-x1",
+        "text": "By the four-color theorem, any planar graph can be colored with at most 4 colors.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p07-a",
+      "p07-b",
+      "p07-c",
+      "p07-d",
+      "p07-e",
+      "p07-f",
+      "p07-g"
+    ],
+    "givenIds": [
+      "p07-a"
+    ],
+    "explanation": "This proof builds up from a spanning tree. Each extra edge adds one edge and one face, keeping V-E+F invariant. It's a beautiful example of an invariance argument.",
+    "xpReward": 50
+  },
+  {
+    "id": "proof-08",
+    "title": "Dimension of Kernel + Image",
+    "topicId": "linear-algebra",
+    "difficulty": 3,
+    "goal": "For a linear map T: V → W, dim(ker T) + dim(im T) = dim V",
+    "goalMath": "\\dim(\\ker T) + \\dim(\\operatorname{im} T) = \\dim V",
+    "availableBlocks": [
+      {
+        "id": "p08-a",
+        "text": "Let {v₁, ..., vₖ} be a basis for ker T. Extend it to a basis {v₁, ..., vₖ, u₁, ..., uₘ} for V.",
+        "type": "given"
+      },
+      {
+        "id": "p08-b",
+        "text": "We claim {T(u₁), ..., T(uₘ)} is a basis for im T.",
+        "type": "step"
+      },
+      {
+        "id": "p08-c",
+        "text": "Spanning: Any w ∈ im T has w = T(v) for some v = a₁v₁ + ... + aₖvₖ + b₁u₁ + ... + bₘuₘ.",
+        "type": "step"
+      },
+      {
+        "id": "p08-d",
+        "text": "Then w = T(v) = a₁T(v₁) + ... + b₁T(u₁) + ... = b₁T(u₁) + ... + bₘT(uₘ), since T(vᵢ) = 0.",
+        "type": "step"
+      },
+      {
+        "id": "p08-e",
+        "text": "Independence: If c₁T(u₁) + ... + cₘT(uₘ) = 0, then T(c₁u₁ + ... + cₘuₘ) = 0.",
+        "type": "step"
+      },
+      {
+        "id": "p08-f",
+        "text": "So c₁u₁ + ... + cₘuₘ ∈ ker T, meaning it's a linear combination of v₁,...,vₖ.",
+        "type": "step"
+      },
+      {
+        "id": "p08-g",
+        "text": "Since {v₁,...,vₖ,u₁,...,uₘ} is a basis (linearly independent), all coefficients are 0.",
+        "type": "step"
+      },
+      {
+        "id": "p08-h",
+        "text": "So dim(im T) = m and dim(ker T) = k, giving k + m = dim V.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p08-x1",
+        "text": "Apply the determinant: if det(T) = 0, then ker T is nontrivial.",
+        "type": "distractor"
+      },
+      {
+        "id": "p08-x2",
+        "text": "By the Cayley-Hamilton theorem, T satisfies its own characteristic polynomial.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p08-a",
+      "p08-b",
+      "p08-c",
+      "p08-d",
+      "p08-e",
+      "p08-f",
+      "p08-g",
+      "p08-h"
+    ],
+    "givenIds": [
+      "p08-a"
+    ],
+    "explanation": "The Rank-Nullity Theorem is fundamental in linear algebra. The proof extends a kernel basis to a full basis, then shows the images of the extension vectors form a basis for the image.",
+    "xpReward": 60
+  },
+  {
+    "id": "proof-09",
+    "title": "Continuous Image of Compact is Compact",
+    "topicId": "topology",
+    "difficulty": 3,
+    "goal": "If f: X → Y is continuous and X is compact, then f(X) is compact",
+    "goalMath": "X \\text{ compact}, f \\text{ continuous} \\implies f(X) \\text{ compact}",
+    "availableBlocks": [
+      {
+        "id": "p09-a",
+        "text": "Let {Uα} be an open cover of f(X).",
+        "type": "given"
+      },
+      {
+        "id": "p09-b",
+        "text": "Since f is continuous, each f⁻¹(Uα) is open in X.",
+        "type": "step"
+      },
+      {
+        "id": "p09-c",
+        "text": "The collection {f⁻¹(Uα)} covers X (since {Uα} covers f(X)).",
+        "type": "step"
+      },
+      {
+        "id": "p09-d",
+        "text": "X is compact, so there exists a finite subcover: f⁻¹(Uα₁), ..., f⁻¹(Uαₙ).",
+        "type": "step"
+      },
+      {
+        "id": "p09-e",
+        "text": "Then Uα₁, ..., Uαₙ covers f(X) — a finite subcover of the original.",
+        "type": "step"
+      },
+      {
+        "id": "p09-f",
+        "text": "Therefore f(X) is compact.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p09-x1",
+        "text": "Since X is compact, it is bounded, so f(X) is also bounded.",
+        "type": "distractor"
+      },
+      {
+        "id": "p09-x2",
+        "text": "By the Heine-Borel theorem, f(X) is closed and bounded.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p09-a",
+      "p09-b",
+      "p09-c",
+      "p09-d",
+      "p09-e",
+      "p09-f"
+    ],
+    "givenIds": [
+      "p09-a"
+    ],
+    "explanation": "This short but powerful proof pulls back the open cover via continuity, uses compactness to find a finite subcover, then pushes forward. It's a template for many topology proofs.",
+    "xpReward": 50
+  },
+  {
+    "id": "proof-10",
+    "title": "Bayes' Theorem",
+    "topicId": "probability",
+    "difficulty": 1,
+    "goal": "Derive Bayes' theorem from the definition of conditional probability",
+    "goalMath": "P(A|B) = \\frac{P(B|A)\\,P(A)}{P(B)}",
+    "availableBlocks": [
+      {
+        "id": "p10-a",
+        "text": "By the definition of conditional probability: P(A|B) = P(A ∩ B) / P(B).",
+        "type": "given"
+      },
+      {
+        "id": "p10-b",
+        "text": "Similarly: P(B|A) = P(A ∩ B) / P(A).",
+        "type": "step"
+      },
+      {
+        "id": "p10-c",
+        "text": "Rearranging the second equation: P(A ∩ B) = P(B|A) · P(A).",
+        "type": "step"
+      },
+      {
+        "id": "p10-d",
+        "text": "Substituting into the first equation: P(A|B) = P(B|A) · P(A) / P(B).",
+        "type": "step"
+      },
+      {
+        "id": "p10-e",
+        "text": "This is Bayes' theorem. It lets us 'flip' the conditional — computing P(A|B) from P(B|A).",
+        "type": "conclusion"
+      },
+      {
+        "id": "p10-x1",
+        "text": "By the law of large numbers, P(A|B) converges to the true probability.",
+        "type": "distractor"
+      },
+      {
+        "id": "p10-x2",
+        "text": "Since A and B are independent, P(A ∩ B) = P(A) · P(B).",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p10-a",
+      "p10-b",
+      "p10-c",
+      "p10-d",
+      "p10-e"
+    ],
+    "givenIds": [
+      "p10-a"
+    ],
+    "explanation": "Bayes' theorem is just algebra on the definition of conditional probability, but its implications are profound — it's the foundation of Bayesian statistics, spam filters, medical diagnosis, and machine learning.",
+    "xpReward": 35
+  },
+  {
+    "id": "proof-11",
+    "title": "Cantor's Theorem",
+    "topicId": "set-theory",
+    "difficulty": 3,
+    "goal": "Prove that for any set S, the power set P(S) has strictly greater cardinality than S",
+    "goalMath": "|\\mathcal{P}(S)| > |S|",
+    "availableBlocks": [
+      {
+        "id": "p11-a",
+        "text": "Assume for contradiction that there exists a surjection f: S → P(S).",
+        "type": "given"
+      },
+      {
+        "id": "p11-b",
+        "text": "Define the set D = { x ∈ S : x ∉ f(x) }. Note D ⊆ S, so D ∈ P(S).",
+        "type": "step"
+      },
+      {
+        "id": "p11-c",
+        "text": "Since f is assumed surjective, there exists some d ∈ S with f(d) = D.",
+        "type": "step"
+      },
+      {
+        "id": "p11-d",
+        "text": "Ask: is d ∈ D? Suppose d ∈ D. By definition of D, d ∉ f(d) = D. Contradiction.",
+        "type": "step"
+      },
+      {
+        "id": "p11-e",
+        "text": "Suppose d ∉ D. By definition of D, d ∈ f(d) = D. Contradiction.",
+        "type": "step"
+      },
+      {
+        "id": "p11-f",
+        "text": "Both cases lead to contradiction, so no surjection f: S → P(S) can exist.",
+        "type": "step"
+      },
+      {
+        "id": "p11-g",
+        "text": "Since the injection S → P(S) given by x ↦ {x} exists but no surjection does, |P(S)| > |S|.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p11-x1",
+        "text": "Since P(S) contains the empty set and S does not, P(S) has more elements.",
+        "type": "distractor"
+      },
+      {
+        "id": "p11-x2",
+        "text": "By the axiom of choice, we can well-order P(S) and compare with S directly.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p11-a",
+      "p11-b",
+      "p11-c",
+      "p11-d",
+      "p11-e",
+      "p11-f",
+      "p11-g"
+    ],
+    "givenIds": [
+      "p11-a"
+    ],
+    "explanation": "Cantor's diagonal-style argument constructs a 'rogue' set D that cannot be in the range of any supposed surjection. This proves there is no bijection between a set and its power set — the hierarchy of infinities never ends!",
+    "xpReward": 55
+  },
+  {
+    "id": "proof-12",
+    "title": "AM-GM Inequality (Two Variables)",
+    "topicId": "calculus",
+    "difficulty": 1,
+    "goal": "Prove that the arithmetic mean of two non-negative reals is at least their geometric mean",
+    "goalMath": "\\frac{a + b}{2} \\ge \\sqrt{ab} \\quad \\text{for } a, b \\ge 0",
+    "availableBlocks": [
+      {
+        "id": "p12-a",
+        "text": "Let a, b ≥ 0. Consider the quantity (√a − √b)².",
+        "type": "given"
+      },
+      {
+        "id": "p12-b",
+        "text": "Since a square is always non-negative: (√a − √b)² ≥ 0.",
+        "type": "step"
+      },
+      {
+        "id": "p12-c",
+        "text": "Expanding: a − 2√(ab) + b ≥ 0.",
+        "type": "step"
+      },
+      {
+        "id": "p12-d",
+        "text": "Rearranging: a + b ≥ 2√(ab).",
+        "type": "step"
+      },
+      {
+        "id": "p12-e",
+        "text": "Dividing both sides by 2: (a + b)/2 ≥ √(ab). Equality holds if and only if a = b.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p12-x1",
+        "text": "By Jensen's inequality applied to f(x) = ln(x), the result follows immediately.",
+        "type": "distractor"
+      },
+      {
+        "id": "p12-x2",
+        "text": "Since a + b > 0, we can divide both sides by a + b to normalize.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p12-a",
+      "p12-b",
+      "p12-c",
+      "p12-d",
+      "p12-e"
+    ],
+    "givenIds": [
+      "p12-a"
+    ],
+    "explanation": "This elegant proof starts from the observation that a perfect square is never negative. The AM-GM inequality has countless applications in optimization, analysis, and competition mathematics.",
+    "xpReward": 35
+  },
+  {
+    "id": "proof-13",
+    "title": "Even-Order Groups Have an Involution",
+    "topicId": "group-theory",
+    "difficulty": 2,
+    "goal": "Prove that every finite group of even order contains an element of order 2",
+    "goalMath": "|G| \\text{ even} \\implies \\exists g \\in G : g \\ne e,\\; g^2 = e",
+    "availableBlocks": [
+      {
+        "id": "p13-a",
+        "text": "Let G be a finite group with |G| even. Pair each element g with its inverse g⁻¹.",
+        "type": "given"
+      },
+      {
+        "id": "p13-b",
+        "text": "An element is 'self-paired' when g = g⁻¹, i.e. g² = e.",
+        "type": "step"
+      },
+      {
+        "id": "p13-c",
+        "text": "Elements where g ≠ g⁻¹ come in pairs {g, g⁻¹} of size 2.",
+        "type": "step"
+      },
+      {
+        "id": "p13-d",
+        "text": "The identity e satisfies e² = e, so e is one self-paired element.",
+        "type": "step"
+      },
+      {
+        "id": "p13-e",
+        "text": "Let S = { g ∈ G : g² = e }. The non-self-paired elements pair off, so |G| − |S| is even.",
+        "type": "step"
+      },
+      {
+        "id": "p13-f",
+        "text": "Since |G| is even and |G| − |S| is even, |S| must be even.",
+        "type": "step"
+      },
+      {
+        "id": "p13-g",
+        "text": "Since e ∈ S, we have |S| ≥ 1. But |S| is even, so |S| ≥ 2. Hence there exists g ≠ e with g² = e.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p13-x1",
+        "text": "By Cauchy's theorem, G has a subgroup of order 2, so it has an element of order 2.",
+        "type": "distractor"
+      },
+      {
+        "id": "p13-x2",
+        "text": "Consider the Cayley table of G; since it is a Latin square, each element appears exactly once per row.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p13-a",
+      "p13-b",
+      "p13-c",
+      "p13-d",
+      "p13-e",
+      "p13-f",
+      "p13-g"
+    ],
+    "givenIds": [
+      "p13-a"
+    ],
+    "explanation": "This counting argument is beautifully simple: elements that are not their own inverse pair up, consuming an even number of group elements. With |G| even and one self-inverse element (the identity) already accounted for, there must be at least one more. This result is actually a special case of Cauchy's theorem, but the proof here is elementary.",
+    "xpReward": 45
+  },
+  {
+    "id": "proof-14",
+    "title": "Derivative of sin(x) from First Principles",
+    "topicId": "calculus",
+    "difficulty": 1,
+    "goal": "Prove that the derivative of sin(x) is cos(x) using the limit definition",
+    "goalMath": "\\frac{d}{dx}\\sin(x) = \\cos(x)",
+    "availableBlocks": [
+      {
+        "id": "p14-a",
+        "text": "By definition: d/dx sin(x) = lim_{h→0} [sin(x+h) − sin(x)] / h.",
+        "type": "given"
+      },
+      {
+        "id": "p14-b",
+        "text": "Apply the angle addition formula: sin(x+h) = sin(x)cos(h) + cos(x)sin(h).",
+        "type": "step"
+      },
+      {
+        "id": "p14-c",
+        "text": "Substitute: [sin(x)cos(h) + cos(x)sin(h) − sin(x)] / h.",
+        "type": "step"
+      },
+      {
+        "id": "p14-d",
+        "text": "Regroup: sin(x)[cos(h) − 1]/h + cos(x)[sin(h)/h].",
+        "type": "step"
+      },
+      {
+        "id": "p14-e",
+        "text": "Use the standard limits: lim_{h→0} sin(h)/h = 1 and lim_{h→0} [cos(h)−1]/h = 0.",
+        "type": "step"
+      },
+      {
+        "id": "p14-f",
+        "text": "The expression becomes sin(x)·0 + cos(x)·1 = cos(x).",
+        "type": "conclusion"
+      },
+      {
+        "id": "p14-x1",
+        "text": "By Euler's formula, sin(x) = (e^{ix} − e^{−ix})/2i, so its derivative is cos(x).",
+        "type": "distractor"
+      },
+      {
+        "id": "p14-x2",
+        "text": "Since sin(x) is continuous, it is differentiable, and the derivative must be cos(x) by symmetry.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p14-a",
+      "p14-b",
+      "p14-c",
+      "p14-d",
+      "p14-e",
+      "p14-f"
+    ],
+    "givenIds": [
+      "p14-a"
+    ],
+    "explanation": "This first-principles derivation relies on two key limits: sin(h)/h → 1 and (cos(h)−1)/h → 0 as h → 0. The angle addition formula transforms the difference quotient into a form where these limits can be applied.",
+    "xpReward": 40
+  },
+  {
+    "id": "proof-15",
+    "title": "Graphs with n Vertices and >n−1 Edges Have a Cycle",
+    "topicId": "graph-theory",
+    "difficulty": 2,
+    "goal": "Prove that any graph on n vertices with more than n−1 edges contains a cycle",
+    "goalMath": "|E| > n - 1 \\implies G \\text{ contains a cycle}",
+    "availableBlocks": [
+      {
+        "id": "p15-a",
+        "text": "Let G be a graph with n vertices and m > n−1 edges. Suppose for contradiction G has no cycle (G is a forest).",
+        "type": "given"
+      },
+      {
+        "id": "p15-b",
+        "text": "A forest is a disjoint union of trees. Suppose G has k connected components.",
+        "type": "step"
+      },
+      {
+        "id": "p15-c",
+        "text": "A tree on nᵢ vertices has exactly nᵢ − 1 edges.",
+        "type": "step"
+      },
+      {
+        "id": "p15-d",
+        "text": "The total number of edges is Σ(nᵢ − 1) = (Σ nᵢ) − k = n − k.",
+        "type": "step"
+      },
+      {
+        "id": "p15-e",
+        "text": "Since k ≥ 1, the number of edges is at most n − 1.",
+        "type": "step"
+      },
+      {
+        "id": "p15-f",
+        "text": "But G has m > n − 1 edges. Contradiction.",
+        "type": "step"
+      },
+      {
+        "id": "p15-g",
+        "text": "Therefore G must contain a cycle.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p15-x1",
+        "text": "By Euler's formula V − E + F = 2, any planar graph with too many edges has a cycle.",
+        "type": "distractor"
+      },
+      {
+        "id": "p15-x2",
+        "text": "Remove edges one at a time until no cycles remain; the result is a spanning tree.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p15-a",
+      "p15-b",
+      "p15-c",
+      "p15-d",
+      "p15-e",
+      "p15-f",
+      "p15-g"
+    ],
+    "givenIds": [
+      "p15-a"
+    ],
+    "explanation": "The key fact is that a forest (acyclic graph) on n vertices has at most n−1 edges, with equality only when the forest is a tree (connected). Exceeding this edge count forces a cycle. This is fundamental in graph theory and algorithm design.",
+    "xpReward": 45
+  },
+  {
+    "id": "proof-16",
+    "title": "The Rationals are Countable",
+    "topicId": "set-theory",
+    "difficulty": 2,
+    "goal": "Prove that the set of positive rationals Q⁺ is countable via a diagonal enumeration",
+    "goalMath": "|\\mathbb{Q}^+| = |\\mathbb{N}|",
+    "availableBlocks": [
+      {
+        "id": "p16-a",
+        "text": "Arrange all positive fractions p/q in a grid where row p and column q give the fraction p/q.",
+        "type": "given"
+      },
+      {
+        "id": "p16-b",
+        "text": "Traverse the grid along successive anti-diagonals: p+q = 2, then p+q = 3, then p+q = 4, etc.",
+        "type": "step"
+      },
+      {
+        "id": "p16-c",
+        "text": "This enumerates every fraction p/q at least once, since for any p/q we reach it on diagonal p+q.",
+        "type": "step"
+      },
+      {
+        "id": "p16-d",
+        "text": "Skip any fraction p/q where gcd(p,q) > 1 (it was already listed in reduced form).",
+        "type": "step"
+      },
+      {
+        "id": "p16-e",
+        "text": "This produces a list of all positive rationals in reduced form without repetition.",
+        "type": "step"
+      },
+      {
+        "id": "p16-f",
+        "text": "Assigning the n-th entry the natural number n gives a bijection N → Q⁺. So Q⁺ is countable.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p16-x1",
+        "text": "Since Q⁺ is dense in R, it must be uncountable.",
+        "type": "distractor"
+      },
+      {
+        "id": "p16-x2",
+        "text": "By Cantor's diagonal argument, we can show Q⁺ is uncountable — wait, that applies to R, not Q.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p16-a",
+      "p16-b",
+      "p16-c",
+      "p16-d",
+      "p16-e",
+      "p16-f"
+    ],
+    "givenIds": [
+      "p16-a"
+    ],
+    "explanation": "The rationals seem 'bigger' than the naturals because they are dense, but Cantor's zigzag argument shows they can be listed one by one. This was a shocking result in the 1870s and helped launch modern set theory.",
+    "xpReward": 45
+  },
+  {
+    "id": "proof-17",
+    "title": "Cauchy-Schwarz Inequality",
+    "topicId": "linear-algebra",
+    "difficulty": 2,
+    "goal": "Prove the Cauchy-Schwarz inequality for real inner product spaces",
+    "goalMath": "|\\langle u, v \\rangle|^2 \\le \\langle u, u \\rangle \\, \\langle v, v \\rangle",
+    "availableBlocks": [
+      {
+        "id": "p17-a",
+        "text": "Let u, v be vectors in a real inner product space. If v = 0, both sides are 0 and the result holds. Assume v ≠ 0.",
+        "type": "given"
+      },
+      {
+        "id": "p17-b",
+        "text": "For any real scalar t, consider ⟨u − tv, u − tv⟩ ≥ 0 (inner products are non-negative).",
+        "type": "step"
+      },
+      {
+        "id": "p17-c",
+        "text": "Expanding: ⟨u,u⟩ − 2t⟨u,v⟩ + t²⟨v,v⟩ ≥ 0.",
+        "type": "step"
+      },
+      {
+        "id": "p17-d",
+        "text": "This is a quadratic in t: At² − 2Bt + C ≥ 0 where A = ⟨v,v⟩, B = ⟨u,v⟩, C = ⟨u,u⟩.",
+        "type": "step"
+      },
+      {
+        "id": "p17-e",
+        "text": "A quadratic At² − 2Bt + C that is non-negative for all t must have non-positive discriminant: 4B² − 4AC ≤ 0.",
+        "type": "step"
+      },
+      {
+        "id": "p17-f",
+        "text": "So B² ≤ AC, i.e. ⟨u,v⟩² ≤ ⟨u,u⟩⟨v,v⟩. This is the Cauchy-Schwarz inequality.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p17-x1",
+        "text": "Project u onto v: the projection has length ‖u‖cos θ, which gives |⟨u,v⟩| = ‖u‖‖v‖|cos θ| ≤ ‖u‖‖v‖.",
+        "type": "distractor"
+      },
+      {
+        "id": "p17-x2",
+        "text": "By the triangle inequality, ‖u + v‖ ≤ ‖u‖ + ‖v‖, which implies Cauchy-Schwarz.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p17-a",
+      "p17-b",
+      "p17-c",
+      "p17-d",
+      "p17-e",
+      "p17-f"
+    ],
+    "givenIds": [
+      "p17-a"
+    ],
+    "explanation": "This proof cleverly uses the non-negativity of the inner product of (u − tv) with itself. Choosing t optimally creates a quadratic that must be non-negative everywhere, forcing its discriminant to be ≤ 0 — which is precisely Cauchy-Schwarz. This inequality underpins much of analysis and geometry.",
+    "xpReward": 50
+  },
+  {
+    "id": "proof-18",
+    "title": "Fundamental Theorem of Calculus",
+    "topicId": "calculus",
+    "difficulty": 3,
+    "goal": "Prove the First Fundamental Theorem: if f is continuous on [a,b] and F(x) = ∫ₐˣ f(t) dt, then F'(x) = f(x)",
+    "goalMath": "F(x) = \\int_a^x f(t)\\,dt \\implies F'(x) = f(x)",
+    "availableBlocks": [
+      {
+        "id": "p18-a",
+        "text": "Let f be continuous on [a,b] and define F(x) = ∫ₐˣ f(t) dt. We compute F'(x) from the definition.",
+        "type": "given"
+      },
+      {
+        "id": "p18-b",
+        "text": "F(x+h) − F(x) = ∫ₐˣ⁺ʰ f(t) dt − ∫ₐˣ f(t) dt = ∫ₓˣ⁺ʰ f(t) dt.",
+        "type": "step"
+      },
+      {
+        "id": "p18-c",
+        "text": "So [F(x+h) − F(x)]/h = (1/h) ∫ₓˣ⁺ʰ f(t) dt.",
+        "type": "step"
+      },
+      {
+        "id": "p18-d",
+        "text": "By the Mean Value Theorem for integrals, (1/h) ∫ₓˣ⁺ʰ f(t) dt = f(c) for some c between x and x+h.",
+        "type": "step"
+      },
+      {
+        "id": "p18-e",
+        "text": "As h → 0, c → x (since c is squeezed between x and x+h).",
+        "type": "step"
+      },
+      {
+        "id": "p18-f",
+        "text": "Since f is continuous, f(c) → f(x) as c → x.",
+        "type": "step"
+      },
+      {
+        "id": "p18-g",
+        "text": "Therefore F'(x) = lim_{h→0} [F(x+h) − F(x)]/h = f(x).",
+        "type": "conclusion"
+      },
+      {
+        "id": "p18-x1",
+        "text": "Since F is an antiderivative, F'(x) = f(x) by the definition of antiderivative.",
+        "type": "distractor"
+      },
+      {
+        "id": "p18-x2",
+        "text": "Apply L'Hôpital's rule to the limit [F(x+h) − F(x)]/h as h → 0.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p18-a",
+      "p18-b",
+      "p18-c",
+      "p18-d",
+      "p18-e",
+      "p18-f",
+      "p18-g"
+    ],
+    "givenIds": [
+      "p18-a"
+    ],
+    "explanation": "The Fundamental Theorem of Calculus bridges the two main branches of calculus — differentiation and integration. The proof shows that the derivative of the 'area so far' function is the original function, using the squeeze principle and continuity of f.",
+    "xpReward": 55
+  },
+  {
+    "id": "proof-19",
+    "title": "Every PID is a UFD",
+    "topicId": "group-theory",
+    "difficulty": 3,
+    "goal": "Sketch the proof that every principal ideal domain is a unique factorization domain",
+    "goalMath": "R \\text{ is a PID} \\implies R \\text{ is a UFD}",
+    "availableBlocks": [
+      {
+        "id": "p19-a",
+        "text": "Let R be a PID. We must show (1) every non-zero non-unit has an irreducible factorization, and (2) the factorization is unique up to units.",
+        "type": "given"
+      },
+      {
+        "id": "p19-b",
+        "text": "Existence: Suppose some a ∈ R has no irreducible factorization. Then a = b₁c₁ where neither factor is a unit and at least one (say b₁) also has no irreducible factorization.",
+        "type": "step"
+      },
+      {
+        "id": "p19-c",
+        "text": "Repeating: (a) ⊂ (b₁) ⊂ (b₂) ⊂ ... is a strictly ascending chain of ideals.",
+        "type": "step"
+      },
+      {
+        "id": "p19-d",
+        "text": "In a PID, every ascending chain of ideals stabilizes (the ACC holds, since ∪(bₙ) is an ideal, hence principal). Contradiction.",
+        "type": "step"
+      },
+      {
+        "id": "p19-e",
+        "text": "Uniqueness: In a PID, every irreducible element is prime (since (p) is a maximal ideal among principal ideals).",
+        "type": "step"
+      },
+      {
+        "id": "p19-f",
+        "text": "If p₁...pₘ = q₁...qₙ, then p₁ divides some qⱼ. Since both are irreducible, p₁ and qⱼ are associates. Cancel and induct.",
+        "type": "step"
+      },
+      {
+        "id": "p19-g",
+        "text": "Both existence and uniqueness hold, so R is a UFD.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p19-x1",
+        "text": "By Zorn's lemma, R has a maximal ideal, which must be generated by an irreducible element.",
+        "type": "distractor"
+      },
+      {
+        "id": "p19-x2",
+        "text": "Since R is a PID, it is also a Euclidean domain, so unique factorization follows.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p19-a",
+      "p19-b",
+      "p19-c",
+      "p19-d",
+      "p19-e",
+      "p19-f",
+      "p19-g"
+    ],
+    "givenIds": [
+      "p19-a"
+    ],
+    "explanation": "This proof has two parts. Existence of factorizations uses the ascending chain condition (ACC) — infinite descent into smaller factors is impossible. Uniqueness uses the fact that irreducibles are prime in a PID. Note the distractor: not every PID is Euclidean (e.g., Z[(1+√−19)/2]).",
+    "xpReward": 60
+  },
+  {
+    "id": "proof-20",
+    "title": "Bolzano-Weierstrass Theorem",
+    "topicId": "topology",
+    "difficulty": 3,
+    "goal": "Prove that every bounded sequence in R has a convergent subsequence",
+    "goalMath": "(a_n) \\text{ bounded} \\implies \\exists (a_{n_k}) \\text{ convergent}",
+    "availableBlocks": [
+      {
+        "id": "p20-a",
+        "text": "Let (aₙ) be a bounded sequence with aₙ ∈ [L, R] for all n. We use the method of interval bisection.",
+        "type": "given"
+      },
+      {
+        "id": "p20-b",
+        "text": "Bisect [L, R] into [L, M] and [M, R] where M = (L+R)/2. At least one half contains infinitely many terms of (aₙ). Call it [L₁, R₁].",
+        "type": "step"
+      },
+      {
+        "id": "p20-c",
+        "text": "Repeat: bisect [L₁, R₁] and pick the half with infinitely many terms. This gives nested intervals [Lₖ, Rₖ] with Rₖ − Lₖ = (R−L)/2ᵏ.",
+        "type": "step"
+      },
+      {
+        "id": "p20-d",
+        "text": "By the nested intervals theorem, ∩[Lₖ, Rₖ] = {c} for some real number c.",
+        "type": "step"
+      },
+      {
+        "id": "p20-e",
+        "text": "Build a subsequence: pick n₁ so aₙ₁ ∈ [L₁, R₁], then n₂ > n₁ with aₙ₂ ∈ [L₂, R₂], and so on.",
+        "type": "step"
+      },
+      {
+        "id": "p20-f",
+        "text": "For each k, |aₙₖ − c| ≤ Rₖ − Lₖ = (R−L)/2ᵏ → 0 as k → ∞.",
+        "type": "step"
+      },
+      {
+        "id": "p20-g",
+        "text": "Therefore aₙₖ → c, and we have found a convergent subsequence.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p20-x1",
+        "text": "By the monotone convergence theorem, (aₙ) itself converges, so just take the whole sequence.",
+        "type": "distractor"
+      },
+      {
+        "id": "p20-x2",
+        "text": "Since [L, R] is compact in R, the sequence has a limit point by the Heine-Borel theorem.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p20-a",
+      "p20-b",
+      "p20-c",
+      "p20-d",
+      "p20-e",
+      "p20-f",
+      "p20-g"
+    ],
+    "givenIds": [
+      "p20-a"
+    ],
+    "explanation": "The bisection method is a constructive way to find the convergent subsequence. At each step, we halve the interval while keeping infinitely many terms available, ensuring we can always pick the next subsequence element. The nested intervals collapse to a single point — the limit.",
+    "xpReward": 55
+  },
+  {
+    "id": "proof-21",
+    "title": "The Halting Problem is Undecidable",
+    "topicId": "set-theory",
+    "difficulty": 3,
+    "goal": "Prove by contradiction that no program can decide whether an arbitrary program halts",
+    "goalMath": null,
+    "availableBlocks": [
+      {
+        "id": "p21-a",
+        "text": "Assume for contradiction that there exists a program H(P, X) that decides whether program P halts on input X. H outputs 'halts' or 'loops'.",
+        "type": "given"
+      },
+      {
+        "id": "p21-b",
+        "text": "Construct a new program D(P): D runs H(P, P). If H says 'halts', then D enters an infinite loop. If H says 'loops', then D halts.",
+        "type": "step"
+      },
+      {
+        "id": "p21-c",
+        "text": "D is a valid program — it's built from H plus a simple if-else and a loop. Now ask: what happens when we run D(D)?",
+        "type": "step"
+      },
+      {
+        "id": "p21-d",
+        "text": "Case 1: Suppose D(D) halts. Then H(D, D) must have said 'loops' (since D halts only when H says 'loops'). But H is supposed to be correct — contradiction, since D(D) actually halts.",
+        "type": "step"
+      },
+      {
+        "id": "p21-e",
+        "text": "Case 2: Suppose D(D) loops forever. Then H(D, D) must have said 'halts' (since D loops only when H says 'halts'). But H is supposed to be correct — contradiction, since D(D) actually loops.",
+        "type": "step"
+      },
+      {
+        "id": "p21-f",
+        "text": "In both cases we reach a contradiction. D(D) can neither halt nor loop — which is impossible for any program.",
+        "type": "step"
+      },
+      {
+        "id": "p21-g",
+        "text": "Therefore our assumption was wrong: no such program H can exist. The halting problem is undecidable.",
+        "type": "conclusion"
+      },
+      {
+        "id": "p21-x1",
+        "text": "By Gödel's completeness theorem, if the halting problem were decidable, it would be provable in first-order logic.",
+        "type": "distractor"
+      },
+      {
+        "id": "p21-x2",
+        "text": "Since D calls H as a subroutine, D runs in polynomial time, making the halting problem NP-hard.",
+        "type": "distractor"
+      }
+    ],
+    "correctOrder": [
+      "p21-a",
+      "p21-b",
+      "p21-c",
+      "p21-d",
+      "p21-e",
+      "p21-f",
+      "p21-g"
+    ],
+    "givenIds": [
+      "p21-a"
+    ],
+    "explanation": "Turing's 1936 proof is a masterpiece of diagonalization — the same trick Cantor used for uncountability. The program D is designed to do the opposite of what H predicts, creating an unavoidable paradox. This result is foundational to computer science: it means there are problems no algorithm can ever solve, no matter how clever. Note: the distractors are wrong — the completeness theorem is about logical validity (unrelated), and D's runtime is irrelevant to decidability.",
+    "xpReward": 60
+  }
+]

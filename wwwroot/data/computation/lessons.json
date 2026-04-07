@@ -1,0 +1,290 @@
+[
+  {
+    "id": "comp-01",
+    "topicId": "computation",
+    "order": 1,
+    "title": "Finite Automata",
+    "description": "State machines, DFAs, NFAs, and regular languages",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "comp-01-c1",
+        "title": "State Machines: The Simplest Computers",
+        "contentHtml": "<p>Imagine the most stripped-down computer possible. It has no memory, no hard drive, no screen -- just a handful of <strong>states</strong> and a set of rules for jumping between them. This is a <strong>finite automaton</strong>, and it is where the theory of computation begins.</p><p>A finite automaton reads an input string one character at a time, left to right. At each step, it looks at the current character and its current state, then <strong>transitions</strong> to a new state. When the input runs out, it checks: am I in an <strong>accept state</strong>? If yes, the string is accepted. If no, it is rejected.</p><p>This sounds absurdly simple -- and it is. But finite automata are everywhere. The controller in your elevator is a state machine. The regex engine in your text editor is a state machine. The protocol that governs how your computer talks to the internet (TCP) is a state machine. Traffic lights, vending machines, video game AI -- all state machines.</p>",
+        "mathExpressions": ["M = (Q,\\, \\Sigma,\\, \\delta,\\, q_0,\\, F) \\quad \\text{where } Q = \\text{states},\\; \\Sigma = \\text{alphabet},\\; \\delta = \\text{transition function},\\; q_0 = \\text{start},\\; F = \\text{accept states}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-01-c2",
+        "title": "DFA vs NFA: Determinism and Its Surprising Irrelevance",
+        "contentHtml": "<p>A <strong>Deterministic Finite Automaton (DFA)</strong> has a strict rule: from any state, for any input character, there is exactly <strong>one</strong> transition. No ambiguity, no choice. Given the same input, a DFA always follows the same path.</p><p>A <strong>Non-deterministic Finite Automaton (NFA)</strong> breaks this rule gloriously. From a single state, reading a single character, an NFA might have <strong>multiple</strong> possible transitions -- or none at all. It can even have <strong>epsilon-transitions</strong> that jump between states without consuming any input. You can think of an NFA as magically exploring all possible paths simultaneously, accepting if <strong>any</strong> path leads to an accept state.</p><p>Here is the astonishing fact: <strong>NFAs and DFAs are equally powerful.</strong> Every NFA can be converted to an equivalent DFA (via the <strong>subset construction</strong>). The DFA may have exponentially more states -- an NFA with n states might need up to 2^n DFA states -- but it recognizes exactly the same language. Non-determinism, for finite automata, is a convenience, not additional power.</p>",
+        "mathExpressions": ["\\text{DFA: } |\\delta(q, a)| = 1 \\;\\text{ always} \\qquad \\text{NFA: } |\\delta(q, a)| \\geq 0 \\;\\text{ (multiple transitions allowed)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-01-c3",
+        "title": "Regular Languages: The Limits of Finite Memory",
+        "contentHtml": "<p><strong>Regular languages</strong> are the class of languages that finite automata can recognize. They include simple patterns like \"all strings containing 'ab'\" or \"all binary strings ending in 01\" or \"strings with an even number of zeros.\"</p><p>But regular languages have a sharp boundary. The <strong>Pumping Lemma</strong> gives us a way to prove that certain languages are NOT regular. The classic example: the language {a^n b^n : n >= 0} -- strings like ab, aabb, aaabbb -- is NOT regular. Why? Because recognizing it requires <strong>counting</strong> how many a's you've seen and matching that count with b's. A finite automaton has only finitely many states, so it cannot count arbitrarily high.</p><p>This is a profound limitation. Finite automata cannot match brackets, cannot check if a number is prime, cannot parse most programming languages. They are powerful enough for pattern matching but too weak for anything requiring unbounded memory. To go further, we need to give our machines more power -- and that is exactly where the story heads next.</p>",
+        "mathExpressions": ["\\text{Regular: } \\{w \\in \\{0,1\\}^* : w \\text{ ends in } 01\\} \\qquad \\text{NOT regular: } \\{a^n b^n : n \\geq 0\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q01", "comp-q02", "comp-q03", "comp-q04", "comp-q05", "comp-q06", "comp-q07", "comp-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-02",
+    "topicId": "computation",
+    "order": 2,
+    "title": "Regular Expressions & Grammars",
+    "description": "Regex, Kleene's theorem, context-free grammars, and pushdown automata",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "comp-02-c1",
+        "title": "Regular Expressions: The Algebra of Patterns",
+        "contentHtml": "<p><strong>Regular expressions</strong> are a compact, elegant notation for describing patterns in strings. Every programmer uses them, but few realize they were invented by a mathematician -- <strong>Stephen Kleene</strong> in 1956 -- as a way to characterize what finite automata can do.</p><p>The core operations are beautifully simple. <strong>Union</strong> (a|b): match a or b. <strong>Concatenation</strong> (ab): match a followed by b. <strong>Kleene star</strong> (a*): match zero or more repetitions of a. From just these three operations, you can build remarkably expressive patterns.</p><p>The regex (0|1)*1 matches all binary strings ending in 1. The regex a*ba* matches strings with exactly one b. The regex (ab|ba)* matches alternating pairs. <strong>Kleene's theorem</strong> proved something wonderful: the languages described by regular expressions are <strong>exactly</strong> the regular languages -- exactly what DFAs and NFAs recognize. Three completely different formalisms, one identical class of languages. This kind of convergence is a hallmark of a \"natural\" mathematical concept.</p>",
+        "mathExpressions": ["\\text{Kleene's Theorem: } \\text{Regular expressions} = \\text{DFAs} = \\text{NFAs} \\;\\text{(all define the same class of languages)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-02-c2",
+        "title": "Context-Free Grammars: The Power of Recursion",
+        "contentHtml": "<p>Regular languages cannot match brackets. They cannot parse arithmetic expressions or programming languages. To do that, we need a more powerful formalism: <strong>context-free grammars (CFGs)</strong>.</p><p>A CFG consists of <strong>production rules</strong> that generate strings recursively. The classic example: S -> aSb | epsilon. This tiny grammar generates the language {a^n b^n : n >= 0} -- exactly the language that defeated finite automata! The rule says: S can become aSb (wrapping another layer of a...b around S) or epsilon (the empty string, ending the recursion).</p><p>CFGs are the backbone of programming language design. The syntax of Python, Java, C++ -- all defined by context-free grammars. When your compiler parses <code>if (x > 0) { return x; }</code>, it is using a CFG to understand the nested structure of brackets, parentheses, and keywords. The <strong>Chomsky hierarchy</strong> classifies languages by power: regular (Type 3) < context-free (Type 2) < context-sensitive (Type 1) < recursively enumerable (Type 0).</p>",
+        "mathExpressions": ["S \\to aSb \\;|\\; \\varepsilon \\qquad \\text{generates } \\{\\varepsilon,\\; ab,\\; aabb,\\; aaabbb,\\; \\ldots\\} = \\{a^n b^n : n \\geq 0\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-02-c3",
+        "title": "Pushdown Automata: Finite Automata with a Stack",
+        "contentHtml": "<p>If a DFA is a machine with no memory, a <strong>pushdown automaton (PDA)</strong> is a machine with a very specific kind of memory: a <strong>stack</strong>. It can push symbols onto the stack and pop them off, but only from the top -- last in, first out.</p><p>This single addition -- a stack -- is exactly what's needed to match brackets. To recognize {a^n b^n}, the PDA pushes a symbol onto the stack for each 'a' it reads, then pops one symbol for each 'b'. If the stack is empty when the input ends, accept. The stack acts as a counter, and unlike finite states, it can grow without bound.</p><p>The relationship is clean and beautiful: <strong>pushdown automata recognize exactly the context-free languages</strong>, just as DFAs recognize exactly the regular languages. But PDAs have a quirk: non-deterministic PDAs are <strong>strictly more powerful</strong> than deterministic ones. The language of palindromes {w w^R : w in {a,b}*} requires a non-deterministic PDA because the machine must \"guess\" where the middle of the string is. This is unlike finite automata, where non-determinism adds no power.</p>",
+        "mathExpressions": ["\\text{PDA} = \\text{DFA} + \\text{Stack} \\qquad \\text{PDAs recognize exactly the context-free languages}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q09", "comp-q10", "comp-q11", "comp-q12", "comp-q13", "comp-q14", "comp-q15", "comp-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-03",
+    "topicId": "computation",
+    "order": 3,
+    "title": "Turing Machines",
+    "description": "Turing's universal machine, the Church-Turing thesis, and general-purpose computation",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "comp-03-c1",
+        "title": "Alan Turing's Imaginary Machine",
+        "contentHtml": "<p>In 1936, a 23-year-old Alan Turing published a paper that would reshape civilization. The question he was answering seems almost quaint: is there a mechanical procedure that can determine the truth of any mathematical statement? But his answer required inventing the concept of a <strong>computer</strong> -- years before any electronic computer existed.</p><p>Turing imagined the simplest possible machine that could still compute anything: an infinite <strong>tape</strong> divided into cells (each holding a symbol), a <strong>read/write head</strong> that moves left or right along the tape, and a finite set of <strong>states</strong> with a <strong>transition function</strong>. At each step, the machine reads the current cell, writes a new symbol, moves left or right, and transitions to a new state. That's it.</p><p>This absurdly simple machine can compute anything your laptop can compute, anything a supercomputer can compute, anything any conceivable classical computer can compute. It just might take longer. The simplicity is the point: Turing wanted to capture the <strong>essence</strong> of computation, stripped of all engineering details. And he succeeded beyond anyone's imagination.</p>",
+        "mathExpressions": ["M = (Q,\\, \\Sigma,\\, \\Gamma,\\, \\delta,\\, q_0,\\, q_{\\text{accept}},\\, q_{\\text{reject}}) \\quad \\delta: Q \\times \\Gamma \\to Q \\times \\Gamma \\times \\{L, R\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-03-c2",
+        "title": "The Church-Turing Thesis",
+        "contentHtml": "<p>Independently and almost simultaneously, the American logician <strong>Alonzo Church</strong> developed a completely different model of computation called the <strong>lambda calculus</strong> -- pure functions, no tape, no machine at all. Then something extraordinary happened: Church and Turing proved that their utterly different models compute <strong>exactly the same things</strong>.</p><p>Since then, every reasonable model of computation ever proposed -- Turing machines, lambda calculus, recursive functions, Post systems, cellular automata, RAM machines, quantum computers (for decidability) -- has turned out to be equivalent. This convergence led to the <strong>Church-Turing thesis</strong>: any function that is \"effectively computable\" by any reasonable physical process can be computed by a Turing machine.</p><p>This is not a theorem -- it cannot be formally proved, because \"effectively computable\" is an informal notion. But it has survived nearly a century without a counterexample. It is one of the most robust hypotheses in all of science, drawing a sharp line between what is computable and what is not.</p>",
+        "mathExpressions": ["\\text{Church-Turing Thesis: } \\text{Computable} = \\text{Turing-computable} = \\lambda\\text{-definable} = \\mu\\text{-recursive}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-03-c3",
+        "title": "The Universal Turing Machine",
+        "contentHtml": "<p>Turing's most brilliant insight was not the Turing machine itself, but the <strong>Universal Turing Machine (UTM)</strong>. He showed that there exists a <strong>single</strong> Turing machine U that can simulate <strong>any other</strong> Turing machine. You encode a description of machine M and its input w on U's tape, and U faithfully executes M on w, step by step.</p><p>Think about how revolutionary this is. Before this, each \"machine\" was special-purpose: a machine that adds, a machine that multiplies, a machine that sorts. The UTM is a <strong>general-purpose</strong> machine. It is the theoretical blueprint for every programmable computer that has ever been built. Your laptop is a (very fast, very practical) Universal Turing Machine. The program is the encoded description; the data is the input.</p><p>The UTM also opens Pandora's box. Because a Turing machine's description is just a string, machines can analyze <strong>other machines</strong> -- and even themselves. This self-reference is what makes computation so powerful, and also what makes it so treacherous. It leads directly to undecidability, which Turing discovered in the very same 1936 paper.</p>",
+        "mathExpressions": ["U(\\langle M, w \\rangle) = M(w) \\quad \\text{for every Turing machine } M \\text{ and input } w"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q17", "comp-q18", "comp-q19", "comp-q20", "comp-q21", "comp-q22", "comp-q23", "comp-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-04",
+    "topicId": "computation",
+    "order": 4,
+    "title": "Computability & Undecidability",
+    "description": "The Halting Problem, Rice's theorem, and the limits of computation",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "comp-04-c1",
+        "title": "The Halting Problem: Computation's Brick Wall",
+        "contentHtml": "<p>Can you write a program that takes any other program and its input and correctly determines whether it will eventually halt or run forever? This is the <strong>Halting Problem</strong>, and Turing proved in 1936 that the answer is <strong>no</strong> -- not because we are not clever enough, but because it is <strong>logically impossible</strong>.</p><p>The proof is a masterpiece of self-referential reasoning. Suppose a halting-decider H exists. Build a new program D that does this: given program P, run H(P, P). If H says P halts on itself, then D loops forever. If H says P loops on itself, then D halts. Now ask: what does D do when given itself? If D(D) halts, then H said D loops, so D should loop -- contradiction. If D(D) loops, then H said D halts, so D should halt -- contradiction. H cannot exist.</p><p>This is the same diagonal argument that Cantor used to prove the reals are uncountable, and that Godel used to prove incompleteness. Self-reference creates paradoxes, and those paradoxes reveal <strong>fundamental limits</strong>. There are questions that no algorithm -- no matter how sophisticated -- can answer.</p>",
+        "mathExpressions": ["\\text{HALT} = \\{\\langle M, w \\rangle : M \\text{ halts on input } w\\} \\quad \\text{is undecidable}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-04-c2",
+        "title": "Reduction and Rice's Theorem",
+        "contentHtml": "<p>Once you know one problem is undecidable, you can prove others undecidable by <strong>reduction</strong>: showing that if you could solve the new problem, you could solve the Halting Problem (which is impossible). It is like saying \"if you could pick this lock, you could pick ANY lock -- so you can't pick this lock.\"</p><p><strong>Rice's theorem</strong> (1953) takes this to its devastating conclusion: <strong>every non-trivial semantic property of programs is undecidable</strong>. Want to know if a program ever prints \"hello\"? Undecidable. Want to know if two programs compute the same function? Undecidable. Want to know if a program has a security vulnerability? Undecidable. \"Non-trivial\" just means the property is true for some programs and false for others.</p><p>This does not mean we give up! We can often decide these questions for <strong>specific</strong> programs, or find useful <strong>approximations</strong>. Static analysis tools, type systems, and model checkers all work within the limits of undecidability by being conservative -- they might say \"I don't know\" but they won't give a wrong answer. Understanding undecidability tells us where the hard boundaries are, so we can navigate around them wisely.</p>",
+        "mathExpressions": ["\\text{Rice's Theorem: If } P \\text{ is a non-trivial property of Turing machines, then } \\{\\langle M \\rangle : M \\text{ has property } P\\} \\text{ is undecidable}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-04-c3",
+        "title": "Godel's Incompleteness: Mathematics Itself Has Limits",
+        "contentHtml": "<p>In 1931, five years before Turing, the young Austrian logician <strong>Kurt Godel</strong> dropped a bomb on mathematics. David Hilbert had proposed that mathematics could be made complete and consistent -- that every true statement could be proved. Godel showed this dream was impossible.</p><p><strong>Godel's First Incompleteness Theorem</strong>: In any consistent formal system powerful enough to express basic arithmetic, there exist true statements that <strong>cannot be proved</strong> within the system. He constructed an explicit example -- a statement that essentially says \"I am not provable\" -- and showed that if the system is consistent, this statement must be true but unprovable.</p><p><strong>Godel's Second Incompleteness Theorem</strong>: Such a system cannot prove its own consistency. Mathematics cannot fully validate itself from within. Turing later showed that Godel's incompleteness and the unsolvability of the Halting Problem are deeply connected -- both arise from the limits of self-reference. There are truths that computation cannot reach and proofs that logic cannot construct. Far from being a defeat, this is one of the deepest insights in human intellectual history: <strong>the tools of reason have inherent boundaries that reason itself can discover</strong>.</p>",
+        "mathExpressions": ["\\text{Godel: } \\exists\\, G \\;\\text{ such that } G \\text{ is true} \\;\\wedge\\; G \\text{ is not provable in } S \\quad (\\text{if } S \\text{ is consistent and sufficiently powerful})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q25", "comp-q26", "comp-q27", "comp-q28", "comp-q29", "comp-q30", "comp-q31", "comp-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-05",
+    "topicId": "computation",
+    "order": 5,
+    "title": "Complexity Theory",
+    "description": "P, NP, NP-completeness, and the greatest open problem in computer science",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "comp-05-c1",
+        "title": "P: The Easy Problems",
+        "contentHtml": "<p>The Halting Problem tells us some problems are impossible. But among the solvable problems, not all are created equal. Some can be solved <strong>efficiently</strong>; others seem to require astronomical amounts of time. <strong>Complexity theory</strong> makes this distinction precise.</p><p>The class <strong>P</strong> (Polynomial time) contains all decision problems solvable by an algorithm whose running time is bounded by a polynomial in the input size. Sorting a list of n numbers? O(n log n) -- in P. Finding the shortest path in a graph? O(n^2) with Dijkstra's algorithm -- in P. Checking if a number is prime? Also in P (the AKS algorithm, proved in 2002).</p><p>Polynomial time is our formal proxy for \"efficient\" or \"tractable.\" An algorithm running in n^2 or even n^10 time is slow but fundamentally manageable as input grows. An algorithm running in 2^n time is fundamentally doomed: for n = 100, there are more steps than atoms in the observable universe. The line between polynomial and exponential is the most important dividing line in all of computer science.</p>",
+        "mathExpressions": ["\\mathbf{P} = \\bigcup_{k \\geq 0} \\text{DTIME}(n^k) \\qquad \\text{(problems solvable in polynomial time by a deterministic TM)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-05-c2",
+        "title": "NP: Easy to Check, Hard to Solve?",
+        "contentHtml": "<p>The class <strong>NP</strong> (Non-deterministic Polynomial time) contains problems where a proposed solution can be <strong>verified</strong> in polynomial time, even if <strong>finding</strong> the solution might be hard.</p><p>Consider Sudoku: given a completed grid, checking if it is valid takes seconds. But finding the solution from a partially filled grid seems to require trying many possibilities. SAT (Boolean satisfiability): given an assignment of variables, checking if a formula is satisfied is trivial. But finding a satisfying assignment can be incredibly difficult. The Traveling Salesman Problem: given a tour, verifying its total distance is easy. Finding the shortest tour seems to require checking exponentially many options.</p><p>Clearly P is a subset of NP: if you can <strong>solve</strong> a problem quickly, you can certainly <strong>verify</strong> a solution quickly. The million-dollar question is: does P = NP? Are there problems that are easy to verify but genuinely hard to solve? Everyone believes P != NP, but <strong>nobody has proved it</strong>. It is the most important open problem in computer science and one of the seven Millennium Prize Problems, with a $1 million bounty.</p>",
+        "mathExpressions": ["\\mathbf{P} \\subseteq \\mathbf{NP} \\qquad \\text{P} = \\text{NP}\\,? \\quad \\text{(\\$1 million Millennium Prize)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-05-c3",
+        "title": "NP-Completeness: The Hardest of the Hard",
+        "contentHtml": "<p>In 1971, <strong>Stephen Cook</strong> proved something remarkable: there exist problems in NP that are as hard as <strong>anything</strong> in NP. He proved that the Boolean satisfiability problem (SAT) is <strong>NP-complete</strong>: every problem in NP can be reduced to SAT in polynomial time. If you could solve SAT efficiently, you could solve EVERY NP problem efficiently.</p><p>Shortly after, <strong>Richard Karp</strong> showed that 21 other important problems are also NP-complete, including Graph Coloring, Hamiltonian Path, Subset Sum, and the Traveling Salesman Problem (decision version). Today thousands of problems are known to be NP-complete, and they are all equivalent: solve any one of them efficiently, and you solve them all.</p><p>NP-completeness is the reason P vs NP matters so much. If P = NP, then thousands of seemingly intractable optimization, scheduling, and reasoning problems all become efficiently solvable. Cryptography would collapse (since breaking encryption is in NP). Drug design, logistics, and AI would be revolutionized. If P != NP, then there are fundamental computational barriers that no amount of engineering can overcome. Most experts believe P != NP -- but proving it remains one of mathematics' greatest challenges.</p>",
+        "mathExpressions": ["L \\text{ is NP-complete if: (1) } L \\in \\text{NP, and (2) every } L' \\in \\text{NP satisfies } L' \\leq_p L \\;\\text{(poly-time reducible)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q33", "comp-q34", "comp-q35", "comp-q36", "comp-q37", "comp-q38", "comp-q39", "comp-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-06",
+    "topicId": "computation",
+    "order": 6,
+    "title": "Shannon's Information Theory",
+    "description": "Entropy, data compression, and the noisy channel coding theorem",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "comp-06-c1",
+        "title": "Information as Surprise",
+        "contentHtml": "<p>In 1948, <strong>Claude Shannon</strong> -- a 32-year-old engineer at Bell Labs -- published \"A Mathematical Theory of Communication\" and single-handedly created the field of <strong>information theory</strong>. It is arguably the most important master's thesis-turned-paper of the 20th century.</p><p>Shannon's key insight: <strong>information is surprise</strong>. If someone tells you the sun rose this morning, you learn almost nothing -- it was completely expected. If someone tells you a specific lottery number won, you learn a lot -- it was highly unlikely. Shannon quantified this: the information content of an event with probability p is <strong>-log_2(p)</strong> bits.</p><p>A fair coin flip has probability 1/2, so it carries -log_2(1/2) = 1 bit of information. A roll of a fair die carries log_2(6) ~ 2.58 bits. An event with probability 1 carries 0 bits -- no surprise, no information. This formula is not arbitrary; Shannon proved it is the <strong>unique</strong> measure (up to scaling) satisfying natural axioms about how information should behave.</p>",
+        "mathExpressions": ["I(x) = -\\log_2 p(x) \\;\\text{ bits} \\qquad \\text{(information content of an event with probability } p(x)\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-06-c2",
+        "title": "Shannon Entropy: Measuring Uncertainty",
+        "contentHtml": "<p><strong>Shannon entropy</strong> is the <strong>average</strong> information content across all possible outcomes. For a random variable X with possible values x_1, ..., x_n and probabilities p_1, ..., p_n, the entropy is H(X) = -sum of p_i log_2(p_i).</p><p>Entropy measures <strong>uncertainty</strong> or <strong>unpredictability</strong>. A fair coin has entropy 1 bit -- maximum uncertainty for two outcomes. A biased coin (99% heads) has entropy near 0 -- you're almost certain what will happen. Entropy is maximized when all outcomes are equally likely (maximum disorder) and minimized when one outcome is certain.</p><p>For the English language, the entropy per letter is about 1.0-1.5 bits (Shannon estimated this experimentally). Since there are 26 letters, maximum entropy would be log_2(26) ~ 4.7 bits. The huge gap -- 1.3 vs 4.7 -- reflects the <strong>redundancy</strong> of English: not all letter sequences are equally likely (\"th\" is common, \"xq\" is not), and this redundancy is exactly what compression algorithms exploit.</p>",
+        "mathExpressions": ["H(X) = -\\sum_{i=1}^{n} p_i \\log_2 p_i \\qquad 0 \\leq H(X) \\leq \\log_2 n \\;\\text{ (max when all } p_i = 1/n\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-06-c3",
+        "title": "Compression and the Noisy Channel Theorem",
+        "contentHtml": "<p>Shannon proved two landmark theorems. The <strong>Source Coding Theorem</strong> says that data from a source with entropy H cannot be compressed below H bits per symbol on average. This is the <strong>theoretical limit</strong> of lossless compression. Huffman coding, arithmetic coding, and ZIP all approach this limit. You literally cannot do better -- Shannon proved it is impossible.</p><p>The <strong>Noisy Channel Coding Theorem</strong> is even more surprising. Every communication channel has a <strong>capacity</strong> C (measured in bits per second). Shannon proved that for any rate below C, there <strong>exists</strong> an error-correcting code that achieves arbitrarily low error probability. Above C, reliable communication is impossible. The theorem says the limit exists -- but it does not tell you how to build the code. Finding practical codes that approach capacity took decades (turbo codes in 1993, LDPC codes, polar codes in 2009).</p><p>These two results transformed engineering. Before Shannon, engineers fought noise by increasing signal power. Shannon showed that clever <strong>coding</strong> could achieve reliability without brute force. Every digital communication system today -- WiFi, 5G, satellite links, deep-space probes -- is built on Shannon's foundations.</p>",
+        "mathExpressions": ["\\text{Source coding: } R \\geq H(X) \\;\\text{ (can't compress below entropy)} \\qquad \\text{Channel coding: } R < C \\implies \\text{reliable communication possible}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q41", "comp-q42", "comp-q43", "comp-q44", "comp-q45", "comp-q46", "comp-q47", "comp-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-07",
+    "topicId": "computation",
+    "order": 7,
+    "title": "Coding Theory & Error Correction",
+    "description": "Hamming distance, parity bits, Hamming codes, and Reed-Solomon codes",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "comp-07-c1",
+        "title": "Hamming Distance and Parity",
+        "contentHtml": "<p>Shannon proved that perfect error correction was possible in theory. It fell to <strong>Richard Hamming</strong> to make it practical. Working at Bell Labs in the late 1940s, Hamming was frustrated by the unreliable relay-based computers that would halt every time a bit flipped. He decided to make the machines fix their own errors.</p><p>The <strong>Hamming distance</strong> between two binary strings is the number of positions where they differ. For example, d(0110, 1010) = 2 (they differ in positions 1 and 2). This simple metric is the foundation of all error correction. If every pair of valid codewords has Hamming distance at least d, then the code can <strong>detect</strong> up to d-1 errors and <strong>correct</strong> up to floor((d-1)/2) errors.</p><p>The simplest scheme is the <strong>parity bit</strong>: append one bit so the total number of 1s is even. This gives Hamming distance 2 between codewords, detecting any single-bit error. But it cannot <strong>correct</strong> the error because it does not tell you <strong>which</strong> bit flipped. For that, Hamming needed something more clever.</p>",
+        "mathExpressions": ["d(x, y) = |\\{i : x_i \\neq y_i\\}| \\qquad \\text{Detect } \\leq d-1 \\text{ errors, correct } \\leq \\lfloor(d-1)/2\\rfloor \\text{ errors}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-07-c2",
+        "title": "Hamming Codes: Self-Correcting Data",
+        "contentHtml": "<p>Hamming's brilliant solution: place <strong>parity bits</strong> at positions that are powers of 2 (positions 1, 2, 4, 8, ...). Each parity bit covers a specific pattern of data bits. Position 1 checks all positions with a 1 in the least significant bit of their index, position 2 checks all positions with a 1 in the second bit, and so on.</p><p>The most famous example is the <strong>Hamming(7,4) code</strong>: 4 data bits become 7 bits with 3 parity bits added. When a single-bit error occurs, the parity checks produce a <strong>syndrome</strong> -- a binary number that directly identifies the position of the error. The machine can correct it automatically, with no human intervention.</p><p>This is how your computer's <strong>ECC RAM</strong> works right now: every 64 bits of data are protected by 8 Hamming parity bits, silently detecting and correcting bit flips caused by cosmic rays and electrical noise. Hamming's 1950 paper is one of the most practically important in computing history. He later won the Turing Award, and his name is immortalized in the Hamming distance, Hamming codes, and Hamming window.</p>",
+        "mathExpressions": ["\\text{Hamming}(7,4): \\; 4 \\text{ data bits} + 3 \\text{ parity bits} = 7 \\text{ total} \\qquad \\text{Corrects any single-bit error}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-07-c3",
+        "title": "Reed-Solomon Codes: Correcting Burst Errors",
+        "contentHtml": "<p>Hamming codes correct single-bit errors beautifully, but real-world errors often come in <strong>bursts</strong> -- a scratch on a CD, a fade in a radio signal, a smudge on a QR code. <strong>Reed-Solomon codes</strong> (1960) handle this by working with <strong>symbols</strong> (blocks of bits) rather than individual bits.</p><p>The key idea: treat a message of n symbols as defining a polynomial of degree n-1. Evaluate this polynomial at more than n points and transmit all values. Even if some values are corrupted, the original polynomial can be recovered because a polynomial of degree n-1 is uniquely determined by any n of its values. Adding extra evaluation points adds redundancy.</p><p>A Reed-Solomon code with 2t extra symbols can correct up to t symbol errors -- regardless of how many bits are wrong within each symbol. This makes them devastating against burst errors. CDs use Reed-Solomon codes so effectively that you can drill a 2mm hole through a CD and it will still play perfectly. QR codes remain scannable when 30% is obscured. NASA's Voyager probes, now in interstellar space, use Reed-Solomon codes to send data across billions of miles with near-zero errors. They are one of the great engineering achievements of the 20th century.</p>",
+        "mathExpressions": ["\\text{Reed-Solomon: message} \\to \\text{polynomial } p(x) \\;\\text{of degree } k-1, \\;\\text{evaluate at } n > k \\text{ points} \\;\\implies\\; \\text{corrects } \\lfloor(n-k)/2\\rfloor \\text{ errors}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q49", "comp-q50", "comp-q51", "comp-q52", "comp-q53", "comp-q54", "comp-q55", "comp-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-08",
+    "topicId": "computation",
+    "order": 8,
+    "title": "Lambda Calculus & Modern Computation",
+    "description": "Church's lambda calculus, type theory, and quantum computing",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "comp-08-c1",
+        "title": "Lambda Calculus: Functions All the Way Down",
+        "contentHtml": "<p>While Turing was imagining machines with tapes, <strong>Alonzo Church</strong> at Princeton took a radically different approach. His <strong>lambda calculus</strong> has no machine, no tape, no states -- just <strong>functions</strong>. Everything is a function: numbers, booleans, data structures, even functions themselves. It is computation distilled to its most abstract essence.</p><p>The lambda calculus has only three constructs: <strong>variables</strong> (x), <strong>abstraction</strong> (lambda x. M, which defines a function), and <strong>application</strong> (M N, which applies function M to argument N). That's it. Three rules, and you can compute anything a Turing machine can.</p><p>Numbers? Church encoded them as functions: 0 = lambda f. lambda x. x (apply f zero times), 1 = lambda f. lambda x. f x (apply f once), 2 = lambda f. lambda x. f(f x) (apply f twice). Addition, multiplication, conditionals, recursion -- all emerge as pure function manipulation. It is stunningly beautiful and deeply counterintuitive: a universe built entirely from anonymous functions.</p>",
+        "mathExpressions": ["\\lambda x.\\, M \\;\\text{ (function)}, \\quad M\\;N \\;\\text{ (application)}, \\quad (\\lambda x.\\,M)\\,N \\to M[x := N] \\;\\text{ (beta-reduction)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-08-c2",
+        "title": "Type Theory and Modern Programming Languages",
+        "contentHtml": "<p>The lambda calculus is the DNA of modern programming languages. <strong>Lisp</strong> (1958), the second-oldest programming language still in use, was directly inspired by Church's work. <strong>Haskell</strong>, <strong>ML</strong>, <strong>Scala</strong>, and <strong>F#</strong> are all built on lambda calculus foundations. Even \"non-functional\" languages adopted lambda expressions: Python's <code>lambda x: x+1</code>, JavaScript's <code>(x) => x+1</code>, Rust's <code>|x| x+1</code>.</p><p><strong>Type theory</strong> adds structure to the lambda calculus by assigning <strong>types</strong> to terms. The <strong>simply-typed lambda calculus</strong> prevents certain nonsensical expressions (like applying a number to a number). Richer type systems -- System F, dependent types, homotopy type theory -- can express increasingly subtle properties. In Rust, the type system prevents data races at compile time. In Haskell, it separates pure computation from side effects.</p><p>The <strong>Curry-Howard correspondence</strong> reveals a deep connection: types are propositions, programs are proofs, and type-checking is proof verification. Writing a well-typed program is literally the same as constructing a mathematical proof. This bridge between logic and computation is one of the most beautiful results in theoretical computer science.</p>",
+        "mathExpressions": ["\\text{Curry-Howard: } \\;\\text{Types} \\cong \\text{Propositions}, \\quad \\text{Programs} \\cong \\text{Proofs}, \\quad \\text{Type-checking} \\cong \\text{Proof verification}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-08-c3",
+        "title": "Quantum Computing: A New Computational Universe",
+        "contentHtml": "<p>For 80 years, the Church-Turing thesis seemed to settle the question of what computation is. Then came <strong>quantum computing</strong>. In 1985, <strong>Richard Feynman</strong> and <strong>David Deutsch</strong> proposed computation based on quantum mechanics, and it turned out to be genuinely different -- not in what it can compute (a quantum computer computes the same functions as a Turing machine) but in <strong>how fast</strong>.</p><p>A classical bit is 0 or 1. A <strong>qubit</strong> can be in a <strong>superposition</strong>: alpha|0> + beta|1>, where |alpha|^2 + |beta|^2 = 1. Two qubits can be <strong>entangled</strong>, correlating their measurements across any distance. With n qubits, you can represent 2^n amplitudes simultaneously -- but you can only extract limited information through measurement.</p><p>The complexity class <strong>BQP</strong> (Bounded-error Quantum Polynomial time) contains problems efficiently solvable by quantum computers. <strong>Shor's algorithm</strong> (1994) factors integers in polynomial time on a quantum computer, threatening RSA encryption. <strong>Grover's algorithm</strong> searches unsorted databases in O(sqrt(N)) time instead of O(N). Whether BQP contains NP-complete problems is unknown -- most experts think not, placing quantum computing as powerful but not omnipotent. The story of computation continues to unfold.</p>",
+        "mathExpressions": ["\\text{Qubit: } |\\psi\\rangle = \\alpha|0\\rangle + \\beta|1\\rangle, \\;|\\alpha|^2 + |\\beta|^2 = 1 \\qquad \\mathbf{P} \\subseteq \\mathbf{BQP} \\subseteq \\mathbf{PSPACE}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q57", "comp-q58", "comp-q59", "comp-q60", "comp-q61", "comp-q62", "comp-q63", "comp-q64"],
+    "puzzleId": null
+  }
+]

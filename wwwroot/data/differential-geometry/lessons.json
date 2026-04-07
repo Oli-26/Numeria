@@ -1,0 +1,290 @@
+[
+  {
+    "id": "dg-01",
+    "topicId": "differential-geometry",
+    "order": 1,
+    "title": "Curves in Space",
+    "description": "Parametric curves, curvature, and the Frenet-Serret frame",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "dg-01-c1",
+        "title": "Parametric Curves",
+        "contentHtml": "<p>A <strong>parametric curve</strong> is a path traced out by a moving point: <strong>r</strong>(t) = (x(t), y(t), z(t)) as the parameter t varies.</p><p>The <strong>velocity vector</strong> is the derivative: <strong>r</strong>'(t) = (x'(t), y'(t), z'(t)). It points in the direction of motion.</p><p>The <strong>speed</strong> is the magnitude of velocity: |<strong>r</strong>'(t)|. A curve is <strong>regular</strong> if its speed is never zero — the point never stops moving.</p><p>Example: <strong>r</strong>(t) = (cos t, sin t, t) is a <strong>helix</strong>. Its velocity is (-sin t, cos t, 1) and its speed is √2 (constant!).</p>",
+        "mathExpressions": ["\\mathbf{r}(t) = (x(t), y(t), z(t)), \\quad \\mathbf{r}'(t) = \\text{velocity}, \\quad |\\mathbf{r}'(t)| = \\text{speed}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-01-c2",
+        "title": "Curvature",
+        "contentHtml": "<p><strong>Curvature</strong> κ measures how fast a curve is turning — how much it deviates from a straight line.</p><p>The <strong>unit tangent vector</strong> is T(t) = <strong>r</strong>'(t)/|<strong>r</strong>'(t)|. Curvature is defined as κ = |T'|/|<strong>r</strong>'| — the rate of change of the tangent direction per unit arc length.</p><p>A straight line has κ = 0 everywhere. A circle of radius R has κ = 1/R (smaller circle = more curvature). The helix (cos t, sin t, t) has constant curvature κ = 1/2.</p><p>There's a useful cross-product formula: κ = |<strong>r</strong>' × <strong>r</strong>''| / |<strong>r</strong>'|³.</p>",
+        "mathExpressions": ["\\kappa = \\frac{|\\mathbf{T}'|}{|\\mathbf{r}'|} = \\frac{|\\mathbf{r}' \\times \\mathbf{r}''|}{|\\mathbf{r}'|^3}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-01-c3",
+        "title": "The Frenet-Serret Frame",
+        "contentHtml": "<p>At each point of a curve, we can build an orthonormal frame — three mutually perpendicular unit vectors that describe the curve's geometry:</p><p>• <strong>T</strong> (tangent): points in the direction of motion<br>• <strong>N</strong> (principal normal): points toward the center of the osculating circle (the best-fit circle); N = T'/|T'|<br>• <strong>B</strong> (binormal): B = T × N, perpendicular to both</p><p>The <strong>Frenet-Serret formulas</strong> describe how this frame rotates as you move along the curve. They involve two quantities: <strong>curvature</strong> κ (how T turns toward N) and <strong>torsion</strong> τ (how B twists out of the osculating plane).</p><p>A curve with τ = 0 lies entirely in a plane. Torsion measures how much the curve \"escapes\" into 3D.</p>",
+        "mathExpressions": ["\\mathbf{T}' = \\kappa\\mathbf{N}, \\quad \\mathbf{N}' = -\\kappa\\mathbf{T} + \\tau\\mathbf{B}, \\quad \\mathbf{B}' = -\\tau\\mathbf{N}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q01", "dg-q02", "dg-q03", "dg-q04", "dg-q05", "dg-q06", "dg-q07", "dg-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-02",
+    "topicId": "differential-geometry",
+    "order": 2,
+    "title": "Surfaces",
+    "description": "Parametric surfaces, tangent planes, and fundamental forms",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "dg-02-c1",
+        "title": "Parametric Surfaces & Tangent Planes",
+        "contentHtml": "<p>A <strong>parametric surface</strong> is a map <strong>r</strong>(u, v) = (x(u,v), y(u,v), z(u,v)) from a region in the (u,v)-plane to 3D space.</p><p>Example: <strong>r</strong>(θ, φ) = (sin φ cos θ, sin φ sin θ, cos φ) parametrizes the unit sphere.</p><p>The partial derivatives <strong>r</strong>_u and <strong>r</strong>_v are tangent vectors to the surface. They span the <strong>tangent plane</strong> at each point.</p><p>The <strong>unit normal</strong> to the surface is <strong>n</strong> = (<strong>r</strong>_u × <strong>r</strong>_v)/|<strong>r</strong>_u × <strong>r</strong>_v|. This tells you which direction is \"outward.\"</p>",
+        "mathExpressions": ["\\mathbf{n} = \\frac{\\mathbf{r}_u \\times \\mathbf{r}_v}{|\\mathbf{r}_u \\times \\mathbf{r}_v|}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-02-c2",
+        "title": "The First Fundamental Form",
+        "contentHtml": "<p>The <strong>first fundamental form</strong> (I) tells you how to measure distances, angles, and areas on the surface — without referring to the surrounding 3D space.</p><p>It is defined by three coefficients:<br>• E = <strong>r</strong>_u · <strong>r</strong>_u<br>• F = <strong>r</strong>_u · <strong>r</strong>_v<br>• G = <strong>r</strong>_v · <strong>r</strong>_v</p><p>The length of a curve on the surface with parameter t is: ds² = E du² + 2F du dv + G dv².</p><p>For the unit sphere: E = sin²φ, F = 0, G = 1. This encodes how distances on the sphere work — why maps of Earth are always distorted!</p>",
+        "mathExpressions": ["\\mathrm{I} = E\\,du^2 + 2F\\,du\\,dv + G\\,dv^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-02-c3",
+        "title": "The Second Fundamental Form",
+        "contentHtml": "<p>The <strong>second fundamental form</strong> (II) measures how the surface curves in the ambient space — how the normal vector changes as you move along the surface.</p><p>Its coefficients are:<br>• e = <strong>r</strong>_uu · <strong>n</strong><br>• f = <strong>r</strong>_uv · <strong>n</strong><br>• g = <strong>r</strong>_vv · <strong>n</strong></p><p>While the first form is <strong>intrinsic</strong> (only depends on measurements within the surface), the second form is <strong>extrinsic</strong> (depends on how the surface sits in 3D space).</p><p>Together, the two fundamental forms completely determine the local shape of a surface (up to rigid motions) — this is the content of Bonnet's theorem.</p>",
+        "mathExpressions": ["\\mathrm{II} = e\\,du^2 + 2f\\,du\\,dv + g\\,dv^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q09", "dg-q10", "dg-q11", "dg-q12", "dg-q13", "dg-q14", "dg-q15", "dg-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-03",
+    "topicId": "differential-geometry",
+    "order": 3,
+    "title": "Gaussian Curvature",
+    "description": "Principal curvatures, Gaussian and mean curvature, Theorema Egregium",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "dg-03-c1",
+        "title": "Principal Curvatures",
+        "contentHtml": "<p>At each point of a surface, different directions curve at different rates. The <strong>principal curvatures</strong> κ₁ and κ₂ are the maximum and minimum curvatures among all directions.</p><p>They are the eigenvalues of the <strong>shape operator</strong> (also called the Weingarten map), which is the matrix (EG-F²)⁻¹ times the second fundamental form coefficients.</p><p>The corresponding directions are the <strong>principal directions</strong> — always perpendicular to each other (when κ₁ ≠ κ₂).</p><p>Example: On a cylinder, κ₁ = 1/R (around the circumference) and κ₂ = 0 (along the axis). On a sphere of radius R, κ₁ = κ₂ = 1/R (equal in all directions).</p>",
+        "mathExpressions": ["\\kappa_1, \\kappa_2 = \\text{eigenvalues of the shape operator } S = \\mathrm{I}^{-1}\\mathrm{II}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-03-c2",
+        "title": "Gaussian and Mean Curvature",
+        "contentHtml": "<p><strong>Gaussian curvature</strong>: K = κ₁κ₂ (product of principal curvatures)<br><strong>Mean curvature</strong>: H = (κ₁ + κ₂)/2 (average of principal curvatures)</p><p>K tells you the <strong>intrinsic</strong> shape:<br>• K > 0: elliptic (sphere-like, locally convex)<br>• K = 0: flat (cylinder-like, can unroll onto a plane)<br>• K < 0: hyperbolic (saddle-shaped)</p><p>H = 0 characterizes <strong>minimal surfaces</strong> — surfaces that locally minimize area, like soap films. The shape of a soap bubble spanning a wire frame is a minimal surface.</p><p>For a sphere of radius R: K = 1/R², H = 1/R. For a plane: K = 0, H = 0.</p>",
+        "mathExpressions": ["K = \\kappa_1 \\kappa_2 = \\frac{eg - f^2}{EG - F^2}, \\quad H = \\frac{\\kappa_1 + \\kappa_2}{2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-03-c3",
+        "title": "Gauss's Theorema Egregium",
+        "contentHtml": "<p>Gauss's <strong>Theorema Egregium</strong> (\"remarkable theorem\") is one of the most beautiful results in geometry:</p><p><em>Gaussian curvature K depends only on the first fundamental form.</em></p><p>This means K is <strong>intrinsic</strong> — it can be computed from measurements made entirely within the surface, without knowing how the surface is embedded in 3D space. An ant living on the surface could measure K!</p><p>Practical consequence: you cannot flatten a sphere (K = 1/R² > 0) onto a plane (K = 0) without distortion. This is why every world map has distortions — there is no perfect flat map of the Earth. Pizza droops when flat but stiffens when curved lengthwise, because bending one direction forces the other curvature to stay zero (preserving K = 0).</p>",
+        "mathExpressions": ["K = K(E, F, G, \\text{their derivatives}) \\quad \\text{— intrinsic!}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q17", "dg-q18", "dg-q19", "dg-q20", "dg-q21", "dg-q22", "dg-q23", "dg-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-04",
+    "topicId": "differential-geometry",
+    "order": 4,
+    "title": "Geodesics & Gauss-Bonnet",
+    "description": "Geodesics, parallel transport, and the Gauss-Bonnet theorem",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "dg-04-c1",
+        "title": "Geodesics",
+        "contentHtml": "<p><strong>Geodesics</strong> are the \"straightest possible\" curves on a surface — the paths that locally minimize distance between points.</p><p>On a plane, geodesics are straight lines. On a sphere, they are <strong>great circles</strong> (like the equator or lines of longitude). Airlines fly along great circles because they are the shortest routes on the globe.</p><p>Geodesics satisfy a differential equation involving the <strong>Christoffel symbols</strong>, which encode how the coordinate system curves. A curve γ is a geodesic if its <strong>geodesic curvature</strong> κ_g = 0 — it only curves \"because the surface curves,\" not because it turns within the surface.</p><p>On a curved surface, geodesics can behave very differently from straight lines: on a sphere, two geodesics starting parallel will eventually meet!</p>",
+        "mathExpressions": ["\\frac{d^2 x^k}{dt^2} + \\Gamma^k_{ij} \\frac{dx^i}{dt}\\frac{dx^j}{dt} = 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-04-c2",
+        "title": "Parallel Transport",
+        "contentHtml": "<p><strong>Parallel transport</strong> is the process of moving a vector along a curve on a surface while keeping it \"as parallel as possible.\"</p><p>On a flat plane, parallel transport is trivial — just slide the vector. But on a curved surface, the result depends on the path taken!</p><p>Famous example: start at the North Pole with a vector pointing south along the prime meridian. Walk to the equator, walk 90° along the equator, then walk back to the pole. Your vector has rotated 90° — even though you never turned it! This rotation is called <strong>holonomy</strong>, and it equals the integral of Gaussian curvature over the enclosed region.</p><p>Parallel transport is a key concept in general relativity: gravity is curvature, and parallel transport describes how vectors (like the direction of motion) change along geodesics in spacetime.</p>",
+        "mathExpressions": ["\\Delta\\theta = \\iint_R K\\,dA \\quad \\text{(holonomy = enclosed curvature)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-04-c3",
+        "title": "The Gauss-Bonnet Theorem",
+        "contentHtml": "<p>The <strong>Gauss-Bonnet theorem</strong> is one of the deepest results in all of mathematics, connecting geometry to topology:</p><p>∫∫_M K dA = 2πχ(M)</p><p>The <strong>total Gaussian curvature</strong> of a closed surface equals 2π times its <strong>Euler characteristic</strong> χ. No matter how you stretch or deform the surface (without tearing or gluing), the total curvature stays the same!</p><p>For a sphere (any shape!): χ = 2, so ∫∫ K dA = 4π. For a torus (donut): χ = 0, so the total curvature is 0 — the positive curvature on the outside exactly cancels the negative curvature on the inside.</p><p>This theorem shows that geometry (local measurements of curvature) is intimately connected to topology (global shape). It generalizes to higher dimensions via the Chern-Gauss-Bonnet theorem, a cornerstone of modern geometry and physics.</p>",
+        "mathExpressions": ["\\iint_M K\\,dA = 2\\pi\\chi(M), \\quad \\chi = V - E + F \\;\\text{(Euler characteristic)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q25", "dg-q26", "dg-q27", "dg-q28", "dg-q29", "dg-q30", "dg-q31", "dg-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-05",
+    "topicId": "differential-geometry",
+    "order": 5,
+    "title": "Riemannian Metrics",
+    "description": "Riemannian manifolds, metric tensors, length and angle on manifolds, isometries",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "dg-05-c1",
+        "title": "Riemannian Manifolds & the Metric Tensor",
+        "contentHtml": "<p>A <strong>Riemannian manifold</strong> is a smooth manifold M equipped with a <strong>Riemannian metric</strong> g — a smoothly varying inner product on each tangent space. This generalizes the first fundamental form from surfaces to arbitrary dimensions.</p><p>In local coordinates (x¹, ..., xⁿ), the metric is expressed as a symmetric, positive-definite matrix of functions g_ij(x). The <strong>metric tensor</strong> assigns to each pair of tangent vectors u, v the inner product g(u, v) = g_ij u^i v^j.</p><p>For example, the standard Euclidean metric on R^n has g_ij = δ_ij (the Kronecker delta). The round metric on the 2-sphere has the familiar form ds² = dθ² + sin²θ dφ², which we saw as the first fundamental form.</p><p>The metric tensor is the fundamental object of Riemannian geometry — it encodes all intrinsic geometric information: distances, angles, areas, volumes, curvature, and geodesics are all determined by g.</p>",
+        "mathExpressions": ["ds^2 = g_{ij}\\,dx^i\\,dx^j, \\quad g(u,v) = g_{ij}\\,u^i v^j"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-05-c2",
+        "title": "Length, Angle, and Volume",
+        "contentHtml": "<p>The metric tensor lets us measure <strong>length</strong> of curves on the manifold. The length of a curve γ(t), a ≤ t ≤ b, is L(γ) = ∫ √(g_ij dx^i/dt dx^j/dt) dt — a direct generalization of the arc length formula.</p><p>The <strong>angle</strong> between two tangent vectors u and v is defined by cos θ = g(u,v) / (√g(u,u) · √g(v,v)), exactly as in Euclidean space but using the Riemannian inner product instead of the dot product.</p><p>The <strong>volume element</strong> is dV = √(det g) dx¹ ∧ ... ∧ dxⁿ. The factor √(det g) accounts for the distortion introduced by the coordinate system. On the sphere, √(det g) = sin θ, giving the familiar area element dA = sin θ dθ dφ.</p><p>These formulas show how the single object g controls all measurement on the manifold. Changing the metric changes what \"distance\" and \"angle\" mean — a powerful idea that lies at the heart of general relativity.</p>",
+        "mathExpressions": ["L(\\gamma) = \\int_a^b \\sqrt{g_{ij}\\,\\frac{dx^i}{dt}\\frac{dx^j}{dt}}\\,dt, \\quad dV = \\sqrt{\\det g}\\;dx^1 \\wedge \\cdots \\wedge dx^n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-05-c3",
+        "title": "Isometries and Metric Equivalence",
+        "contentHtml": "<p>An <strong>isometry</strong> is a diffeomorphism φ: (M, g) → (N, h) that preserves the metric: φ*h = g. Isometries preserve all intrinsic geometry — distances, angles, curvature, and geodesics.</p><p>Two Riemannian manifolds are <strong>isometric</strong> if there exists an isometry between them. Isometric manifolds are indistinguishable from the perspective of intrinsic geometry, even if they look different when embedded in a higher-dimensional space.</p><p>A classic example: a flat sheet of paper and a cylinder of appropriate radius are <strong>locally isometric</strong> — both have zero Gaussian curvature, and you can roll the paper into a cylinder without stretching. However, they are not globally isometric because they have different topology.</p><p><strong>Killing vectors</strong> generate continuous isometries (symmetries) of a manifold. For example, the sphere has three independent Killing vectors corresponding to rotations about the three coordinate axes. The number of Killing vectors measures the degree of symmetry of the space.</p>",
+        "mathExpressions": ["\\phi^* h = g \\quad \\text{(pullback preserves metric)}, \\quad \\mathcal{L}_X g = 0 \\quad \\text{(Killing equation)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q33", "dg-q34", "dg-q35", "dg-q36", "dg-q37", "dg-q38", "dg-q39", "dg-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-06",
+    "topicId": "differential-geometry",
+    "order": 6,
+    "title": "Connections & Covariant Derivatives",
+    "description": "Affine connections, Christoffel symbols, covariant differentiation, Levi-Civita connection",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "dg-06-c1",
+        "title": "Affine Connections & Christoffel Symbols",
+        "contentHtml": "<p>An <strong>affine connection</strong> ∇ provides a way to differentiate vector fields on a manifold — something that is not possible with ordinary derivatives because tangent spaces at different points are different vector spaces.</p><p>In local coordinates, the connection is specified by the <strong>Christoffel symbols</strong> Γ^k_ij. These n³ functions (where n is the dimension) tell you how the coordinate basis vectors change from point to point: ∇_{∂_i} ∂_j = Γ^k_ij ∂_k.</p><p>The Christoffel symbols are <strong>not</strong> the components of a tensor — they depend on the choice of coordinates. In Cartesian coordinates on flat space, all Christoffel symbols are zero. In polar coordinates, some are nonzero even though the space is flat. This reflects the curving of the coordinate grid, not the space itself.</p><p>The connection determines parallel transport and geodesics. Different connections on the same manifold give different notions of \"parallel\" and \"straight,\" which is why the choice of connection is fundamental.</p>",
+        "mathExpressions": ["\\nabla_{\\partial_i} \\partial_j = \\Gamma^k_{ij}\\,\\partial_k, \\quad \\Gamma^k_{ij} = \\frac{1}{2}g^{kl}\\left(\\partial_i g_{jl} + \\partial_j g_{il} - \\partial_l g_{ij}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-06-c2",
+        "title": "Covariant Differentiation",
+        "contentHtml": "<p>The <strong>covariant derivative</strong> ∇_X Y measures how a vector field Y changes along the direction X, accounting for the curvature and coordinate effects on the manifold.</p><p>In components, the covariant derivative of a vector field V^k along a coordinate direction is: (∇_i V)^k = ∂_i V^k + Γ^k_ij V^j. The extra term Γ^k_ij V^j corrects for the fact that the basis vectors themselves are changing.</p><p>Covariant differentiation extends to arbitrary tensors. For a 1-form ω_j: (∇_i ω)_j = ∂_i ω_j - Γ^k_ij ω_k. The rule is: add a +Γ term for each upper index and a -Γ term for each lower index.</p><p>A tensor field T is <strong>parallel</strong> (or covariantly constant) if ∇T = 0. For example, the metric tensor is parallel with respect to the Levi-Civita connection: ∇g = 0. This crucial property is called <strong>metric compatibility</strong>.</p>",
+        "mathExpressions": ["(\\nabla_i V)^k = \\partial_i V^k + \\Gamma^k_{ij} V^j, \\quad (\\nabla_i \\omega)_j = \\partial_i \\omega_j - \\Gamma^k_{ij}\\omega_k"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-06-c3",
+        "title": "The Levi-Civita Connection",
+        "contentHtml": "<p>The <strong>Levi-Civita connection</strong> is the unique connection on a Riemannian manifold that satisfies two properties: (1) it is <strong>metric-compatible</strong> (∇g = 0), and (2) it is <strong>torsion-free</strong> (∇_X Y - ∇_Y X = [X, Y]).</p><p>The <strong>Fundamental Theorem of Riemannian Geometry</strong> guarantees that such a connection exists and is unique. Its Christoffel symbols are completely determined by the metric: Γ^k_ij = ½ g^{kl}(∂_i g_{jl} + ∂_j g_{il} - ∂_l g_{ij}).</p><p>Metric compatibility means that inner products are preserved under parallel transport — the length of a vector and the angle between two vectors do not change when you move them along a curve. This is the geometric content of ∇g = 0.</p><p>Torsion-freeness means that the connection is symmetric: Γ^k_ij = Γ^k_ji. Geometrically, infinitesimal parallelograms close — if you parallel transport two vectors to form a parallelogram, the opposite sides meet. The Levi-Civita connection is the default in Riemannian geometry and general relativity.</p>",
+        "mathExpressions": ["\\nabla g = 0 \\;\\text{(metric compatible)}, \\quad \\Gamma^k_{ij} = \\Gamma^k_{ji} \\;\\text{(torsion-free)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q41", "dg-q42", "dg-q43", "dg-q44", "dg-q45", "dg-q46", "dg-q47", "dg-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-07",
+    "topicId": "differential-geometry",
+    "order": 7,
+    "title": "Curvature Tensors",
+    "description": "Riemann curvature tensor, Ricci curvature, scalar curvature, sectional curvature",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "dg-07-c1",
+        "title": "The Riemann Curvature Tensor",
+        "contentHtml": "<p>The <strong>Riemann curvature tensor</strong> R is the fundamental measure of curvature on a Riemannian manifold. It captures the failure of covariant derivatives to commute: R(X, Y)Z = ∇_X ∇_Y Z - ∇_Y ∇_X Z - ∇_{[X,Y]} Z.</p><p>Equivalently, the Riemann tensor measures the <strong>path-dependence of parallel transport</strong>. When you parallel transport a vector Z around an infinitesimal parallelogram spanned by X and Y, the change in Z is given by R(X, Y)Z. On a flat manifold, R = 0 and parallel transport is path-independent.</p><p>In components, R^l_{ijk} = ∂_i Γ^l_{jk} - ∂_j Γ^l_{ik} + Γ^l_{im} Γ^m_{jk} - Γ^l_{jm} Γ^m_{ik}. Despite having n⁴ components in n dimensions, the symmetries of the Riemann tensor reduce the number of independent components to n²(n²-1)/12. In 2D there is only 1 independent component (Gaussian curvature); in 4D (spacetime) there are 20.</p><p>The <strong>Bianchi identities</strong> provide additional constraints: the first Bianchi identity is R(X,Y)Z + R(Y,Z)X + R(Z,X)Y = 0, and the second (differential) Bianchi identity leads to the conservation of the Einstein tensor in general relativity.</p>",
+        "mathExpressions": ["R(X,Y)Z = \\nabla_X \\nabla_Y Z - \\nabla_Y \\nabla_X Z - \\nabla_{[X,Y]}Z", "R^l_{\\;ijk} = \\partial_i \\Gamma^l_{jk} - \\partial_j \\Gamma^l_{ik} + \\Gamma^l_{im}\\Gamma^m_{jk} - \\Gamma^l_{jm}\\Gamma^m_{ik}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-07-c2",
+        "title": "Ricci and Scalar Curvature",
+        "contentHtml": "<p>The <strong>Ricci curvature tensor</strong> R_ij is obtained by contracting (tracing over) the Riemann tensor: R_ij = R^k_{ikj}. It is a symmetric (0,2)-tensor that measures how volumes change compared to flat space.</p><p>Geometrically, R_ij tells you how a small ball of geodesics emanating from a point grows or shrinks relative to a ball in flat space. Positive Ricci curvature means geodesics converge (volumes are smaller), while negative Ricci curvature means they diverge (volumes are larger).</p><p>The <strong>scalar curvature</strong> R is the trace of the Ricci tensor: R = g^{ij} R_ij. It is a single number at each point that gives the crudest summary of curvature — the average of all sectional curvatures. For the n-sphere of radius r, R = n(n-1)/r².</p><p>In 2 dimensions, the scalar curvature is simply R = 2K (twice the Gaussian curvature), and the Ricci tensor is R_ij = K g_ij. In higher dimensions, the Ricci tensor carries strictly less information than the full Riemann tensor.</p>",
+        "mathExpressions": ["R_{ij} = R^k_{\\;ikj}, \\quad R = g^{ij}R_{ij} = \\text{scalar curvature}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-07-c3",
+        "title": "Sectional Curvature",
+        "contentHtml": "<p><strong>Sectional curvature</strong> K(σ) is the curvature of a 2-dimensional section σ of the tangent space. For a 2-plane σ spanned by vectors u and v, it is defined as K(σ) = R(u,v,v,u) / (g(u,u)g(v,v) - g(u,v)²).</p><p>Sectional curvature is the natural generalization of Gaussian curvature to higher dimensions. It measures the curvature of the 2-dimensional surface obtained by flowing geodesics in the directions u and v. If K(σ) > 0, nearby geodesics in that plane converge; if K(σ) < 0, they diverge.</p><p>A manifold has <strong>constant sectional curvature</strong> k if K(σ) = k for every 2-plane σ at every point. The three model spaces are: the sphere S^n (k > 0), Euclidean space R^n (k = 0), and hyperbolic space H^n (k < 0). These are the most symmetric Riemannian manifolds.</p><p>Knowing all sectional curvatures is equivalent to knowing the full Riemann tensor. Major theorems relate bounds on sectional curvature to global topology: for instance, the <strong>Bonnet-Myers theorem</strong> says a complete manifold with Ricci curvature bounded below by a positive constant is compact with bounded diameter.</p>",
+        "mathExpressions": ["K(\\sigma) = \\frac{R(u,v,v,u)}{g(u,u)g(v,v) - g(u,v)^2}, \\quad \\sigma = \\text{span}(u,v)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q49", "dg-q50", "dg-q51", "dg-q52", "dg-q53", "dg-q54", "dg-q55", "dg-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "dg-08",
+    "topicId": "differential-geometry",
+    "order": 8,
+    "title": "Applications to Physics",
+    "description": "General relativity connection, Einstein field equations intuition, curved spacetime, black holes",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "dg-08-c1",
+        "title": "Curved Spacetime & General Relativity",
+        "contentHtml": "<p>Einstein's <strong>general relativity</strong> is built on the language of Riemannian (more precisely, <strong>pseudo-Riemannian</strong>) geometry. Spacetime is a 4-dimensional manifold equipped with a metric of signature (-,+,+,+), called a <strong>Lorentzian metric</strong>.</p><p>The key insight is the <strong>equivalence principle</strong>: gravity is not a force but the curvature of spacetime. A freely falling object follows a geodesic — the straightest possible path in curved spacetime. What we perceive as gravitational attraction is actually the convergence of geodesics in curved geometry.</p><p>The <strong>Minkowski metric</strong> ds² = -c²dt² + dx² + dy² + dz² describes flat spacetime (no gravity). Near a massive object, the metric deviates from Minkowski, and this deviation encodes the gravitational field.</p><p>Time itself is affected by curvature: clocks run slower in stronger gravitational fields (<strong>gravitational time dilation</strong>). This is not just theory — GPS satellites must correct for this effect to maintain accuracy. The geometry of spacetime literally warps both space and time.</p>",
+        "mathExpressions": ["ds^2 = g_{\\mu\\nu}\\,dx^\\mu\\,dx^\\nu, \\quad \\text{signature}\\;(-,+,+,+)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-08-c2",
+        "title": "The Einstein Field Equations",
+        "contentHtml": "<p>The <strong>Einstein field equations</strong> relate the curvature of spacetime to the distribution of matter and energy: G_μν = (8πG/c⁴) T_μν.</p><p>The left side is the <strong>Einstein tensor</strong> G_μν = R_μν - ½Rg_μν, built entirely from the Riemann curvature tensor and its contractions. The Ricci tensor R_μν and scalar curvature R encode how spacetime is curved. The right side is the <strong>stress-energy tensor</strong> T_μν, which describes the density and flow of energy and momentum.</p><p>Wheeler's famous summary: <em>\"Spacetime tells matter how to move; matter tells spacetime how to curve.\"</em> The equations are nonlinear — the curvature produced by matter itself carries energy, which produces more curvature.</p><p>The <strong>cosmological constant</strong> Λ can be added: G_μν + Λg_μν = (8πG/c⁴)T_μν. Einstein originally introduced it to allow a static universe, later calling it his \"biggest blunder.\" Today, Λ > 0 is used to model the accelerating expansion of the universe (dark energy).</p>",
+        "mathExpressions": ["G_{\\mu\\nu} = R_{\\mu\\nu} - \\tfrac{1}{2}Rg_{\\mu\\nu} = \\frac{8\\pi G}{c^4}T_{\\mu\\nu}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dg-08-c3",
+        "title": "Black Holes & Singularities",
+        "contentHtml": "<p>The <strong>Schwarzschild solution</strong> (1916) is the first exact solution to Einstein's field equations, describing spacetime around a spherically symmetric, non-rotating mass. Its metric is ds² = -(1 - 2GM/rc²)c²dt² + (1 - 2GM/rc²)⁻¹dr² + r²dΩ².</p><p>At the <strong>Schwarzschild radius</strong> r_s = 2GM/c², the metric has a coordinate singularity — the event horizon of a <strong>black hole</strong>. Inside this radius, space and time effectively swap roles: moving forward in time means moving inward toward the singularity. Nothing, not even light, can escape.</p><p>The <strong>singularity theorems</strong> of Penrose and Hawking use differential geometry to prove that singularities (points where curvature diverges to infinity) are unavoidable under physically reasonable conditions. These theorems employ the concepts of geodesic incompleteness, trapped surfaces, and energy conditions — all formulated in the language of Riemannian geometry.</p><p>Modern extensions include <strong>Kerr black holes</strong> (rotating), gravitational waves (ripples in the metric tensor), and the study of spacetime topology. Differential geometry provides the mathematical framework for all of these phenomena, making it indispensable to modern physics.</p>",
+        "mathExpressions": ["ds^2 = -\\left(1 - \\frac{2GM}{rc^2}\\right)c^2 dt^2 + \\left(1 - \\frac{2GM}{rc^2}\\right)^{-1}dr^2 + r^2 d\\Omega^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dg-q57", "dg-q58", "dg-q59", "dg-q60", "dg-q61", "dg-q62", "dg-q63", "dg-q64"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,219 @@
+[
+  {
+    "id": "mastery-topo-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "What is the fundamental group pi_1(S^1) of the circle?",
+    "options": [
+      "The trivial group {e}",
+      "Z (the integers under addition)",
+      "Z/2Z (cyclic group of order 2)",
+      "The free group on two generators"
+    ],
+    "correctAnswer": "Z (the integers under addition)",
+    "explanation": "The fundamental group of the circle is isomorphic to (Z, +), the integers under addition. Each integer n corresponds to a loop that winds around the circle n times (positive = counterclockwise, negative = clockwise, 0 = contractible loop). The universal covering space R -> S^1 via t -> e^{2pi*i*t} gives the cleanest proof: the fiber over any point is Z, and the deck transformation group (which equals pi_1) is Z. This is the cornerstone computation in algebraic topology -- most other fundamental group calculations build on this one.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-2",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the Euler characteristic of the torus T^2 (the surface of a donut)?",
+    "correctAnswer": "0",
+    "acceptableAnswers": ["0", "0.0"],
+    "explanation": "The Euler characteristic of the torus is chi(T^2) = 2 - 2g where g is the genus. Since the torus has genus 1, chi = 2 - 2(1) = 0. Alternatively, using a CW-decomposition: the standard cell structure has 1 vertex (0-cell), 2 edges (1-cells), and 1 face (2-cell), giving chi = 1 - 2 + 1 = 0. Or via homology: H_0 = Z, H_1 = Z^2, H_2 = Z, so chi = 1 - 2 + 1 = 0. The Euler characteristic is a topological invariant that distinguishes the torus (chi = 0) from the sphere (chi = 2), the projective plane (chi = 1), and higher-genus surfaces.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-3",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: The space [0, 1]^omega (countable product of unit intervals with the product topology) is compact.",
+    "correctAnswer": "True",
+    "explanation": "Yes, by Tychonoff's theorem: the product of any collection of compact spaces is compact in the product topology. Each [0, 1] is compact (Heine-Borel), so the countable product [0, 1]^omega is compact. This space is actually homeomorphic to the Hilbert cube, which is a fundamental object in infinite-dimensional topology. Note: Tychonoff's theorem is equivalent to the Axiom of Choice. If we used the box topology instead of the product topology, the result would be false -- [0,1]^omega with the box topology is not even sequentially compact.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each topological space to its fundamental group:",
+    "pairs": [
+      { "left": "S^2 (2-sphere)", "right": "Trivial group {e}" },
+      { "left": "S^1 (circle)", "right": "Z" },
+      { "left": "T^2 (torus)", "right": "Z x Z" },
+      { "left": "RP^2 (real projective plane)", "right": "Z/2Z" },
+      { "left": "Figure-eight (wedge of two circles)", "right": "Free group F_2 on two generators" }
+    ],
+    "correctAnswer": null,
+    "explanation": "These are the canonical fundamental group computations. S^2 is simply connected (any loop can be contracted since S^2 minus a point is R^2). S^1 has pi_1 = Z (winding number). The torus T^2 = S^1 x S^1 has pi_1 = Z x Z by the product formula (two independent loops: meridian and longitude). RP^2 has pi_1 = Z/2Z because its universal cover is S^2 with the antipodal identification, a 2-fold cover. The figure-eight's fundamental group is the free group on 2 generators by van Kampen's theorem: the two circles contribute one generator each with no relations between them.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-5",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument that Q (rationals with subspace topology from R) is NOT connected:",
+    "steps": [
+      "Consider the sets A = Q intersect (-infinity, sqrt(2)) and B = Q intersect (sqrt(2), infinity)",
+      "Both A and B are non-empty (e.g., 1 in A and 2 in B)",
+      "A union B = Q because sqrt(2) is irrational, so no rational is excluded",
+      "A and B are both open in Q because they are intersections of Q with open sets in R",
+      "Therefore Q = A union B is a separation, so Q is disconnected",
+      "This means Q is connected in the subspace topology since we found a separation"
+    ],
+    "correctAnswer": "6",
+    "explanation": "The error is in Step 6, which contradicts the entire argument. Steps 1-5 correctly prove that Q is disconnected (not connected): A and B are non-empty, disjoint, open in Q, and their union is Q. This is a valid separation. Step 6 then incorrectly concludes that Q is 'connected' -- it should say 'disconnected.' In fact, Q is totally disconnected: the only connected subsets of Q are single points and the empty set. This is because between any two rationals there is an irrational number that splits them. Q is a standard example showing that density in R does not imply connectedness.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-topo-6",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Arrange the steps to prove: a continuous bijection from a compact space to a Hausdorff space is a homeomorphism.",
+    "steps": [
+      "Let f: X -> Y be a continuous bijection where X is compact and Y is Hausdorff.",
+      "To show f is a homeomorphism, it suffices to show f is a closed map (sends closed sets to closed sets).",
+      "Let C be a closed subset of X. Since X is compact, C is also compact (closed subset of compact is compact).",
+      "Since f is continuous, f(C) is compact in Y (continuous image of compact is compact).",
+      "Since Y is Hausdorff, f(C) is closed in Y (compact subset of Hausdorff is closed).",
+      "Therefore f is a closed map, so f^{-1} is continuous, making f a homeomorphism."
+    ],
+    "correctAnswer": null,
+    "explanation": "This is one of the most elegant results combining compactness and the Hausdorff property. The proof chains three classical results: (1) closed subsets of compact spaces are compact, (2) continuous images of compact sets are compact, (3) compact subsets of Hausdorff spaces are closed. The key insight is that being a closed map is equivalent to the inverse being continuous (for bijections). Without compactness or Hausdorff-ness, the result fails: e.g., the identity from (R, discrete) to (R, standard) is a continuous bijection that is not a homeomorphism.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-topo-7",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which of the following spaces is compact but NOT sequentially compact?",
+    "options": [
+      "[0, 1] with the standard topology",
+      "The product {0, 1}^R (uncountable product of discrete two-point spaces) with the product topology",
+      "The Cantor set with the subspace topology from R",
+      "N (natural numbers) with the cofinite topology"
+    ],
+    "correctAnswer": "The product {0, 1}^R (uncountable product of discrete two-point spaces) with the product topology",
+    "explanation": "{0,1}^R is compact by Tychonoff's theorem (product of compact spaces), but it is NOT sequentially compact. To see why: consider the sequence of functions f_n: R -> {0,1} defined by f_n(r) = the nth binary digit of r. This sequence has no convergent subsequence in the product topology because for any two subsequences, there exists a real number where they eventually disagree. In metrizable spaces, compactness and sequential compactness are equivalent, but {0,1}^R is not metrizable (it's too large). [0,1] and the Cantor set are metrizable compact spaces (hence sequentially compact). N with cofinite topology is not Hausdorff but is compact (not sequentially compact either, though for different reasons).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-8",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: The fundamental group of the Klein bottle is abelian.",
+    "correctAnswer": "False",
+    "explanation": "The fundamental group of the Klein bottle K is the group with presentation <a, b | abab^{-1} = 1>, or equivalently <a, b | ab = ba^{-1}>. This group is non-abelian: we have ab = ba^{-1}, but if it were abelian, we'd also have ab = ba, which would force a = a^{-1}, i.e., a^2 = 1. But a has infinite order in this group. This group is a semidirect product Z rtimes Z where the action is multiplication by -1. The abelianization (obtained by additionally imposing ab = ba) gives Z x Z/2Z. The Klein bottle is the simplest closed surface with a non-abelian fundamental group that is not a free group.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the first homology group H_1 of the torus T^2? Express as a direct product of standard groups.",
+    "correctAnswer": "Z x Z",
+    "acceptableAnswers": ["Z x Z", "Z^2", "ZxZ", "Z times Z"],
+    "explanation": "H_1(T^2) = Z x Z (or equivalently Z^2). Since the torus is a closed orientable surface, H_1 is the abelianization of pi_1. The fundamental group pi_1(T^2) = Z x Z is already abelian, so H_1 = pi_1 = Z x Z. The two Z factors correspond to the two independent 1-cycles: the meridian circle and the longitudinal circle. In the CW-structure with one 0-cell, two 1-cells (a and b), and one 2-cell (attached via aba^{-1}b^{-1}), the boundary map from C_2 to C_1 sends the 2-cell to a + b - a - b = 0, so H_1 = ker(d_0)/im(d_2) = Z^2/0 = Z^2.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Let p: E -> B be a covering space with B path-connected and locally path-connected. If pi_1(B) = Z/6Z and pi_1(E) = Z/2Z (via the injection p_*), how many sheets does the covering have?",
+    "options": [
+      "2",
+      "3",
+      "6",
+      "12"
+    ],
+    "correctAnswer": "3",
+    "explanation": "The number of sheets of a covering space equals the index of p_*(pi_1(E)) in pi_1(B). Here p_*(pi_1(E)) = Z/2Z sits inside pi_1(B) = Z/6Z as a subgroup. The subgroups of Z/6Z are Z/1Z, Z/2Z, Z/3Z, and Z/6Z. The unique subgroup isomorphic to Z/2Z is {0, 3} (generated by 3), and its index in Z/6Z is |Z/6Z| / |Z/2Z| = 6/2 = 3. So the covering has 3 sheets. This is a consequence of the lifting correspondence: points in the fiber p^{-1}(b) are in bijection with cosets of p_*(pi_1(E)) in pi_1(B).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-11",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this topological argument:",
+    "steps": [
+      "Claim: R (real line) is compact",
+      "Let {U_alpha} be an open cover of R",
+      "For each n in Z, the interval [n, n+1] is compact (closed and bounded in R)",
+      "So [n, n+1] has a finite subcover from {U_alpha}",
+      "Taking the union of all these finite subcovers (one for each integer n) gives a countable subcover of R",
+      "A countable subcover is a finite subcover, so R is compact"
+    ],
+    "correctAnswer": "6",
+    "explanation": "The error is in Step 6. A countable union of finite sets is countable, but NOT necessarily finite. Taking one finite subcover for each integer n (and there are infinitely many integers) gives a countable subcover, not a finite one. Compactness requires every open cover to have a FINITE subcover, not merely a countable one. The property described (every open cover has a countable subcover) is called Lindelof, and R is indeed Lindelof, but Lindelof does not imply compact. The cover {(-n, n) : n in N} is an open cover of R with no finite subcover, directly showing R is not compact.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-topo-12",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each separation axiom to its definition:",
+    "pairs": [
+      { "left": "T0 (Kolmogorov)", "right": "For any two distinct points, at least one has a neighborhood not containing the other" },
+      { "left": "T1 (Frechet)", "right": "For any two distinct points, each has a neighborhood not containing the other" },
+      { "left": "T2 (Hausdorff)", "right": "Any two distinct points have disjoint open neighborhoods" },
+      { "left": "T3 (Regular)", "right": "Points and closed sets can be separated by disjoint open sets (plus T1)" },
+      { "left": "T4 (Normal)", "right": "Disjoint closed sets can be separated by disjoint open sets (plus T1)" }
+    ],
+    "correctAnswer": null,
+    "explanation": "The separation axioms form a hierarchy T0 < T1 < T2 < T3 < T4 (each implies the previous). T0 is the weakest: only one of the two points needs to be topologically distinguishable. T1 adds symmetry: every singleton is a closed set. T2 (Hausdorff) is the most commonly assumed: limits of sequences are unique. T3 (regularity) strengthens this to separating points from closed sets. T4 (normality) is the strongest standard axiom: it enables Urysohn's lemma and Tietze extension. Most spaces encountered in analysis are T4, but pathological examples distinguish the levels.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-13",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Arrange the steps to prove: S^n (n >= 2) is simply connected (pi_1(S^n) = 0) using a covering space argument.",
+    "steps": [
+      "Let U = S^n \\ {N} (sphere minus north pole) and V = S^n \\ {S} (sphere minus south pole), where N and S are antipodal points.",
+      "Both U and V are homeomorphic to R^n via stereographic projection, hence simply connected (and path-connected since n >= 1).",
+      "U intersect V = S^n \\ {N, S} is path-connected since n >= 2 (it's homeomorphic to R^n minus a point, which is path-connected for n >= 2).",
+      "Apply the Seifert-van Kampen theorem: pi_1(S^n) = pi_1(U) *_{pi_1(U cap V)} pi_1(V).",
+      "Since pi_1(U) = pi_1(V) = {e} (trivial group), the amalgamated product is trivial.",
+      "Therefore pi_1(S^n) = {e}, so S^n is simply connected for n >= 2."
+    ],
+    "correctAnswer": null,
+    "explanation": "This classic application of van Kampen's theorem decomposes S^n into two contractible open sets whose intersection is path-connected (the key requirement that fails for n = 1, where S^1 minus two points is disconnected). The amalgamated free product of two trivial groups over any group is trivial. For n = 1, U cap V has two components, and van Kampen gives pi_1(S^1) = Z instead. This proof elegantly explains why all higher spheres are simply connected while the circle is not.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-topo-14",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: Every compact Hausdorff space is normal (T4).",
+    "correctAnswer": "True",
+    "explanation": "This is a classical and important result. Proof sketch: Let A, B be disjoint closed subsets of a compact Hausdorff space X. For each a in A and b in B, the Hausdorff property gives disjoint open neighborhoods U_{a,b} of a and V_{a,b} of b. Fixing a, the sets {V_{a,b}} cover the compact set B, so finitely many cover it: V_a = V_{a,b1} union ... union V_{a,bk}. Set U_a = U_{a,b1} intersect ... intersect U_{a,bk}. Then {U_a} covers A (compact), so finitely many cover: U = U_{a1} union ... union U_{am}. Set V = V_{a1} intersect ... intersect V_{am}. Then U and V are disjoint open sets containing A and B. Combined with the fact that compact Hausdorff implies T1, we get T4 (normal).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-topo-15",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the Euler characteristic of a closed orientable surface of genus 3 (a three-holed torus)?",
+    "correctAnswer": "-4",
+    "acceptableAnswers": ["-4"],
+    "explanation": "For a closed orientable surface of genus g, the Euler characteristic is chi = 2 - 2g. With g = 3: chi = 2 - 2(3) = 2 - 6 = -4. This can be verified via homology: H_0 = Z (connected), H_1 = Z^{2g} = Z^6 (six independent 1-cycles), H_2 = Z (orientable closed surface). So chi = 1 - 6 + 1 = -4. The formula chi = 2 - 2g is the key classification invariant for closed orientable surfaces: genus 0 (sphere, chi = 2), genus 1 (torus, chi = 0), genus 2 (double torus, chi = -2), etc. By the classification theorem, genus completely determines the homeomorphism type.",
+    "xpReward": 40
+  }
+]

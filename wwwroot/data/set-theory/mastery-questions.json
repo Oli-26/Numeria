@@ -1,0 +1,218 @@
+[
+  {
+    "id": "mastery-st-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Cohen's method of forcing was originally used to show the independence of which statement from ZFC?",
+    "options": [
+      "The Axiom of Choice",
+      "The Continuum Hypothesis",
+      "The Axiom of Infinity",
+      "The Axiom of Replacement"
+    ],
+    "correctAnswer": "The Continuum Hypothesis",
+    "explanation": "Cohen (1963) invented forcing to show that the Continuum Hypothesis (CH) is independent of ZFC. Gödel had already shown CH is consistent with ZFC (1940, using the constructible universe L). Cohen showed ¬CH is also consistent, completing the independence proof. He also showed AC is independent of ZF, but CH was the primary target.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "In Gödel's constructible universe L, the Generalized Continuum Hypothesis (GCH) holds.",
+    "correctAnswer": "True",
+    "explanation": "Gödel (1940) showed that in L (the minimal inner model of ZFC), GCH holds: 2^{ℵ_α} = ℵ_{α+1} for all ordinals α. This is because in L, every subset of ℵ_α appears by stage ℵ_{α+1} in the constructible hierarchy, so the power set has size exactly ℵ_{α+1}.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The least infinite cardinal is ℵ_0. In the constructible universe L where GCH holds, what is 2^{ℵ_0}?",
+    "acceptableAnswers": ["ℵ_1", "aleph_1", "aleph-1", "ℵ₁"],
+    "correctAnswer": "ℵ_1",
+    "explanation": "GCH states that 2^{ℵ_α} = ℵ_{α+1}. For α=0, this gives 2^{ℵ_0} = ℵ_1, meaning the continuum equals the first uncountable cardinal. This is exactly the Continuum Hypothesis (CH), which is the special case of GCH at the first level.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-4",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this informal description of forcing.",
+    "steps": [
+      "Start with a countable transitive model (ctm) M of ZFC.",
+      "Choose a partially ordered set (poset) P ∈ M and a filter G ⊂ P that is P-generic over M.",
+      "The generic filter G is always an element of M.",
+      "Construct the generic extension M[G] by adding G and closing under the ZFC axioms.",
+      "M[G] is again a model of ZFC, and M ⊂ M[G].",
+      "By choosing P appropriately, M[G] can satisfy ¬CH even if M satisfies CH."
+    ],
+    "correctAnswer": "3",
+    "explanation": "Step 3 is the error. The generic filter G is specifically NOT in M — that's the whole point of forcing. A P-generic filter must intersect every dense set D ∈ M, and no such filter can exist inside M (by a density argument). G lives outside M, and adjoining it creates a strictly larger model M[G] ⊋ M.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-st-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which large cardinal axiom is equiconsistent with the existence of a measurable cardinal?",
+    "options": [
+      "The existence of an inaccessible cardinal",
+      "The existence of a Ramsey cardinal",
+      "The existence of a nontrivial elementary embedding j: V → M with critical point κ",
+      "The existence of 0# (zero sharp)"
+    ],
+    "correctAnswer": "The existence of a nontrivial elementary embedding j: V → M with critical point κ",
+    "explanation": "A measurable cardinal κ IS equivalent to the existence of a nontrivial elementary embedding j: V → M (where M is an inner model) with critical point κ. This is because κ is measurable iff there exists a κ-complete nonprincipal ultrafilter on κ, which gives rise to the ultrapower embedding. The other options are not equiconsistent — inaccessibles are weaker, and 0# requires different consistency strength.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-6",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each set-theoretic axiom or principle with its key consequence.",
+    "pairs": [
+      {"left": "V = L (Axiom of Constructibility)", "right": "GCH holds and there are no measurable cardinals"},
+      {"left": "Martin's Axiom (MA)", "right": "Union of fewer than continuum-many meager sets is meager"},
+      {"left": "Projective Determinacy (PD)", "right": "All projective sets of reals are Lebesgue measurable"},
+      {"left": "Proper Forcing Axiom (PFA)", "right": "The continuum equals ℵ_2"}
+    ],
+    "correctAnswer": null,
+    "explanation": "V=L resolves almost everything but at the cost of no large cardinals beyond weakly compact. MA is a weaker forcing axiom compatible with many values of the continuum. PD (provable from large cardinals) gives regularity properties for projective sets. PFA (a strong forcing axiom) implies 2^{ℵ_0} = ℵ_2.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-7",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of Cantor's diagonal argument that P(N) is uncountable.",
+    "steps": [
+      "Assume for contradiction that there is a bijection f: N → P(N).",
+      "Define the diagonal set D = {n ∈ N : n ∉ f(n)}.",
+      "D is a subset of N, so D ∈ P(N).",
+      "Since f is a bijection, there exists some d ∈ N with f(d) = D.",
+      "Ask: is d ∈ D? If d ∈ D, then by definition of D, d ∉ f(d) = D. Contradiction.",
+      "If d ∉ D, then d ∉ {n : n ∉ f(n)}, so d ∈ f(d) = D. Contradiction.",
+      "Both cases yield contradictions, so no such bijection f exists."
+    ],
+    "correctAnswer": null,
+    "explanation": "This is Cantor's theorem: |X| < |P(X)| for any set X. The diagonal set D is specifically constructed to differ from every f(n) at the point n itself. This argument works for any set, not just N, and is the foundation of the theory of cardinalities.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-st-8",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The existence of an inaccessible cardinal is provable from ZFC.",
+    "correctAnswer": "False",
+    "explanation": "The existence of an inaccessible cardinal is NOT provable from ZFC (assuming ZFC is consistent). By Gödel's second incompleteness theorem, ZFC cannot prove the consistency of ZFC, but the existence of an inaccessible κ implies Con(ZFC) (since V_κ is a model of ZFC). So ZFC + 'there exists an inaccessible' is strictly stronger than ZFC.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Easton's theorem shows that for regular cardinals, the continuum function κ ↦ 2^κ can be almost anything consistent with König's theorem. König's theorem requires that cf(2^κ) > κ. What is cf(ℵ_ω)?",
+    "acceptableAnswers": ["ℵ_0", "ω", "aleph_0", "aleph-0", "countable"],
+    "correctAnswer": "ℵ_0",
+    "explanation": "ℵ_ω = sup{ℵ_n : n < ω} is the supremum of countably many smaller cardinals, so its cofinality is ω = ℵ_0. This makes ℵ_ω a singular cardinal, and the behavior of 2^{ℵ_ω} is NOT covered by Easton's theorem (which only handles regular cardinals). The singular cardinal hypothesis addresses this case.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Determinacy for a pointclass Γ means that every game with payoff set in Γ is determined. Which of the following is provable in ZFC?",
+    "options": [
+      "All games on natural numbers with Borel payoff sets are determined",
+      "All games on natural numbers with analytic payoff sets are determined",
+      "All games on natural numbers with projective payoff sets are determined",
+      "All games on natural numbers with arbitrary payoff sets are determined"
+    ],
+    "correctAnswer": "All games on natural numbers with Borel payoff sets are determined",
+    "explanation": "Borel determinacy was proved by Martin (1975) in ZFC — this is the strongest determinacy result provable without large cardinals. Analytic determinacy requires a measurable cardinal. Projective determinacy requires infinitely many Woodin cardinals. Full determinacy (AD) contradicts the axiom of choice.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-11",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about large cardinals.",
+    "steps": [
+      "A cardinal κ is measurable if there is a κ-complete nonprincipal ultrafilter on κ.",
+      "Every measurable cardinal is inaccessible (and hence a limit cardinal, regular, and strong limit).",
+      "The consistency strength hierarchy: inaccessible < Mahlo < weakly compact < measurable.",
+      "If κ is measurable and V=L, then κ is still measurable in L.",
+      "Therefore, large cardinal axioms are compatible with V=L."
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is the error. Scott's theorem (1961) proves that if a measurable cardinal exists, then V ≠ L. In fact, if κ is measurable, then the ultrapower embedding j: V → M shows L ≠ V because L is 'too thin' to contain a κ-complete nonprincipal ultrafilter. Measurable cardinals are fundamentally incompatible with V=L.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-st-12",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each forcing notion with the property it forces in the generic extension.",
+    "pairs": [
+      {"left": "Cohen forcing (finite partial functions ω → 2)", "right": "Adds a new real (subset of ω)"},
+      {"left": "Collapse forcing Col(ω, ω_1)", "right": "Makes ℵ_1 countable"},
+      {"left": "Sacks forcing (perfect trees)", "right": "Adds a minimal degree real"},
+      {"left": "Lévy collapse Col(ω, <κ) for inaccessible κ", "right": "Used to construct Solovay's model where all sets are measurable"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Cohen forcing adds generic reals and can make the continuum arbitrarily large. Collapse forcing reduces cardinalities. Sacks forcing adds a real of minimal constructibility degree. Lévy collapsing an inaccessible is the key ingredient in Solovay's model where every set of reals is Lebesgue measurable.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-13",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Axiom of Determinacy (AD) is consistent with the Axiom of Choice (AC).",
+    "correctAnswer": "False",
+    "explanation": "AD and AC are contradictory. AD implies that every set of reals is Lebesgue measurable, has the Baire property, and has the perfect set property. But AC (via a well-ordering of the reals) can construct non-measurable sets (Vitali sets). Therefore AD ⟹ ¬AC. AD is studied in the context of ZF + AD (without Choice) or in inner models like L(R).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-14",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The beth numbers are defined by beth_0 = ℵ_0 and beth_{α+1} = 2^{beth_α}. Under GCH, beth_1 = ℵ_1. Without GCH, what is the relationship between beth_1 and ℵ_1?",
+    "acceptableAnswers": ["beth_1 >= ℵ_1", "beth_1 ≥ ℵ_1", "greater than or equal", "beth_1 >= aleph_1"],
+    "correctAnswer": "beth_1 ≥ ℵ_1",
+    "explanation": "We always have beth_1 = 2^{ℵ_0} ≥ ℵ_1 (Cantor's theorem gives 2^{ℵ_0} > ℵ_0, and ℵ_1 is the least cardinal > ℵ_0). But without GCH, 2^{ℵ_0} could be ℵ_1, ℵ_2, ℵ_{ω_1}, or many other values. The statement beth_1 = ℵ_1 is exactly the Continuum Hypothesis.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-st-15",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the key steps showing that the Axiom of Choice implies Zorn's Lemma.",
+    "steps": [
+      "Let (P, ≤) be a partially ordered set where every chain has an upper bound.",
+      "Using AC, fix a choice function f that selects an element from every nonempty set.",
+      "Build a chain by transfinite recursion: at successor stages, if x_α is not maximal, use f to choose x_{α+1} > x_α.",
+      "At limit stages, take the upper bound of the chain built so far (exists by hypothesis).",
+      "This process must terminate at some ordinal, since P is a set and cannot accommodate a chain indexed by all ordinals.",
+      "When it terminates, x_α must be a maximal element (otherwise f would extend the chain further).",
+      "Therefore P has a maximal element, proving Zorn's Lemma."
+    ],
+    "correctAnswer": null,
+    "explanation": "This proof uses AC to power a transfinite construction. The key insight is that the construction cannot run through all ordinals (Hartogs' theorem), so it must stop — and it can only stop at a maximal element. This is one direction of the equivalence AC ⟺ Zorn's Lemma ⟺ Well-Ordering Theorem.",
+    "xpReward": 50
+  }
+]

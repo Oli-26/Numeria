@@ -1,0 +1,290 @@
+[
+  {
+    "id": "four-01",
+    "topicId": "fourier-analysis",
+    "order": 1,
+    "title": "Waves & Periodicity",
+    "description": "Sine and cosine waves, periodic functions, and superposition",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "four-01-c1",
+        "title": "Sine and Cosine Waves",
+        "contentHtml": "<p>The <strong>sine</strong> and <strong>cosine</strong> functions are the fundamental building blocks of wave analysis. A general sinusoidal wave has three key parameters:</p><p><strong>Amplitude</strong> (A): the height of the wave from its center line. A larger amplitude means a taller wave.<br><strong>Frequency</strong> (f) or angular frequency (omega): how many cycles occur per unit time. Higher frequency means more oscillations.<br><strong>Phase</strong> (phi): the horizontal shift of the wave. It determines where in its cycle the wave starts.</p><p>A general sinusoid is written as y = A sin(omega t + phi). The <strong>period</strong> T = 2 pi / omega is the time for one complete cycle. Sine and cosine are identical except for a phase shift: cos(t) = sin(t + pi/2).</p>",
+        "mathExpressions": ["y(t) = A \\sin(\\omega t + \\phi), \\quad T = \\frac{2\\pi}{\\omega}, \\quad \\cos(t) = \\sin\\!\\left(t + \\frac{\\pi}{2}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-01-c2",
+        "title": "Periodic Functions",
+        "contentHtml": "<p>A function f(x) is <strong>periodic</strong> with period T if f(x + T) = f(x) for all x. The smallest such T is the <strong>fundamental period</strong>.</p><p>Sine and cosine have fundamental period 2 pi. But many other functions are periodic too: square waves (alternating between +1 and -1), sawtooth waves (linear ramps that reset), and triangle waves (linear zigzags).</p><p>Periodic functions appear everywhere in nature: the rotation of the Earth (24-hour period), the vibration of a guitar string, alternating electrical current (50 or 60 Hz), and the beating of a heart.</p><p>Even a function that looks nothing like a sine wave can be periodic. The key insight of Fourier analysis is that <strong>any</strong> periodic function, no matter how jagged or complex, can be built from simple sine and cosine waves.</p>",
+        "mathExpressions": ["f(x + T) = f(x) \\;\\text{ for all } x, \\quad T > 0 \\text{ (period)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-01-c3",
+        "title": "Superposition: Adding Waves",
+        "contentHtml": "<p><strong>Superposition</strong> is the principle that waves can be added together. When two waves overlap, the result at each point is simply the sum of the individual wave values.</p><p>Adding waves of different frequencies creates complex waveforms. For example, adding sin(t) and sin(2t) produces a wave that is not a simple sinusoid but is still periodic. Adding sin(t) + (1/3)sin(3t) + (1/5)sin(5t) + ... starts to look like a square wave!</p><p><strong>Constructive interference</strong> occurs when waves align (peaks match peaks), making the combined wave larger. <strong>Destructive interference</strong> occurs when waves are out of phase (peaks match troughs), cancelling each other out.</p><p>Noise-cancelling headphones exploit destructive interference: they generate an \"anti-wave\" that cancels incoming sound. This is superposition in action.</p>",
+        "mathExpressions": ["\\text{Superposition: } f(t) + g(t) = h(t), \\quad \\text{e.g. } \\sin(t) + \\tfrac{1}{3}\\sin(3t) + \\tfrac{1}{5}\\sin(5t) + \\cdots \\approx \\text{square wave}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q01", "four-q02", "four-q03", "four-q04", "four-q05", "four-q06", "four-q07", "four-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-02",
+    "topicId": "fourier-analysis",
+    "order": 2,
+    "title": "Fourier's Big Idea",
+    "description": "Decomposing periodic functions into sine and cosine components",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "four-02-c1",
+        "title": "Fourier Decomposition",
+        "contentHtml": "<p>In 1807, Joseph Fourier made a revolutionary claim: <strong>any periodic function can be written as a sum of sines and cosines</strong>. This was controversial at the time, but it turned out to be one of the most powerful ideas in all of mathematics.</p><p>The <strong>Fourier series</strong> of a periodic function f(x) with period 2 pi is:</p><p>f(x) = a_0/2 + sum from n=1 to infinity of (a_n cos(nx) + b_n sin(nx))</p><p>The constant term a_0/2 is the average value of f. Each subsequent term adds a higher-frequency component (a <strong>harmonic</strong>). The coefficients a_n and b_n tell you how much of each harmonic is present in the signal.</p>",
+        "mathExpressions": ["f(x) = \\frac{a_0}{2} + \\sum_{n=1}^{\\infty} \\bigl(a_n \\cos(nx) + b_n \\sin(nx)\\bigr)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-02-c2",
+        "title": "Computing Fourier Coefficients",
+        "contentHtml": "<p>The Fourier coefficients are computed using <strong>inner products</strong> (integration). For a function with period 2 pi:</p><p>a_n = (1/pi) integral from -pi to pi of f(x) cos(nx) dx<br>b_n = (1/pi) integral from -pi to pi of f(x) sin(nx) dx</p><p>This works because sine and cosine functions are <strong>orthogonal</strong>: the integral of sin(mx)cos(nx) over a full period is zero. Similarly, the integral of sin(mx)sin(nx) is zero unless m = n. So multiplying by cos(nx) and integrating \"picks out\" just the a_n coefficient.</p><p>Think of it like decomposing a vector into components along perpendicular axes. Each sine and cosine is a \"direction\" in function space, and the coefficients measure the projection onto each direction.</p>",
+        "mathExpressions": ["a_n = \\frac{1}{\\pi}\\int_{-\\pi}^{\\pi} f(x)\\cos(nx)\\,dx, \\quad b_n = \\frac{1}{\\pi}\\int_{-\\pi}^{\\pi} f(x)\\sin(nx)\\,dx"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-02-c3",
+        "title": "The Square Wave: A Remarkable Example",
+        "contentHtml": "<p>The <strong>square wave</strong> alternates between +1 and -1. Its Fourier series contains only odd harmonics:</p><p>square(x) = (4/pi)(sin(x) + (1/3)sin(3x) + (1/5)sin(5x) + (1/7)sin(7x) + ...)</p><p>This is remarkable: smooth, curvy sine waves add up to produce sharp, flat edges and sudden jumps! With just 5 terms, the approximation already closely resembles the square wave.</p><p>At the discontinuities (the jumps), the partial sums always overshoot by about 9%. This overshoot does not vanish as more terms are added. It is called the <strong>Gibbs phenomenon</strong>, discovered in 1899, and it occurs at every jump discontinuity in a Fourier series.</p><p>The even harmonics (sin(2x), sin(4x), ...) are absent because the square wave has a special symmetry: f(x + pi) = -f(x). Only odd harmonics respect this symmetry.</p>",
+        "mathExpressions": ["\\text{square}(x) = \\frac{4}{\\pi}\\sum_{k=0}^{\\infty} \\frac{\\sin((2k+1)x)}{2k+1} = \\frac{4}{\\pi}\\!\\left(\\sin x + \\frac{\\sin 3x}{3} + \\frac{\\sin 5x}{5} + \\cdots\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q09", "four-q10", "four-q11", "four-q12", "four-q13", "four-q14", "four-q15", "four-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-03",
+    "topicId": "fourier-analysis",
+    "order": 3,
+    "title": "Fourier Coefficients",
+    "description": "Orthogonality, projections, and Parseval's theorem",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "four-03-c1",
+        "title": "Projection onto the Sine/Cosine Basis",
+        "contentHtml": "<p>Computing Fourier coefficients is fundamentally an act of <strong>projection</strong>. Just as a 3D vector can be decomposed along the x, y, z axes, a function can be decomposed along the \"axes\" of sin(nx) and cos(nx).</p><p>The <strong>inner product</strong> of two functions f and g on [-pi, pi] is defined as: &lt;f, g&gt; = integral from -pi to pi of f(x)g(x) dx. Two functions are <strong>orthogonal</strong> if their inner product is zero.</p><p>The coefficient a_n is the projection of f onto cos(nx), scaled by the norm: a_n = &lt;f, cos(nx)&gt; / &lt;cos(nx), cos(nx)&gt;. Since &lt;cos(nx), cos(nx)&gt; = pi, we get the familiar formula a_n = (1/pi) integral of f(x)cos(nx)dx.</p><p>This is the function-space analogue of the dot product formula: component = (v dot e_n) / (e_n dot e_n).</p>",
+        "mathExpressions": ["\\langle f, g \\rangle = \\int_{-\\pi}^{\\pi} f(x)\\,g(x)\\,dx, \\quad a_n = \\frac{\\langle f, \\cos(nx) \\rangle}{\\langle \\cos(nx), \\cos(nx) \\rangle} = \\frac{1}{\\pi}\\int_{-\\pi}^{\\pi} f(x)\\cos(nx)\\,dx"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-03-c2",
+        "title": "Orthogonality of Sines and Cosines",
+        "contentHtml": "<p>The key property that makes Fourier series work is the <strong>orthogonality</strong> of the trigonometric system. On the interval [-pi, pi]:</p><p>integral of cos(mx)cos(nx) dx = 0 when m is not equal to n<br>integral of sin(mx)sin(nx) dx = 0 when m is not equal to n<br>integral of sin(mx)cos(nx) dx = 0 for all m, n</p><p>When m = n, integral of cos^2(nx) dx = pi and integral of sin^2(nx) dx = pi (for n >= 1). These are the \"lengths\" of the basis vectors.</p><p>This orthogonality is not a coincidence. The functions {1, cos(x), sin(x), cos(2x), sin(2x), ...} form an <strong>orthogonal basis</strong> for the space of square-integrable periodic functions. This infinite-dimensional space is called <strong>L^2</strong>, and it is the function-space analogue of Euclidean space.</p>",
+        "mathExpressions": ["\\int_{-\\pi}^{\\pi} \\cos(mx)\\cos(nx)\\,dx = \\begin{cases} 0 & m \\neq n \\\\ \\pi & m = n \\end{cases}, \\quad \\int_{-\\pi}^{\\pi} \\sin(mx)\\cos(nx)\\,dx = 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-03-c3",
+        "title": "Parseval's Theorem",
+        "contentHtml": "<p><strong>Parseval's theorem</strong> is a stunning result: the total energy of a signal in the time domain equals the total energy in the frequency domain.</p><p>Mathematically: (1/pi) integral from -pi to pi of |f(x)|^2 dx = a_0^2/2 + sum of (a_n^2 + b_n^2).</p><p>The left side measures energy in the time domain (sum of squared values of f). The right side sums the squared amplitudes of each frequency component. No energy is lost or created by decomposing into frequencies.</p><p>This is the function-space version of the <strong>Pythagorean theorem</strong>: if v = v_1 + v_2 + ... where the v_i are orthogonal, then |v|^2 = |v_1|^2 + |v_2|^2 + ... Energy conservation in Fourier analysis is geometry in disguise!</p>",
+        "mathExpressions": ["\\frac{1}{\\pi}\\int_{-\\pi}^{\\pi} |f(x)|^2\\,dx = \\frac{a_0^2}{2} + \\sum_{n=1}^{\\infty}\\bigl(a_n^2 + b_n^2\\bigr)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q17", "four-q18", "four-q19", "four-q20", "four-q21", "four-q22", "four-q23", "four-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-04",
+    "topicId": "fourier-analysis",
+    "order": 4,
+    "title": "The Fourier Transform",
+    "description": "From periodic to non-periodic: the continuous Fourier transform and duality",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "four-04-c1",
+        "title": "From Series to Transform",
+        "contentHtml": "<p>The Fourier series works for <strong>periodic</strong> functions. But what about signals that are not periodic, like a single pulse or a decaying exponential? The <strong>Fourier transform</strong> extends Fourier's idea to all functions.</p><p>Instead of discrete frequencies n = 1, 2, 3, ..., the Fourier transform uses a <strong>continuous</strong> spectrum of frequencies omega. The transform converts a time-domain function f(t) into a frequency-domain function F(omega):</p><p>F(omega) = integral from -infinity to infinity of f(t) e^(-i omega t) dt</p><p>The inverse transform reconstructs f(t) from its frequencies: f(t) = (1/2pi) integral of F(omega) e^(i omega t) d omega. The original function and its transform are two equivalent representations of the same information.</p>",
+        "mathExpressions": ["F(\\omega) = \\int_{-\\infty}^{\\infty} f(t)\\,e^{-i\\omega t}\\,dt, \\quad f(t) = \\frac{1}{2\\pi}\\int_{-\\infty}^{\\infty} F(\\omega)\\,e^{i\\omega t}\\,d\\omega"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-04-c2",
+        "title": "Time-Frequency Duality",
+        "contentHtml": "<p>The Fourier transform reveals a beautiful <strong>duality</strong> between time and frequency:</p><p><strong>Narrow in time means wide in frequency.</strong> A sharp spike (Dirac delta) in time has a flat, infinite spectrum -- it contains all frequencies equally. Conversely, a pure sine wave (one frequency) extends infinitely in time.</p><p>A <strong>Gaussian</strong> pulse e^(-t^2) is special: its Fourier transform is also a Gaussian. It is the function that is most \"compact\" in both time and frequency simultaneously.</p><p>Key transform pairs to know:<br>- Delta function delta(t) transforms to 1 (constant spectrum)<br>- Constant 1 transforms to 2pi delta(omega)<br>- Gaussian e^(-at^2) transforms to sqrt(pi/a) e^(-omega^2/4a)<br>- Rectangular pulse transforms to a sinc function sin(omega)/omega</p>",
+        "mathExpressions": ["\\delta(t) \\leftrightarrow 1, \\quad e^{-at^2} \\leftrightarrow \\sqrt{\\frac{\\pi}{a}}\\,e^{-\\omega^2/4a}, \\quad \\text{rect}(t) \\leftrightarrow \\text{sinc}(\\omega/2)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-04-c3",
+        "title": "The Uncertainty Principle",
+        "contentHtml": "<p>Time-frequency duality leads to one of the deepest results in analysis: the <strong>uncertainty principle</strong>. A function cannot be simultaneously localized in both time and frequency.</p><p>Formally: (spread in time) x (spread in frequency) >= 1/2. If you try to make a signal shorter in time, its frequency content must spread out, and vice versa.</p><p>This is the mathematical foundation of <strong>Heisenberg's uncertainty principle</strong> in quantum mechanics, where position and momentum play the roles of time and frequency. It is not just a limitation of measurement but a fundamental property of waves.</p><p>Musical example: a short staccato note has a definite time but blurry pitch. A long sustained note has a definite pitch but occupies a wide time window. You cannot have both perfect time resolution and perfect frequency resolution. This tradeoff is inescapable.</p>",
+        "mathExpressions": ["\\Delta t \\cdot \\Delta \\omega \\geq \\frac{1}{2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q25", "four-q26", "four-q27", "four-q28", "four-q29", "four-q30", "four-q31", "four-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-05",
+    "topicId": "fourier-analysis",
+    "order": 5,
+    "title": "The DFT & FFT",
+    "description": "Discrete Fourier Transform, the FFT algorithm, and the Nyquist theorem",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "four-05-c1",
+        "title": "The Discrete Fourier Transform",
+        "contentHtml": "<p>Computers work with <strong>sampled</strong> data, not continuous functions. The <strong>Discrete Fourier Transform</strong> (DFT) is the version of the Fourier transform for sequences of N numbers.</p><p>Given samples x_0, x_1, ..., x_{N-1}, the DFT produces N frequency components X_0, X_1, ..., X_{N-1}:</p><p>X_k = sum from n=0 to N-1 of x_n e^(-2 pi i k n / N)</p><p>Each X_k tells you the amplitude and phase of the k-th frequency component. The inverse DFT reconstructs the original samples: x_n = (1/N) sum of X_k e^(2 pi i k n / N).</p><p>Computing the DFT directly requires N multiplications for each of the N outputs, giving O(N^2) operations total. For N = 1,000,000, that is a trillion operations -- far too slow for real-time processing.</p>",
+        "mathExpressions": ["X_k = \\sum_{n=0}^{N-1} x_n\\, e^{-2\\pi i\\, kn/N}, \\quad k = 0, 1, \\ldots, N-1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-05-c2",
+        "title": "The FFT Algorithm",
+        "contentHtml": "<p>The <strong>Fast Fourier Transform</strong> (FFT) is one of the most important algorithms ever invented. Published by Cooley and Tukey in 1965, it computes the DFT in O(N log N) operations instead of O(N^2).</p><p>The key insight is <strong>divide and conquer</strong>: split the N-point DFT into two N/2-point DFTs (one for even-indexed samples, one for odd-indexed), combine the results, and recurse. The \"twiddle factors\" e^(-2 pi i k/N) enable the efficient combination step.</p><p>The speedup is enormous. For N = 1,000,000: brute force needs 10^12 operations; FFT needs about 2 x 10^7. That is a factor of 50,000 faster!</p><p>The FFT made real-time signal processing practical. Without it, technologies like Wi-Fi, cellular networks, digital audio, medical imaging, and radar would be far more limited. Some historians consider it among the top 10 algorithms of the 20th century.</p>",
+        "mathExpressions": ["\\text{DFT: } O(N^2) \\quad \\longrightarrow \\quad \\text{FFT: } O(N \\log N)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-05-c3",
+        "title": "The Nyquist Theorem",
+        "contentHtml": "<p>The <strong>Nyquist-Shannon sampling theorem</strong> answers a crucial question: how fast must you sample an analog signal to capture it faithfully?</p><p>The theorem states: to perfectly reconstruct a signal with maximum frequency f_max, you must sample at a rate of at least 2 f_max. This minimum rate is called the <strong>Nyquist rate</strong>.</p><p>If you sample too slowly, high frequencies masquerade as low frequencies -- a phenomenon called <strong>aliasing</strong>. This is why spinning wheels sometimes appear to rotate backward in video: the frame rate (sampling rate) is too low relative to the rotation frequency.</p><p>Audio CDs sample at 44,100 Hz because human hearing extends to about 20,000 Hz, and 44,100 > 2 x 20,000. This ensures no audible aliasing. Digital audio, telephone systems, and all analog-to-digital converters are designed around the Nyquist theorem.</p>",
+        "mathExpressions": ["f_{\\text{sample}} \\geq 2\\,f_{\\max} \\quad \\text{(Nyquist rate)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q33", "four-q34", "four-q35", "four-q36", "four-q37", "four-q38", "four-q39", "four-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-06",
+    "topicId": "fourier-analysis",
+    "order": 6,
+    "title": "Applications: Sound & Music",
+    "description": "Audio analysis, compression, synthesis, and auto-tune",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "four-06-c1",
+        "title": "Audio as Waveform and Spectrum",
+        "contentHtml": "<p>Sound is a pressure wave traveling through air. A microphone converts these pressure variations into an electrical signal -- a waveform that varies over time.</p><p>The <strong>spectrum analyzer</strong> applies the Fourier transform to show which frequencies are present. A pure tone (like a tuning fork at 440 Hz) appears as a single spike. A musical instrument playing the same note shows a spike at 440 Hz (the <strong>fundamental</strong>) plus smaller spikes at 880, 1320, 1760 Hz, etc. (the <strong>harmonics</strong> or overtones).</p><p>The relative strengths of these harmonics determine the <strong>timbre</strong> -- why a violin and a piano sound different even when playing the same note at the same volume. Fourier analysis reveals that timbre is literally the shape of the frequency spectrum.</p>",
+        "mathExpressions": ["\\text{sound}(t) \\xrightarrow{\\text{FFT}} \\text{spectrum}(f): \\text{ fundamental } f_0 \\text{ + harmonics } 2f_0, 3f_0, \\ldots"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-06-c2",
+        "title": "MP3 Compression",
+        "contentHtml": "<p><strong>MP3 compression</strong> uses Fourier analysis and psychoacoustics to dramatically reduce audio file sizes. The process works in several steps:</p><p>1. Divide the audio into short overlapping frames<br>2. Apply a modified DCT to each frame, converting to frequency domain<br>3. Apply a <strong>psychoacoustic model</strong>: determine which frequencies are inaudible (below the hearing threshold or masked by louder nearby frequencies)<br>4. Discard the inaudible frequencies and use fewer bits for less important ones</p><p>Humans cannot hear frequencies above about 20 kHz. We also cannot hear a quiet sound near a loud one at a similar frequency (this is called <strong>auditory masking</strong>). MP3 exploits these limitations to achieve 10:1 compression with minimal perceptible quality loss.</p><p>A 3-minute song: uncompressed WAV is about 30 MB; MP3 at 128 kbps is about 3 MB. The Fourier transform makes this possible by separating the signal into keep-able and discard-able frequency components.</p>",
+        "mathExpressions": ["\\text{Compression ratio} \\approx 10:1, \\quad \\text{WAV: } 1411 \\text{ kbps} \\to \\text{MP3: } 128 \\text{ kbps}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-06-c3",
+        "title": "Synthesizers and Auto-Tune",
+        "contentHtml": "<p><strong>Additive synthesis</strong> builds sounds from scratch using Fourier's idea in reverse: start with sine waves and combine them. By choosing the right amplitudes for each harmonic, you can recreate the sound of any instrument or invent entirely new timbres.</p><p><strong>FM synthesis</strong> (used in the famous Yamaha DX7) takes a different approach: modulate the frequency of one sine wave with another, producing rich spectra from just two oscillators.</p><p><strong>Auto-Tune</strong> works by analyzing the singer's voice in the frequency domain (via FFT), detecting the fundamental pitch, and shifting it to the nearest correct note. The speed of correction can be adjusted: slow correction sounds natural, while instant correction produces the distinctive robotic \"Auto-Tune effect\" popularized in modern music.</p><p>All of these technologies -- from the spectrum analyzer on your phone to the synthesizers in a recording studio -- are direct applications of Fourier analysis.</p>",
+        "mathExpressions": ["\\text{Additive synthesis: } s(t) = \\sum_{n=1}^{N} A_n \\sin(2\\pi n f_0 t + \\phi_n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q41", "four-q42", "four-q43", "four-q44", "four-q45", "four-q46", "four-q47", "four-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-07",
+    "topicId": "fourier-analysis",
+    "order": 7,
+    "title": "Applications: Images & Signals",
+    "description": "2D Fourier transforms, JPEG, MRI, and signal filtering",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "four-07-c1",
+        "title": "2D Fourier Transform for Images",
+        "contentHtml": "<p>Images are 2D signals: brightness as a function of position (x, y). The <strong>2D Fourier transform</strong> decomposes an image into 2D sinusoidal patterns at different frequencies and orientations.</p><p>Low frequencies correspond to smooth, gradual changes (sky, skin). High frequencies correspond to sharp edges, textures, and fine detail. The 2D frequency space is represented as an image itself: the <strong>magnitude spectrum</strong> shows bright spots where strong frequency components exist.</p><p>A horizontal stripe pattern in an image appears as a vertical line in frequency space (and vice versa). A diagonal edge appears as a perpendicular line in the spectrum. The center of the spectrum represents low frequencies (DC component = average brightness), while the edges represent high frequencies.</p>",
+        "mathExpressions": ["F(u,v) = \\int\\!\\!\\int f(x,y)\\,e^{-2\\pi i(ux + vy)}\\,dx\\,dy"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-07-c2",
+        "title": "JPEG Compression and the DCT",
+        "contentHtml": "<p><strong>JPEG</strong> compression uses the <strong>Discrete Cosine Transform</strong> (DCT), a close relative of the Fourier transform that uses only cosines (no sines). The process:</p><p>1. Divide the image into 8x8 pixel blocks<br>2. Apply the 2D DCT to each block, converting to frequency domain<br>3. <strong>Quantize</strong>: divide frequency coefficients by a quality-dependent matrix and round. High-frequency coefficients (fine detail) are divided by larger numbers, pushing them to zero<br>4. Compress the resulting sparse matrix of mostly-zero values</p><p>Since the human eye is less sensitive to high-frequency detail than to overall brightness, discarding high-frequency coefficients produces minimal visible quality loss. At high compression ratios, the 8x8 block boundaries become visible as artifacts.</p><p>A 5 MB raw image might compress to 500 KB as a JPEG -- the DCT identifies and discards the visually unimportant frequency information.</p>",
+        "mathExpressions": ["\\text{DCT: } C_k = \\sum_{n=0}^{N-1} x_n \\cos\\!\\left(\\frac{\\pi(2n+1)k}{2N}\\right), \\quad k = 0, \\ldots, N-1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-07-c3",
+        "title": "MRI and Signal Filtering",
+        "contentHtml": "<p><strong>MRI</strong> (Magnetic Resonance Imaging) is perhaps the most remarkable application of Fourier analysis. An MRI machine does not directly photograph the body. Instead, it collects data in <strong>k-space</strong> -- the frequency domain -- and uses the inverse 2D Fourier transform to reconstruct the image.</p><p>The machine applies magnetic field gradients that cause hydrogen atoms at different positions to resonate at different frequencies. By measuring the combined signal and applying the inverse FFT, the positions and densities of tissues are recovered. Every MRI image you have ever seen was computed via Fourier transform.</p><p><strong>Signal filtering</strong> is elegantly simple in the frequency domain:<br>- <strong>Low-pass filter</strong>: keep low frequencies, remove high (smooths/blurs)<br>- <strong>High-pass filter</strong>: keep high frequencies, remove low (extracts edges)<br>- <strong>Band-pass filter</strong>: keep a range of frequencies (isolates specific signals)</p><p>To filter: transform to frequency domain, zero out unwanted frequencies, transform back. This is vastly faster than the equivalent operation in the time/spatial domain.</p>",
+        "mathExpressions": ["\\text{Filtering: } f(t) \\xrightarrow{\\text{FFT}} F(\\omega) \\xrightarrow{\\times\\, H(\\omega)} G(\\omega) \\xrightarrow{\\text{IFFT}} g(t)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q49", "four-q50", "four-q51", "four-q52", "four-q53", "four-q54", "four-q55", "four-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "four-08",
+    "topicId": "fourier-analysis",
+    "order": 8,
+    "title": "Epicycles & Advanced Topics",
+    "description": "Rotating circles, Laplace and wavelet transforms, and deep connections",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "four-08-c1",
+        "title": "Epicycles: Fourier Series as Rotating Circles",
+        "contentHtml": "<p>There is a beautiful geometric interpretation of Fourier series: each term corresponds to a <strong>rotating circle</strong> (an <strong>epicycle</strong>). The complex Fourier series f(t) = sum of c_n e^(int) describes a chain of circles, each rotating at integer frequency n, with radius |c_n|.</p><p>The tip of the last circle traces out the original curve! Any closed curve in the plane -- a square, a star, a drawing of Homer Simpson -- can be traced by a chain of rotating circles. The more circles you add, the more accurate the tracing becomes.</p><p>This connects to an ancient idea: Ptolemy used epicycles (circles upon circles) to model planetary orbits. While his astronomy was wrong, the mathematics was sound -- he was essentially computing a Fourier approximation of elliptical orbits.</p><p>The complex form of the Fourier series is more compact: f(t) = sum of c_n e^(int), where c_n = (1/2pi) integral of f(t) e^(-int) dt. Each coefficient c_n is a complex number encoding both amplitude and phase.</p>",
+        "mathExpressions": ["f(t) = \\sum_{n=-\\infty}^{\\infty} c_n\\, e^{int}, \\quad c_n = \\frac{1}{2\\pi}\\int_{-\\pi}^{\\pi} f(t)\\,e^{-int}\\,dt"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-08-c2",
+        "title": "Laplace and Wavelet Transforms",
+        "contentHtml": "<p>The <strong>Laplace transform</strong> generalizes the Fourier transform for signals that may grow or decay. Instead of pure oscillations e^(i omega t), it uses e^(st) where s = sigma + i omega is a complex number:</p><p>F(s) = integral from 0 to infinity of f(t) e^(-st) dt</p><p>The real part sigma handles growth/decay while the imaginary part omega handles oscillation. The Laplace transform is indispensable in engineering for analyzing circuits, control systems, and differential equations.</p><p>The <strong>wavelet transform</strong> addresses a limitation of Fourier analysis: it cannot tell you <em>when</em> a frequency occurs, only that it is present. Wavelets are localized in both time and frequency. Instead of infinite sines and cosines, wavelets use short, wave-like pulses that are shifted and scaled.</p><p>Wavelets excel at analyzing signals with transient features: a musical note that starts and stops, a seismic tremor, or an image edge. JPEG 2000 uses wavelets instead of the DCT, producing fewer block artifacts.</p>",
+        "mathExpressions": ["\\mathcal{L}\\{f(t)\\}(s) = \\int_0^{\\infty} f(t)\\,e^{-st}\\,dt, \\quad s = \\sigma + i\\omega"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "four-08-c3",
+        "title": "Deep Connections",
+        "contentHtml": "<p>Fourier analysis connects to some of the deepest areas of mathematics and physics:</p><p><strong>Quantum mechanics</strong>: A particle's position wave function psi(x) and momentum wave function phi(p) are Fourier transforms of each other. The Heisenberg uncertainty principle is literally the Fourier uncertainty principle. The mathematical structure of quantum mechanics is built on the same L^2 function spaces as Fourier analysis.</p><p><strong>Number theory</strong>: The <strong>Riemann zeta function</strong> zeta(s) = sum of 1/n^s can be studied using Fourier-analytic techniques. The distribution of prime numbers is intimately connected to the zeros of the zeta function, and Fourier analysis on groups (harmonic analysis) provides the tools to investigate this.</p><p><strong>Group theory</strong>: The Fourier transform generalizes to any locally compact abelian group. The DFT is the Fourier transform on the cyclic group Z/NZ. Representation theory extends these ideas to nonabelian groups, connecting to symmetry in physics and chemistry.</p><p>Fourier's original idea -- decomposing complexity into simple oscillating components -- has become one of the most far-reaching concepts in all of science and mathematics.</p>",
+        "mathExpressions": ["\\hat{\\psi}(p) = \\frac{1}{\\sqrt{2\\pi\\hbar}}\\int \\psi(x)\\,e^{-ipx/\\hbar}\\,dx, \\quad \\zeta(s) = \\sum_{n=1}^{\\infty} \\frac{1}{n^s}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["four-q57", "four-q58", "four-q59", "four-q60", "four-q61", "four-q62", "four-q63", "four-q64"],
+    "puzzleId": null
+  }
+]

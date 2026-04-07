@@ -37,6 +37,10 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+html.font-small { font-size: 13px; }
+html.font-medium { font-size: 16px; }
+html.font-large { font-size: 19px; }
+
 body {
     padding-bottom: 70px;
 }
@@ -46,7 +50,7 @@ body {
 }
 
 .main-content {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 16px;
     padding-bottom: 80px;
@@ -109,17 +113,15 @@ a {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
-    box-shadow: 0 2px 8px rgba(74, 95, 224, 0.3);
 }
 
 .btn-primary:hover {
-    box-shadow: 0 4px 12px rgba(74, 95, 224, 0.4);
+    filter: brightness(1.1);
 }
 
 .btn-accent {
     background: linear-gradient(135deg, var(--accent), #E09020);
     color: white;
-    box-shadow: 0 2px 8px rgba(240, 160, 48, 0.3);
 }
 
 .btn-success {
@@ -426,7 +428,9 @@ a {
     color: var(--text-muted);
 }
 
-/* Responsive */
+/* ── Responsive ── */
+
+/* Small phones */
 @media (max-width: 480px) {
     .main-content {
         padding: 12px;
@@ -438,6 +442,53 @@ a {
 
     .grid-2 {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Tablets and small desktops */
+@media (min-width: 768px) {
+    .main-content {
+        padding: 24px 32px;
+        padding-bottom: 40px;
+    }
+
+    h1 { font-size: 2rem; }
+
+    .card {
+        padding: 20px;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .app-container {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .main-content {
+        max-width: none;
+        flex: 1;
+        padding: 32px 48px;
+        padding-bottom: 32px;
+        margin-left: 220px;
+    }
+
+    .card {
+        padding: 24px;
+    }
+
+    .btn-lg {
+        padding: 16px 32px;
+    }
+
+    .grid-2 {
+        gap: 16px;
     }
 }
 
@@ -608,16 +659,23 @@ strong {
     opacity: 0;
     animation: staggerUp 0.4s ease forwards;
 }
-.stagger-in > *:nth-child(1) { animation-delay: 0.04s; }
-.stagger-in > *:nth-child(2) { animation-delay: 0.08s; }
-.stagger-in > *:nth-child(3) { animation-delay: 0.12s; }
-.stagger-in > *:nth-child(4) { animation-delay: 0.16s; }
-.stagger-in > *:nth-child(5) { animation-delay: 0.20s; }
-.stagger-in > *:nth-child(6) { animation-delay: 0.24s; }
-.stagger-in > *:nth-child(7) { animation-delay: 0.28s; }
-.stagger-in > *:nth-child(8) { animation-delay: 0.32s; }
-.stagger-in > *:nth-child(9) { animation-delay: 0.36s; }
-.stagger-in > *:nth-child(10) { animation-delay: 0.40s; }
+.stagger-in > *:nth-child(1) { animation-delay: 0.03s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.09s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.12s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.15s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.18s; }
+.stagger-in > *:nth-child(7) { animation-delay: 0.21s; }
+.stagger-in > *:nth-child(8) { animation-delay: 0.24s; }
+.stagger-in > *:nth-child(9) { animation-delay: 0.27s; }
+.stagger-in > *:nth-child(10) { animation-delay: 0.30s; }
+.stagger-in > *:nth-child(11) { animation-delay: 0.33s; }
+.stagger-in > *:nth-child(12) { animation-delay: 0.36s; }
+.stagger-in > *:nth-child(13) { animation-delay: 0.39s; }
+.stagger-in > *:nth-child(14) { animation-delay: 0.42s; }
+.stagger-in > *:nth-child(15) { animation-delay: 0.45s; }
+.stagger-in > *:nth-child(16) { animation-delay: 0.48s; }
+.stagger-in > *:nth-child(n+17) { animation-delay: 0.50s; }
 
 @keyframes staggerUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -646,9 +704,9 @@ strong {
     100% { left: 200%; }
 }
 
-/* ── Card hover glow ── */
+/* ── Card hover ── */
 .card-clickable:hover {
-    box-shadow: 0 6px 24px var(--shadow), 0 0 0 1px rgba(74, 95, 224, 0.08);
+    box-shadow: 0 4px 16px var(--shadow);
 }
 
 /* ── Pulse animation ── */
@@ -738,15 +796,15 @@ strong {
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* ── Level-up glow burst ── */
+/* ── Level-up burst ── */
 .level-up-burst {
     animation: levelBurst 0.8s ease;
 }
 
 @keyframes levelBurst {
-    0% { transform: scale(0.8); opacity: 0; box-shadow: 0 0 0 0 rgba(76,175,80,0.4); }
-    50% { transform: scale(1.05); box-shadow: 0 0 30px 10px rgba(76,175,80,0.3); }
-    100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 /* ── Achievement pop-in ── */

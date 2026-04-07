@@ -62,12 +62,64 @@
 
     <div class="card settings-item">
         <div class="settings-row">
+            <div class="settings-icon"><Icon Name="lightbulb" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Show Hints by Default</h3>
+                <p>Auto-reveal hints when available</p>
+            </div>
+            <button class="toggle-btn @(showHints ? "on" : "")" @onclick="ToggleShowHints">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card settings-item">
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="search" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Font Size</h3>
+                <p>@FormatFontSize(fontSize)</p>
+            </div>
+        </div>
+        <div class="font-size-picker">
+            <button class="font-btn @(fontSize == "small" ? "active" : "")" @onclick='() => SetFontSize("small")'>
+                <span style="font-size: 0.8rem">A</span> Small
+            </button>
+            <button class="font-btn @(fontSize == "medium" ? "active" : "")" @onclick='() => SetFontSize("medium")'>
+                <span style="font-size: 1rem">A</span> Medium
+            </button>
+            <button class="font-btn @(fontSize == "large" ? "active" : "")" @onclick='() => SetFontSize("large")'>
+                <span style="font-size: 1.2rem">A</span> Large
+            </button>
+        </div>
+    </div>
+
+    <div class="card settings-item">
+        <div class="settings-row">
             <div class="settings-icon"><Icon Name="trending-up" Size="24" /></div>
             <div class="settings-info">
                 <h3>Export Stats</h3>
                 <p>Copy your progress summary</p>
             </div>
             <button class="btn btn-sm btn-outline" @onclick="ExportStats">Copy</button>
+        </div>
+    </div>
+
+    <div class="card settings-item">
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="gift" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Backup & Restore</h3>
+                <p>Export or import your full progress</p>
+            </div>
+        </div>
+        <div class="backup-buttons">
+            <button class="btn btn-sm btn-primary" @onclick="ExportData" style="flex:1">
+                Export Data
+            </button>
+            <button class="btn btn-sm btn-outline" @onclick="ImportData" style="flex:1">
+                Import Data
+            </button>
         </div>
     </div>
 
@@ -128,6 +180,8 @@
     private string newName = "";
     private bool editingName;
     private bool devMode;
+    private bool showHints;
+    private string fontSize = "medium";
 
     [Inject] private IShopRepository ShopRepo { get; set; } = default!;
 
@@ -140,6 +194,8 @@
             currentName = profile.DisplayName;
             newName = currentName;
             devMode = profile.ShopPurchases.Contains("__dev_mode__");
+            showHints = profile.ShowHintsByDefault;
+            fontSize = profile.FontSize ?? "medium";
             try
             {
                 var muted = await JS.InvokeAsync<string>("localStorage.getItem", "numeria-sound-muted");
@@ -263,6 +319,74 @@
         await JS.InvokeVoidAsync("showToast", "Progress reset.", "");
     }
 
+    private async Task ToggleShowHints()
+    {
+        showHints = !showHints;
+        var profile = await Progress.GetProfileAsync();
+        profile.ShowHintsByDefault = showHints;
+        await Progress.SaveProfileAsync(profile);
+        await JS.InvokeVoidAsync("showToast", showHints ? "Hints will auto-show" : "Hints hidden by default", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task SetFontSize(string size)
+    {
+        fontSize = size;
+        var profile = await Progress.GetProfileAsync();
+        profile.FontSize = size;
+        await Progress.SaveProfileAsync(profile);
+        await JS.InvokeVoidAsync("applyFontSize", size);
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task ExportData()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string?>("exportProfileData");
+            if (json != null)
+            {
+                var filename = $"numeria-backup-{DateTime.Now:yyyy-MM-dd}.json";
+                await JS.InvokeVoidAsync("downloadFile", filename, json);
+                await JS.InvokeVoidAsync("showToast", "Backup downloaded!", "");
+            }
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("showToast", "Export failed", "");
+        }
+    }
+
+    private async Task ImportData()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("pickAndReadFile");
+            var success = await JS.InvokeAsync<bool>("importProfileData", json);
+            if (success)
+            {
+                await JS.InvokeVoidAsync("showToast", "Data restored! Reloading...", "");
+                await Task.Delay(1000);
+                await JS.InvokeVoidAsync("location.reload");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("showToast", "Invalid backup file", "");
+            }
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("showToast", "Import cancelled", "");
+        }
+    }
+
+    private string FormatFontSize(string size) => size switch
+    {
+        "small" => "Small",
+        "large" => "Large",
+        _ => "Medium"
+    };
+
     private string FormatThemeName(string theme) => theme switch
     {
         "default" => "Default",
@@ -340,6 +464,29 @@
     }
     .confirm-box p { color: var(--error); font-size: 0.9rem; margin: 0 0 10px; font-weight: 500; }
     .confirm-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* Font size picker */
+    .font-size-picker {
+        display: flex; gap: 8px; margin-top: 12px;
+    }
+    .font-btn {
+        flex: 1; padding: 10px 8px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); background: var(--bg-surface);
+        color: var(--text-secondary); font-family: var(--font-main);
+        font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .font-btn:active { transform: scale(0.95); }
+    .font-btn.active {
+        border-color: var(--primary); background: rgba(74, 95, 224, 0.08);
+        color: var(--primary);
+    }
+
+    /* Backup buttons */
+    .backup-buttons {
+        display: flex; gap: 8px; margin-top: 12px;
+    }
 
     /* Dev */
     .dev-item { border-color: rgba(240,160,48,0.2); }

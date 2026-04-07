@@ -5,7 +5,7 @@ public class UserProfile
     public string DisplayName { get; set; } = "Mathematician";
     public string SelectedAvatar { get; set; } = "default";
     public string SelectedTitle { get; set; } = "";
-    public string SelectedTheme { get; set; } = "default";
+    public string SelectedTheme { get; set; } = "dark";
     public int TotalXp { get; set; }
     public int Points { get; set; }
     public int CurrentStreak { get; set; }
@@ -15,7 +15,7 @@ public class UserProfile
     public List<string> TopicsCompleted { get; set; } = new();
     public List<QuizRecord> QuizHistory { get; set; } = new();
     public List<string> AchievementsUnlocked { get; set; } = new();
-    public List<string> ShopPurchases { get; set; } = new();
+    public List<string> ShopPurchases { get; set; } = new() { "theme-dark" };
     public List<string> ConceptsViewed { get; set; } = new();
     public Dictionary<string, int> DailyXpLog { get; set; } = new();
 
@@ -45,6 +45,10 @@ public class UserProfile
     // Mastery
     public Dictionary<string, int> TopicMastery { get; set; } = new();
     // 0 = not started, 1 = Apprentice, 2 = Adept, 3 = Master, 4 = Grandmaster
+
+    // Settings
+    public bool ShowHintsByDefault { get; set; }
+    public string FontSize { get; set; } = "medium"; // small, medium, large
 
     // Fortune cookies
     public List<string> ViewedCookieDates { get; set; } = new();

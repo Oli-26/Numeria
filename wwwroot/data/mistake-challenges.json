@@ -1,0 +1,353 @@
+[
+  {
+    "id": "mistake-01",
+    "title": "The Classic 1 = 2 Proof",
+    "topicId": "linear-algebra",
+    "difficulty": 1,
+    "setup": "A student claims to prove that 1 = 2. Find the flaw!",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Let a = b", "mathExpression": "a = b"},
+      {"number": 2, "text": "Multiply both sides by a", "mathExpression": "a^2 = ab"},
+      {"number": 3, "text": "Subtract b² from both sides", "mathExpression": "a^2 - b^2 = ab - b^2"},
+      {"number": 4, "text": "Factor both sides", "mathExpression": "(a+b)(a-b) = b(a-b)"},
+      {"number": 5, "text": "Divide both sides by (a - b)", "mathExpression": "a + b = b"},
+      {"number": 6, "text": "Since a = b, substitute", "mathExpression": "b + b = b \\implies 2b = b \\implies 2 = 1"}
+    ],
+    "errorStep": 5,
+    "errorExplanation": "Since a = b, we have a - b = 0. Step 5 divides both sides by (a - b) = 0, which is division by zero — the cardinal sin of algebra! Everything after this step is invalid.",
+    "correctReasoning": "When a = b, the equation (a+b)(a-b) = b(a-b) becomes (2b)(0) = b(0), which is just 0 = 0 — true but uninteresting. You cannot cancel the zero factor.",
+    "xpReward": 30
+  },
+  {
+    "id": "mistake-02",
+    "title": "All Horses Are the Same Color",
+    "topicId": "set-theory",
+    "difficulty": 2,
+    "setup": "A flawed induction proof that all horses are the same color. Where does the logic break?",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Base case: A set of 1 horse trivially has all horses the same color. ✓", "mathExpression": null},
+      {"number": 2, "text": "Inductive hypothesis: Assume any set of k horses are all the same color.", "mathExpression": null},
+      {"number": 3, "text": "Consider a set of k+1 horses: {h₁, h₂, ..., hₖ, hₖ₊₁}.", "mathExpression": null},
+      {"number": 4, "text": "The first k horses {h₁, ..., hₖ} are all the same color (by hypothesis).", "mathExpression": null},
+      {"number": 5, "text": "The last k horses {h₂, ..., hₖ₊₁} are also all the same color (by hypothesis).", "mathExpression": null},
+      {"number": 6, "text": "These two sets overlap (they share h₂ through hₖ), so all k+1 horses are the same color.", "mathExpression": null},
+      {"number": 7, "text": "By induction, all horses in any finite set are the same color.", "mathExpression": null}
+    ],
+    "errorStep": 6,
+    "errorExplanation": "The overlap argument fails when k = 1! For k+1 = 2 horses {h₁, h₂}, the 'first k' is {h₁} and the 'last k' is {h₂}. These sets DON'T overlap — there are no shared horses. The inductive step from k=1 to k=2 is broken.",
+    "correctReasoning": "The base case to inductive step transition requires the two subsets to overlap, which needs k ≥ 2. The induction works for k ≥ 2 → k+1, but the gap between k=1 and k=2 is never bridged. This is a famous example of a subtle induction error.",
+    "xpReward": 40
+  },
+  {
+    "id": "mistake-03",
+    "title": "Every Number Equals Zero",
+    "topicId": "calculus",
+    "difficulty": 1,
+    "setup": "A student uses derivatives to 'prove' that every integer equals zero.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Note that n² = n + n + ... + n (n times). For example, 3² = 3+3+3.", "mathExpression": "n^2 = \\underbrace{n + n + \\cdots + n}_{n \\text{ times}}"},
+      {"number": 2, "text": "Differentiate both sides with respect to n.", "mathExpression": "\\frac{d}{dn}(n^2) = \\frac{d}{dn}(\\underbrace{n + n + \\cdots + n}_{n \\text{ times}})"},
+      {"number": 3, "text": "Left side: d/dn(n²) = 2n.", "mathExpression": "2n"},
+      {"number": 4, "text": "Right side: d/dn(n) + d/dn(n) + ... + d/dn(n) = 1 + 1 + ... + 1 = n.", "mathExpression": "\\underbrace{1 + 1 + \\cdots + 1}_{n \\text{ times}} = n"},
+      {"number": 5, "text": "So 2n = n, which gives n = 0.", "mathExpression": "2n = n \\implies n = 0"}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "The right side isn't just 'n added n times' — the NUMBER of terms is also a function of n! When you differentiate, you must account for the changing number of terms using the product rule or chain rule. You can't differentiate term-by-term when the number of terms varies.",
+    "correctReasoning": "Write f(n) = n · n = n². The expression 'n added n times' conflates the summand and the count. Properly, d/dn(n · n) = n · 1 + 1 · n = 2n by the product rule. The flaw is treating the number of terms as constant during differentiation.",
+    "xpReward": 30
+  },
+  {
+    "id": "mistake-04",
+    "title": "π = 4 by Staircase Approximation",
+    "topicId": "topology",
+    "difficulty": 2,
+    "setup": "A geometric 'proof' that π = 4 using staircase curves approaching a circle.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Start with a circle of diameter 1 inscribed in a unit square. The square's perimeter is 4.", "mathExpression": null},
+      {"number": 2, "text": "Indent the corners of the square to create a staircase that hugs the circle more closely.", "mathExpression": null},
+      {"number": 3, "text": "Each indent removes and adds equal horizontal and vertical segments, so the perimeter stays 4.", "mathExpression": null},
+      {"number": 4, "text": "Repeat infinitely: the staircase gets finer and converges to the circle.", "mathExpression": null},
+      {"number": 5, "text": "The perimeter is always 4 at every step.", "mathExpression": null},
+      {"number": 6, "text": "Therefore the circle's circumference = 4, so π = circumference/diameter = 4/1 = 4.", "mathExpression": "\\pi = 4"}
+    ],
+    "errorStep": 6,
+    "errorExplanation": "The staircase curves DO converge to the circle pointwise, but the LENGTHS don't converge to the circle's length! Convergence of curves does not imply convergence of arc lengths. The limit of the lengths (4) is not the length of the limit (π).",
+    "correctReasoning": "For arc length convergence, you need the tangent directions to converge too (C¹ convergence), not just the points. The staircase always has tangents pointing horizontally or vertically, never matching the circle's tangent direction. This is why 'limit of lengths ≠ length of limit' in general.",
+    "xpReward": 40
+  },
+  {
+    "id": "mistake-05",
+    "title": "The Missing Dollar Riddle",
+    "topicId": "number-theory",
+    "difficulty": 1,
+    "setup": "Three friends pay $30 for a hotel room ($10 each). The clerk realizes it should be $25 and gives $5 to the bellhop to return. The bellhop keeps $2 and gives $1 back to each friend.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Each friend paid $10 and got $1 back, so each paid $9.", "mathExpression": null},
+      {"number": 2, "text": "Three friends × $9 = $27 total paid.", "mathExpression": "3 \\times 9 = 27"},
+      {"number": 3, "text": "The bellhop has $2.", "mathExpression": null},
+      {"number": 4, "text": "$27 + $2 = $29.", "mathExpression": "27 + 2 = 29"},
+      {"number": 5, "text": "But they started with $30. Where is the missing dollar?", "mathExpression": "29 \\ne 30"}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "Step 4 adds quantities that shouldn't be added! The $27 paid by the friends ALREADY INCLUDES the bellhop's $2. The correct accounting: $27 paid = $25 (room) + $2 (bellhop). Adding $2 again is double-counting.",
+    "correctReasoning": "The trick mixes up additions and subtractions. Money out: $27 ($25 to hotel + $2 to bellhop). Money returned: $3. Total: $27 + $3 = $30. ✓ The 'puzzle' adds the bellhop's $2 instead of subtracting it, creating a meaningless sum.",
+    "xpReward": 25
+  },
+  {
+    "id": "mistake-06",
+    "title": "i² = 1 (Imaginary Paradox)",
+    "topicId": "complex-analysis",
+    "difficulty": 2,
+    "setup": "A 'proof' that the square of the imaginary unit equals 1 instead of -1.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Start with i² where i = √(-1)", "mathExpression": "i^2"},
+      {"number": 2, "text": "Write i² = √(-1) × √(-1)", "mathExpression": "\\sqrt{-1} \\times \\sqrt{-1}"},
+      {"number": 3, "text": "Combine under one radical: √((-1)×(-1))", "mathExpression": "\\sqrt{(-1) \\times (-1)}"},
+      {"number": 4, "text": "Simplify: √(1) = 1", "mathExpression": "\\sqrt{1} = 1"},
+      {"number": 5, "text": "Therefore i² = 1", "mathExpression": "i^2 = 1"}
+    ],
+    "errorStep": 3,
+    "errorExplanation": "The rule √a × √b = √(ab) only works when a and b are non-negative! When both are negative, √(-1) × √(-1) ≠ √(1). This is why complex square roots must be handled with care.",
+    "correctReasoning": "By definition, i² = -1. The 'radical rule' √a · √b = √(ab) requires a, b ≥ 0. For negative numbers, we must use the proper definition: √(-1) = i, and i × i = i² = -1 by the axioms of complex numbers.",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-07",
+    "title": "Infinite Series Rearrangement",
+    "topicId": "calculus",
+    "difficulty": 3,
+    "setup": "A student rearranges an infinite series to 'prove' that ln 2 = ln 2 / 2, implying 1 = 1/2.",
+    "setupMath": "\\ln 2 = 1 - \\frac{1}{2} + \\frac{1}{3} - \\frac{1}{4} + \\frac{1}{5} - \\frac{1}{6} + \\cdots",
+    "steps": [
+      {"number": 1, "text": "Start with the alternating harmonic series: ln 2 = 1 - 1/2 + 1/3 - 1/4 + 1/5 - 1/6 + ...", "mathExpression": null},
+      {"number": 2, "text": "Rearrange: take one positive, two negatives: (1 - 1/2 - 1/4) + (1/3 - 1/6 - 1/8) + ...", "mathExpression": null},
+      {"number": 3, "text": "Each group simplifies: (1/2 - 1/4) + (1/6 - 1/8) + ... = 1/4 + 1/24 + ...", "mathExpression": null},
+      {"number": 4, "text": "Factor 1/2 from each term: = (1/2)(1/2 - 1/4 + 1/6 - 1/8 + ...)", "mathExpression": null},
+      {"number": 5, "text": "The series in parentheses is (1/2)(1 - 1/2 + 1/3 - 1/4 + ...) = (1/2) ln 2", "mathExpression": null},
+      {"number": 6, "text": "So ln 2 = (1/2)(1/2) ln 2 = ln 2 / 2. Therefore 1 = 1/2.", "mathExpression": null}
+    ],
+    "errorStep": 2,
+    "errorExplanation": "You CANNOT freely rearrange a conditionally convergent series! The Riemann rearrangement theorem says a conditionally convergent series can be rearranged to sum to ANY value. The alternating harmonic series converges conditionally, so rearranging changes the sum.",
+    "correctReasoning": "Only absolutely convergent series can be freely rearranged. The alternating harmonic series is conditionally convergent (the harmonic series diverges). This is precisely the behavior Riemann proved: any target value can be achieved by clever rearrangement. The original ordering gives ln 2; the rearranged version gives a different (valid) sum.",
+    "xpReward": 45
+  },
+  {
+    "id": "mistake-08",
+    "title": "Every Matrix is Diagonalizable",
+    "topicId": "linear-algebra",
+    "difficulty": 2,
+    "setup": "A student attempts to diagonalize a matrix and makes a subtle error.",
+    "setupMath": "A = \\begin{pmatrix} 1 & 1 \\\\ 0 & 1 \\end{pmatrix}",
+    "steps": [
+      {"number": 1, "text": "Find eigenvalues: det(A - λI) = (1-λ)² = 0, so λ = 1 (double root).", "mathExpression": "\\det(A - \\lambda I) = (1-\\lambda)^2 = 0"},
+      {"number": 2, "text": "Find eigenvectors: (A - I)v = 0 gives the system 0·v₁ + 1·v₂ = 0.", "mathExpression": null},
+      {"number": 3, "text": "So v₂ = 0 and v₁ is free. One eigenvector: v = (1, 0).", "mathExpression": null},
+      {"number": 4, "text": "Since we have a double eigenvalue, there must be two linearly independent eigenvectors.", "mathExpression": null},
+      {"number": 5, "text": "So A is diagonalizable as PDP⁻¹ where D = diag(1, 1) = I.", "mathExpression": null},
+      {"number": 6, "text": "Therefore A = PIP⁻¹ = I. But A ≠ I. Contradiction?", "mathExpression": null}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "A double eigenvalue does NOT guarantee two independent eigenvectors! The eigenspace for λ=1 is only 1-dimensional (spanned by (1,0)). This matrix is NOT diagonalizable — it's a Jordan block. The algebraic multiplicity (2) exceeds the geometric multiplicity (1).",
+    "correctReasoning": "A matrix is diagonalizable iff for every eigenvalue, the geometric multiplicity (eigenspace dimension) equals the algebraic multiplicity (root multiplicity in the characteristic polynomial). Here algebraic = 2 but geometric = 1. The Jordan normal form handles such cases.",
+    "xpReward": 40
+  },
+  {
+    "id": "mistake-09",
+    "title": "0 = 1 via Power Series",
+    "topicId": "calculus",
+    "difficulty": 2,
+    "setup": "A student manipulates a geometric power series to 'prove' that 0 = 1.",
+    "setupMath": "\\sum_{n=0}^{\\infty} x^n = \\frac{1}{1-x} \\quad \\text{for } |x| < 1",
+    "steps": [
+      {"number": 1, "text": "Start with the geometric series: for |x| < 1, the sum of x^n from n=0 to infinity equals 1/(1-x).", "mathExpression": "\\sum_{n=0}^{\\infty} x^n = \\frac{1}{1-x}"},
+      {"number": 2, "text": "This identity holds for all |x| < 1. Now consider what happens as x approaches 1 from the left.", "mathExpression": null},
+      {"number": 3, "text": "Take the limit of both sides as x → 1⁻.", "mathExpression": "\\lim_{x \\to 1^-} \\sum_{n=0}^{\\infty} x^n = \\lim_{x \\to 1^-} \\frac{1}{1-x}"},
+      {"number": 4, "text": "Swap the limit and the sum on the left side: the sum of lim(x^n) = sum of 1^n = 1 + 1 + 1 + ...", "mathExpression": "\\sum_{n=0}^{\\infty} \\lim_{x \\to 1^-} x^n = \\sum_{n=0}^{\\infty} 1"},
+      {"number": 5, "text": "The right side diverges to +∞. So 1 + 1 + 1 + ... = +∞. Now apply zeta regularization: ζ(0) = -1/2, so 'assign' the sum the value -1/2.", "mathExpression": "1 + 1 + 1 + \\cdots = \\zeta(0) = -\\frac{1}{2}"},
+      {"number": 6, "text": "But from the original formula at x = 1: 1/(1-1) = 1/0, which is undefined, not -1/2. So -1/2 = undefined = 0, giving 0 = 1 after rearranging.", "mathExpression": "0 = 1"}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "You cannot swap the limit and an infinite sum unless uniform convergence holds. The geometric series does NOT converge uniformly on [0, 1) — it converges pointwise but the convergence deteriorates as x → 1. Interchanging limit and summation requires justification (e.g., dominated convergence or uniform convergence), which fails here.",
+    "correctReasoning": "The geometric series 1/(1-x) has radius of convergence 1. At the boundary x = 1, the series diverges. The interchange of limit and summation is invalid without uniform convergence. Steps 5-6 compound the error by mixing divergent series regularization with ordinary arithmetic, which is not permitted.",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-10",
+    "title": "Every Continuous Function is Differentiable",
+    "topicId": "calculus",
+    "difficulty": 2,
+    "setup": "A student uses the Mean Value Theorem to 'prove' that every continuous function is differentiable.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Let f be continuous on [a, b]. By the Mean Value Theorem, there exists c in (a, b) such that:", "mathExpression": "f'(c) = \\frac{f(b) - f(a)}{b - a}"},
+      {"number": 2, "text": "This gives us a point c where f'(c) exists.", "mathExpression": null},
+      {"number": 3, "text": "Now let [a, b] be any subinterval of the domain. We can always find such a c in that subinterval.", "mathExpression": null},
+      {"number": 4, "text": "Since we can do this for every subinterval, f'(x) exists at a dense set of points.", "mathExpression": null},
+      {"number": 5, "text": "A dense set of points where the derivative exists means f is differentiable everywhere.", "mathExpression": null}
+    ],
+    "errorStep": 1,
+    "errorExplanation": "The Mean Value Theorem REQUIRES that f is differentiable on (a, b) as a hypothesis — not just continuous! The student is assuming what they are trying to prove. MVT states: if f is continuous on [a,b] AND differentiable on (a,b), THEN there exists c with f'(c) = (f(b)-f(a))/(b-a). You cannot apply MVT without first knowing differentiability.",
+    "correctReasoning": "Continuity does not imply differentiability. The Weierstrass function is continuous everywhere but differentiable nowhere. The MVT cannot be applied without the differentiability hypothesis. Step 5 is also wrong: having a derivative on a dense set does not imply differentiability everywhere (consider |x| near 0 — it's differentiable on a dense set but not at x = 0).",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-11",
+    "title": "The Empty Set is NOT a Subset?",
+    "topicId": "set-theory",
+    "difficulty": 1,
+    "setup": "A student argues that the empty set cannot be a subset of every set, since it 'has nothing in common' with other sets.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Recall: A ⊆ B means every element of A is also in B.", "mathExpression": "A \\subseteq B \\iff (\\forall x)(x \\in A \\implies x \\in B)"},
+      {"number": 2, "text": "Let A = ∅ and let B be any set. We check: is every element of ∅ also in B?", "mathExpression": null},
+      {"number": 3, "text": "∅ has no elements. So we cannot exhibit any element of ∅ that is also in B.", "mathExpression": null},
+      {"number": 4, "text": "Since we cannot find an element of ∅ that belongs to B, the condition 'every element of ∅ is in B' is not satisfied.", "mathExpression": "\\emptyset \\not\\subseteq B"},
+      {"number": 5, "text": "Therefore ∅ is not a subset of every set.", "mathExpression": null}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "The statement 'for all x in ∅, x ∈ B' is VACUOUSLY TRUE, not false! A universal statement over an empty domain is true by default in classical logic. There are no elements in ∅ to serve as counterexamples, so the condition cannot be violated. The student confused 'cannot verify with an example' with 'is false.'",
+    "correctReasoning": "To show A ⊄ B, you must find an element in A that is NOT in B. Since ∅ has no elements, you can never find such a counterexample. Therefore ∅ ⊆ B is true for every set B. This is the principle of vacuous truth: a universal conditional with an empty domain is always satisfied.",
+    "xpReward": 25
+  },
+  {
+    "id": "mistake-12",
+    "title": "R² Has Greater Cardinality Than R",
+    "topicId": "set-theory",
+    "difficulty": 3,
+    "setup": "A student argues that the plane R² must have strictly greater cardinality than the real line R because it has 'more dimensions.'",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "R is a 1-dimensional space. R² is a 2-dimensional space.", "mathExpression": null},
+      {"number": 2, "text": "Each point in R² is specified by two real coordinates (x, y), whereas a point in R needs only one.", "mathExpression": null},
+      {"number": 3, "text": "By the axiom of power sets, the set of pairs from R should be larger than R itself.", "mathExpression": "|\\mathbb{R}^2| = |\\mathbb{R} \\times \\mathbb{R}| > |\\mathbb{R}|"},
+      {"number": 4, "text": "This is analogous to how |P(A)| > |A| by Cantor's theorem.", "mathExpression": null},
+      {"number": 5, "text": "Therefore R² has strictly greater cardinality than R.", "mathExpression": "|\\mathbb{R}^2| > |\\mathbb{R}|"}
+    ],
+    "errorStep": 3,
+    "errorExplanation": "R × R is NOT the power set of R! The Cartesian product and the power set are completely different constructions. Cantor's theorem says |P(R)| > |R|, but |R × R| = |R| · |R| = |R| by cardinal arithmetic for infinite sets. The student incorrectly analogized the Cartesian product to the power set.",
+    "correctReasoning": "Cantor proved in 1878 that |R²| = |R| by constructing an explicit bijection (interleaving decimal digits). For infinite cardinals κ, we have κ × κ = κ. More visually, space-filling curves (Peano, Hilbert) give continuous surjections from R onto R². Dimension is a topological concept, not a cardinality concept.",
+    "xpReward": 45
+  },
+  {
+    "id": "mistake-13",
+    "title": "All Groups Are Abelian",
+    "topicId": "group-theory",
+    "difficulty": 2,
+    "setup": "A student 'proves' that every group must be abelian (commutative) using basic group properties.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Let G be a group with identity e, and let a, b ∈ G.", "mathExpression": null},
+      {"number": 2, "text": "Consider the element (ab)(ab). By associativity, (ab)(ab) = a(ba)b.", "mathExpression": "(ab)(ab) = a(ba)b"},
+      {"number": 3, "text": "Also, (ab)(ab) = (ab)².", "mathExpression": "(ab)(ab) = (ab)^2"},
+      {"number": 4, "text": "Now expand (ab)² differently: (ab)² = a²b² (distributing the exponent).", "mathExpression": "(ab)^2 = a^2 b^2"},
+      {"number": 5, "text": "So a(ba)b = a²b² = (aa)(bb). Cancel a on the left and b on the right.", "mathExpression": "a(ba)b = a(ab)b"},
+      {"number": 6, "text": "This gives ba = ab. Since a, b were arbitrary, G is abelian.", "mathExpression": "ba = ab"}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "The 'rule' (ab)² = a²b² is ONLY valid if ab = ba already! Expanding (ab)² properly gives abab, not aabb. To get from abab to aabb, you need to swap the middle b and a, which requires commutativity — the very thing being 'proved.' This is a textbook case of circular reasoning.",
+    "correctReasoning": "In a non-abelian group, (ab)² = abab ≠ a²b² in general. For example, in S₃ (the symmetric group on 3 elements), take two non-commuting permutations: (ab)² ≠ a²b². The exponent 'distributes' over a product only in abelian groups. Groups like S₃, D₃, and GL(n) for n ≥ 2 are standard non-abelian counterexamples.",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-14",
+    "title": "The Harmonic Series Converges",
+    "topicId": "calculus",
+    "difficulty": 2,
+    "setup": "A student misapplies the integral test to 'prove' that the harmonic series converges.",
+    "setupMath": "\\sum_{n=1}^{\\infty} \\frac{1}{n}",
+    "steps": [
+      {"number": 1, "text": "Consider the harmonic series. We apply the integral test by comparing with the integral of 1/x.", "mathExpression": "\\sum_{n=1}^{\\infty} \\frac{1}{n} \\quad \\text{vs.} \\quad \\int_1^{\\infty} \\frac{1}{x}\\,dx"},
+      {"number": 2, "text": "Compute the integral: ∫₁ᴺ (1/x) dx = ln(N) - ln(1) = ln(N).", "mathExpression": "\\int_1^N \\frac{1}{x}\\,dx = \\ln N"},
+      {"number": 3, "text": "As N → ∞, ln(N) → ∞. So the integral diverges.", "mathExpression": null},
+      {"number": 4, "text": "However, the sum is bounded above by 1 + the integral: S_N ≤ 1 + ln(N).", "mathExpression": "\\sum_{n=1}^{N} \\frac{1}{n} \\leq 1 + \\ln N"},
+      {"number": 5, "text": "Since ln(N) grows slower than N, the partial sums grow slowly enough to converge.", "mathExpression": "\\ln N \\ll N \\implies \\sum \\frac{1}{n} < \\infty"}
+    ],
+    "errorStep": 5,
+    "errorExplanation": "Growing 'slowly' does NOT mean converging! The bound S_N ≤ 1 + ln(N) shows the partial sums grow like ln(N), which still goes to infinity — just slowly. The integral test actually tells us the series DIVERGES because the integral diverges. A bound that itself diverges proves nothing about convergence.",
+    "correctReasoning": "The integral test states: if f is positive and decreasing, then the sum of f(n) and the integral of f(x) either BOTH converge or BOTH diverge. Since ∫₁^∞ 1/x dx = ∞, the harmonic series also diverges. The partial sums grow as ln(N) + γ (where γ ≈ 0.5772 is the Euler-Mascheroni constant), which diverges, just very slowly.",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-15",
+    "title": "e^(iπ) = 1 (Sign Error in Euler's Formula)",
+    "topicId": "complex-analysis",
+    "difficulty": 1,
+    "setup": "A student makes a sign error while applying Euler's formula to derive e^(iπ).",
+    "setupMath": "e^{i\\theta} = \\cos\\theta + i\\sin\\theta",
+    "steps": [
+      {"number": 1, "text": "Euler's formula states that for any real θ:", "mathExpression": "e^{i\\theta} = \\cos\\theta + i\\sin\\theta"},
+      {"number": 2, "text": "Substitute θ = π:", "mathExpression": "e^{i\\pi} = \\cos(\\pi) + i\\sin(\\pi)"},
+      {"number": 3, "text": "Evaluate: cos(π) = 1 and sin(π) = 0.", "mathExpression": "\\cos(\\pi) = 1, \\quad \\sin(\\pi) = 0"},
+      {"number": 4, "text": "Substitute back:", "mathExpression": "e^{i\\pi} = 1 + i \\cdot 0 = 1"},
+      {"number": 5, "text": "Therefore Euler's identity is e^(iπ) = 1, not -1 as commonly stated.", "mathExpression": "e^{i\\pi} = 1"}
+    ],
+    "errorStep": 3,
+    "errorExplanation": "cos(π) = -1, not 1! The student confused cos(π) with cos(0). On the unit circle, the angle π corresponds to the point (-1, 0), so cos(π) = -1 and sin(π) = 0. This sign error flips the entire result.",
+    "correctReasoning": "Correctly: e^(iπ) = cos(π) + i·sin(π) = -1 + 0i = -1. This gives Euler's famous identity e^(iπ) + 1 = 0, which connects five fundamental constants (e, i, π, 1, 0) in one elegant equation. The error is a basic trigonometric mistake, but it's the kind that can slip past quickly.",
+    "xpReward": 25
+  },
+  {
+    "id": "mistake-16",
+    "title": "Symmetric Matrices Have Distinct Eigenvalues",
+    "topicId": "linear-algebra",
+    "difficulty": 2,
+    "setup": "A student claims that every real symmetric matrix must have all distinct eigenvalues.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Let A be a real symmetric matrix. The Spectral Theorem guarantees A has all real eigenvalues.", "mathExpression": null},
+      {"number": 2, "text": "The Spectral Theorem also says A is orthogonally diagonalizable: A = QDQ^T where Q is orthogonal.", "mathExpression": "A = QDQ^T"},
+      {"number": 3, "text": "The columns of Q are orthonormal eigenvectors. Orthonormality means they are all linearly independent.", "mathExpression": "q_i^T q_j = \\delta_{ij}"},
+      {"number": 4, "text": "Since the eigenvectors are all distinct and linearly independent, their corresponding eigenvalues must also be distinct.", "mathExpression": null},
+      {"number": 5, "text": "Therefore every real symmetric matrix has n distinct eigenvalues (where n is the matrix size).", "mathExpression": null}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "Distinct, linearly independent eigenvectors do NOT require distinct eigenvalues! An eigenspace can be multi-dimensional: multiple linearly independent eigenvectors can share the same eigenvalue. The identity matrix I is symmetric with ALL eigenvalues equal to 1, yet it has n independent eigenvectors.",
+    "correctReasoning": "The Spectral Theorem says a real symmetric matrix has a full set of orthonormal eigenvectors, but multiple eigenvectors may share an eigenvalue. For example, the 3×3 identity has eigenvalue 1 with multiplicity 3. The matrix diag(2, 2, 5) is symmetric with a repeated eigenvalue. What the Spectral Theorem guarantees is diagonalizability, not distinctness of eigenvalues.",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-17",
+    "title": "Connected Graphs Must Have Euler Circuits",
+    "topicId": "graph-theory",
+    "difficulty": 2,
+    "setup": "A student confuses necessary and sufficient conditions to 'prove' that every connected graph has an Euler circuit.",
+    "setupMath": null,
+    "steps": [
+      {"number": 1, "text": "Euler's Theorem: A connected graph has an Euler circuit if and only if every vertex has even degree.", "mathExpression": null},
+      {"number": 2, "text": "Consider any connected graph G. By the Handshaking Lemma, the sum of all vertex degrees equals twice the number of edges.", "mathExpression": "\\sum_{v \\in V} \\deg(v) = 2|E|"},
+      {"number": 3, "text": "Since the total sum of degrees is even (it equals 2|E|), the number of vertices with odd degree must be even.", "mathExpression": null},
+      {"number": 4, "text": "An even count of odd-degree vertices means the odd degrees 'pair up' and cancel, so effectively every vertex contributes evenly.", "mathExpression": null},
+      {"number": 5, "text": "Therefore every vertex has even degree, and by Euler's Theorem, every connected graph has an Euler circuit.", "mathExpression": null}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "Having an EVEN NUMBER of odd-degree vertices does NOT mean every vertex has even degree! It just means you can't have, say, exactly 1 or 3 odd-degree vertices. A triangle with a pendant edge has vertices of degrees 1, 2, 2, 3 — that's two odd-degree vertices (an even count), but the graph has no Euler circuit because not all degrees are even. 'Pairing up' odd degrees is meaningless.",
+    "correctReasoning": "The Handshaking Lemma only constrains the parity of the COUNT of odd-degree vertices, not the degrees themselves. Many connected graphs have odd-degree vertices (e.g., a path graph has two degree-1 vertices). The complete graph K₃ does have an Euler circuit (all degrees 2), but K₄ does not (all degrees 3). Connectivity plus all-even-degrees is both necessary AND sufficient.",
+    "xpReward": 35
+  },
+  {
+    "id": "mistake-18",
+    "title": "The Mandelbrot Set is Countable",
+    "topicId": "fractals",
+    "difficulty": 3,
+    "setup": "A student argues that the Mandelbrot set must be countable because it is defined by an iterative process with countably many steps.",
+    "setupMath": "M = \\{c \\in \\mathbb{C} : \\text{the orbit of } 0 \\text{ under } z \\mapsto z^2 + c \\text{ is bounded}\\}",
+    "steps": [
+      {"number": 1, "text": "The Mandelbrot set M is defined by iterating f_c(z) = z² + c starting from z₀ = 0.", "mathExpression": "z_{n+1} = z_n^2 + c, \\quad z_0 = 0"},
+      {"number": 2, "text": "For each c, we generate the orbit {z₀, z₁, z₂, ...}. This is a countable sequence.", "mathExpression": "\\{z_0, z_1, z_2, \\ldots\\}"},
+      {"number": 3, "text": "Membership in M is determined by checking whether this countable orbit remains bounded.", "mathExpression": "c \\in M \\iff \\sup_n |z_n| < \\infty"},
+      {"number": 4, "text": "Since the test involves a countable sequence, the set of parameters c passing the test must also be countable.", "mathExpression": null},
+      {"number": 5, "text": "A countable subset of C has Lebesgue measure zero.", "mathExpression": null},
+      {"number": 6, "text": "Therefore the Mandelbrot set is countable and has measure zero.", "mathExpression": "|M| = \\aleph_0"}
+    ],
+    "errorStep": 4,
+    "errorExplanation": "The countability of the test PROCEDURE says nothing about the cardinality of the set of parameters passing the test! Each c ∈ C is tested independently with its own countable orbit. The parameter space C is uncountable, and uncountably many values of c can pass a countable test. By analogy, 'x² ≤ 1' is a finite test, but {x : x² ≤ 1} = [-1, 1] is uncountable.",
+    "correctReasoning": "The Mandelbrot set is a closed, bounded (compact) subset of C with nonempty interior — it contains open disks, so it is uncountable with positive area. Its area is approximately 1.5065. The confusion is between the complexity of the defining criterion and the cardinality of the solution set. A simple equation can have uncountably many solutions, just as a countable iterative test can be passed by uncountably many parameters.",
+    "xpReward": 45
+  }
+]

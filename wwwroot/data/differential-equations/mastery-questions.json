@@ -1,0 +1,226 @@
+[
+  {
+    "id": "mastery-de-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "In Sturm-Liouville theory, the eigenvalue problem (p(x)y')' + (q(x) + λw(x))y = 0 with appropriate boundary conditions guarantees that eigenfunctions corresponding to distinct eigenvalues are:",
+    "options": [
+      "Identical up to a constant",
+      "Orthogonal with respect to the weight function w(x)",
+      "Always polynomials",
+      "Complex-valued"
+    ],
+    "correctAnswer": "Orthogonal with respect to the weight function w(x)",
+    "explanation": "Sturm-Liouville theory guarantees that eigenfunctions φ_m and φ_n with λ_m ≠ λ_n satisfy ∫ φ_m(x) φ_n(x) w(x) dx = 0, where w(x) is the weight function. This weighted orthogonality is the foundation for expanding arbitrary functions in eigenfunction series (generalized Fourier series). Bessel functions, Legendre polynomials, and Hermite polynomials are all eigenfunctions of particular Sturm-Liouville problems.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Green's function G(x, ξ) for a linear boundary value problem Ly = f(x) satisfies LG = δ(x − ξ), and the solution is y(x) = ∫ G(x, ξ) f(ξ) dξ.",
+    "correctAnswer": "True",
+    "explanation": "The Green's function is the impulse response of the differential operator L with the given boundary conditions. Since L is linear, the response to an arbitrary forcing f(x) is the superposition (integral) of the responses to point sources δ(x − ξ) weighted by f(ξ). This converts the BVP into an integral equation y(x) = ∫ G(x,ξ)f(ξ)dξ, which is the continuous analogue of solving Ax = b by x = A⁻¹b.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-3",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Floquet theory applies to linear ODEs with periodic coefficients: x' = A(t)x where A(t + T) = A(t). The key result is that the fundamental matrix can be written as Φ(t) = P(t)e^(Bt) where P(t + T) = P(t). What are the eigenvalues of e^(BT) called?",
+    "options": [
+      "Lyapunov exponents",
+      "Floquet multipliers",
+      "Characteristic values",
+      "Singular values"
+    ],
+    "correctAnswer": "Floquet multipliers",
+    "explanation": "The Floquet multipliers ρ_i = e^(μ_i T) are the eigenvalues of the monodromy matrix e^(BT) (equivalently, of Φ(T)). They determine stability: if all |ρ_i| < 1, the system is asymptotically stable; if any |ρ_i| > 1, it is unstable. The μ_i are called Floquet (or characteristic) exponents. Floquet theory is essential in analyzing parametric resonance, Bloch waves in crystals, and the stability of periodic orbits.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-4",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Korteweg-de Vries (KdV) equation u_t + 6uu_x + u_xxx = 0 admits stable, shape-preserving traveling wave solutions called:",
+    "correctAnswer": "solitons",
+    "acceptableAnswers": ["solitons", "soliton", "solitary waves", "solitary wave"],
+    "explanation": "Solitons are localized traveling wave solutions of the KdV equation that maintain their shape and speed after collisions. The single-soliton solution is u(x,t) = (c/2) sech²(√c/2 (x − ct − x₀)). Solitons arise from a precise balance between nonlinear steepening (uu_x) and linear dispersion (u_xxx). The KdV equation is exactly solvable by the inverse scattering transform, a nonlinear analogue of the Fourier transform.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Navier-Stokes equations ∂v/∂t + (v·∇)v = −(1/ρ)∇p + ν∇²v for incompressible flow present a famous open problem. What is the Clay Millennium Prize question about them?",
+    "options": [
+      "Whether numerical solutions converge",
+      "Whether smooth solutions always exist globally in 3D, or can blow up in finite time",
+      "Whether the equations have traveling wave solutions",
+      "Whether turbulence can be predicted"
+    ],
+    "correctAnswer": "Whether smooth solutions always exist globally in 3D, or can blow up in finite time",
+    "explanation": "The Clay Millennium Prize problem asks: given smooth, divergence-free initial data with finite energy in 3D, do the Navier-Stokes equations have a smooth solution for all time, or can the velocity field develop a singularity (blow up) in finite time? In 2D, global regularity is known (Ladyzhenskaya, 1959), but the 3D case remains one of the deepest open problems in mathematical physics. A $1 million prize awaits a proof or counterexample.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about Green's functions.",
+    "steps": [
+      "Consider the BVP: y'' + y = f(x), y(0) = 0, y(π) = 0.",
+      "The Green's function satisfies G'' + G = δ(x − ξ), G(0,ξ) = 0, G(π,ξ) = 0.",
+      "The homogeneous equation y'' + y = 0 has solutions sin(x) and cos(x).",
+      "We construct G piecewise: G = A sin(x) for x < ξ and G = B sin(π − x) for x > ξ.",
+      "Matching at x = ξ and using the jump condition G'(ξ⁺) − G'(ξ⁻) = 1 gives A and B.",
+      "Therefore the Green's function exists and the solution is y = ∫₀^π G(x,ξ) f(ξ) dξ."
+    ],
+    "correctAnswer": "6",
+    "explanation": "Step 6 is wrong — or at least incomplete and misleading. The eigenvalue λ = 1 of the homogeneous problem y'' + λy = 0 with y(0) = y(π) = 0 has eigenfunction sin(x). When f(x) has a nonzero component along sin(x) (i.e., ∫₀^π f(x)sin(x)dx ≠ 0), no solution exists by the Fredholm alternative. The Green's function cannot exist in the standard sense for this problem because the operator is not invertible. The analysis should invoke the modified (or generalized) Green's function and solvability conditions.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-de-7",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Sturm comparison theorem states that if q₁(x) < q₂(x) on an interval, and y₁, y₂ solve y'' + qᵢ(x)y = 0 respectively, then between any two consecutive zeros of y₁:",
+    "options": [
+      "y₂ has no zeros",
+      "y₂ has at least one zero",
+      "y₂ has exactly two zeros",
+      "y₂ changes concavity"
+    ],
+    "correctAnswer": "y₂ has at least one zero",
+    "explanation": "Sturm's comparison theorem: if q₂ > q₁, then the solutions of y'' + q₂y = 0 oscillate faster. Between consecutive zeros of any solution of y'' + q₁y = 0, every solution of y'' + q₂y = 0 must have at least one zero. Intuitively, a larger restoring force (larger q) means more rapid oscillation. This is a powerful qualitative result that gives information about zeros without solving the equation.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-8",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each advanced concept to its role in differential equations theory.",
+    "pairs": [
+      {"left": "Green's function", "right": "Impulse response of a linear differential operator with boundary conditions"},
+      {"left": "Floquet multiplier", "right": "Eigenvalue of the monodromy matrix for periodic-coefficient systems"},
+      {"left": "Sturm-Liouville eigenvalue", "right": "Spectral parameter producing nontrivial solutions to a weighted boundary value problem"},
+      {"left": "Soliton", "right": "Shape-preserving traveling wave solution of a nonlinear dispersive PDE"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Green's functions solve inhomogeneous BVPs via superposition. Floquet multipliers govern stability of periodic systems. Sturm-Liouville eigenvalues generate orthogonal eigenfunction expansions. Solitons are exact nonlinear wave solutions that survive collisions intact.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-9",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The inverse scattering transform (IST) solves certain nonlinear PDEs (like KdV) by analogy with the Fourier transform. The three steps are: (1) direct scattering, (2) time evolution of scattering data, (3) inverse scattering. Which step is the nonlinear analogue of taking the Fourier transform?",
+    "options": [
+      "Step 1: direct scattering",
+      "Step 2: time evolution of scattering data",
+      "Step 3: inverse scattering",
+      "None — the IST is unrelated to the Fourier transform"
+    ],
+    "correctAnswer": "Step 1: direct scattering",
+    "explanation": "In the IST, the direct scattering problem maps the initial data u(x,0) to scattering data (reflection coefficients, bound states) — this is the nonlinear analogue of the forward Fourier transform. Time evolution in scattering space is simple (analogous to multiplying by e^(iωt)), and inverse scattering reconstructs u(x,t) — the analogue of the inverse Fourier transform. The genius is that the nonlinear PDE becomes linear in scattering space.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-10",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Poincare-Bendixson theorem states that in a bounded region of the plane with no equilibria, every trajectory of a continuous dynamical system must approach a limit cycle.",
+    "correctAnswer": "True",
+    "explanation": "The Poincare-Bendixson theorem says: if a trajectory of a 2D continuous system stays in a bounded region containing no fixed points, then its ω-limit set is a periodic orbit (limit cycle). This is a powerful existence theorem for limit cycles. It also implies that chaos is impossible in continuous 2D systems — chaos requires at least 3 dimensions. The theorem fails in 3D, which is why the Lorenz system (3D) can be chaotic.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-11",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps showing why the eigenvalues of a regular Sturm-Liouville problem are real.",
+    "steps": [
+      "Suppose λ is a complex eigenvalue with eigenfunction φ (complex-valued), so (pφ')' + (q + λw)φ = 0.",
+      "Take the complex conjugate: (pφ̄')' + (q + λ̄w)φ̄ = 0 (using p, q, w real).",
+      "Multiply the first equation by φ̄ and the second by φ, then subtract.",
+      "Integrate over [a,b]: (λ − λ̄) ∫ₐᵇ w|φ|² dx = [p(φ'φ̄ − φ̄'φ)]ₐᵇ.",
+      "The boundary terms vanish due to the Sturm-Liouville boundary conditions.",
+      "Since w > 0 and φ ≢ 0, the integral ∫w|φ|²dx > 0, forcing λ = λ̄, so λ is real."
+    ],
+    "correctAnswer": null,
+    "explanation": "This proof mirrors the standard argument that eigenvalues of a Hermitian operator are real. The self-adjointness of the Sturm-Liouville operator (ensured by the boundary conditions) makes the boundary terms vanish, and the positivity of the weight function forces λ = λ̄. This guarantees a real spectrum and orthogonal eigenfunctions.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-de-12",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The WKB (Wentzel-Kramers-Brillouin) approximation for y'' + Q(x)y = 0 with large Q gives approximate solutions of the form:",
+    "options": [
+      "y ≈ Q(x)^(-1/4) exp(±i ∫ Q(x)^(1/2) dx)",
+      "y ≈ Q(x) exp(−x²)",
+      "y ≈ sin(Q(x))",
+      "y ≈ e^(Q(x)x)"
+    ],
+    "correctAnswer": "y ≈ Q(x)^(-1/4) exp(±i ∫ Q(x)^(1/2) dx)",
+    "explanation": "The WKB approximation y ≈ Q^(-1/4) exp(±i∫√Q dx) is a semiclassical method valid when Q varies slowly compared to the wavelength. The Q^(-1/4) prefactor ensures approximate conservation of the probability current (in quantum mechanics) or energy flux (in wave problems). WKB breaks down near turning points where Q = 0, requiring connection formulas. It is fundamental in quantum tunneling and semiclassical physics.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-13",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Fredholm alternative states that for the equation Ly = f with L self-adjoint, either the equation has a solution, or the homogeneous equation Lφ = 0 has a nontrivial solution. In the latter case, a solution exists if and only if f is orthogonal to the:",
+    "correctAnswer": "null space",
+    "acceptableAnswers": ["null space", "nullspace", "kernel", "null space of L", "kernel of L", "homogeneous solutions", "eigenfunctions with eigenvalue 0"],
+    "explanation": "The Fredholm alternative is the infinite-dimensional analogue of the rank-nullity dichotomy for matrices: Ax = b either has a solution (if A is invertible) or requires b ⊥ ker(Aᵀ). For a self-adjoint operator L, this becomes: Ly = f is solvable if and only if ⟨f, φ⟩ = 0 for every φ in the null space of L. This solvability condition is essential when applying Green's functions to resonant problems.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-de-14",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about Floquet theory.",
+    "steps": [
+      "Consider x' = A(t)x where A(t + T) = A(t) is periodic.",
+      "Let Φ(t) be the fundamental matrix with Φ(0) = I.",
+      "By periodicity, Φ(t + T) = Φ(t)Φ(T) for all t (since Φ(t+T) and Φ(t)Φ(T) satisfy the same ODE with the same initial data at t=0).",
+      "The monodromy matrix M = Φ(T) has eigenvalues ρ₁, ρ₂ (Floquet multipliers).",
+      "If all |ρᵢ| < 1, the system is stable; if any |ρᵢ| > 1, unstable.",
+      "Since A(t) is periodic and continuous, the Floquet multipliers must be real."
+    ],
+    "correctAnswer": "6",
+    "explanation": "Step 6 is wrong. Floquet multipliers are eigenvalues of a real matrix M = Φ(T), but they can be complex (they come in conjugate pairs if complex). For example, a rotation-like periodic system can have multipliers e^(±iθ) on the unit circle, which are complex. There is no reason the monodromy matrix must have only real eigenvalues — it need not be symmetric or self-adjoint.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-de-15",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "In the theory of distributions, the fundamental solution (Green's function for the whole line) of the heat equation u_t = u_xx satisfying u(x, 0) = δ(x) is:",
+    "options": [
+      "u(x,t) = e^(-x²/(4t)) / √(4πt)",
+      "u(x,t) = sin(x) e^(-t)",
+      "u(x,t) = δ(x − t)",
+      "u(x,t) = (1/2) e^(-|x|/√t)"
+    ],
+    "correctAnswer": "u(x,t) = e^(-x²/(4t)) / √(4πt)",
+    "explanation": "The heat kernel K(x,t) = (4πt)^(-1/2) exp(−x²/(4t)) is the fundamental solution of the heat equation. It is a Gaussian that starts as a delta function at t = 0 and spreads out over time with standard deviation √(2t). The solution for arbitrary initial data u(x,0) = f(x) is the convolution u(x,t) = ∫ K(x−ξ,t) f(ξ) dξ. The heat kernel is smooth for all t > 0, demonstrating the instantaneous smoothing property of the heat equation.",
+    "xpReward": 40
+  }
+]

@@ -113,15 +113,13 @@
             <div class="topics-grid stagger-in">
                 @foreach (var topic in suggestedTopics)
                 {
-                    <div class="card card-clickable topic-card suggested-topic" style="border-color: @topic.Color" @onclick="() => NavigateToTopic(topic.Id)">
+                    <div class="card card-clickable topic-tile suggested-topic" style="border-color: @topic.Color" @onclick="() => NavigateToTopic(topic.Id)">
                         <div class="suggested-label" style="color: @topic.Color"><Icon Name="star-filled" Size="12" Fill="currentColor" /> Start here</div>
-                        <div class="topic-icon" style="color: @topic.Color">@GetTopicIcon(topic.Id)</div>
-                        <h3>@topic.Name</h3>
-                        <p class="topic-desc">@topic.Description</p>
-                        <div class="topic-meta">
-                            <span class="chip">@topic.LessonCount lessons</span>
-                            <span class="chip">@topic.Difficulty</span>
+                        <div class="topic-tile-icon" style="background: @(topic.Color)1a; color: @topic.Color">
+                            <span>@GetTopicIcon(topic.Id)</span>
                         </div>
+                        <strong>@topic.Name</strong>
+                        <small>@topic.LessonCount lessons</small>
                     </div>
                 }
             </div>
@@ -139,21 +137,26 @@
                 @foreach (var topic in topics)
                 {
                     var pct = topicProgress.GetValueOrDefault(topic.Id);
-                    <div class="card card-clickable topic-card" @onclick="() => NavigateToTopic(topic.Id)">
-                        <div class="topic-icon" style="color: @topic.Color">@GetTopicIcon(topic.Id)</div>
-                        <h3>@topic.Name</h3>
-                        <p class="topic-desc">@topic.Description</p>
-                        <div class="topic-meta">
-                            <span class="chip">@topic.LessonCount lessons</span>
-                            <span class="chip">@topic.Difficulty</span>
+                    var done = pct >= 100;
+                    <div class="card card-clickable topic-tile" @onclick="() => NavigateToTopic(topic.Id)">
+                        <div class="topic-tile-icon" style="background: @(topic.Color)1a; color: @topic.Color">
+                            @if (done)
+                            {
+                                <Icon Name="check" Size="22" />
+                            }
+                            else
+                            {
+                                <span>@GetTopicIcon(topic.Id)</span>
+                            }
                         </div>
-                        @if (pct > 0)
+                        <strong>@topic.Name</strong>
+                        <small>@topic.LessonCount lessons</small>
+                        @if (pct > 0 && !done)
                         {
-                            <div class="topic-progress-row">
-                                <div class="progress-bar-container" style="flex: 1">
-                                    <div class="progress-bar-fill animate-in" style="width: @pct.ToString("F0")%"></div>
+                            <div class="topic-tile-progress">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill animate-in" style="width: @pct.ToString("F0")%; background: @topic.Color"></div>
                                 </div>
-                                <span class="topic-progress-label">@pct.ToString("F0")%</span>
                             </div>
                         }
                     </div>
@@ -184,31 +187,76 @@
         <div class="section-header">
             <h2>Explore</h2>
         </div>
-        <div class="challenge-row">
-            <div class="card card-clickable challenge-card @(playgroundUnlocked ? "" : "challenge-locked")" @onclick="() => GoPlayground()">
-                <div class="challenge-icon" style="background: rgba(155,89,182,0.1); color: #9B59B6"><Icon Name="target" Size="22" /></div>
-                <strong>What If?</strong>
-                <small>@if (playgroundUnlocked) { <span>Break the rules of math</span> } else { <span><Icon Name="lock" Size="12" /> Unlock in Shop</span> }</small>
+        <div class="explore-grid">
+            <div class="explore-card card-clickable @(playgroundUnlocked ? "unlocked" : "")" style="--accent-color: #9B59B6" @onclick="() => GoPlayground()">
+                <div class="explore-card-bg"></div>
+                <div class="explore-card-content">
+                    <div class="explore-icon"><Icon Name="target" Size="24" /></div>
+                    <div class="explore-text">
+                        <strong>What If?</strong>
+                        <small>@(playgroundUnlocked ? "Break the rules of math" : "Unlock in Shop")</small>
+                    </div>
+                </div>
+                @if (!playgroundUnlocked)
+                {
+                    <div class="explore-lock"><Icon Name="lock" Size="14" /></div>
+                }
             </div>
-            <div class="card card-clickable challenge-card @(hofUnlocked ? "" : "challenge-locked")" @onclick="() => GoHallOfFame()">
-                <div class="challenge-icon" style="background: rgba(240,160,48,0.1); color: var(--accent)"><Icon Name="award" Size="22" /></div>
-                <strong>Hall of Fame</strong>
-                <small>@if (hofUnlocked) { <span>Top Trumps + Timeline</span> } else { <span><Icon Name="lock" Size="12" /> Unlock in Shop</span> }</small>
+            <div class="explore-card card-clickable @(hofUnlocked ? "unlocked" : "")" style="--accent-color: var(--accent)" @onclick="() => GoHallOfFame()">
+                <div class="explore-card-bg"></div>
+                <div class="explore-card-content">
+                    <div class="explore-icon"><Icon Name="award" Size="24" /></div>
+                    <div class="explore-text">
+                        <strong>Hall of Fame</strong>
+                        <small>@(hofUnlocked ? "Top Trumps + Timeline" : "Unlock in Shop")</small>
+                    </div>
+                </div>
+                @if (!hofUnlocked)
+                {
+                    <div class="explore-lock"><Icon Name="lock" Size="14" /></div>
+                }
             </div>
-            <div class="card card-clickable challenge-card @(compendiumUnlocked ? "" : "challenge-locked")" @onclick="() => GoCompendium()">
-                <div class="challenge-icon" style="background: rgba(74,144,217,0.1); color: #4A90D9"><Icon Name="book" Size="22" /></div>
-                <strong>Constants</strong>
-                <small>@if (compendiumUnlocked) { <span>Numbers that define reality</span> } else { <span><Icon Name="lock" Size="12" /> Unlock in Shop</span> }</small>
+            <div class="explore-card card-clickable @(compendiumUnlocked ? "unlocked" : "")" style="--accent-color: #4A90D9" @onclick="() => GoCompendium()">
+                <div class="explore-card-bg"></div>
+                <div class="explore-card-content">
+                    <div class="explore-icon"><Icon Name="book" Size="24" /></div>
+                    <div class="explore-text">
+                        <strong>Constants</strong>
+                        <small>@(compendiumUnlocked ? "Numbers that define reality" : "Unlock in Shop")</small>
+                    </div>
+                </div>
+                @if (!compendiumUnlocked)
+                {
+                    <div class="explore-lock"><Icon Name="lock" Size="14" /></div>
+                }
             </div>
-            <div class="card card-clickable challenge-card @(proofsUnlocked ? "" : "challenge-locked")" @onclick='() => Nav.NavigateTo("/proofs")'>
-                <div class="challenge-icon" style="background: rgba(74,95,224,0.1); color: var(--primary)"><Icon Name="puzzle" Size="22" /></div>
-                <strong>Proof Builder</strong>
-                <small>@if (proofsUnlocked) { <span>Build proofs from blocks</span> } else { <span><Icon Name="lock" Size="12" /> Unlock in Shop</span> }</small>
+            <div class="explore-card card-clickable @(proofsUnlocked ? "unlocked" : "")" style="--accent-color: var(--primary)" @onclick='() => Nav.NavigateTo("/proofs")'>
+                <div class="explore-card-bg"></div>
+                <div class="explore-card-content">
+                    <div class="explore-icon"><Icon Name="puzzle" Size="24" /></div>
+                    <div class="explore-text">
+                        <strong>Proof Builder</strong>
+                        <small>@(proofsUnlocked ? "Build proofs from blocks" : "Unlock in Shop")</small>
+                    </div>
+                </div>
+                @if (!proofsUnlocked)
+                {
+                    <div class="explore-lock"><Icon Name="lock" Size="14" /></div>
+                }
             </div>
-            <div class="card card-clickable challenge-card @(mistakesUnlocked ? "" : "challenge-locked")" @onclick='() => Nav.NavigateTo("/mistakes")'>
-                <div class="challenge-icon" style="background: rgba(239,83,80,0.1); color: var(--error)"><Icon Name="search" Size="22" /></div>
-                <strong>Mistake Museum</strong>
-                <small>@if (mistakesUnlocked) { <span>Spot the flaw</span> } else { <span><Icon Name="lock" Size="12" /> Unlock in Shop</span> }</small>
+            <div class="explore-card card-clickable @(mistakesUnlocked ? "unlocked" : "")" style="--accent-color: var(--error)" @onclick='() => Nav.NavigateTo("/mistakes")'>
+                <div class="explore-card-bg"></div>
+                <div class="explore-card-content">
+                    <div class="explore-icon"><Icon Name="search" Size="24" /></div>
+                    <div class="explore-text">
+                        <strong>Mistake Museum</strong>
+                        <small>@(mistakesUnlocked ? "Spot the flaw" : "Unlock in Shop")</small>
+                    </div>
+                </div>
+                @if (!mistakesUnlocked)
+                {
+                    <div class="explore-lock"><Icon Name="lock" Size="14" /></div>
+                }
             </div>
         </div>
     </div>
@@ -336,7 +384,10 @@
     }
 
     .welcome-section h1 {
-        font-size: 2rem;
+        font-family: 'Cinzel', 'Cambria Math', 'STIX Two Math', Georgia, serif;
+        font-size: 2.4rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
         background: linear-gradient(90deg, var(--primary), var(--primary-light), #ff8ec6, var(--primary));
         background-size: 200% auto;
         -webkit-background-clip: text;
@@ -369,20 +420,38 @@
     }
 
     .topics-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
     }
 
-    .topic-card {
+    .topic-tile {
         display: flex;
         flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 16px 8px;
         gap: 6px;
     }
 
-    .topic-icon {
-        font-size: 2rem;
+    .topic-tile strong { font-size: 0.85rem; }
+    .topic-tile small { color: var(--text-muted); font-size: 0.75rem; }
+
+    .topic-tile-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
         font-weight: bold;
+        margin-bottom: 2px;
+    }
+
+    .topic-tile-progress {
+        width: 100%;
+        margin-top: 2px;
     }
 
     .suggested-topic {
@@ -392,7 +461,7 @@
     }
 
     .suggested-label {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -403,32 +472,6 @@
         color: var(--text-muted);
         font-size: 0.9rem;
         margin: 0 0 8px;
-    }
-
-    .topic-progress-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 8px;
-    }
-
-    .topic-progress-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
-
-    .topic-desc {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        margin: 0;
-    }
-
-    .topic-meta {
-        display: flex;
-        gap: 8px;
-        margin-top: 4px;
     }
 
     .action-buttons {
@@ -452,14 +495,6 @@
         font-size: 0.75rem;
     }
 
-    .action-buttons .btn-accent {
-        animation: dailyGlow 2s ease infinite;
-    }
-
-    @@keyframes dailyGlow {
-        0%, 100% { box-shadow: 0 2px 8px rgba(240, 160, 48, 0.3); }
-        50% { box-shadow: 0 4px 20px rgba(240, 160, 48, 0.5), 0 0 30px rgba(240, 160, 48, 0.15); }
-    }
 
     .daily-done-btn {
         border-color: var(--success) !important;
@@ -472,7 +507,6 @@
         justify-content: space-between;
         padding: 14px 18px;
         margin-bottom: 16px;
-        border-left: 4px solid var(--accent);
         background: var(--bg-card);
     }
 
@@ -492,25 +526,69 @@
         color: var(--accent);
     }
 
-    .challenge-row {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    .explore-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
     }
 
-    .challenge-card {
-        display: flex; flex-direction: column; align-items: center;
-        text-align: center; padding: 18px 12px; gap: 6px;
+    .explore-card {
+        position: relative;
+        border-radius: var(--radius-md);
+        padding: 16px;
+        overflow: hidden;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        opacity: 0.5;
+        transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    .challenge-card strong { font-size: 0.85rem; }
-    .challenge-card small { color: var(--text-muted); font-size: 0.75rem; }
-
-    .challenge-icon {
-        width: 44px; height: 44px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.4rem; margin-bottom: 4px;
+    .explore-card.unlocked {
+        opacity: 1;
     }
 
-    .challenge-locked { opacity: 0.5; }
+    .explore-card-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 50%, color-mix(in srgb, var(--accent-color) 8%, transparent));
+        pointer-events: none;
+    }
+
+    .explore-card-content {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .explore-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+        color: var(--accent-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .explore-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .explore-text strong { font-size: 0.9rem; }
+    .explore-text small { color: var(--text-muted); font-size: 0.75rem; }
+
+    .explore-lock {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
 
     /* Tool chips */
     .tools-row {
@@ -533,7 +611,6 @@
         background: linear-gradient(135deg, rgba(45,43,107,0.08), rgba(180,140,255,0.08));
         border: 1px solid rgba(180,140,255,0.2);
         border-radius: var(--radius-md);
-        animation: cookieBannerGlow 2.5s ease infinite;
         cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
     .cookie-banner:active { transform: scale(0.98); }
@@ -548,13 +625,53 @@
     .cookie-banner-text small { color: var(--text-muted); font-size: 0.8rem; }
     .cookie-banner-arrow { color: var(--primary); font-size: 1.1rem; }
 
-    @@keyframes cookieBannerGlow {
-        0%, 100% { box-shadow: 0 2px 8px rgba(180,140,255,0.1); }
-        50% { box-shadow: 0 4px 20px rgba(180,140,255,0.25); }
-    }
-
     @@keyframes cookieBannerBob {
         0%, 100% { transform: rotate(-5deg); }
         50% { transform: rotate(5deg); }
+    }
+
+    /* Tablet */
+    @@media (min-width: 768px) {
+        .topics-grid {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .action-buttons {
+            flex-direction: row;
+        }
+
+        .action-btn {
+            width: auto;
+            flex: 1;
+        }
+
+        .topic-tile-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.6rem;
+        }
+
+        .welcome-section {
+            text-align: left;
+        }
+
+        .xp-progress {
+            margin: 0;
+        }
+
+        .stats-row {
+            justify-content: flex-start;
+        }
+    }
+
+    /* Desktop */
+    @@media (min-width: 1024px) {
+        .topic-tile {
+            padding: 20px 12px;
+        }
+
+        .topic-tile strong { font-size: 0.9rem; }
+        .topic-tile small { font-size: 0.8rem; }
     }
 </style>

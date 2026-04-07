@@ -1,0 +1,175 @@
+@page "/share"
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IContentRepository Content
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/profile")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Share Progress</h1>
+</div>
+
+<div class="style-picker">
+    @foreach (var s in styles)
+    {
+        var style = s;
+        <button class="style-btn @(cardStyle == style.Id ? "active" : "")"
+                style="background: @style.Preview" @onclick="() => SetStyle(style.Id)">
+            @style.Name
+        </button>
+    }
+</div>
+
+<div class="share-preview">
+    <canvas id="share-canvas" width="600" height="400"></canvas>
+</div>
+
+<div class="share-actions">
+    <button class="btn btn-primary btn-lg" style="flex: 1" @onclick="CopyToClipboard">
+        <Icon Name="phi" Size="16" /> Copy Image
+    </button>
+    <button class="btn btn-outline btn-lg" @onclick="CopyText">
+        <Icon Name="scroll" Size="16" /> Copy Text
+    </button>
+</div>
+
+@if (copied)
+{
+    <div class="copied-toast">Copied!</div>
+}
+
+@code {
+    private UserProfile? profile;
+    private int level;
+    private int topicCount;
+    private int lessonTotal;
+    private string cardStyle = "gradient";
+    private bool copied;
+    private bool canvasReady;
+
+    private record CardStyle(string Id, string Name, string Preview, string Bg1, string Bg2, string TextColor, string AccentColor);
+
+    private List<CardStyle> styles = new()
+    {
+        new("gradient", "Indigo", "linear-gradient(135deg, #1a1a3e, #4a3a99)", "#1a1a3e", "#4a3a99", "#ffffff", "#7eb4ff"),
+        new("dark", "Midnight", "linear-gradient(135deg, #0d1117, #161b22)", "#0d1117", "#161b22", "#e6edf3", "#58a6ff"),
+        new("ocean", "Ocean", "linear-gradient(135deg, #0c2d48, #145374)", "#0c2d48", "#145374", "#ffffff", "#6dd5ed"),
+        new("sunset", "Sunset", "linear-gradient(135deg, #4a1942, #c84b31)", "#4a1942", "#c84b31", "#ffffff", "#ffb347"),
+        new("forest", "Forest", "linear-gradient(135deg, #1a3c2a, #2d6a3f)", "#1a3c2a", "#2d6a3f", "#ffffff", "#90ee90"),
+        new("minimal", "Clean", "linear-gradient(135deg, #f4f6fc, #e8ebf7)", "#f4f6fc", "#e8ebf7", "#1a1a2e", "#4a5fe0"),
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            profile = await Progress.GetProfileAsync();
+            level = Gamification.GetLevel(profile.TotalXp);
+            var topics = await Content.GetTopicsAsync();
+            topicCount = topics.Count;
+            lessonTotal = 0;
+            foreach (var t in topics)
+            {
+                var lessons = await Content.GetLessonsAsync(t.Id);
+                lessonTotal += lessons.Count;
+            }
+            canvasReady = true;
+            StateHasChanged();
+            await Task.Delay(50);
+            await DrawCard();
+        }
+    }
+
+    private async Task SetStyle(string id)
+    {
+        cardStyle = id;
+        await DrawCard();
+    }
+
+    private async Task DrawCard()
+    {
+        if (!canvasReady || profile == null) return;
+        var s = styles.First(x => x.Id == cardStyle);
+        await JS.InvokeVoidAsync("drawShareCard", new
+        {
+            bg1 = s.Bg1,
+            bg2 = s.Bg2,
+            textColor = s.TextColor,
+            accent = s.AccentColor,
+            name = profile.DisplayName,
+            level,
+            xp = profile.TotalXp,
+            streak = profile.CurrentStreak,
+            longestStreak = profile.LongestStreak,
+            lessons = profile.LessonsCompleted.Count,
+            lessonTotal,
+            topics = profile.TopicsCompleted.Count,
+            topicCount,
+            quizzes = profile.QuizHistory.Count,
+            accuracy = profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0,
+            achievements = profile.AchievementsUnlocked.Count
+        });
+    }
+
+    private async Task CopyToClipboard()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("copyCanvasToClipboard", "share-canvas");
+            copied = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            copied = false;
+        }
+        catch
+        {
+            await CopyText();
+        }
+    }
+
+    private async Task CopyText()
+    {
+        if (profile == null) return;
+        var text = $"Numeria Stats | {profile.DisplayName}\n" +
+                   $"Level {level} | {profile.TotalXp} XP\n" +
+                   $"{profile.LessonsCompleted.Count}/{lessonTotal} lessons | {profile.TopicsCompleted.Count}/{topicCount} topics\n" +
+                   $"{profile.CurrentStreak}-day streak | {(profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0)}% accuracy\n" +
+                   $"numeria.app";
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            copied = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            copied = false;
+        }
+        catch { }
+    }
+}
+
+<style>
+    .style-picker { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+    .style-btn {
+        padding: 8px 14px; border: 2px solid transparent; border-radius: var(--radius-sm);
+        color: white; font-weight: 600; font-size: 0.8rem; cursor: pointer; white-space: nowrap;
+        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+    }
+    .style-btn.active { border-color: white; box-shadow: 0 0 12px rgba(255,255,255,0.3); }
+    .style-btn:last-child { color: #1a1a2e; }
+
+    .share-preview {
+        border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        margin-bottom: 16px;
+    }
+    .share-preview canvas { width: 100%; display: block; }
+
+    .share-actions { display: flex; gap: 10px; }
+
+    .copied-toast {
+        text-align: center; padding: 10px; color: var(--success); font-weight: 600;
+        margin-top: 10px; animation: fadeIn 0.2s ease;
+    }
+
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>

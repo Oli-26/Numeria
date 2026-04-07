@@ -7,8 +7,11 @@
     <title>Numeria</title>
     <base href="/" />
     <link rel="stylesheet" href="css/site.css" />
-    <link id="theme-css" rel="stylesheet" href="" />
+    <link id="theme-css" rel="stylesheet" href="css/themes/dark.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="numeria-icon.svg" />
     <link href="MathVoyager.styles.css" rel="stylesheet" />
 </head>
@@ -91,6 +94,73 @@
             } else {
                 link.href = '';
             }
+        }
+
+        // Font size management
+        function applyFontSize(size) {
+            document.documentElement.classList.remove('font-small', 'font-medium', 'font-large');
+            if (size) {
+                document.documentElement.classList.add('font-' + size);
+            }
+        }
+
+        // Apply saved font size immediately
+        (function() {
+            try {
+                var profile = JSON.parse(localStorage.getItem('mathvoyager_profile'));
+                if (profile && profile.fontSize) {
+                    applyFontSize(profile.fontSize);
+                }
+            } catch(e) {}
+        })();
+
+        // Data export
+        function exportProfileData() {
+            var data = localStorage.getItem('mathvoyager_profile');
+            if (!data) return null;
+            return data;
+        }
+
+        // Data import
+        function importProfileData(json) {
+            try {
+                JSON.parse(json); // validate
+                localStorage.setItem('mathvoyager_profile', json);
+                return true;
+            } catch(e) {
+                return false;
+            }
+        }
+
+        // File download helper
+        function downloadFile(filename, content) {
+            var blob = new Blob([content], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // File upload helper — returns a Promise<string>
+        function pickAndReadFile() {
+            return new Promise(function(resolve, reject) {
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = function(e) {
+                    var file = e.target.files[0];
+                    if (!file) { reject('No file'); return; }
+                    var reader = new FileReader();
+                    reader.onload = function(ev) { resolve(ev.target.result); };
+                    reader.onerror = function() { reject('Read error'); };
+                    reader.readAsText(file);
+                };
+                input.click();
+            });
         }
 
         // KaTeX rendering

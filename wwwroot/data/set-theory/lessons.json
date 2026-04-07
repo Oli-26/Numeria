@@ -1,0 +1,290 @@
+[
+  {
+    "id": "st-01",
+    "topicId": "set-theory",
+    "order": 1,
+    "title": "Sets & Operations",
+    "description": "Sets, elements, subsets, and fundamental operations",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "st-01-c1",
+        "title": "Sets, Elements, and Subsets",
+        "contentHtml": "<p>A <strong>set</strong> is a collection of distinct objects, called <strong>elements</strong> or <strong>members</strong>. We write a ∈ A to mean \"a is an element of A.\"</p><p>Sets can be described by listing elements: A = {1, 2, 3} or by a rule: A = {x ∈ ℤ : x > 0} (all positive integers).</p><p>A set B is a <strong>subset</strong> of A (written B ⊆ A) if every element of B is also in A. The <strong>empty set</strong> ∅ = {} contains no elements and is a subset of every set.</p><p>Important sets: ℕ (naturals), ℤ (integers), ℚ (rationals), ℝ (reals), ℂ (complex numbers). Each is a subset of the next: ℕ ⊆ ℤ ⊆ ℚ ⊆ ℝ ⊆ ℂ.</p>",
+        "mathExpressions": ["a \\in A, \\quad B \\subseteq A, \\quad \\emptyset \\subseteq A \\;\\text{for all } A"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-01-c2",
+        "title": "Union, Intersection, and Complement",
+        "contentHtml": "<p>The fundamental operations on sets:</p><p>• <strong>Union</strong>: A ∪ B = {x : x ∈ A or x ∈ B} — everything in either set<br>• <strong>Intersection</strong>: A ∩ B = {x : x ∈ A and x ∈ B} — everything in both sets<br>• <strong>Complement</strong>: Aᶜ = {x ∈ U : x ∉ A} — everything not in A (relative to a universe U)<br>• <strong>Difference</strong>: A \\ B = {x : x ∈ A and x ∉ B} — elements in A but not B</p><p>Example: if A = {1,2,3} and B = {2,3,4}, then A ∪ B = {1,2,3,4}, A ∩ B = {2,3}, A \\ B = {1}.</p><p>The <strong>Cartesian product</strong> A × B = {(a,b) : a ∈ A, b ∈ B} is the set of all ordered pairs. If |A| = m and |B| = n, then |A × B| = mn.</p>",
+        "mathExpressions": ["A \\cup B, \\quad A \\cap B, \\quad A^c, \\quad A \\setminus B, \\quad A \\times B"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-01-c3",
+        "title": "Venn Diagrams and De Morgan's Laws",
+        "contentHtml": "<p><strong>Venn diagrams</strong> visualize set operations as overlapping circles. They're a powerful tool for building intuition about how sets interact.</p><p><strong>De Morgan's Laws</strong> describe how complement interacts with union and intersection:</p><p>• (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ — \"not in either\" means \"not in A and not in B\"<br>• (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ — \"not in both\" means \"not in A or not in B\"</p><p>These laws are fundamental in logic too: \"not (P or Q)\" = \"(not P) and (not Q).\"</p><p>Other key identities: A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C) (distributive), A ∩ A = A (idempotent), A ∪ ∅ = A (identity).</p>",
+        "mathExpressions": ["(A \\cup B)^c = A^c \\cap B^c, \\quad (A \\cap B)^c = A^c \\cup B^c"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q01", "st-q02", "st-q03", "st-q04", "st-q05", "st-q06", "st-q07", "st-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-02",
+    "topicId": "set-theory",
+    "order": 2,
+    "title": "Functions & Relations",
+    "description": "Injections, surjections, bijections, equivalence relations",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "st-02-c1",
+        "title": "Functions: Injective, Surjective, Bijective",
+        "contentHtml": "<p>A <strong>function</strong> f: A → B assigns to each element of A exactly one element of B. A is the <strong>domain</strong>, B is the <strong>codomain</strong>.</p><p>Three key properties:</p><p>• <strong>Injective</strong> (one-to-one): different inputs give different outputs. f(a₁) = f(a₂) ⟹ a₁ = a₂. No two arrows land on the same target.<br>• <strong>Surjective</strong> (onto): every element of B is hit. For all b ∈ B, there exists a ∈ A with f(a) = b. Every target has at least one arrow.<br>• <strong>Bijective</strong>: both injective and surjective. A perfect one-to-one correspondence. Bijections have inverses!</p><p>Example: f(x) = x² from ℝ to ℝ is neither injective (f(-2) = f(2)) nor surjective (no x gives f(x) = -1). But from ℝ≥0 to ℝ≥0 it is bijective.</p>",
+        "mathExpressions": ["f: A \\to B \\;\\text{bijective} \\iff f \\text{ injective and surjective} \\iff f^{-1} \\text{ exists}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-02-c2",
+        "title": "Relations and Equivalence Relations",
+        "contentHtml": "<p>A <strong>relation</strong> R on a set A is a subset of A × A. We write a R b to mean (a, b) ∈ R.</p><p>An <strong>equivalence relation</strong> satisfies three properties:<br>• <strong>Reflexive</strong>: a R a for all a (everything is related to itself)<br>• <strong>Symmetric</strong>: a R b ⟹ b R a (the relation goes both ways)<br>• <strong>Transitive</strong>: a R b and b R c ⟹ a R c (the relation chains)</p><p>Example: \"same remainder when divided by 3\" is an equivalence relation on ℤ. 7 ~ 1 ~ 4 (all have remainder 1).</p><p>A <strong>partial order</strong> is reflexive, <strong>antisymmetric</strong> (a R b and b R a ⟹ a = b), and transitive. Example: ≤ on ℤ, or ⊆ on sets.</p>",
+        "mathExpressions": ["a \\sim b \\;\\text{equivalence} \\iff \\text{reflexive, symmetric, transitive}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-02-c3",
+        "title": "Equivalence Classes and Quotient Sets",
+        "contentHtml": "<p>An equivalence relation ~ on A partitions A into disjoint <strong>equivalence classes</strong>. The class of a is [a] = {x ∈ A : x ~ a} — all elements equivalent to a.</p><p>The <strong>quotient set</strong> A/~ is the set of all equivalence classes. It \"collapses\" equivalent elements into single points.</p><p>Example: ℤ with \"same remainder mod 3\" gives three classes: [0] = {...,-3,0,3,6,...}, [1] = {...,-2,1,4,7,...}, [2] = {...,-1,2,5,8,...}. The quotient set is ℤ/3ℤ = {[0],[1],[2]} — the integers mod 3.</p><p>Quotient constructions are everywhere in mathematics: modular arithmetic, rational numbers (fractions are equivalence classes of pairs), and topological spaces (gluing points together).</p>",
+        "mathExpressions": ["[a] = \\{x \\in A : x \\sim a\\}, \\quad A/\\!\\sim\\; = \\{[a] : a \\in A\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q09", "st-q10", "st-q11", "st-q12", "st-q13", "st-q14", "st-q15", "st-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-03",
+    "topicId": "set-theory",
+    "order": 3,
+    "title": "Propositional & Predicate Logic",
+    "description": "Connectives, truth tables, quantifiers, and proof techniques",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "st-03-c1",
+        "title": "Propositions and Connectives",
+        "contentHtml": "<p>A <strong>proposition</strong> is a statement that is either true or false (not both). \"2 + 2 = 4\" is a proposition (true). \"Is it raining?\" is not (it's a question).</p><p>Propositions can be combined with <strong>logical connectives</strong>:</p><p>• <strong>AND</strong> (∧): P ∧ Q is true when both P and Q are true<br>• <strong>OR</strong> (∨): P ∨ Q is true when at least one of P, Q is true<br>• <strong>NOT</strong> (¬): ¬P flips the truth value<br>• <strong>IMPLIES</strong> (→): P → Q is false only when P is true and Q is false<br>• <strong>IFF</strong> (↔): P ↔ Q is true when P and Q have the same truth value</p><p>The implication P → Q is the trickiest: \"If pigs fly, then 2 = 3\" is true (because the hypothesis is false). A false hypothesis makes any implication vacuously true.</p>",
+        "mathExpressions": ["P \\wedge Q, \\quad P \\vee Q, \\quad \\neg P, \\quad P \\to Q, \\quad P \\leftrightarrow Q"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-03-c2",
+        "title": "Truth Tables, Tautologies, and Contradictions",
+        "contentHtml": "<p>A <strong>truth table</strong> lists all possible truth values for a compound proposition. With n variables, there are 2ⁿ rows.</p><p>A <strong>tautology</strong> is always true regardless of the truth values of its components. Example: P ∨ ¬P (law of excluded middle).</p><p>A <strong>contradiction</strong> is always false. Example: P ∧ ¬P.</p><p>A <strong>contingency</strong> is sometimes true, sometimes false. Example: P ∧ Q.</p><p>Two propositions are <strong>logically equivalent</strong> (≡) if they have the same truth table. Key equivalences:<br>• ¬(P ∧ Q) ≡ ¬P ∨ ¬Q (De Morgan)<br>• P → Q ≡ ¬P ∨ Q (material implication)<br>• P → Q ≡ ¬Q → ¬P (contrapositive)</p>",
+        "mathExpressions": ["P \\vee \\neg P \\;\\text{(tautology)}, \\quad P \\wedge \\neg P \\;\\text{(contradiction)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-03-c3",
+        "title": "Predicate Logic and Quantifiers",
+        "contentHtml": "<p><strong>Predicate logic</strong> extends propositional logic with variables and <strong>quantifiers</strong>:</p><p>• <strong>Universal quantifier</strong> ∀: \"for all.\" ∀x P(x) means P(x) is true for every x.<br>• <strong>Existential quantifier</strong> ∃: \"there exists.\" ∃x P(x) means P(x) is true for at least one x.</p><p><strong>Negating quantifiers</strong>:<br>• ¬(∀x P(x)) ≡ ∃x ¬P(x) — \"not everything satisfies P\" = \"something doesn't\"<br>• ¬(∃x P(x)) ≡ ∀x ¬P(x) — \"nothing satisfies P\" = \"everything fails P\"</p><p><strong>Common proof techniques</strong>:<br>• <strong>Direct proof</strong>: assume P, derive Q<br>• <strong>Proof by contradiction</strong>: assume ¬Q, derive a contradiction<br>• <strong>Proof by contrapositive</strong>: prove ¬Q → ¬P instead of P → Q<br>• <strong>Proof by induction</strong>: base case + inductive step</p>",
+        "mathExpressions": ["\\forall x\\, P(x), \\quad \\exists x\\, P(x), \\quad \\neg(\\forall x\\, P(x)) \\equiv \\exists x\\, \\neg P(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q17", "st-q18", "st-q19", "st-q20", "st-q21", "st-q22", "st-q23", "st-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-04",
+    "topicId": "set-theory",
+    "order": 4,
+    "title": "Cardinality & Infinity",
+    "description": "Countable and uncountable sets, Cantor's diagonal argument, foundational questions",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "st-04-c1",
+        "title": "Countable and Uncountable Sets",
+        "contentHtml": "<p>Two sets have the same <strong>cardinality</strong> if there exists a bijection between them. This lets us compare the \"sizes\" of infinite sets.</p><p>A set is <strong>countable</strong> if it can be put in bijection with ℕ (the natural numbers) — you can list its elements as a₁, a₂, a₃, ...</p><p>Surprising fact: ℤ is countable (list as 0, 1, -1, 2, -2, ...). Even ℚ is countable! (Use a diagonal zigzag argument through a grid of fractions.) Countable unions of countable sets are countable.</p><p>A set is <strong>uncountable</strong> if no such listing exists. Cantor proved that ℝ is uncountable — there are fundamentally \"more\" real numbers than natural numbers.</p>",
+        "mathExpressions": ["|A| = |B| \\iff \\exists \\text{ bijection } f: A \\to B"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-04-c2",
+        "title": "Cantor's Diagonal Argument",
+        "contentHtml": "<p><strong>Cantor's diagonal argument</strong> (1891) proves |ℝ| > |ℕ| — the real numbers are uncountable.</p><p>Proof by contradiction: Suppose you could list all real numbers between 0 and 1 as r₁, r₂, r₃, ... Write out their decimal expansions. Now construct a new number d by making the n-th digit of d different from the n-th digit of rₙ.</p><p>This number d differs from every rₙ in at least the n-th decimal place, so d is not on the list! Contradiction — the reals cannot be listed.</p><p>The cardinality of ℝ is denoted <strong>c</strong> (the continuum). We know ℵ₀ < c, where ℵ₀ = |ℕ|. The power set P(A) always has strictly greater cardinality than A: |P(A)| > |A| (Cantor's theorem). This means there is no \"largest\" infinity!</p>",
+        "mathExpressions": ["|\\mathbb{R}| > |\\mathbb{N}|, \\quad |\\mathcal{P}(A)| > |A| \\;\\text{(Cantor's theorem)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-04-c3",
+        "title": "Continuum Hypothesis and Foundations",
+        "contentHtml": "<p>The <strong>Continuum Hypothesis</strong> (CH): there is no set whose cardinality is strictly between |ℕ| and |ℝ|. In other words, ℵ₁ = c (the next infinity after countable is the continuum).</p><p>Remarkably, CH is <strong>independent</strong> of the standard axioms of set theory (ZFC). Gödel (1940) showed it's consistent with ZFC; Cohen (1963) showed its negation is too. You can't prove or disprove CH from the usual axioms!</p><p>The <strong>Axiom of Choice</strong> (AC) states that for any collection of non-empty sets, you can choose one element from each. It sounds obvious but implies surprising results like the Banach-Tarski paradox (decompose a ball into 5 pieces and reassemble them into 2 balls of the same size!).</p><p><strong>Gödel's incompleteness theorems</strong> (1931) shook the foundations: any consistent, sufficiently powerful formal system contains true statements that cannot be proved within the system. Mathematics can never be fully axiomatized!</p>",
+        "mathExpressions": ["\\aleph_1 \\stackrel{?}{=} \\mathfrak{c} = |\\mathbb{R}| = 2^{\\aleph_0}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q25", "st-q26", "st-q27", "st-q28", "st-q29", "st-q30", "st-q31", "st-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-05",
+    "topicId": "set-theory",
+    "order": 5,
+    "title": "Ordinals & Well-Ordering",
+    "description": "Ordinal numbers, transfinite induction, well-ordering theorem, ordinal arithmetic",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "st-05-c1",
+        "title": "Ordinal Numbers and Order Types",
+        "contentHtml": "<p>While <strong>cardinal numbers</strong> measure the size of a set, <strong>ordinal numbers</strong> capture the concept of position in a well-ordered sequence. Two well-ordered sets have the same <strong>order type</strong> if there is an order-preserving bijection between them.</p><p>The finite ordinals are simply 0, 1, 2, 3, ... and they coincide with the natural numbers. But ordinals extend beyond the finite: the first infinite ordinal is <strong>ω</strong> (omega), representing the order type of the natural numbers {0, 1, 2, 3, ...}. After ω come ω + 1, ω + 2, ..., then ω + ω = ω·2, and so on.</p><p>In the von Neumann construction, each ordinal is the set of all smaller ordinals: 0 = ∅, 1 = {0}, 2 = {0, 1}, 3 = {0, 1, 2}, and ω = {0, 1, 2, 3, ...}. This elegant definition makes ordinals concrete set-theoretic objects.</p><p>A <strong>successor ordinal</strong> is of the form α + 1 (it has an immediate predecessor). A <strong>limit ordinal</strong> like ω has no immediate predecessor — you can never reach it by adding 1 finitely many times.</p>",
+        "mathExpressions": ["0, 1, 2, \\ldots, \\omega, \\omega+1, \\ldots, \\omega \\cdot 2, \\ldots, \\omega^2, \\ldots, \\omega^\\omega, \\ldots"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-05-c2",
+        "title": "Well-Ordering and Transfinite Induction",
+        "contentHtml": "<p>A <strong>well-ordering</strong> on a set S is a total order such that every non-empty subset of S has a <strong>least element</strong>. The natural numbers with their usual ordering are well-ordered. The integers are not — the subset of all negative integers has no least element.</p><p>The <strong>Well-Ordering Theorem</strong> states that every set can be well-ordered. This is equivalent to the Axiom of Choice and was proved by Zermelo in 1904. It is highly non-constructive: for ℝ, no one can explicitly exhibit a well-ordering.</p><p><strong>Transfinite induction</strong> extends mathematical induction to well-ordered sets beyond ℕ. To prove a property P holds for all ordinals, you must handle three cases: the <strong>zero case</strong> (P(0)), the <strong>successor case</strong> (P(α) implies P(α + 1)), and the <strong>limit case</strong> (if P(β) for all β < λ, then P(λ) for limit ordinals λ).</p><p><strong>Transfinite recursion</strong> similarly lets you define functions on all ordinals by specifying how to handle 0, successors, and limits. This is the engine behind many constructions in advanced set theory.</p>",
+        "mathExpressions": ["\\forall \\alpha\\; [\\,(\\forall \\beta < \\alpha\\; P(\\beta)) \\Rightarrow P(\\alpha)\\,] \\;\\Rightarrow\\; \\forall \\alpha\\; P(\\alpha)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-05-c3",
+        "title": "Ordinal Arithmetic",
+        "contentHtml": "<p><strong>Ordinal arithmetic</strong> extends addition, multiplication, and exponentiation to ordinals, but with a crucial twist: these operations are <strong>not commutative</strong>.</p><p><strong>Ordinal addition</strong>: α + β is formed by placing a copy of β after α. For finite ordinals this matches natural number addition. But 1 + ω = ω (the 1 gets absorbed into the beginning of an ω-sequence), while ω + 1 > ω (a new element is placed after the entire ω-sequence). So 1 + ω ≠ ω + 1.</p><p><strong>Ordinal multiplication</strong>: α · β is β copies of α laid end to end. Again, 2 · ω = ω (infinitely many copies of 2 collapse to ω), but ω · 2 = ω + ω, which is strictly larger. Multiplication is not commutative either.</p><p><strong>Ordinal exponentiation</strong> produces a rich hierarchy: ω^ω is the order type of finite sequences of natural numbers under lexicographic order. The ordinal ε₀ = ω^(ω^(ω^...)) is the smallest ordinal α satisfying ω^α = α, and it plays a key role in proof theory.</p>",
+        "mathExpressions": ["1 + \\omega = \\omega \\neq \\omega + 1, \\quad 2 \\cdot \\omega = \\omega \\neq \\omega \\cdot 2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q33", "st-q34", "st-q35", "st-q36", "st-q37", "st-q38", "st-q39", "st-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-06",
+    "topicId": "set-theory",
+    "order": 6,
+    "title": "Axiom of Choice & Zorn's Lemma",
+    "description": "Axiom of choice, equivalents (Zorn's Lemma, well-ordering), consequences and controversies",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "st-06-c1",
+        "title": "The Axiom of Choice",
+        "contentHtml": "<p>The <strong>Axiom of Choice</strong> (AC) states: given any collection of non-empty sets, there exists a <strong>choice function</strong> that selects exactly one element from each set. For finite collections this is trivial, but for infinite collections it asserts the existence of an object that cannot, in general, be explicitly constructed.</p><p>Formally, if {Aᵢ}ᵢ∈I is a family of non-empty sets, then there exists a function f: I → ⋃Aᵢ such that f(i) ∈ Aᵢ for every i ∈ I. This seemingly innocuous statement is one of the most debated axioms in mathematics.</p><p>AC is <strong>independent</strong> of the Zermelo-Fraenkel axioms (ZF). Godel proved in 1938 that AC is consistent with ZF, and Cohen proved in 1963 that its negation is also consistent. Most mathematicians accept AC because of its enormous utility.</p><p>Without AC, many fundamental results fail: not every vector space has a basis, not every ring has a maximal ideal, and Tychonoff's theorem (arbitrary products of compact spaces are compact) breaks down. AC is deeply woven into modern mathematics.</p>",
+        "mathExpressions": ["\\exists f: I \\to \\bigcup_{i \\in I} A_i \\;\\text{ such that }\\; f(i) \\in A_i \\;\\forall\\, i \\in I"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-06-c2",
+        "title": "Zorn's Lemma and Equivalents",
+        "contentHtml": "<p><strong>Zorn's Lemma</strong> states: if every chain (totally ordered subset) in a partially ordered set has an upper bound, then the set contains at least one <strong>maximal element</strong>. It is logically equivalent to the Axiom of Choice and the Well-Ordering Theorem.</p><p>The three equivalent forms are: (1) <strong>Axiom of Choice</strong> — every family of non-empty sets has a choice function; (2) <strong>Zorn's Lemma</strong> — a poset where every chain has an upper bound has a maximal element; (3) <strong>Well-Ordering Theorem</strong> — every set can be well-ordered. Proving their equivalence is a cornerstone of set theory.</p><p>Zorn's Lemma is the most commonly used form in algebra. It proves that every vector space has a <strong>basis</strong> (even infinite-dimensional ones), every proper ideal is contained in a <strong>maximal ideal</strong>, and every field has an <strong>algebraic closure</strong>.</p><p>To apply Zorn's Lemma, you typically: (1) define a partially ordered set of \"partial solutions\"; (2) show that every chain of partial solutions has an upper bound (usually by taking a union); (3) conclude that a maximal element exists.</p>",
+        "mathExpressions": ["\\text{Every chain has an upper bound} \\;\\Rightarrow\\; \\exists\\, \\text{maximal element}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-06-c3",
+        "title": "Consequences and Controversies",
+        "contentHtml": "<p>The Axiom of Choice leads to results that are counterintuitive and even paradoxical. The most famous is the <strong>Banach-Tarski Paradox</strong>: a solid ball in ℝ³ can be decomposed into finitely many pieces (five suffice) and reassembled using only rotations and translations into two solid balls, each identical to the original.</p><p>This is possible because AC allows the construction of <strong>non-measurable sets</strong> — subsets of ℝ that cannot be assigned a consistent \"length\" or \"volume.\" Vitali's construction of a non-measurable subset of [0,1] was the first such example (1905). These sets violate our geometric intuition.</p><p>Weaker forms of choice are less controversial: the <strong>Axiom of Countable Choice</strong> (AC_ω) allows choosing from countably many sets, and the <strong>Axiom of Dependent Choice</strong> (DC) suffices for most of analysis. Many constructivists and intuitionists reject full AC but accept these weaker variants.</p><p>The debate over AC reflects deep philosophical questions about mathematical existence. Does a \"choice\" require a constructive rule, or is mere logical consistency enough? Different answers lead to genuinely different mathematics — a reminder that the foundations of mathematics are not as settled as they might appear.</p>",
+        "mathExpressions": ["\\text{AC} \\iff \\text{Zorn's Lemma} \\iff \\text{Well-Ordering Theorem}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q41", "st-q42", "st-q43", "st-q44", "st-q45", "st-q46", "st-q47", "st-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-07",
+    "topicId": "set-theory",
+    "order": 7,
+    "title": "Boolean Algebras & Lattices",
+    "description": "Boolean algebras, lattice theory, distributive and complemented lattices, Stone's representation theorem",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "st-07-c1",
+        "title": "Lattices and Partial Orders",
+        "contentHtml": "<p>A <strong>lattice</strong> is a partially ordered set (poset) in which every pair of elements has a <strong>least upper bound</strong> (join, denoted a ∨ b) and a <strong>greatest lower bound</strong> (meet, denoted a ∧ b). Lattices capture the algebraic structure underlying concepts like union/intersection, AND/OR, and gcd/lcm.</p><p>Examples of lattices: the power set P(S) ordered by ⊆ (join = union, meet = intersection); the positive integers ordered by divisibility (join = lcm, meet = gcd); the set of all subspaces of a vector space ordered by inclusion.</p><p>A lattice is <strong>bounded</strong> if it has a top element 1 (the join of everything) and a bottom element 0 (the meet of everything). In P(S), the top is S and the bottom is ∅.</p><p>Lattices satisfy four key identities: <strong>commutativity</strong> (a ∨ b = b ∨ a), <strong>associativity</strong> ((a ∨ b) ∨ c = a ∨ (b ∨ c)), <strong>idempotency</strong> (a ∨ a = a), and the <strong>absorption laws</strong> (a ∨ (a ∧ b) = a and a ∧ (a ∨ b) = a). These make lattices a fundamental algebraic structure.</p>",
+        "mathExpressions": ["a \\vee b = \\text{join (lub)}, \\quad a \\wedge b = \\text{meet (glb)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-07-c2",
+        "title": "Distributive and Complemented Lattices",
+        "contentHtml": "<p>A lattice is <strong>distributive</strong> if meet distributes over join and vice versa: a ∧ (b ∨ c) = (a ∧ b) ∨ (a ∧ c). Not all lattices are distributive — the diamond lattice M₃ and the pentagon lattice N₅ are the two fundamental non-distributive lattices, and Birkhoff's theorem states that a lattice is non-distributive if and only if it contains a sublattice isomorphic to one of these.</p><p>In a bounded lattice, an element a has a <strong>complement</strong> if there exists an element a' such that a ∨ a' = 1 and a ∧ a' = 0. A <strong>complemented lattice</strong> is a bounded lattice where every element has at least one complement.</p><p>In a distributive lattice, complements (when they exist) are <strong>unique</strong>. This is a crucial property — it means we can speak of \"the\" complement of an element, not just \"a\" complement.</p><p>A <strong>Boolean algebra</strong> is a lattice that is both distributive and complemented. Equivalently, it is a complemented distributive bounded lattice. Boolean algebras are the algebraic foundation of classical logic and digital circuit design.</p>",
+        "mathExpressions": ["a \\wedge (b \\vee c) = (a \\wedge b) \\vee (a \\wedge c)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-07-c3",
+        "title": "Boolean Algebras and Stone's Theorem",
+        "contentHtml": "<p>A <strong>Boolean algebra</strong> satisfies all the laws of classical propositional logic: commutativity, associativity, distributivity, identity (a ∨ 0 = a, a ∧ 1 = a), complement (a ∨ a' = 1, a ∧ a' = 0), and De Morgan's laws ((a ∨ b)' = a' ∧ b' and (a ∧ b)' = a' ∨ b').</p><p>The prototypical Boolean algebra is P(S), the power set of a set S, with union as join, intersection as meet, and set complement. Every finite Boolean algebra is isomorphic to P(S) for some finite set S, and therefore has exactly 2ⁿ elements.</p><p><strong>Stone's Representation Theorem</strong> (1936) is a profound generalization: every Boolean algebra is isomorphic to a field of sets (a subalgebra of some power set). More precisely, every Boolean algebra is isomorphic to the algebra of clopen (closed and open) subsets of a compact, totally disconnected Hausdorff space — its <strong>Stone space</strong>.</p><p>Stone's theorem creates a deep bridge between algebra and topology. It shows that Boolean algebras and certain topological spaces are essentially the same mathematical object viewed from different perspectives, a duality that has had far-reaching consequences in logic, computer science, and functional analysis.</p>",
+        "mathExpressions": ["(a \\vee b)' = a' \\wedge b', \\quad (a \\wedge b)' = a' \\vee b'"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q49", "st-q50", "st-q51", "st-q52", "st-q53", "st-q54", "st-q55", "st-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "st-08",
+    "topicId": "set-theory",
+    "order": 8,
+    "title": "Godel's Theorems & Foundations",
+    "description": "Completeness vs consistency, Godel's first and second incompleteness theorems, undecidable statements, implications for mathematics",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "st-08-c1",
+        "title": "Formal Systems: Completeness and Consistency",
+        "contentHtml": "<p>A <strong>formal system</strong> consists of a language (symbols and grammar), axioms (starting truths), and inference rules (ways to derive new truths). The goal of early 20th-century mathematics was to find a formal system that could serve as a complete, consistent foundation for all of mathematics — <strong>Hilbert's Program</strong>.</p><p>A formal system is <strong>consistent</strong> if it cannot prove both a statement and its negation — no contradictions arise. It is <strong>complete</strong> if every true statement expressible in the system can be proved within it. Hilbert believed we could find systems that were both.</p><p>Godel's <strong>Completeness Theorem</strong> (1929) — distinct from the incompleteness theorems — states that first-order predicate logic is complete: every logically valid sentence has a formal proof. This was a triumph for formal logic.</p><p>But the completeness of logic does not imply the completeness of specific mathematical theories built on top of it. The question Godel addressed next was whether theories powerful enough to describe arithmetic could be both complete and consistent. The answer shook the mathematical world.</p>",
+        "mathExpressions": ["\\text{Consistent: } \\nexists\\, \\varphi \\;\\text{s.t.}\\; T \\vdash \\varphi \\;\\text{and}\\; T \\vdash \\neg\\varphi"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-08-c2",
+        "title": "Godel's Incompleteness Theorems",
+        "contentHtml": "<p><strong>Godel's First Incompleteness Theorem</strong> (1931): Any consistent formal system F that is capable of expressing basic arithmetic contains statements that are true but <strong>unprovable</strong> within F. In other words, no sufficiently powerful consistent system can be complete.</p><p>The proof is ingenious: Godel constructed a sentence G that essentially says \"I am not provable in F\" (a mathematical version of the Liar Paradox). If F is consistent, then G is true but unprovable. If we add G as a new axiom, we can construct a new such sentence — the incompleteness can never be patched.</p><p><strong>Godel's Second Incompleteness Theorem</strong>: No consistent formal system F capable of expressing basic arithmetic can prove its own consistency. The statement \"F is consistent\" (expressible within F via Godel numbering) is one of the unprovable truths. This devastated Hilbert's Program: we cannot use mathematics to prove mathematics is free of contradictions.</p><p>The key technique is <strong>Godel numbering</strong>: encoding every symbol, formula, and proof as a natural number. This lets the formal system \"talk about itself,\" enabling the self-referential construction at the heart of the theorems.</p>",
+        "mathExpressions": ["G \\equiv \\text{\"} G \\text{ is not provable in } F \\text{\"} \\;\\Rightarrow\\; G \\text{ is true but } F \\nvdash G"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "st-08-c3",
+        "title": "Undecidable Statements and Implications",
+        "contentHtml": "<p>A statement is <strong>independent</strong> (or undecidable) from a theory if neither it nor its negation can be proved. Godel showed such statements must exist in any sufficiently powerful consistent theory. Several natural mathematical statements have turned out to be independent of ZFC.</p><p>The most famous independent statements: the <strong>Continuum Hypothesis</strong> (no cardinality between |N| and |R|), the <strong>Axiom of Choice</strong> itself (relative to ZF), <strong>Suslin's Hypothesis</strong> about the real line, and large cardinal axioms. These are not mere curiosities — they have real mathematical consequences.</p><p>Godel's theorems have profound implications beyond mathematics. In computer science, the <strong>Halting Problem</strong> (Turing, 1936) is closely related: there is no algorithm that can determine whether an arbitrary program will halt. Both results reveal fundamental <strong>limits of formal reasoning</strong>.</p><p>Far from being a defeat, incompleteness reveals the richness of mathematics. It means mathematical truth transcends any single formal system. New axioms (like large cardinal axioms) can settle previously undecidable questions, suggesting mathematics is an open-ended enterprise where foundational choices shape what truths we can access.</p>",
+        "mathExpressions": ["T \\nvdash \\varphi \\;\\text{and}\\; T \\nvdash \\neg\\varphi \\;\\Rightarrow\\; \\varphi \\text{ is independent of } T"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["st-q57", "st-q58", "st-q59", "st-q60", "st-q61", "st-q62", "st-q63", "st-q64"],
+    "puzzleId": null
+  }
+]

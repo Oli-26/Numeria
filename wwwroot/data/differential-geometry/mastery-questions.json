@@ -1,0 +1,216 @@
+[
+  {
+    "id": "mastery-dg-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Under Ricci flow ∂g/∂t = -2Ric(g), what happens to a round sphere S^n with initial radius r_0?",
+    "options": [
+      "It expands to infinite radius in finite time",
+      "It shrinks to a point in finite time",
+      "It remains a round sphere of constant radius",
+      "It deforms into an ellipsoid"
+    ],
+    "correctAnswer": "It shrinks to a point in finite time",
+    "explanation": "On a round sphere, Ric = (n-1)/r² · g, so the flow becomes ∂g/∂t = -2(n-1)/r² · g. The sphere remains round but with r(t)² = r_0² - 2(n-1)t, shrinking to a point at time T = r_0²/(2(n-1)). This is the canonical example of a finite-time singularity under Ricci flow.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The holonomy group of a Riemannian manifold with a Kähler metric is contained in U(n).",
+    "correctAnswer": "True",
+    "explanation": "By Berger's classification, a Kähler manifold has holonomy contained in U(n). This is because the Levi-Civita connection preserves both the metric and the complex structure, so parallel transport preserves the complex structure, restricting holonomy to unitary transformations.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Gauss-Bonnet theorem states that for a compact oriented surface without boundary, ∫_M K dA = 2π·χ(M). What is ∫_M K dA for a genus-2 surface?",
+    "acceptableAnswers": ["-4π", "-4pi", "-4*pi"],
+    "correctAnswer": "-4π",
+    "explanation": "For a genus-g surface, χ(M) = 2 - 2g. For g=2, χ = 2 - 4 = -2. By Gauss-Bonnet, ∫K dA = 2π(-2) = -4π. This means a genus-2 surface must have regions of negative curvature that dominate.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-4",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about characteristic classes.",
+    "steps": [
+      "Let E → M be a complex vector bundle of rank n over a compact manifold M.",
+      "The total Chern class is c(E) = 1 + c_1(E) + c_2(E) + ... + c_n(E).",
+      "The Chern classes are topological invariants of the bundle E.",
+      "For the tangent bundle of CP^n, c(TCP^n) = (1+h)^n where h is the hyperplane class.",
+      "Therefore c_1(TCP^n) = nh, which shows CP^n has positive first Chern class for all n."
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong. The correct formula is c(TCP^n) = (1+h)^{n+1}, not (1+h)^n. This is because TCP^n arises from the Euler sequence 0 → O → O(1)^{n+1} → TCP^n → 0, giving c(TCP^n) = c(O(1))^{n+1} = (1+h)^{n+1}. So c_1 = (n+1)h.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-dg-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Atiyah-Singer index theorem for the Dirac operator on a 4-dimensional spin manifold M gives ind(D) = ?",
+    "options": [
+      "χ(M)/2 (half the Euler characteristic)",
+      "-σ(M)/8 (negative one-eighth the signature)",
+      "∫_M p_1/3 (one-third the first Pontryagin class)",
+      "c_1(M)²/12 (related to the first Chern class)"
+    ],
+    "correctAnswer": "-σ(M)/8 (negative one-eighth the signature)",
+    "explanation": "For the Dirac operator on a closed spin 4-manifold, the index theorem gives ind(D) = -σ(M)/8 = -(1/8)∫_M p_1(M)/3 where σ is the signature. This is the Â-genus in dimension 4. The integrality of ind(D) implies Rokhlin's theorem: the signature of a spin 4-manifold is divisible by 16.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-6",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each holonomy group (from Berger's classification) with its corresponding geometry.",
+    "pairs": [
+      {"left": "SU(n)", "right": "Calabi-Yau manifold"},
+      {"left": "Sp(n)", "right": "Hyperkähler manifold"},
+      {"left": "G_2", "right": "Exceptional holonomy in 7 dimensions"},
+      {"left": "Spin(7)", "right": "Exceptional holonomy in 8 dimensions"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Berger's classification lists all possible irreducible holonomy groups of non-symmetric Riemannian manifolds. SU(n) ⊂ U(n) corresponds to Ricci-flat Kähler (Calabi-Yau). Sp(n) gives hyperkähler geometry. G_2 and Spin(7) are the two exceptional cases in dimensions 7 and 8 respectively.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-7",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of the proof that parallel transport around a small loop yields a rotation proportional to the curvature.",
+    "steps": [
+      "Consider a small parallelogram on a surface spanned by tangent vectors u and v, with area ε².",
+      "Parallel transport a vector w along the four sides of the parallelogram.",
+      "Compute the covariant derivatives: the change from transporting along u then v versus v then u.",
+      "The difference is [∇_u, ∇_v]w - ∇_{[u,v]}w = R(u,v)w, the Riemann curvature.",
+      "For the parallelogram, [u,v]=0, so the holonomy is R(u,v)w · ε² to leading order.",
+      "Therefore the angle of rotation of w after going around the loop equals K · (area) for a surface, where K is Gaussian curvature."
+    ],
+    "correctAnswer": null,
+    "explanation": "The Ambrose-Singer theorem generalizes this: the Lie algebra of the holonomy group is generated by all curvature endomorphisms R(u,v). For surfaces, curvature is a scalar (Gaussian curvature K), and the holonomy angle around a small loop of area A is approximately K·A.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-dg-8",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Every compact 3-manifold with positive Ricci curvature is diffeomorphic to a spherical space form S³/Γ.",
+    "correctAnswer": "True",
+    "explanation": "Hamilton (1982) proved that Ricci flow on a compact 3-manifold with positive Ricci curvature converges (after rescaling) to a metric of constant positive sectional curvature. By the classification of space forms, such manifolds are S³/Γ for some finite group Γ ⊂ SO(4) acting freely.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-9",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The Euler class of the tangent bundle of S² integrates to give the Euler characteristic. What is ∫_{S²} e(TS²)?",
+    "acceptableAnswers": ["2"],
+    "correctAnswer": "2",
+    "explanation": "By the Gauss-Bonnet theorem (or equivalently, the fact that ∫_M e(TM) = χ(M)), ∫_{S²} e(TS²) = χ(S²) = 2. The Euler class is the top-dimensional characteristic class that directly computes the Euler characteristic via integration.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "What does the Chern-Gauss-Bonnet theorem state for a compact 4-manifold M without boundary?",
+    "options": [
+      "χ(M) = (1/8π²) ∫_M (|Riem|² - 4|Ric|² + R²) dvol",
+      "χ(M) = (1/8π²) ∫_M (|W|² - 2|Ric₀|² + R²/6) dvol",
+      "χ(M) = (1/4π²) ∫_M Pf(Ω) where Pf is the Pfaffian of the curvature form",
+      "χ(M) = (1/2π) ∫_M K dvol where K is the sectional curvature"
+    ],
+    "correctAnswer": "χ(M) = (1/4π²) ∫_M Pf(Ω) where Pf is the Pfaffian of the curvature form",
+    "explanation": "The Chern-Gauss-Bonnet theorem in any even dimension 2n states χ(M) = (1/(2π)^n) ∫_M Pf(Ω), where Pf(Ω) is the Pfaffian of the curvature 2-form matrix. In dimension 4, this gives the (4π²) normalization. The other formulas involving |W|², |Ric₀|² are equivalent expansions in dimension 4.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-11",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about Ricci flow singularities.",
+    "steps": [
+      "Consider Ricci flow on a compact 3-manifold M.",
+      "If a singularity forms at time T, the curvature blows up: max|Rm| → ∞ as t → T.",
+      "We rescale the metric near the singularity to obtain a blow-up limit.",
+      "By Hamilton's compactness theorem, the blow-up limit is a complete Ricci soliton.",
+      "All 3D Ricci solitons are quotients of S³, S²×R, or R³.",
+      "Therefore all singularities are removable and Ricci flow can always be continued smoothly."
+    ],
+    "correctAnswer": "6",
+    "explanation": "Step 6 is wrong. While the singularity models are well-understood, singularities are NOT simply removable. Perelman's key contribution was surgery: one must cut out singular regions and cap them off with standard pieces. The flow cannot be continued smoothly through a singularity — that's precisely why Ricci flow with surgery was needed for the Poincaré conjecture proof.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-dg-12",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each characteristic class with the type of bundle it is defined for.",
+    "pairs": [
+      {"left": "Chern classes c_k", "right": "Complex vector bundles"},
+      {"left": "Pontryagin classes p_k", "right": "Real vector bundles"},
+      {"left": "Stiefel-Whitney classes w_k", "right": "Real vector bundles (mod 2 cohomology)"},
+      {"left": "Euler class e", "right": "Oriented real vector bundles of even rank"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Chern classes live in H^{2k}(M;Z) for complex bundles. Pontryagin classes live in H^{4k}(M;Z) for real bundles (defined via complexification). Stiefel-Whitney classes live in H^k(M;Z/2). The Euler class requires orientation and lives in H^n(M;Z) for rank-n bundles.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-13",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "A flat Riemannian manifold (zero curvature everywhere) must have trivial holonomy group.",
+    "correctAnswer": "False",
+    "explanation": "A flat manifold has trivial LOCAL holonomy (contractible loops give trivial transport), but the GLOBAL holonomy group can be nontrivial. For example, the flat torus R²/Z² has trivial holonomy, but a flat Klein bottle has holonomy Z/2. The (restricted) holonomy group Hol⁰ is trivial for flat manifolds, but the full holonomy group Hol can detect the fundamental group.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-14",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The index of the de Rham operator d + d* on a compact manifold M equals the Euler characteristic. For M = CP², what is this index?",
+    "acceptableAnswers": ["3"],
+    "correctAnswer": "3",
+    "explanation": "χ(CP²) = 1 + 0 + 1 + 0 + 1 = 3 (the Betti numbers are b_0=1, b_1=0, b_2=1, b_3=0, b_4=1). By the Atiyah-Singer index theorem applied to the de Rham complex, ind(d+d*) = Σ(-1)^k b_k = χ(CP²) = 3.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-dg-15",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the key steps showing that a manifold with holonomy SU(n) ⊂ U(n) must be Ricci-flat.",
+    "steps": [
+      "The holonomy group is contained in SU(n) ⊂ U(n), meaning parallel transport preserves a complex volume form Ω.",
+      "Since Ω is parallel (∇Ω = 0), the connection preserves the determinant of the frame bundle.",
+      "The Ricci form ρ represents the curvature of the canonical (determinant) line bundle det(T^{1,0}M).",
+      "A parallel section of the canonical bundle means this line bundle is flat, so its curvature vanishes.",
+      "Therefore ρ = 0, which means Ric(g) = 0: the manifold is Ricci-flat.",
+      "This is the converse direction of Yau's theorem: SU(n) holonomy implies Calabi-Yau (Ricci-flat Kähler)."
+    ],
+    "correctAnswer": null,
+    "explanation": "The key insight is that SU(n) holonomy means the canonical bundle admits a parallel section (a nowhere-vanishing holomorphic volume form). This forces the Ricci curvature to vanish because the Ricci form equals the curvature of the canonical bundle. Yau's theorem provides the converse: given vanishing first Chern class, a Ricci-flat Kähler metric exists.",
+    "xpReward": 50
+  }
+]

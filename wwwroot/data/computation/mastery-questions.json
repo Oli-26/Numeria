@@ -1,0 +1,174 @@
+[
+  {
+    "id": "mastery-comp-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which of the following languages is NOT recognizable by a deterministic finite automaton?",
+    "options": ["All strings over {a,b} with even length", "All strings over {a,b} ending in 'ab'", "All strings of the form a^n b^n", "All strings containing the substring 'bab'"],
+    "correctAnswer": "All strings of the form a^n b^n",
+    "explanation": "a^n b^n requires counting -- matching the number of a's to b's. DFAs have finite memory (fixed states), so they cannot count arbitrarily. The Pumping Lemma for regular languages formally proves this. The other three languages are regular and can be recognized by simple DFAs.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-2",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Church-Turing thesis states that:",
+    "options": ["Every problem can be solved by a Turing machine", "Turing machines are faster than real computers", "Any effectively computable function can be computed by a Turing machine", "Lambda calculus is more powerful than Turing machines"],
+    "correctAnswer": "Any effectively computable function can be computed by a Turing machine",
+    "explanation": "The Church-Turing thesis is not a theorem but a hypothesis: any function that can be computed by any reasonable model of computation can also be computed by a Turing machine. It does NOT say every problem is solvable (the Halting Problem isn't), and lambda calculus has exactly the same power as Turing machines.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-3",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The key insight of Turing's proof that the Halting Problem is undecidable is:",
+    "options": ["Turing machines are too slow", "A self-referential paradox: a machine that decides halting leads to contradiction when applied to itself", "There are too many programs to check", "The halting problem requires infinite memory"],
+    "correctAnswer": "A self-referential paradox: a machine that decides halting leads to contradiction when applied to itself",
+    "explanation": "Turing constructs a machine H that supposedly decides halting. Then he builds D that uses H on itself and does the opposite: if H says D halts, D loops; if H says D loops, D halts. Running D on D creates a contradiction either way. This diagonal/self-referential argument is the same structure as Cantor's diagonal argument and Godel's incompleteness proof.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-4",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "If P = NP, which of the following would be a consequence?",
+    "options": ["All problems become easy to solve", "Public-key cryptography (RSA) would be broken", "The Halting Problem would become decidable", "Quantum computers would be unnecessary"],
+    "correctAnswer": "Public-key cryptography (RSA) would be broken",
+    "explanation": "RSA relies on factoring being hard (not in P). If P=NP, factoring would be polynomial-time, breaking RSA. However, P=NP does NOT make the Halting Problem decidable (that's undecidable regardless of complexity classes) and doesn't mean ALL problems are easy -- only NP problems. Quantum computers solve different problems than P=NP addresses.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Shannon's Source Coding Theorem says that the minimum average bits per symbol for lossless compression is:",
+    "options": ["Always 1 bit", "The logarithm of the alphabet size", "The Shannon entropy H", "The number of unique symbols"],
+    "correctAnswer": "The Shannon entropy H",
+    "explanation": "Shannon proved that no lossless compression scheme can do better than H = -sum(p_i * log2(p_i)) bits per symbol on average, and that schemes exist achieving arbitrarily close to this limit. Huffman coding and arithmetic coding approach this bound. Entropy measures the inherent information content -- you can't compress below it without losing information.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-6",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Rice's theorem implies that it is undecidable whether a given program computes the factorial function.",
+    "correctAnswer": "True",
+    "explanation": "Rice's theorem states that ANY non-trivial semantic property of programs is undecidable. 'Computes the factorial' is a non-trivial property (some programs do, some don't), so it's undecidable. You cannot write a program that reliably determines whether another program computes factorials for all inputs.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-7",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Hamming codes can:",
+    "options": ["Detect any number of errors", "Correct 1-bit errors and detect 2-bit errors", "Compress data losslessly", "Encrypt data securely"],
+    "correctAnswer": "Correct 1-bit errors and detect 2-bit errors",
+    "explanation": "Hamming(7,4) codes add 3 parity bits to 4 data bits, enabling single-error correction (SEC) and double-error detection (DED). They cannot handle 3+ bit errors. This is the code used in ECC RAM. Reed-Solomon codes (used in CDs and QR codes) can correct burst errors of multiple symbols.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Lambda calculus and Turing machines are:",
+    "options": ["Lambda calculus is strictly more powerful", "Turing machines are strictly more powerful", "Equivalent in computational power", "Incomparable -- they solve different problems"],
+    "correctAnswer": "Equivalent in computational power",
+    "explanation": "Church and Turing independently proved that lambda calculus and Turing machines compute exactly the same class of functions. Any function computable by one is computable by the other. This equivalence, along with other models (recursive functions, Post systems), strengthens the Church-Turing thesis: all reasonable models of computation are equivalent.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-9",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this complexity theory argument:",
+    "steps": ["SAT is NP-complete (Cook's theorem)", "If we find a polynomial-time algorithm for SAT, then P = NP", "Nobody has found such an algorithm in 50 years", "Therefore P != NP", "So no NP-complete problem can be solved efficiently"],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong. The failure to find a polynomial algorithm doesn't prove none exists. Absence of evidence is not evidence of absence. P vs NP is OPEN -- we don't know the answer. Most experts believe P != NP, but it remains unproven. This is the most important open question in computer science.",
+    "xpReward": 45
+  },
+  {
+    "id": "mastery-comp-10",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each computational model to its key feature:",
+    "pairs": [
+      {"left": "DFA", "right": "Finite states, no auxiliary memory"},
+      {"left": "Pushdown automaton", "right": "Finite states plus a stack"},
+      {"left": "Turing machine", "right": "Finite states plus infinite tape"}
+    ],
+    "correctAnswer": null,
+    "explanation": "The Chomsky hierarchy: DFAs recognize regular languages, PDAs recognize context-free languages, and Turing machines recognize recursively enumerable languages. Each step adds memory: no memory -> stack -> infinite tape, expanding the class of recognizable languages.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-11",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "BQP (Bounded-error Quantum Polynomial time) is believed to relate to P and NP as:",
+    "options": ["BQP = P", "P subset BQP subset NP", "P subset BQP, but BQP is incomparable with NP", "BQP contains all of NP"],
+    "correctAnswer": "P subset BQP, but BQP is incomparable with NP",
+    "explanation": "Quantum computers can solve everything classical computers can (P is in BQP). Shor's algorithm (factoring) is in BQP but believed not in P. However, there's no proof that BQP contains all of NP -- quantum computers aren't believed to solve all NP-complete problems efficiently. BQP and NP likely overlap but neither contains the other.",
+    "xpReward": 45
+  },
+  {
+    "id": "mastery-comp-12",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Godel's First Incompleteness Theorem applies to any consistent formal system that can express basic arithmetic.",
+    "correctAnswer": "True",
+    "explanation": "Any consistent, recursively axiomatizable system that is strong enough to encode arithmetic (Peano arithmetic or stronger) is incomplete: there exist true statements about natural numbers that cannot be proven within the system. This includes ZFC set theory, type theory, and any extension. You can never escape incompleteness by adding more axioms (as long as the system remains consistent and effective).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-comp-13",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the Chomsky hierarchy from weakest to most powerful:",
+    "steps": [
+      "Regular languages (DFA/NFA/regex)",
+      "Context-free languages (pushdown automata/CFG)",
+      "Context-sensitive languages (linear-bounded automata)",
+      "Recursively enumerable languages (Turing machines)"
+    ],
+    "correctAnswer": null,
+    "explanation": "Each level strictly contains the previous: Regular is a subset of Context-Free is a subset of Context-Sensitive is a subset of Recursively Enumerable. This hierarchy, formalized by Noam Chomsky, is fundamental to formal language theory and compiler design.",
+    "xpReward": 45
+  },
+  {
+    "id": "mastery-comp-14",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Curry-Howard correspondence relates:",
+    "options": ["Algorithms and data structures", "Proofs and programs", "Complexity classes and logic", "Automata and grammars"],
+    "correctAnswer": "Proofs and programs",
+    "explanation": "The Curry-Howard correspondence (also called 'proofs as programs') establishes a deep isomorphism between mathematical proofs and computer programs: types correspond to propositions, programs correspond to proofs, and program evaluation corresponds to proof simplification. This is the foundation of proof assistants like Coq and Lean, and type systems in languages like Haskell and Rust.",
+    "xpReward": 45
+  },
+  {
+    "id": "mastery-comp-15",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The channel capacity theorem guarantees that communication with arbitrarily low error rate is possible as long as:",
+    "options": ["The channel has no noise", "The data rate is below the channel capacity", "You use binary encoding", "The message is shorter than 1 MB"],
+    "correctAnswer": "The data rate is below the channel capacity",
+    "explanation": "Shannon's noisy-channel coding theorem (1948) is one of the most surprising results in information theory: even on a noisy channel, you CAN achieve near-zero error rates, as long as your transmission rate R < C (the channel capacity). The theorem is existential -- it guarantees such codes exist but doesn't construct them. Finding practical codes approaching capacity (turbo codes, LDPC codes) took 50 more years.",
+    "xpReward": 45
+  }
+]

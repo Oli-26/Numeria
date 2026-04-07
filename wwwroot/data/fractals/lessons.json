@@ -1,0 +1,290 @@
+[
+  {
+    "id": "frac-01",
+    "topicId": "fractals",
+    "order": 1,
+    "title": "What Are Fractals?",
+    "description": "Self-similarity and infinite detail",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "frac-01-c1",
+        "title": "Self-Similarity: Patterns All the Way Down",
+        "contentHtml": "<p>A <strong>fractal</strong> is a shape that looks similar at every scale. Zoom in, and you see smaller copies of the whole shape. Zoom in again -- more copies.</p><p>This property is called <strong>self-similarity</strong>. Unlike a circle (which looks like a straight line when you zoom in), a fractal never smooths out. It has infinite detail at every magnification.</p><p>The word \"fractal\" was coined by Benoit Mandelbrot in 1975, from the Latin <em>fractus</em> meaning \"broken\" or \"fragmented.\"</p>",
+        "mathExpressions": [],
+        "visualizationType": "koch-snowflake",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "frac-01-c2",
+        "title": "Fractals in Nature",
+        "contentHtml": "<p>Nature is full of fractal-like structures:</p><p><strong>Coastlines:</strong> The coast of Britain looks jagged at every scale -- from satellite view to walking along it. Mandelbrot asked: \"How long is the coast of Britain?\" The answer depends on your ruler!</p><p><strong>Ferns:</strong> Each frond of a fern contains smaller fronds, which contain even smaller ones.<br><strong>Broccoli:</strong> Romanesco broccoli is a stunning natural fractal -- each bud is a miniature version of the whole.<br><strong>Lightning:</strong> Branching patterns repeat at smaller and smaller scales.<br><strong>Rivers:</strong> River networks branch like trees, with tributaries branching into sub-tributaries.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-01-c3",
+        "title": "Fractal Dimension",
+        "contentHtml": "<p>A line is 1-dimensional. A square is 2-dimensional. But a fractal can have a dimension <strong>between</strong> integers!</p><p>The <strong>fractal dimension</strong> measures how completely a fractal fills space. The Koch curve has dimension log(4)/log(3) ≈ 1.26 -- more than a line but less than a plane.</p><p>Intuitively: the Koch curve is \"too wiggly\" to be a line, but \"too thin\" to be a surface. Fractal dimension captures this precisely.</p>",
+        "mathExpressions": ["D = \\frac{\\log N}{\\log S}", "D_{\\text{Koch}} = \\frac{\\log 4}{\\log 3} \\approx 1.2619"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q01", "frac-q02", "frac-q03", "frac-q04", "frac-q05", "frac-q06", "frac-q07", "frac-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-02",
+    "topicId": "fractals",
+    "order": 2,
+    "title": "The Sierpinski Triangle",
+    "description": "Infinite removal, infinite beauty",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "frac-02-c1",
+        "title": "Construction: Remove the Middle",
+        "contentHtml": "<p>Start with a solid equilateral triangle. Find the midpoints of each side and connect them -- this creates 4 smaller triangles. <strong>Remove the middle one.</strong></p><p>Now repeat: for each of the 3 remaining triangles, find the midpoints, connect them, remove the middle. Repeat forever.</p><p>What remains is the <strong>Sierpinski triangle</strong> (or Sierpinski gasket) -- a fractal made of 3 copies of itself, each scaled to half size.</p>",
+        "mathExpressions": [],
+        "visualizationType": "sierpinski",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "frac-02-c2",
+        "title": "Three Ways to Build It",
+        "contentHtml": "<p>The Sierpinski triangle can be constructed in remarkably different ways that all give the same shape:</p><p><strong>1. Geometric removal:</strong> Start with a triangle, repeatedly remove midpoint triangles (as above).</p><p><strong>2. Chaos game:</strong> Pick a random point inside a triangle. Repeatedly jump halfway toward a randomly chosen vertex. The trail of points forms the Sierpinski triangle!</p><p><strong>3. Pascal's triangle mod 2:</strong> Write out Pascal's triangle and color odd numbers. The pattern of odd entries IS the Sierpinski triangle. This connection between algebra and geometry is deep and beautiful.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-02-c3",
+        "title": "Dimension of the Sierpinski Triangle",
+        "contentHtml": "<p>The Sierpinski triangle is made of <strong>3 copies</strong> of itself, each scaled by a factor of <strong>1/2</strong>.</p><p>For a normal shape, if you scale by 1/2 in D dimensions you get (1/2)^D = 1/N copies. So N = 2^D, which gives D = log(N)/log(2).</p><p>For the Sierpinski triangle: 3 = 2^D, so D = log(3)/log(2) ≈ <strong>1.585</strong>.</p><p>It has dimension between 1 and 2 -- more than a line, but it has zero area (we removed it all!). It fills space more than a curve but less than a surface.</p>",
+        "mathExpressions": ["D = \\frac{\\log 3}{\\log 2} \\approx 1.585"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q09", "frac-q10", "frac-q11", "frac-q12", "frac-q13", "frac-q14", "frac-q15", "frac-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-03",
+    "topicId": "fractals",
+    "order": 3,
+    "title": "The Mandelbrot Set",
+    "description": "The most famous fractal in mathematics",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "frac-03-c1",
+        "title": "The Iteration z → z² + c",
+        "contentHtml": "<p>The Mandelbrot set is defined by an astonishingly simple rule. For each complex number c, iterate:</p><p><strong>z₀ = 0, z₁ = z₀² + c, z₂ = z₁² + c, ...</strong></p><p>If the sequence stays bounded (never escapes to infinity), then c is <strong>in</strong> the Mandelbrot set. If it escapes, c is outside.</p><p>For example: c = 0 gives 0, 0, 0, ... (bounded -- in the set). c = 1 gives 0, 1, 2, 5, 26, ... (escapes -- not in the set). c = -1 gives 0, -1, 0, -1, ... (bounded -- in the set).</p>",
+        "mathExpressions": ["z_{n+1} = z_n^2 + c, \\quad z_0 = 0"],
+        "visualizationType": "mandelbrot-simple",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "frac-03-c2",
+        "title": "Escape Time and Coloring",
+        "contentHtml": "<p>Points outside the Mandelbrot set escape to infinity at different <strong>speeds</strong>. We can color them by how quickly they escape -- this produces the stunning images you have seen.</p><p>A key theorem: if |z| ever exceeds 2, the sequence will definitely escape to infinity. So we iterate up to some maximum and check whether |z| > 2.</p><p>Points that escape quickly are colored one way, points that take longer another, and points that never escape (the set itself) are colored black. This <strong>escape-time algorithm</strong> creates the iconic fractal imagery.</p>",
+        "mathExpressions": ["|z_n| > 2 \\implies \\text{sequence escapes}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-03-c3",
+        "title": "Infinite Complexity at the Boundary",
+        "contentHtml": "<p>The boundary of the Mandelbrot set is <strong>infinitely complex</strong>. No matter how far you zoom, you find new structures -- spirals, tendrils, miniature copies of the whole set (called \"mini-brots\").</p><p>The set is <strong>connected</strong> (one piece) but its boundary has infinite length. Its boundary has fractal dimension 2 -- as complicated as a boundary can possibly be!</p><p>Despite being generated by the simple rule z → z² + c, the Mandelbrot set contains more detail than any human could explore in a lifetime. It has been called \"the most complex object in mathematics.\"</p>",
+        "mathExpressions": ["\\dim(\\partial M) = 2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q17", "frac-q18", "frac-q19", "frac-q20", "frac-q21", "frac-q22", "frac-q23", "frac-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-04",
+    "topicId": "fractals",
+    "order": 4,
+    "title": "Julia Sets",
+    "description": "One constant, infinite variety",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "frac-04-c1",
+        "title": "Julia Sets: Varying the Starting Point",
+        "contentHtml": "<p>While the Mandelbrot set fixes z₀ = 0 and varies c, a <strong>Julia set</strong> does the opposite: it fixes c and varies the starting point z₀.</p><p>For a given c, the <strong>filled Julia set</strong> K_c is the set of all z₀ values whose orbits under z → z² + c stay bounded.</p><p>Each value of c gives a completely different Julia set. Some are connected, lacy patterns. Others are disconnected clouds of points called <strong>Fatou dust</strong>. The variety is breathtaking.</p>",
+        "mathExpressions": ["K_c = \\{z_0 \\in \\mathbb{C} : z_{n+1} = z_n^2 + c \\text{ stays bounded}\\}"],
+        "visualizationType": "julia-set",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "frac-04-c2",
+        "title": "Connected vs. Disconnected",
+        "contentHtml": "<p><strong>Fatou's theorem</strong> gives a beautiful dichotomy: for each c, the Julia set is either <strong>completely connected</strong> (one piece) or <strong>totally disconnected</strong> (a Cantor-like dust of infinitely many points, none touching).</p><p>There is nothing in between -- no Julia set has exactly 2 pieces, or 17 pieces. It is all or nothing!</p><p>Famous connected Julia sets: c = -0.7 + 0.27i (a swirling dragon), c = -0.123 + 0.745i (the \"Douady rabbit\" with three-fold symmetry), c = -1 (the basilica, shaped like linked circles).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-04-c3",
+        "title": "The Mandelbrot-Julia Connection",
+        "contentHtml": "<p>There is a profound relationship between the Mandelbrot set and Julia sets:</p><p><strong>c is in the Mandelbrot set if and only if the Julia set for c is connected.</strong></p><p>So the Mandelbrot set is a \"map\" of all Julia sets! Each point in the Mandelbrot set corresponds to a connected Julia set. Each point outside corresponds to a disconnected one (Fatou dust).</p><p>Points near the boundary of the Mandelbrot set give the most intricate Julia sets. The Mandelbrot set is, in a deep sense, an index of all possible Julia sets.</p>",
+        "mathExpressions": ["c \\in M \\iff K_c \\text{ is connected}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q25", "frac-q26", "frac-q27", "frac-q28", "frac-q29", "frac-q30", "frac-q31", "frac-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-05",
+    "topicId": "fractals",
+    "order": 5,
+    "title": "Chaos Theory",
+    "description": "Deterministic yet unpredictable",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "frac-05-c1",
+        "title": "Deterministic but Unpredictable",
+        "contentHtml": "<p><strong>Chaos</strong> is one of the most surprising discoveries in mathematics: simple, deterministic rules can produce behavior that is effectively unpredictable.</p><p>A chaotic system has no randomness -- given exact initial conditions, the future is completely determined. But <strong>sensitive dependence on initial conditions</strong> means that tiny differences in starting values grow exponentially over time.</p><p>Two trajectories starting 0.0001 apart can end up completely different after enough iterations. Since we can never measure initial conditions with infinite precision, long-term prediction becomes impossible.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-05-c2",
+        "title": "The Butterfly Effect",
+        "contentHtml": "<p>In 1963, meteorologist <strong>Edward Lorenz</strong> discovered chaos by accident. Running a weather simulation, he re-entered a value rounded from 0.506127 to 0.506. The tiny difference -- 0.000127 -- led to completely different weather!</p><p>He famously asked: \"Does the flap of a butterfly's wings in Brazil set off a tornado in Texas?\" This became known as the <strong>butterfly effect</strong>.</p><p>Lorenz's discovery shook science: it showed that even perfect physical laws cannot guarantee long-term prediction. Weather forecasts become unreliable beyond about 10 days, not because of bad models, but because of chaos itself.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-05-c3",
+        "title": "The Logistic Map: Simple Rule, Complex Behavior",
+        "contentHtml": "<p>The <strong>logistic map</strong> is perhaps the simplest chaotic system:</p><p><strong>x_{n+1} = r * x_n * (1 - x_n)</strong></p><p>This models population growth: x is the population (between 0 and 1), and r is the growth rate. Despite its simplicity, this one equation produces an astonishing range of behavior:</p><p>For r < 3: the population settles to a stable value.<br>For r ≈ 3.45: it oscillates between 2 values.<br>For r ≈ 3.54: it oscillates between 4 values.<br>For r ≈ 3.57 and beyond: <strong>chaos</strong> -- the population bounces unpredictably forever.</p>",
+        "mathExpressions": ["x_{n+1} = r \\cdot x_n(1 - x_n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q33", "frac-q34", "frac-q35", "frac-q36", "frac-q37", "frac-q38", "frac-q39", "frac-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-06",
+    "topicId": "fractals",
+    "order": 6,
+    "title": "The Logistic Map",
+    "description": "Period doubling to chaos",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "frac-06-c1",
+        "title": "Period Doubling Cascade",
+        "contentHtml": "<p>As r increases in the logistic map x → rx(1-x), the system undergoes a remarkable sequence of <strong>period-doubling bifurcations</strong>:</p><p>At r ≈ 3.0: the stable fixed point splits into a <strong>2-cycle</strong> (oscillation between two values).<br>At r ≈ 3.449: the 2-cycle splits into a <strong>4-cycle</strong>.<br>At r ≈ 3.544: the 4-cycle becomes an <strong>8-cycle</strong>.<br>The doublings come faster and faster, accumulating at r ≈ 3.5699...</p><p>Beyond this accumulation point lies <strong>chaos</strong> -- but with surprising \"windows\" of order where periodic behavior briefly returns.</p>",
+        "mathExpressions": [],
+        "visualizationType": "logistic-map",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "frac-06-c2",
+        "title": "Feigenbaum's Universal Constant",
+        "contentHtml": "<p>In 1975, Mitchell <strong>Feigenbaum</strong> discovered something astonishing. The ratio of successive bifurcation intervals converges to a universal constant:</p><p><strong>δ ≈ 4.6692016091...</strong></p><p>Each period-doubling happens roughly 4.669 times faster than the previous one. The stunning part: this same constant appears in <strong>every</strong> system that undergoes period doubling -- not just the logistic map!</p><p>Feigenbaum's constant is as fundamental as π or e. It appears in fluid dynamics, electronic circuits, lasers, and chemical reactions. It is a universal law of the route to chaos.</p>",
+        "mathExpressions": ["\\delta = \\lim_{n \\to \\infty} \\frac{r_{n} - r_{n-1}}{r_{n+1} - r_n} \\approx 4.6692"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-06-c3",
+        "title": "The Bifurcation Diagram",
+        "contentHtml": "<p>The <strong>bifurcation diagram</strong> plots the long-term behavior of the logistic map for each value of r. It is one of the most famous images in all of mathematics.</p><p>On the left (small r): a single line showing the stable fixed point. Then the line forks into two (period-2), then four, then eight... The forkings accumulate into a region of chaos -- a dense cloud of points.</p><p>But look carefully within the chaos: there are <strong>windows of order</strong>! At r ≈ 3.83, a period-3 cycle suddenly appears. The mathematician Li and Yorke proved: \"Period three implies chaos\" -- if a system has a 3-cycle, it has cycles of every period.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q41", "frac-q42", "frac-q43", "frac-q44", "frac-q45", "frac-q46", "frac-q47", "frac-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-07",
+    "topicId": "fractals",
+    "order": 7,
+    "title": "Strange Attractors",
+    "description": "Order hidden within chaos",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "frac-07-c1",
+        "title": "The Lorenz Attractor",
+        "contentHtml": "<p>When Lorenz modeled atmospheric convection, he discovered that the trajectories of his system trace out a beautiful butterfly-shaped object in 3D space: the <strong>Lorenz attractor</strong>.</p><p>A <strong>strange attractor</strong> is a set toward which a chaotic system evolves over time. No matter where you start, the trajectory is pulled toward the attractor -- but once there, it wanders chaotically, never exactly repeating.</p><p>The Lorenz attractor has two \"wings.\" The trajectory spirals around one wing, then unpredictably switches to the other, then back -- like a butterfly's wings. The exact sequence of switches is chaotic.</p>",
+        "mathExpressions": ["\\frac{dx}{dt} = \\sigma(y-x), \\quad \\frac{dy}{dt} = x(\\rho-z)-y, \\quad \\frac{dz}{dt} = xy - \\beta z"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-07-c2",
+        "title": "Fractal Dimension of Attractors",
+        "contentHtml": "<p>Strange attractors have <strong>fractal dimension</strong>. The Lorenz attractor has dimension ≈ 2.06 -- slightly more than a surface, because the trajectory folds and stretches in complex ways.</p><p>This fractal structure arises from <strong>stretching and folding</strong>: the dynamics stretch nearby trajectories apart (chaos) while folding them back into a bounded region (the attractor). This is like kneading dough -- pulling apart and folding over creates layers within layers.</p><p>The fractal dimension tells us the effective number of degrees of freedom in the chaotic system. A dimension of 2.06 means the attractor almost fills a surface but has a finely layered internal structure.</p>",
+        "mathExpressions": ["D_{\\text{Lorenz}} \\approx 2.06"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-07-c3",
+        "title": "More Strange Attractors",
+        "contentHtml": "<p>The <strong>Hénon map</strong> is a 2D map: x → 1 - ax² + y, y → bx. With a = 1.4, b = 0.3, it produces a strange attractor with dimension ≈ 1.26 -- a fractal curve made of infinitely many nested curves.</p><p>The <strong>Rössler attractor</strong> is simpler than Lorenz's: it has a single spiral that folds back on itself. It helped scientists understand how stretching and folding generate chaos.</p><p>Strange attractors appear everywhere in nature: turbulent fluid flows, heart rhythms, population dynamics, and even the orbit of Pluto (which is technically chaotic, though stable for billions of years).</p>",
+        "mathExpressions": ["\\text{H\\'{e}non: } x_{n+1} = 1 - ax_n^2 + y_n, \\quad y_{n+1} = bx_n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q49", "frac-q50", "frac-q51", "frac-q52", "frac-q53", "frac-q54", "frac-q55", "frac-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "frac-08",
+    "topicId": "fractals",
+    "order": 8,
+    "title": "Fractals in Science & Art",
+    "description": "From antennas to Jackson Pollock",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "frac-08-c1",
+        "title": "L-Systems: Growing Fractals with Grammar",
+        "contentHtml": "<p><strong>Lindenmayer systems</strong> (L-systems) model plant growth using simple grammar rules. Start with a string (axiom) and repeatedly apply substitution rules.</p><p>Example -- a simple tree:<br>Axiom: F<br>Rule: F → F[+F]F[-F]F</p><p>Interpret F as \"draw forward,\" + as \"turn left,\" - as \"turn right,\" [ as \"save position,\" ] as \"restore position.\" After a few iterations, this produces realistic branching trees!</p><p>L-systems can generate ferns, flowers, shrubs, and even entire ecosystems. They show that <strong>complex organic forms arise from simple recursive rules</strong>.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-08-c2",
+        "title": "Fractal Technology",
+        "contentHtml": "<p><strong>Fractal antennas</strong> exploit self-similarity to operate at multiple frequencies simultaneously. Your cell phone likely contains a fractal antenna -- its branching shape lets it receive calls, WiFi, Bluetooth, and GPS with a single compact component.</p><p><strong>Fractal compression</strong> stores images by finding self-similar patterns. Instead of storing every pixel, it stores the transformations that generate the image. This can achieve very high compression ratios for natural images.</p><p>Fractals also appear in <strong>computer graphics</strong> (generating realistic mountains, clouds, and coastlines), <strong>medicine</strong> (analyzing blood vessel branching and lung structure), and <strong>finance</strong> (modeling stock market fluctuations).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "frac-08-c3",
+        "title": "Fractals, Art, and Deep Mathematics",
+        "contentHtml": "<p>Studies of <strong>Jackson Pollock's</strong> drip paintings found that they have fractal dimension, ranging from about 1.1 in his early works to 1.7 in later ones. His technique of dripping and splattering naturally created multi-scale patterns.</p><p>The <strong>Cantor set</strong> -- formed by repeatedly removing the middle third of a line segment -- connects fractals to deep number theory. It has dimension log(2)/log(3) ≈ 0.631 and is uncountably infinite despite having zero length!</p><p>Fractals reveal that <strong>complexity need not arise from complex rules</strong>. The Mandelbrot set comes from z → z² + c. The Sierpinski triangle comes from removing middles. Chaos comes from x → rx(1-x). Simple iteration, repeated endlessly, creates infinite beauty.</p>",
+        "mathExpressions": ["D_{\\text{Cantor}} = \\frac{\\log 2}{\\log 3} \\approx 0.631"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["frac-q57", "frac-q58", "frac-q59", "frac-q60", "frac-q61", "frac-q62", "frac-q63", "frac-q64"],
+    "puzzleId": null
+  }
+]

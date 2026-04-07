@@ -1,0 +1,290 @@
+[
+  {
+    "id": "de-01",
+    "topicId": "differential-equations",
+    "order": 1,
+    "title": "What is a Differential Equation?",
+    "description": "ODEs vs PDEs, order and degree, solutions and initial conditions, direction fields",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "de-01-c1",
+        "title": "Equations Involving Derivatives",
+        "contentHtml": "<p>A <strong>differential equation</strong> (DE) is an equation that relates a function to its derivatives. While an algebraic equation like x^2 - 5x + 6 = 0 asks \"which numbers satisfy this?\", a differential equation asks \"which <strong>functions</strong> satisfy this?\" For example, dy/dx = 2x asks: which function y(x) has a derivative equal to 2x? The answer is y = x^2 + C, an entire family of parabolas.</p><p>Differential equations are the language of change. Whenever a quantity's rate of change depends on the quantity itself, you get a DE. Newton's second law F = ma is really m(d^2x/dt^2) = F(x, dx/dt, t) — a differential equation. Population growth, radioactive decay, spring vibrations, heat flow, and electrical circuits are all governed by DEs.</p><p>An <strong>ordinary differential equation</strong> (ODE) involves a function of one variable and its ordinary derivatives: dy/dx, d^2y/dx^2, and so on. A <strong>partial differential equation</strong> (PDE) involves a function of several variables and its partial derivatives, like the heat equation du/dt = k(d^2u/dx^2). ODEs describe evolution along one axis; PDEs describe phenomena spread across space and time.</p>",
+        "mathExpressions": ["\\frac{dy}{dx} = 2x \\;\\Rightarrow\\; y = x^2 + C", "\\text{ODE: } \\frac{d^2 y}{dx^2} + y = 0 \\qquad \\text{PDE: } \\frac{\\partial u}{\\partial t} = k\\,\\frac{\\partial^2 u}{\\partial x^2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-01-c2",
+        "title": "Order, Degree, and Linearity",
+        "contentHtml": "<p>The <strong>order</strong> of a differential equation is the highest derivative that appears. For example, dy/dx + y = 0 is first-order, while d^2y/dx^2 + 3(dy/dx) + 2y = 0 is second-order. Order tells you the fundamental complexity of the equation: first-order DEs describe simple growth or decay, while second-order DEs can produce oscillations.</p><p>The <strong>degree</strong> of a DE is the power to which the highest-order derivative is raised (after clearing radicals and fractions of derivatives). For instance, (d^2y/dx^2)^3 + dy/dx = 0 has order 2 and degree 3. Most DEs encountered in practice have degree 1.</p><p>A DE is <strong>linear</strong> if the unknown function y and its derivatives appear only to the first power and are not multiplied together. The equation y'' + 3y' + 2y = sin(x) is linear, but y'' + y*y' = 0 is <strong>nonlinear</strong> because of the y*y' term. Linear DEs are far easier to solve because superposition applies: if y_1 and y_2 are solutions, so is c_1*y_1 + c_2*y_2. Nonlinear DEs can exhibit chaos, shocks, and other wild behavior that linear equations cannot.</p>",
+        "mathExpressions": ["\\text{Order 2, degree 1, linear: } y'' + 3y' + 2y = \\sin(x)", "\\text{Order 1, degree 1, nonlinear: } y' = y^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-01-c3",
+        "title": "Solutions, Initial Conditions, and Direction Fields",
+        "contentHtml": "<p>A <strong>solution</strong> to a DE is any function that, when substituted into the equation, makes it a true identity. The <strong>general solution</strong> contains arbitrary constants — one constant for each order. For the first-order equation dy/dx = 2x, the general solution y = x^2 + C is a one-parameter family of curves. For a second-order equation, you get two constants: y = c_1 cos(x) + c_2 sin(x).</p><p>An <strong>initial condition</strong> pins down the constants by specifying the value of y (and possibly its derivatives) at a particular point. The equation dy/dx = 2x with y(0) = 5 has the unique solution y = x^2 + 5. A DE together with initial conditions is called an <strong>initial value problem</strong> (IVP). The <strong>Picard-Lindelof theorem</strong> guarantees that, under mild conditions, an IVP has a unique solution.</p><p>A <strong>direction field</strong> (or slope field) is a visual tool for first-order ODEs. At each point (x, y) in the plane, you draw a short line segment with slope f(x, y), where dy/dx = f(x, y). The result looks like a field of tiny arrows that show how solutions flow. Actual solution curves thread through the field, always tangent to the arrows. Direction fields reveal qualitative behavior — equilibria, convergence, divergence — without solving the equation.</p>",
+        "mathExpressions": ["\\frac{dy}{dx} = f(x, y),\\quad y(x_0) = y_0 \\quad \\text{(initial value problem)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q01", "de-q02", "de-q03", "de-q04", "de-q05", "de-q06", "de-q07", "de-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-02",
+    "topicId": "differential-equations",
+    "order": 2,
+    "title": "First-Order ODEs",
+    "description": "Separable equations, integrating factors, exact equations, existence and uniqueness",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "de-02-c1",
+        "title": "Separable Equations",
+        "contentHtml": "<p>A first-order ODE dy/dx = f(x, y) is <strong>separable</strong> if f can be written as a product g(x)h(y), so that the variables can be moved to opposite sides of the equation. You rewrite dy/h(y) = g(x) dx and integrate both sides independently. This is the simplest and most intuitive solution method.</p><p>For example, dy/dx = 2xy is separable: dy/y = 2x dx. Integrating gives ln|y| = x^2 + C, so y = Ae^{x^2}. The technique works because you are treating dy/dx as a ratio of differentials and rearranging — a move that can be made rigorous using the chain rule.</p><p>Separable equations arise naturally in <strong>exponential growth and decay</strong> models. Radioactive decay satisfies dN/dt = -lambda*N, which separates to dN/N = -lambda dt, giving N(t) = N_0 e^{-lambda t}. Newton's law of cooling dT/dt = -k(T - T_env) can also be made separable by substituting u = T - T_env.</p>",
+        "mathExpressions": ["\\frac{dy}{dx} = g(x)\\,h(y) \\;\\Rightarrow\\; \\int \\frac{dy}{h(y)} = \\int g(x)\\,dx", "\\frac{dy}{dx} = 2xy \\;\\Rightarrow\\; y = A\\,e^{x^2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-02-c2",
+        "title": "Linear First-Order Equations and Integrating Factors",
+        "contentHtml": "<p>A <strong>linear first-order ODE</strong> has the standard form dy/dx + P(x)y = Q(x). The key idea is the <strong>integrating factor</strong> mu(x) = e^{integral of P(x) dx}. Multiplying the entire equation by mu converts the left side into the derivative of a product: d/dx[mu*y] = mu*Q.</p><p>Why does this work? Multiplying dy/dx + P(x)y by mu gives mu*dy/dx + mu*P*y. Since mu' = P*mu, this equals mu*dy/dx + mu'*y = d/dx[mu*y] by the product rule. So the trick is to find exactly the right multiplier that makes the left side a perfect derivative.</p><p>After multiplying, you integrate both sides: mu*y = integral of mu*Q dx + C. For example, dy/dx + (2/x)y = x has P = 2/x, so mu = e^{2 ln x} = x^2. Multiplying gives d/dx[x^2 y] = x^3, and integrating yields x^2 y = x^4/4 + C, so y = x^2/4 + C/x^2. The integrating factor method always works for linear first-order ODEs — it is a completely general technique.</p>",
+        "mathExpressions": ["\\frac{dy}{dx} + P(x)\\,y = Q(x), \\quad \\mu(x) = e^{\\int P(x)\\,dx}", "\\mu\\,y = \\int \\mu\\,Q\\,dx + C"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-02-c3",
+        "title": "Exact Equations and Existence & Uniqueness",
+        "contentHtml": "<p>An equation M(x,y)dx + N(x,y)dy = 0 is <strong>exact</strong> if there exists a function F(x,y) such that dF/dx = M and dF/dy = N. In that case, the equation simply says dF = 0, so the solution is F(x,y) = C. The test for exactness is: dM/dy = dN/dx. This is just the condition that the mixed partial derivatives of F are equal.</p><p>To solve an exact equation, integrate M with respect to x to get F = integral of M dx + g(y), then determine g(y) by differentiating F with respect to y and setting it equal to N. For instance, (2xy + 3)dx + (x^2 + 4y)dy = 0 is exact since d(2xy+3)/dy = 2x = d(x^2+4y)/dx. Integrating gives F = x^2 y + 3x + 2y^2 = C.</p><p>The <strong>Picard-Lindelof theorem</strong> (also called the existence and uniqueness theorem) guarantees that the IVP y' = f(x,y), y(x_0) = y_0 has a unique local solution provided f and df/dy are continuous near (x_0, y_0). This is profound: it means that solution curves in the direction field never cross. If two curves met at a point, there would be two solutions through that point, violating uniqueness. The theorem breaks down when f has singularities — for example, y' = y^{2/3} through the origin has infinitely many solutions.</p>",
+        "mathExpressions": ["M\\,dx + N\\,dy = 0 \\text{ is exact iff } \\frac{\\partial M}{\\partial y} = \\frac{\\partial N}{\\partial x}", "\\text{Picard-Lindel\\\"of: } f,\\; \\frac{\\partial f}{\\partial y} \\text{ continuous near } (x_0,y_0) \\;\\Rightarrow\\; \\text{unique local solution}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q09", "de-q10", "de-q11", "de-q12", "de-q13", "de-q14", "de-q15", "de-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-03",
+    "topicId": "differential-equations",
+    "order": 3,
+    "title": "Second-Order Linear ODEs",
+    "description": "Homogeneous equations with constant coefficients, characteristic equation, undetermined coefficients, variation of parameters",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "de-03-c1",
+        "title": "Homogeneous Equations and the Characteristic Equation",
+        "contentHtml": "<p>A <strong>second-order linear homogeneous ODE with constant coefficients</strong> has the form ay'' + by' + cy = 0. The key insight is to guess y = e^{rx}. Substituting gives ar^2 e^{rx} + br e^{rx} + c e^{rx} = 0, and since e^{rx} is never zero, we can divide it out to get the <strong>characteristic equation</strong>: ar^2 + br + c = 0.</p><p>This quadratic has three cases. If the discriminant b^2 - 4ac > 0, there are two distinct real roots r_1 and r_2, and the general solution is y = c_1 e^{r_1 x} + c_2 e^{r_2 x}. If b^2 - 4ac = 0, there is a repeated root r, and the general solution is y = (c_1 + c_2 x)e^{rx} — the factor of x is needed to get a second independent solution.</p><p>The most interesting case is when b^2 - 4ac < 0, giving complex roots r = alpha +/- beta i. By Euler's formula, the general solution becomes y = e^{alpha x}(c_1 cos(beta x) + c_2 sin(beta x)). This is an <strong>oscillation</strong> modulated by exponential growth or decay. If alpha < 0, the oscillations die out (damped); if alpha = 0, they persist forever (undamped); if alpha > 0, they blow up. The simple harmonic oscillator y'' + omega^2 y = 0 has alpha = 0 and beta = omega, giving pure oscillation.</p>",
+        "mathExpressions": ["ay'' + by' + cy = 0 \\;\\Rightarrow\\; ar^2 + br + c = 0 \\quad \\text{(characteristic equation)}", "r = \\alpha \\pm \\beta i \\;\\Rightarrow\\; y = e^{\\alpha x}(c_1 \\cos \\beta x + c_2 \\sin \\beta x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-03-c2",
+        "title": "Undetermined Coefficients",
+        "contentHtml": "<p>For <strong>nonhomogeneous</strong> equations ay'' + by' + cy = g(x), the general solution is y = y_h + y_p, where y_h is the general solution of the homogeneous equation and y_p is any <strong>particular solution</strong> of the full equation. The method of <strong>undetermined coefficients</strong> finds y_p by guessing a form based on g(x).</p><p>The guesses follow a pattern: if g(x) is a polynomial, guess a polynomial of the same degree. If g(x) = e^{kx}, guess Ae^{kx}. If g(x) = sin(kx) or cos(kx), guess A cos(kx) + B sin(kx). If g(x) is a product of these, guess the product. Substitute the guess into the equation and solve for the unknown coefficients.</p><p>There is one subtlety: if your guess is already a solution of the homogeneous equation, you must multiply by x (or x^2 if it matches a double root). For example, y'' + y = sin(x) — since sin(x) is a homogeneous solution, you guess y_p = x(A cos x + B sin x) instead. This <strong>modification rule</strong> prevents the guess from being absorbed into y_h. Undetermined coefficients is fast and elegant, but it only works when g(x) is a combination of polynomials, exponentials, and sines/cosines.</p>",
+        "mathExpressions": ["ay'' + by' + cy = g(x) \\;\\Rightarrow\\; y = y_h + y_p", "g(x) = e^{kx} \\Rightarrow \\text{guess } y_p = Ae^{kx} \\;\\;(\\text{or } Axe^{kx} \\text{ if } e^{kx} \\in y_h)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-03-c3",
+        "title": "Variation of Parameters",
+        "contentHtml": "<p><strong>Variation of parameters</strong> is a more general method that works for any forcing function g(x), not just the special forms required by undetermined coefficients. The idea is to let the \"constants\" in the homogeneous solution vary: instead of y = c_1 y_1 + c_2 y_2, try y_p = u_1(x) y_1(x) + u_2(x) y_2(x), where u_1 and u_2 are unknown functions.</p><p>Substituting into the ODE and imposing the constraint u_1' y_1 + u_2' y_2 = 0 (to avoid second derivatives of u), you arrive at a system: u_1' y_1 + u_2' y_2 = 0 and u_1' y_1' + u_2' y_2' = g(x)/a. Solving by Cramer's rule involves the <strong>Wronskian</strong> W = y_1 y_2' - y_2 y_1'. As long as W is nonzero (which it is for linearly independent solutions), you can solve for u_1' and u_2' and integrate.</p><p>The formulas are u_1' = -y_2 g/(aW) and u_2' = y_1 g/(aW). This method is more work than undetermined coefficients, but it never fails. It also generalizes to higher-order equations. The Wronskian plays a central role: it is the determinant that measures the linear independence of solutions, and <strong>Abel's theorem</strong> shows that the Wronskian is either always zero or never zero on an interval.</p>",
+        "mathExpressions": ["u_1' = \\frac{-y_2\\,g(x)}{a\\,W}, \\quad u_2' = \\frac{y_1\\,g(x)}{a\\,W}, \\quad W = y_1 y_2' - y_2 y_1'"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q17", "de-q18", "de-q19", "de-q20", "de-q21", "de-q22", "de-q23", "de-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-04",
+    "topicId": "differential-equations",
+    "order": 4,
+    "title": "Systems of ODEs",
+    "description": "Matrix form, eigenvalue method, phase portraits, stability of equilibria",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "de-04-c1",
+        "title": "Writing Systems in Matrix Form",
+        "contentHtml": "<p>Many real-world problems involve several interacting quantities, each described by its own differential equation. A <strong>system of first-order ODEs</strong> looks like: dx/dt = ax + by, dy/dt = cx + dy. In matrix form, this becomes x' = Ax, where x is a vector of unknowns and A is a constant matrix.</p><p>Any higher-order ODE can be converted to a first-order system. For example, the second-order equation y'' + 3y' + 2y = 0 becomes the system x_1' = x_2, x_2' = -2x_1 - 3x_2 by setting x_1 = y and x_2 = y'. This is why the theory of systems is so powerful: it subsumes all higher-order linear ODEs as special cases.</p><p>The matrix formulation brings the full power of <strong>linear algebra</strong> to bear on differential equations. The solution involves the matrix exponential: x(t) = e^{At} x_0. The behavior of the system is entirely determined by the eigenvalues and eigenvectors of A. Coupled systems of springs, predator-prey models, and electrical networks with multiple loops all lead to systems of ODEs.</p>",
+        "mathExpressions": ["\\mathbf{x}' = A\\mathbf{x}, \\quad \\mathbf{x}(t) = e^{At}\\mathbf{x}_0", "A = \\begin{pmatrix} 0 & 1 \\\\ -2 & -3 \\end{pmatrix} \\;\\text{ encodes }\\; y'' + 3y' + 2y = 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-04-c2",
+        "title": "The Eigenvalue Method",
+        "contentHtml": "<p>To solve x' = Ax, we guess x = v e^{lambda t}, where v is a constant vector. Substituting gives lambda v e^{lambda t} = A v e^{lambda t}, so Av = lambda v. This is an <strong>eigenvalue problem</strong>: lambda must be an eigenvalue of A and v the corresponding eigenvector.</p><p>For a 2x2 matrix with distinct eigenvalues lambda_1 and lambda_2 and eigenvectors v_1 and v_2, the general solution is x(t) = c_1 v_1 e^{lambda_1 t} + c_2 v_2 e^{lambda_2 t}. Each eigenvector defines a direction along which the solution grows or decays exponentially. The constants c_1 and c_2 are determined by initial conditions.</p><p>Complex eigenvalues lambda = alpha +/- beta i produce oscillatory solutions, just as in the scalar case. The real part alpha governs growth or decay, while beta governs the frequency of oscillation. Repeated eigenvalues require <strong>generalized eigenvectors</strong>: if A has a repeated eigenvalue lambda with only one eigenvector v, the second solution is (v t + w) e^{lambda t}, where (A - lambda I)w = v.</p>",
+        "mathExpressions": ["A\\mathbf{v} = \\lambda\\mathbf{v} \\;\\Rightarrow\\; \\mathbf{x}(t) = c_1 \\mathbf{v}_1 e^{\\lambda_1 t} + c_2 \\mathbf{v}_2 e^{\\lambda_2 t}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-04-c3",
+        "title": "Phase Portraits and Stability",
+        "contentHtml": "<p>A <strong>phase portrait</strong> is a picture of solution trajectories in the x_1-x_2 plane (no time axis). It reveals the global behavior at a glance. The eigenvalues of A classify the portrait into several types at the origin (the equilibrium point where x' = 0).</p><p>If both eigenvalues are real and negative, all trajectories approach the origin: this is a <strong>stable node</strong>. If both are positive, trajectories fly away: an <strong>unstable node</strong>. If one is positive and one negative, trajectories approach along the stable eigenvector but escape along the unstable one, forming a <strong>saddle point</strong> — always unstable.</p><p>Complex eigenvalues produce spirals. If the real part is negative, solutions spiral inward: a <strong>stable spiral</strong> (spiral sink). If positive, they spiral outward: an <strong>unstable spiral</strong> (spiral source). If the real part is exactly zero, the trajectories are closed ellipses: a <strong>center</strong>. Stability is crucial in engineering: a bridge, circuit, or control system must have all eigenvalues in the left half-plane (negative real parts) to avoid catastrophic runaway behavior.</p>",
+        "mathExpressions": ["\\text{Stable: } \\operatorname{Re}(\\lambda_i) < 0 \\;\\forall i \\qquad \\text{Unstable: } \\exists\\, \\lambda_i \\text{ with } \\operatorname{Re}(\\lambda_i) > 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q25", "de-q26", "de-q27", "de-q28", "de-q29", "de-q30", "de-q31", "de-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-05",
+    "topicId": "differential-equations",
+    "order": 5,
+    "title": "Laplace Transforms",
+    "description": "Definition, basic transforms, solving IVPs, convolution theorem, step functions",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "de-05-c1",
+        "title": "The Laplace Transform and Its Basic Properties",
+        "contentHtml": "<p>The <strong>Laplace transform</strong> converts a function f(t) defined for t >= 0 into a function F(s) of a complex variable s, via the integral F(s) = integral from 0 to infinity of f(t) e^{-st} dt. The magic is that differentiation in the t-domain becomes multiplication in the s-domain: L{f'(t)} = sF(s) - f(0). This turns differential equations into algebraic equations.</p><p>Basic transforms include: L{1} = 1/s, L{t^n} = n!/s^{n+1}, L{e^{at}} = 1/(s-a), L{sin(bt)} = b/(s^2+b^2), and L{cos(bt)} = s/(s^2+b^2). The transform is linear: L{af + bg} = aF + bG. These are the building blocks from which more complex transforms are assembled.</p><p>The Laplace transform is particularly powerful because it <strong>automatically incorporates initial conditions</strong>. When you transform y'' + 3y' + 2y = f(t) with y(0) and y'(0) given, the initial values appear directly in the algebraic equation. There is no separate step to apply them. This makes it the preferred method in engineering, especially for circuits and control systems where initial states matter.</p>",
+        "mathExpressions": ["\\mathcal{L}\\{f(t)\\} = F(s) = \\int_0^\\infty f(t)\\,e^{-st}\\,dt", "\\mathcal{L}\\{f'(t)\\} = sF(s) - f(0), \\quad \\mathcal{L}\\{e^{at}\\} = \\frac{1}{s-a}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-05-c2",
+        "title": "Solving IVPs with Laplace Transforms",
+        "contentHtml": "<p>The workflow is elegant: (1) take the Laplace transform of both sides of the ODE, (2) solve the resulting algebraic equation for Y(s), (3) apply the <strong>inverse Laplace transform</strong> to recover y(t). Step 2 typically involves partial fraction decomposition to break Y(s) into simple pieces whose inverses are known.</p><p>For example, consider y'' + 5y' + 6y = 0, y(0) = 2, y'(0) = 3. Transforming gives s^2 Y - 2s - 3 + 5(sY - 2) + 6Y = 0, which simplifies to Y(s) = (2s + 13)/((s+2)(s+3)). Partial fractions: Y = 9/(s+2) - 7/(s+3). Inverting: y(t) = 9e^{-2t} - 7e^{-3t}.</p><p>The power of this method shines when the forcing function is discontinuous or impulsive. A sudden impact modeled by the Dirac delta delta(t - a) simply multiplies by e^{-as} in the s-domain. A switch that turns on at t = a is modeled by the <strong>Heaviside step function</strong> u(t-a), whose Laplace transform is e^{-as}/s. These discontinuities, which are extremely awkward with other methods, are handled effortlessly by Laplace transforms.</p>",
+        "mathExpressions": ["Y(s) = \\frac{2s+13}{(s+2)(s+3)} = \\frac{9}{s+2} - \\frac{7}{s+3} \\;\\Rightarrow\\; y(t) = 9e^{-2t} - 7e^{-3t}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-05-c3",
+        "title": "Convolution and Step Functions",
+        "contentHtml": "<p>The <strong>convolution</strong> of two functions f and g is defined as (f * g)(t) = integral from 0 to t of f(tau) g(t - tau) d(tau). The <strong>convolution theorem</strong> states that L{f * g} = F(s) G(s). Multiplication in the s-domain corresponds to convolution in the t-domain. This is the Laplace-domain analogue of the Fourier convolution theorem.</p><p>Convolution appears naturally in the theory of linear systems. If a system has <strong>impulse response</strong> h(t) (the output when the input is a delta function), then the output for any input f(t) is y(t) = (h * f)(t). The Laplace transform of h(t) is the <strong>transfer function</strong> H(s), and the output in the s-domain is simply Y(s) = H(s)F(s).</p><p>The <strong>Heaviside step function</strong> u(t - a) equals 0 for t < a and 1 for t >= a. The <strong>second shifting theorem</strong> states that L{f(t-a) u(t-a)} = e^{-as} F(s). This allows you to handle piecewise-defined forcing functions by expressing them as sums of shifted step functions. For instance, a force that is 1 on [0, 2] and 0 afterwards is f(t) = u(t) - u(t-2), with transform (1 - e^{-2s})/s.</p>",
+        "mathExpressions": ["(f * g)(t) = \\int_0^t f(\\tau)\\,g(t-\\tau)\\,d\\tau, \\quad \\mathcal{L}\\{f*g\\} = F(s)\\,G(s)", "\\mathcal{L}\\{f(t-a)\\,u(t-a)\\} = e^{-as}\\,F(s)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q33", "de-q34", "de-q35", "de-q36", "de-q37", "de-q38", "de-q39", "de-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-06",
+    "topicId": "differential-equations",
+    "order": 6,
+    "title": "Series Solutions & Special Functions",
+    "description": "Power series method, ordinary vs singular points, Bessel functions, Legendre polynomials",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "de-06-c1",
+        "title": "Power Series Solutions",
+        "contentHtml": "<p>When an ODE has non-constant coefficients, the characteristic equation method fails. The <strong>power series method</strong> assumes a solution of the form y = sum of a_n x^n from n=0 to infinity. You substitute this series (along with its derivatives) into the ODE, collect terms by powers of x, and set each coefficient to zero. This yields a <strong>recurrence relation</strong> for the coefficients a_n.</p><p>For example, Airy's equation y'' - xy = 0 has no closed-form solution in terms of elementary functions. But substituting y = sum a_n x^n leads to a recurrence: a_{n+2} = a_{n-1}/((n+2)(n+1)) for n >= 1. Starting from a_0 and a_1 (which are free), this generates all coefficients. The resulting two series are the <strong>Airy functions</strong> Ai(x) and Bi(x).</p><p>A point x_0 is an <strong>ordinary point</strong> of y'' + P(x)y' + Q(x)y = 0 if P and Q are analytic at x_0. Near an ordinary point, the power series method always produces two linearly independent solutions with radius of convergence at least as large as the distance to the nearest singularity of P or Q. This is guaranteed by the <strong>existence theorem for power series solutions</strong>.</p>",
+        "mathExpressions": ["y = \\sum_{n=0}^{\\infty} a_n x^n, \\quad \\text{substitute into ODE and match coefficients}", "y'' - xy = 0 \\;\\Rightarrow\\; a_{n+2} = \\frac{a_{n-1}}{(n+2)(n+1)} \\quad (n \\ge 1)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-06-c2",
+        "title": "Singular Points and the Frobenius Method",
+        "contentHtml": "<p>A point x_0 is a <strong>singular point</strong> if P(x) or Q(x) in y'' + P(x)y' + Q(x)y = 0 blows up there. A singular point is <strong>regular</strong> if (x - x_0)P and (x - x_0)^2 Q both remain bounded. Bessel's equation x^2 y'' + xy' + (x^2 - n^2)y = 0 has a regular singular point at x = 0.</p><p>At a regular singular point, the standard power series may fail, but the <strong>Frobenius method</strong> saves the day. You guess y = x^r sum a_n x^n = sum a_n x^{n+r}, where r is an unknown exponent. Substituting into the ODE, the lowest power of x yields the <strong>indicial equation</strong> for r. The roots r_1 and r_2 of the indicial equation determine the exponents of the two solutions.</p><p>If r_1 - r_2 is not an integer, you get two Frobenius series directly. If r_1 = r_2, the second solution involves a logarithmic term: y_2 = y_1 ln(x) + x^r sum b_n x^n. The Frobenius method is essential for the special functions of mathematical physics, all of which arise from ODEs with regular singular points.</p>",
+        "mathExpressions": ["y = \\sum_{n=0}^{\\infty} a_n x^{n+r}, \\quad \\text{indicial equation determines } r", "\\text{Regular singular point: } (x-x_0)P(x), \\; (x-x_0)^2 Q(x) \\text{ analytic}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-06-c3",
+        "title": "Bessel Functions and Legendre Polynomials",
+        "contentHtml": "<p><strong>Bessel functions</strong> J_n(x) solve Bessel's equation x^2 y'' + xy' + (x^2 - n^2)y = 0, which arises whenever you solve the wave or heat equation in cylindrical coordinates. J_0(x) looks like a decaying cosine: it oscillates with decreasing amplitude. The zeros of Bessel functions determine the resonant frequencies of a circular drumhead.</p><p><strong>Legendre polynomials</strong> P_n(x) solve Legendre's equation (1-x^2)y'' - 2xy' + n(n+1)y = 0 on [-1, 1]. They arise from separation of variables in spherical coordinates. The first few are P_0 = 1, P_1 = x, P_2 = (3x^2-1)/2, P_3 = (5x^3-3x)/2. They form an orthogonal basis on [-1, 1] and are used to expand functions as Legendre series.</p><p>These special functions are not exotic curiosities — they appear throughout physics and engineering. Bessel functions describe vibrations of circular membranes, electromagnetic wave propagation in cylindrical waveguides, and diffraction patterns. Legendre polynomials describe gravitational and electric multipole expansions, the shapes of electron orbitals, and the angular dependence of solutions to Laplace's equation in spheres. Mastering them is essential for applied mathematics.</p>",
+        "mathExpressions": ["x^2 y'' + xy' + (x^2 - n^2)y = 0 \\;\\Rightarrow\\; y = J_n(x) \\quad \\text{(Bessel function)}", "P_0=1,\\; P_1=x,\\; P_2=\\tfrac{1}{2}(3x^2-1),\\; P_3=\\tfrac{1}{2}(5x^3-3x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q41", "de-q42", "de-q43", "de-q44", "de-q45", "de-q46", "de-q47", "de-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-07",
+    "topicId": "differential-equations",
+    "order": 7,
+    "title": "Partial Differential Equations",
+    "description": "Classification, heat equation, wave equation, separation of variables",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "de-07-c1",
+        "title": "Classification of Second-Order PDEs",
+        "contentHtml": "<p>The general second-order linear PDE in two variables is Au_{xx} + 2Bu_{xy} + Cu_{yy} + (lower-order terms) = 0. Just as the discriminant classifies conics, the quantity B^2 - AC classifies PDEs into three types, each with fundamentally different behavior.</p><p>If B^2 - AC < 0, the PDE is <strong>elliptic</strong>. The prototype is <strong>Laplace's equation</strong> u_{xx} + u_{yy} = 0, which describes steady-state temperatures and electrostatic potentials. Elliptic PDEs have no \"time direction\" — solutions are smooth and determined by boundary values.</p><p>If B^2 - AC = 0, the PDE is <strong>parabolic</strong>. The prototype is the <strong>heat equation</strong> u_t = k u_{xx}, which describes diffusion. Information spreads instantly (infinite propagation speed) but solutions smooth out over time. If B^2 - AC > 0, the PDE is <strong>hyperbolic</strong>. The prototype is the <strong>wave equation</strong> u_{tt} = c^2 u_{xx}, which describes vibrations and wave propagation. Disturbances travel at finite speed c along characteristics. The classification determines which boundary/initial conditions are appropriate and what kinds of solutions to expect.</p>",
+        "mathExpressions": ["Au_{xx} + 2Bu_{xy} + Cu_{yy} + \\cdots = 0: \\quad B^2 - AC \\begin{cases} <0 & \\text{elliptic} \\\\ =0 & \\text{parabolic} \\\\ >0 & \\text{hyperbolic} \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-07-c2",
+        "title": "The Heat and Wave Equations",
+        "contentHtml": "<p>The <strong>heat equation</strong> u_t = k u_{xx} models how temperature in a rod evolves over time. The parameter k is the <strong>thermal diffusivity</strong>. Hot spots cool down and cold spots warm up as heat flows from high to low temperature. Solutions always become smoother over time — the heat equation is a smoothing operator. Even a jagged initial temperature profile quickly becomes smooth.</p><p>The <strong>wave equation</strong> u_{tt} = c^2 u_{xx} models vibrating strings, sound waves, and electromagnetic waves. Unlike the heat equation, the wave equation preserves shape: d'Alembert's solution u(x,t) = f(x-ct) + g(x+ct) shows that the solution is two traveling waves moving in opposite directions at speed c. There is no smoothing — a sharp pluck of a guitar string stays sharp.</p><p>The contrast is profound. Heat diffuses and dissipates energy; waves propagate and conserve energy. Heat equations need one initial condition (initial temperature); wave equations need two (initial displacement and initial velocity). These two equations, along with Laplace's equation, form the \"big three\" of classical PDEs and capture most of the physical phenomena described by second-order linear PDEs.</p>",
+        "mathExpressions": ["u_t = k\\,u_{xx} \\;\\text{(heat)}, \\quad u_{tt} = c^2\\,u_{xx} \\;\\text{(wave)}", "u(x,t) = f(x - ct) + g(x + ct) \\quad \\text{(d'Alembert's solution)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-07-c3",
+        "title": "Separation of Variables",
+        "contentHtml": "<p><strong>Separation of variables</strong> is the main technique for solving linear PDEs on bounded domains. The idea is to assume u(x,t) = X(x) T(t), a product of a function of x alone and a function of t alone. Substituting into the PDE and dividing through separates the equation into two ODEs, each in a single variable, linked by a <strong>separation constant</strong>.</p><p>For the heat equation u_t = k u_{xx} on [0, L] with u(0,t) = u(L,t) = 0, you get T'/T = kX''/X = -lambda. The X equation X'' + lambda X = 0 with X(0) = X(L) = 0 is a <strong>Sturm-Liouville eigenvalue problem</strong>. It has nontrivial solutions only for lambda_n = (n pi / L)^2, with eigenfunctions X_n = sin(n pi x / L).</p><p>The corresponding T equation gives T_n = e^{-k lambda_n t}. The general solution is a superposition: u(x,t) = sum b_n sin(n pi x / L) e^{-k(n pi/L)^2 t}. The coefficients b_n are determined by expanding the initial condition as a <strong>Fourier sine series</strong>. Higher harmonics decay faster (proportional to n^2), explaining why heat smooths out jagged initial profiles. Separation of variables connects PDEs to Fourier series in a beautiful and practical way.</p>",
+        "mathExpressions": ["u(x,t) = \\sum_{n=1}^{\\infty} b_n \\sin\\!\\left(\\frac{n\\pi x}{L}\\right) e^{-k(n\\pi/L)^2 t}", "\\lambda_n = \\left(\\frac{n\\pi}{L}\\right)^2, \\quad X_n(x) = \\sin\\!\\left(\\frac{n\\pi x}{L}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q49", "de-q50", "de-q51", "de-q52", "de-q53", "de-q54", "de-q55", "de-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "de-08",
+    "topicId": "differential-equations",
+    "order": 8,
+    "title": "Nonlinear Dynamics & Chaos",
+    "description": "Nonlinear systems, bifurcations, limit cycles, Lorenz system, sensitivity to initial conditions",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "de-08-c1",
+        "title": "Nonlinear Systems and Bifurcations",
+        "contentHtml": "<p><strong>Nonlinear ODEs</strong> cannot generally be solved in closed form. Instead, we study their qualitative behavior: what are the equilibria, and what happens near them? For x' = f(x), an <strong>equilibrium</strong> (fixed point) is a point where f(x*) = 0. Linearization near the equilibrium — replacing f by its Jacobian — tells us the local behavior, but nonlinear effects dominate far from equilibrium.</p><p>A <strong>bifurcation</strong> occurs when a small change in a parameter causes a qualitative change in the system's behavior. In a <strong>saddle-node bifurcation</strong>, two equilibria (one stable, one unstable) collide and annihilate each other as a parameter varies. In a <strong>pitchfork bifurcation</strong>, a single equilibrium splits into three. In a <strong>Hopf bifurcation</strong>, a stable equilibrium loses stability and gives birth to a periodic orbit (limit cycle).</p><p>Bifurcation diagrams plot equilibria versus a parameter, showing how the landscape of attractors evolves. They are essential in applications: the transition from laminar to turbulent flow, the onset of oscillations in electrical circuits, and the buckling of a column under load are all bifurcation phenomena. Understanding bifurcations means understanding when systems change their behavior suddenly and dramatically.</p>",
+        "mathExpressions": ["\\mathbf{x}' = f(\\mathbf{x},\\mu), \\quad \\text{bifurcation at } \\mu = \\mu_0 \\text{ if qualitative change}", "\\text{Saddle-node: } x' = \\mu - x^2 \\;\\Rightarrow\\; x^* = \\pm\\sqrt{\\mu} \\text{ for } \\mu > 0, \\text{ none for } \\mu < 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-08-c2",
+        "title": "Limit Cycles and the Lorenz System",
+        "contentHtml": "<p>A <strong>limit cycle</strong> is an isolated closed trajectory in the phase plane — a periodic orbit that nearby trajectories either spiral toward (stable limit cycle) or away from (unstable limit cycle). Limit cycles are fundamentally nonlinear: linear systems never have isolated periodic orbits. The <strong>Van der Pol oscillator</strong> x'' - mu(1-x^2)x' + x = 0 has a famous stable limit cycle that models the heartbeat and certain electronic circuits.</p><p>The <strong>Lorenz system</strong>, discovered by Edward Lorenz in 1963 while modeling atmospheric convection, is: dx/dt = sigma(y - x), dy/dt = x(rho - z) - y, dz/dt = xy - beta*z. For parameter values sigma = 10, beta = 8/3, rho = 28, the system exhibits <strong>chaotic behavior</strong>: trajectories wander unpredictably on a butterfly-shaped <strong>strange attractor</strong>, never repeating and never settling down.</p><p>The Lorenz attractor is not a limit cycle (the trajectory never closes up) and not random (it is entirely deterministic). It is something new: a <strong>strange attractor</strong> with fractal structure. The system has three equilibria, all unstable, and trajectories loop around one, then the other, switching unpredictably. This was one of the first demonstrations that simple deterministic equations can produce behavior indistinguishable from randomness.</p>",
+        "mathExpressions": ["\\text{Lorenz: } \\dot{x} = \\sigma(y-x),\\; \\dot{y} = x(\\rho - z) - y,\\; \\dot{z} = xy - \\beta z", "\\text{Van der Pol: } x'' - \\mu(1-x^2)x' + x = 0 \\;\\text{(limit cycle for } \\mu > 0\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "de-08-c3",
+        "title": "Sensitivity to Initial Conditions and Strange Attractors",
+        "contentHtml": "<p><strong>Sensitivity to initial conditions</strong> is the hallmark of chaos: two trajectories starting infinitesimally close diverge exponentially over time. This is quantified by the <strong>Lyapunov exponent</strong> lambda. If lambda > 0, nearby trajectories separate at rate e^{lambda t}, and long-term prediction is impossible even though the system is fully deterministic. Lorenz described this as the \"butterfly effect\" — a butterfly flapping its wings in Brazil could set off a tornado in Texas.</p><p>A <strong>strange attractor</strong> is an attractor (a set that trajectories converge to) with fractal geometry and sensitive dependence on initial conditions. The Lorenz attractor has dimension approximately 2.06 — it is more than a surface but less than a solid, with infinitely detailed self-similar structure at all scales. Strange attractors exist in a wide range of systems: turbulent fluids, dripping faucets, population dynamics, and even the tumbling of Hyperion (a moon of Saturn).</p><p>Chaos imposes a fundamental limit on prediction, even in deterministic systems. The weather is governed by known equations (Navier-Stokes), but because it is chaotic, forecasts degrade rapidly beyond about 10 days. Chaos theory thus explains why long-term weather prediction is not merely difficult but <strong>intrinsically impossible</strong> — not because of ignorance, but because of the mathematical structure of the equations themselves. This insight, born from differential equations, reshaped our understanding of predictability in science.</p>",
+        "mathExpressions": ["\\|\\delta\\mathbf{x}(t)\\| \\sim \\|\\delta\\mathbf{x}(0)\\|\\,e^{\\lambda t}, \\quad \\lambda > 0 \\;\\text{(chaos)}", "\\text{Lorenz attractor dimension} \\approx 2.06 \\;\\text{(fractal)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["de-q57", "de-q58", "de-q59", "de-q60", "de-q61", "de-q62", "de-q63", "de-q64"],
+    "puzzleId": null
+  }
+]

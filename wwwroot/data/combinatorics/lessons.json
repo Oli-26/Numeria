@@ -1,0 +1,290 @@
+[
+  {
+    "id": "comb-01",
+    "topicId": "combinatorics",
+    "order": 1,
+    "title": "Counting Principles",
+    "description": "The foundations of how we count",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "comb-01-c1",
+        "title": "The Addition & Multiplication Rules",
+        "contentHtml": "<p>The two most fundamental tools in combinatorics are the <strong>addition rule</strong> and the <strong>multiplication rule</strong>. They tell us how to count outcomes when tasks are combined.</p><p>The <strong>addition rule</strong> says: if you can do Task A in m ways OR Task B in n ways, and the two tasks are mutually exclusive (no overlap), then you can do one or the other in m + n ways. Think of choosing a meal: 3 pasta dishes OR 4 salads gives 7 options total.</p><p>The <strong>multiplication rule</strong> says: if you must do Task A in m ways AND then Task B in n ways, the total number of combined outcomes is m &times; n. Choosing a shirt from 5 options and pants from 3 options gives 5 &times; 3 = 15 outfits.</p><p>These two rules form the backbone of every counting argument. Nearly every formula in combinatorics ultimately reduces to clever applications of addition and multiplication.</p>",
+        "mathExpressions": ["|A \\cup B| = |A| + |B| \\quad \\text{(if } A \\cap B = \\emptyset\\text{)}", "|A \\times B| = |A| \\cdot |B|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-01-c2",
+        "title": "Counting With & Without Repetition",
+        "contentHtml": "<p>When selecting items from a collection, a crucial question is: <strong>can we reuse items?</strong> This distinction changes the count dramatically.</p><p><strong>With repetition</strong> (replacement): after choosing an item, it goes back into the pool. Forming a 3-digit PIN from digits 0-9 allows repetition, giving 10 &times; 10 &times; 10 = 1000 possibilities. More generally, choosing k items from n with repetition gives n<sup>k</sup> sequences.</p><p><strong>Without repetition</strong> (no replacement): each item can be used at most once. Arranging 3 runners from a field of 10 for gold, silver, and bronze means 10 &times; 9 &times; 8 = 720 outcomes. This is a <strong>falling factorial</strong>, written n(n-1)(n-2)...(n-k+1).</p><p>Recognizing whether a problem involves repetition is often the first step in solving any counting question. When in doubt, ask: \"Can I pick the same thing again?\"</p>",
+        "mathExpressions": ["\\text{With repetition: } n^k \\qquad \\text{Without: } n(n-1)(n-2)\\cdots(n-k+1) = \\frac{n!}{(n-k)!}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-01-c3",
+        "title": "The Subtraction Principle",
+        "contentHtml": "<p>Sometimes it is easier to count what you <strong>don't</strong> want and subtract it from the total. This is the <strong>subtraction principle</strong>, also called <strong>complementary counting</strong>.</p><p>For example, how many 3-letter strings (from A-Z) contain at least one vowel? Counting directly is messy because \"at least one\" could mean one, two, or three vowels. Instead: total strings = 26<sup>3</sup> = 17,576; strings with NO vowels = 21<sup>3</sup> = 9,261; so strings with at least one vowel = 17,576 &minus; 9,261 = 8,315.</p><p>The subtraction principle works whenever computing the complement is simpler than computing the set directly. You will see it appear repeatedly throughout combinatorics, probability, and beyond.</p><p>In set notation, if S is the universal set and A is the set of \"bad\" outcomes, then the count of \"good\" outcomes is |S| &minus; |A|. This deceptively simple idea is one of the most powerful tricks in a combinatorialist's toolkit.</p>",
+        "mathExpressions": ["|\\overline{A}| = |S| - |A|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q01", "comb-q02", "comb-q03", "comb-q04", "comb-q05", "comb-q06", "comb-q07", "comb-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-02",
+    "topicId": "combinatorics",
+    "order": 2,
+    "title": "Permutations & Combinations",
+    "description": "Ordering matters -- or does it?",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "comb-02-c1",
+        "title": "Permutations (nPr) & Combinations (nCr)",
+        "contentHtml": "<p>A <strong>permutation</strong> is an ordered arrangement. The number of ways to arrange k items from a set of n, where order matters, is denoted P(n,k) or nPr.</p><p>A <strong>combination</strong> is an unordered selection. When order does not matter, we use C(n,k) or nCr, also written as \"n choose k.\" Since every combination of k items can be arranged in k! ways, we divide out the redundancy.</p><p>Example: from 5 people, choosing a president, VP, and secretary (order matters) gives P(5,3) = 60. Choosing a committee of 3 (order doesn't matter) gives C(5,3) = 10.</p><p>The question \"does order matter?\" is the single most important question to ask in any combinatorics problem. Getting it wrong can throw your answer off by a factor of k!.</p>",
+        "mathExpressions": ["P(n,k) = \\frac{n!}{(n-k)!}", "C(n,k) = \\binom{n}{k} = \\frac{n!}{k!(n-k)!}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-02-c2",
+        "title": "Combinations With Repetition & Multisets",
+        "contentHtml": "<p>What if you can choose the same item more than once and order doesn't matter? This is a <strong>combination with repetition</strong>, also called a <strong>multiset</strong> coefficient.</p><p>Imagine choosing 4 scoops of ice cream from 3 flavors (chocolate, vanilla, strawberry). You might pick 2 chocolate and 2 vanilla, or 4 strawberry, etc. The number of such choices is given by the <strong>stars and bars</strong> formula.</p><p>Think of it as placing k identical stars into n categories using (n-1) dividing bars. For our example: k = 4 scoops, n = 3 flavors, giving C(4 + 3 - 1, 4) = C(6,4) = 15 ways.</p><p>Stars and bars is surprisingly versatile. It counts solutions to equations like x&#8321; + x&#8322; + x&#8323; = 4 where each x&#7522; &ge; 0, which appears in many areas of mathematics and computer science.</p>",
+        "mathExpressions": ["\\binom{n+k-1}{k} = \\binom{n+k-1}{n-1} \\quad \\text{(stars and bars)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-02-c3",
+        "title": "Pascal's Triangle & the Binomial Theorem",
+        "contentHtml": "<p><strong>Pascal's triangle</strong> is a triangular array where each entry is the sum of the two entries above it. Row n contains the binomial coefficients C(n,0), C(n,1), ..., C(n,n). This encodes the beautiful identity C(n,k) = C(n-1,k-1) + C(n-1,k).</p><p>The <strong>Binomial Theorem</strong> tells us how to expand (a + b)<sup>n</sup>. Each term in the expansion is a binomial coefficient times a power of a and a power of b. This connects algebra to counting: C(n,k) counts the number of ways to choose which k of the n factors contribute a \"b\" to the product.</p><p>Pascal's triangle is full of hidden patterns: the rows sum to 2<sup>n</sup>, alternating sums give 0, diagonal sums yield Fibonacci numbers, and entries mod 2 produce Sierpinski's triangle. It is one of the most pattern-rich objects in all of mathematics.</p><p>The binomial coefficients also satisfy many useful identities like the Vandermonde identity, the hockey stick identity, and the symmetry C(n,k) = C(n, n-k), all of which can be proved combinatorially by telling the right counting story.</p>",
+        "mathExpressions": ["(a+b)^n = \\sum_{k=0}^{n} \\binom{n}{k} a^{n-k} b^k"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q09", "comb-q10", "comb-q11", "comb-q12", "comb-q13", "comb-q14", "comb-q15", "comb-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-03",
+    "topicId": "combinatorics",
+    "order": 3,
+    "title": "The Pigeonhole Principle",
+    "description": "When there are more pigeons than holes",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "comb-03-c1",
+        "title": "The Basic Pigeonhole Principle",
+        "contentHtml": "<p>The <strong>Pigeonhole Principle</strong> states: if you place n + 1 pigeons into n pigeonholes, then at least one hole must contain at least 2 pigeons. This seems almost too obvious to be useful -- yet it is one of the most powerful tools in combinatorics.</p><p>The strength of the pigeonhole principle lies in guaranteeing existence without construction. It tells you something <strong>must</strong> happen, even when you can't point to exactly where.</p><p>Classic example: among any 13 people, at least 2 share a birth month. Here the \"pigeons\" are the 13 people and the \"holes\" are the 12 months. Since 13 > 12, some month must contain at least 2 people.</p><p>The art of applying this principle is in choosing the right pigeons and the right holes. The pigeonhole principle transforms creative insight into rigorous proof.</p>",
+        "mathExpressions": ["\\text{If } n+1 \\text{ objects are placed in } n \\text{ boxes, some box has } \\geq 2 \\text{ objects.}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-03-c2",
+        "title": "The Generalized Pigeonhole Principle",
+        "contentHtml": "<p>The <strong>generalized pigeonhole principle</strong> extends the basic version: if n objects are placed into k boxes, then at least one box contains at least &lceil;n/k&rceil; objects (the ceiling of n/k).</p><p>Example: if 100 students take an exam scored 0-10 (11 possible scores), then at least &lceil;100/11&rceil; = 10 students share the same score.</p><p>This is also known as <strong>Dirichlet's box principle</strong>, named after Peter Gustav Lejeune Dirichlet, who used it extensively in number theory. He proved, for instance, that in any sequence of n<sup>2</sup> + 1 distinct integers, there must exist an increasing or decreasing subsequence of length n + 1.</p><p>The generalized version is essential when you need a quantitative lower bound -- not just \"at least two\" but \"at least this many.\" It appears in Ramsey theory, approximation theory, and cryptography.</p>",
+        "mathExpressions": ["\\text{At least } \\left\\lceil \\frac{n}{k} \\right\\rceil \\text{ objects share a box.}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-03-c3",
+        "title": "Applications to Number Theory & Geometry",
+        "contentHtml": "<p>The pigeonhole principle produces stunning results in <strong>number theory</strong>. For example: among any n + 1 integers, some pair has the same remainder when divided by n. This is because there are only n possible remainders (0 through n-1), so by pigeonhole, two of the n + 1 integers must coincide modulo n -- and their difference is divisible by n.</p><p>In <strong>geometry</strong>, consider placing 5 points inside a unit square. Divide the square into 4 equal sub-squares (each 1/2 &times; 1/2). By pigeonhole, at least 2 of the 5 points lie in the same sub-square, and their distance is at most sqrt(2)/2 &approx; 0.707.</p><p>Another gem: in any set of n + 1 numbers chosen from {1, 2, ..., 2n}, some pair has one dividing the other. Write each number as 2<sup>a</sup> &middot; q where q is odd. The odd parts q come from at most n values, so by pigeonhole two numbers share the same odd part, meaning one divides the other.</p><p>These examples reveal why the pigeonhole principle, despite its simplicity, is considered a cornerstone of discrete mathematics. The challenge is always in finding the clever decomposition.</p>",
+        "mathExpressions": ["a \\equiv b \\pmod{n} \\implies n \\mid (a - b)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q17", "comb-q18", "comb-q19", "comb-q20", "comb-q21", "comb-q22", "comb-q23", "comb-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-04",
+    "topicId": "combinatorics",
+    "order": 4,
+    "title": "Inclusion-Exclusion",
+    "description": "Counting overlapping sets precisely",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "comb-04-c1",
+        "title": "The Inclusion-Exclusion Formula",
+        "contentHtml": "<p>When counting the union of sets that overlap, simply adding their sizes overcounts elements in the intersections. The <strong>Principle of Inclusion-Exclusion (PIE)</strong> corrects for this overcounting systematically.</p><p>For two sets: |A &cup; B| = |A| + |B| - |A &cap; B|. You add the individual sizes, then subtract the overlap you counted twice. For three sets, you must add back the triple intersection since it was subtracted too many times.</p><p>The general formula alternates: add single sets, subtract pairwise intersections, add triple intersections, subtract quadruple intersections, and so on. For n sets, this involves 2<sup>n</sup> - 1 terms.</p><p>PIE is indispensable in combinatorics. It handles \"at least one\" problems, overcounting from overlapping conditions, and is the basis for many advanced counting techniques.</p>",
+        "mathExpressions": ["\\left|\\bigcup_{i=1}^{n} A_i\\right| = \\sum_{i} |A_i| - \\sum_{i<j} |A_i \\cap A_j| + \\sum_{i<j<k} |A_i \\cap A_j \\cap A_k| - \\cdots"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-04-c2",
+        "title": "Derangements",
+        "contentHtml": "<p>A <strong>derangement</strong> is a permutation where no element appears in its original position. If n people randomly receive n hats, a derangement means nobody gets their own hat back.</p><p>Using inclusion-exclusion, we count derangements by starting with all n! permutations and subtracting those where at least one element is fixed. Let A_i be the set of permutations fixing element i. By PIE, the number of derangements D_n equals n! minus the permutations with at least one fixed point.</p><p>The beautiful result is that D_n = n! &middot; (1 - 1/1! + 1/2! - 1/3! + ... + (-1)<sup>n</sup>/n!). As n grows, the fraction D_n/n! converges rapidly to 1/e &approx; 0.3679. So roughly 36.8% of all permutations are derangements, regardless of n.</p><p>Derangements appear in probability (the hat-check problem), algebra (fixed-point-free automorphisms), and even in card shuffling analysis.</p>",
+        "mathExpressions": ["D_n = n! \\sum_{k=0}^{n} \\frac{(-1)^k}{k!} \\approx \\frac{n!}{e}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-04-c3",
+        "title": "Euler's Totient & Sieve Methods",
+        "contentHtml": "<p><strong>Euler's totient function</strong> &phi;(n) counts the integers from 1 to n that are coprime to n (share no common factor with n other than 1). It can be computed beautifully using inclusion-exclusion.</p><p>If n has prime factorization p&#8321;<sup>a&#8321;</sup> &middot; p&#8322;<sup>a&#8322;</sup> &middot;&middot;&middot; p_k<sup>a_k</sup>, then among {1, ..., n} we exclude multiples of p&#8321;, p&#8322;, ..., p_k using PIE. The result is the elegant product formula shown below.</p><p>For example, &phi;(12) = 12(1 - 1/2)(1 - 1/3) = 12 &middot; 1/2 &middot; 2/3 = 4. Indeed, the integers coprime to 12 in {1,...,12} are 1, 5, 7, 11 -- exactly 4 of them.</p><p>This is an instance of a <strong>sieve method</strong>: we \"sieve out\" unwanted elements layer by layer. The Sieve of Eratosthenes for finding primes is the most famous sieve, but the inclusion-exclusion sieve generalizes this idea far beyond prime-finding.</p>",
+        "mathExpressions": ["\\phi(n) = n \\prod_{p \\mid n} \\left(1 - \\frac{1}{p}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q25", "comb-q26", "comb-q27", "comb-q28", "comb-q29", "comb-q30", "comb-q31", "comb-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-05",
+    "topicId": "combinatorics",
+    "order": 5,
+    "title": "Generating Functions",
+    "description": "Encoding sequences as power series",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "comb-05-c1",
+        "title": "Ordinary Generating Functions",
+        "contentHtml": "<p>A <strong>generating function</strong> encodes a sequence (a&#8320;, a&#8321;, a&#8322;, ...) as the coefficients of a power series: A(x) = a&#8320; + a&#8321;x + a&#8322;x&sup2; + a&#8323;x&sup3; + .... We don't care about convergence -- these are <strong>formal power series</strong>, algebraic objects where x is just a placeholder.</p><p>Why is this useful? Because operations on generating functions correspond to operations on sequences. Adding two generating functions adds the sequences term by term. Multiplying two generating functions <strong>convolves</strong> the sequences, which corresponds to combining independent choices.</p><p>For example, the generating function for the sequence 1, 1, 1, 1, ... is 1/(1-x), since the geometric series sums to this. The generating function for C(n,k) as k varies is (1+x)<sup>n</sup>, by the binomial theorem.</p><p>Generating functions transform counting problems into algebra. Instead of clever combinatorial arguments, you manipulate polynomials and extract coefficients. Herbert Wilf called them \"a clothesline on which we hang a sequence of numbers for display.\"</p>",
+        "mathExpressions": ["A(x) = \\sum_{n=0}^{\\infty} a_n x^n", "\\frac{1}{1-x} = \\sum_{n=0}^{\\infty} x^n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-05-c2",
+        "title": "Solving Recurrences with Generating Functions",
+        "contentHtml": "<p>One of the most powerful applications of generating functions is <strong>solving recurrence relations</strong>. The strategy: define A(x) as the generating function for the sequence, translate the recurrence into an equation involving A(x), solve for A(x) in closed form, then extract coefficients.</p><p>Consider the Fibonacci recurrence: F_n = F_{n-1} + F_{n-2} with F_0 = 0, F_1 = 1. Multiplying both sides by x<sup>n</sup> and summing, we get A(x) = xA(x) + x&sup2;A(x) + x. Solving gives A(x) = x/(1 - x - x&sup2;).</p><p>Using partial fractions, we can decompose this into simpler terms and read off the coefficients, recovering the famous Binet formula for Fibonacci numbers involving the golden ratio &phi;.</p><p>This method works systematically for <strong>any</strong> linear recurrence with constant coefficients, and can even handle some non-linear ones. It reduces the art of solving recurrences to a mechanical algebraic procedure.</p>",
+        "mathExpressions": ["\\sum_{n=0}^{\\infty} F_n x^n = \\frac{x}{1 - x - x^2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-05-c3",
+        "title": "The Partition Function & Formal Power Series",
+        "contentHtml": "<p>The <strong>integer partition function</strong> p(n) counts the number of ways to write n as a sum of positive integers (where order doesn't matter). For example, p(4) = 5 because 4 = 3+1 = 2+2 = 2+1+1 = 1+1+1+1.</p><p>The generating function for p(n) is an infinite product: each factor (1 - x<sup>k</sup>)<sup>-1</sup> corresponds to choosing how many copies of k to include in the partition. This is a stunning example of how generating functions turn a complicated counting problem into elegant algebra.</p><p>The <strong>algebra of formal power series</strong> gives us rigorous tools: we can add, multiply, compose, and invert power series without worrying about convergence. The ring of formal power series over a field forms an algebraic structure that supports all these operations.</p><p>Euler pioneered this approach and discovered remarkable identities, such as the <strong>pentagonal number theorem</strong>, which relates the partition function to pentagonal numbers. Ramanujan later found astonishing congruences like p(5n+4) being always divisible by 5.</p>",
+        "mathExpressions": ["\\sum_{n=0}^{\\infty} p(n) x^n = \\prod_{k=1}^{\\infty} \\frac{1}{1 - x^k}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q33", "comb-q34", "comb-q35", "comb-q36", "comb-q37", "comb-q38", "comb-q39", "comb-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-06",
+    "topicId": "combinatorics",
+    "order": 6,
+    "title": "Recurrence Relations",
+    "description": "Defining sequences by looking backward",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "comb-06-c1",
+        "title": "Linear Recurrences & the Fibonacci Sequence",
+        "contentHtml": "<p>A <strong>recurrence relation</strong> defines each term of a sequence using previous terms. The most famous example is the <strong>Fibonacci sequence</strong>: F_n = F_{n-1} + F_{n-2}, where each number is the sum of the two before it: 0, 1, 1, 2, 3, 5, 8, 13, 21, ....</p><p>A <strong>linear recurrence with constant coefficients</strong> has the form a_n = c&#8321;a_{n-1} + c&#8322;a_{n-2} + ... + c_k a_{n-k}. The Fibonacci recurrence is linear of order 2 with coefficients c&#8321; = c&#8322; = 1.</p><p>These recurrences model growth processes, population dynamics (Fibonacci's original rabbit problem), divide-and-conquer algorithms, and countless combinatorial sequences. The Tower of Hanoi puzzle yields T_n = 2T_{n-1} + 1, and the number of binary strings of length n with no two consecutive 1s follows a Fibonacci-like recurrence.</p><p>The key insight is that linear recurrences can be <strong>solved exactly</strong> using algebraic techniques, giving explicit closed-form formulas for the n-th term.</p>",
+        "mathExpressions": ["F_n = F_{n-1} + F_{n-2}, \\quad F_0 = 0, \\; F_1 = 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-06-c2",
+        "title": "The Characteristic Equation Method",
+        "contentHtml": "<p>To solve a linear recurrence like a_n = c&#8321;a_{n-1} + c&#8322;a_{n-2}, we guess a solution of the form a_n = r<sup>n</sup>. Substituting gives r<sup>n</sup> = c&#8321;r<sup>n-1</sup> + c&#8322;r<sup>n-2</sup>. Dividing by r<sup>n-2</sup> yields the <strong>characteristic equation</strong>: r&sup2; = c&#8321;r + c&#8322;, or equivalently r&sup2; - c&#8321;r - c&#8322; = 0.</p><p>If this quadratic has two distinct roots r&#8321; and r&#8322;, the general solution is a_n = A &middot; r&#8321;<sup>n</sup> + B &middot; r&#8322;<sup>n</sup>, where A and B are determined by initial conditions. For Fibonacci, the characteristic equation r&sup2; - r - 1 = 0 has roots &phi; = (1+&radic;5)/2 and &psi; = (1-&radic;5)/2.</p><p>This gives <strong>Binet's formula</strong>: F_n = (&phi;<sup>n</sup> - &psi;<sup>n</sup>)/&radic;5. It is remarkable that this formula involving irrational numbers always produces integers! Since |&psi;| < 1, the &psi;<sup>n</sup> term vanishes rapidly, so F_n is the nearest integer to &phi;<sup>n</sup>/&radic;5.</p><p>When the characteristic equation has repeated roots, the solution includes a polynomial factor: if r is a root of multiplicity m, then r<sup>n</sup>, nr<sup>n</sup>, n&sup2;r<sup>n</sup>, ..., n<sup>m-1</sup>r<sup>n</sup> are all solutions.</p>",
+        "mathExpressions": ["F_n = \\frac{\\phi^n - \\psi^n}{\\sqrt{5}}, \\quad \\phi = \\frac{1+\\sqrt{5}}{2}, \\; \\psi = \\frac{1-\\sqrt{5}}{2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-06-c3",
+        "title": "Divide-and-Conquer Recurrences & the Master Theorem",
+        "contentHtml": "<p><strong>Divide-and-conquer</strong> algorithms split a problem of size n into a subproblems of size n/b, then combine results in O(n<sup>d</sup>) work. This produces recurrences of the form T(n) = aT(n/b) + O(n<sup>d</sup>).</p><p>The <strong>Master Theorem</strong> gives the asymptotic solution in three cases based on comparing log_b(a) with d. If log_b(a) < d, the combining step dominates: T(n) = O(n<sup>d</sup>). If log_b(a) = d, both contribute equally: T(n) = O(n<sup>d</sup> log n). If log_b(a) > d, the subproblems dominate: T(n) = O(n<sup>log_b(a)</sup>).</p><p>For merge sort, a = 2, b = 2, d = 1, so log&#8322;(2) = 1 = d, giving T(n) = O(n log n). For binary search, a = 1, b = 2, d = 0, so log&#8322;(1) = 0 = d, giving T(n) = O(log n). For Strassen's matrix multiplication, a = 7, b = 2, d = 2, and log&#8322;(7) &approx; 2.807 > 2, giving T(n) = O(n<sup>2.807</sup>).</p><p>The Master Theorem is indispensable in algorithm analysis. It turns the study of recursive algorithms into a simple comparison of three numbers: a, b, and d.</p>",
+        "mathExpressions": ["T(n) = aT\\!\\left(\\frac{n}{b}\\right) + O(n^d) \\implies T(n) = \\begin{cases} O(n^d) & \\log_b a < d \\\\ O(n^d \\log n) & \\log_b a = d \\\\ O(n^{\\log_b a}) & \\log_b a > d \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q41", "comb-q42", "comb-q43", "comb-q44", "comb-q45", "comb-q46", "comb-q47", "comb-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-07",
+    "topicId": "combinatorics",
+    "order": 7,
+    "title": "Graph Enumeration & Combinatorial Designs",
+    "description": "Counting structured objects",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "comb-07-c1",
+        "title": "Cayley's Formula & Catalan Numbers",
+        "contentHtml": "<p><strong>Cayley's formula</strong> states that the number of labeled trees on n vertices is n<sup>n-2</sup>. For example, with 4 labeled vertices there are 4&sup2; = 16 distinct spanning trees. This can be proved using Pr&uuml;fer sequences, which provide a bijection between labeled trees and sequences of length n-2 from {1, ..., n}.</p><p>The <strong>Catalan numbers</strong> are another jewel of combinatorics: C_n = C(2n, n)/(n+1). The first few values are 1, 1, 2, 5, 14, 42, 132, .... They count an astonishing variety of structures: balanced parentheses, binary trees, non-crossing partitions, Dyck paths, triangulations of polygons, and many more.</p><p>The Catalan numbers satisfy the recurrence C_n = &sum; C_i &middot; C_{n-1-i} for i from 0 to n-1, reflecting how a binary tree splits into left and right subtrees. Their generating function satisfies C(x) = 1 + x &middot; C(x)&sup2;, a quadratic equation in C(x).</p><p>Both Cayley's formula and Catalan numbers illustrate a central theme: surprisingly simple formulas can count complex combinatorial objects.</p>",
+        "mathExpressions": ["\\text{Cayley: } n^{n-2} \\text{ labeled trees}", "C_n = \\frac{1}{n+1}\\binom{2n}{n} \\quad \\text{(Catalan numbers)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-07-c2",
+        "title": "Latin Squares & Block Designs",
+        "contentHtml": "<p>A <strong>Latin square</strong> of order n is an n &times; n array filled with n different symbols, each occurring exactly once in each row and each column. Sudoku is essentially three mutually overlapping Latin squares of order 9 with additional box constraints.</p><p>The number of Latin squares grows extremely fast. For n = 1, 2, 3, 4, 5 the counts are 1, 2, 12, 576, 161280. Exact enumeration is a deep computational challenge; no simple closed form is known for general n.</p><p>A <strong>balanced incomplete block design</strong> (BIBD) with parameters (v, b, r, k, &lambda;) is a collection of b subsets (blocks) of size k from a v-element set, such that every element appears in exactly r blocks and every pair of elements appears together in exactly &lambda; blocks. These satisfy the fundamental relations bk = vr and r(k-1) = &lambda;(v-1).</p><p>Block designs arise in experiment planning (agriculture, clinical trials), error-correcting codes, and tournament scheduling. Their existence is a central question in combinatorial design theory.</p>",
+        "mathExpressions": ["bk = vr \\quad \\text{and} \\quad r(k-1) = \\lambda(v-1)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-07-c3",
+        "title": "Steiner Systems",
+        "contentHtml": "<p>A <strong>Steiner system</strong> S(t, k, n) is a collection of k-element subsets (blocks) of an n-element set such that every t-element subset is contained in exactly one block. These are the most \"perfect\" combinatorial designs -- every small group appears in precisely one block, with no redundancy.</p><p>The most famous example is the <strong>Fano plane</strong>, which is S(2, 3, 7): a set of 7 points and 7 lines (blocks of size 3) where every pair of points determines a unique line. It is the smallest finite projective plane and has deep connections to group theory and coding theory.</p><p>Steiner triple systems S(2, 3, n) exist if and only if n &equiv; 1 or 3 (mod 6). This was conjectured by Steiner and proved by Kirkman in 1847. The famous <strong>Kirkman schoolgirl problem</strong> asks for a resolvable Steiner triple system S(2, 3, 15) where 15 girls walk in groups of 3 for 7 days with no pair repeating.</p><p>The existence question for general Steiner systems remained open for over 150 years. In a breakthrough in 2014, Peter Keevash proved that S(t, k, n) exists for all sufficiently large n satisfying the necessary divisibility conditions, using the method of randomized algebraic construction.</p>",
+        "mathExpressions": ["S(2,3,7): \\text{ the Fano plane -- 7 points, 7 blocks of size 3}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q49", "comb-q50", "comb-q51", "comb-q52", "comb-q53", "comb-q54", "comb-q55", "comb-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "comb-08",
+    "topicId": "combinatorics",
+    "order": 8,
+    "title": "Probabilistic & Algebraic Combinatorics",
+    "description": "When randomness and symmetry meet counting",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "comb-08-c1",
+        "title": "The Probabilistic Method (Erdos)",
+        "contentHtml": "<p>The <strong>probabilistic method</strong>, pioneered by Paul Erd&#337;s, proves that a combinatorial object with certain properties <strong>must exist</strong> by showing that a randomly chosen object has those properties with positive probability. If the probability is positive, such an object exists -- even if we can't construct one explicitly.</p><p>Classic example: <strong>Ramsey numbers</strong>. Consider 2-coloring the edges of the complete graph K_n. If n is not too large, a random coloring avoids monochromatic complete subgraphs of a given size with positive probability. This gives the lower bound R(k,k) &ge; 2<sup>k/2</sup>.</p><p>Another landmark application is the <strong>Lovász Local Lemma</strong>, which handles situations where bad events are mostly independent. If each bad event has low probability and limited dependence on others, then with positive probability none of them occur -- even though there may be exponentially many bad events.</p><p>The probabilistic method is arguably the most influential technique in modern combinatorics. It proves existence theorems that seem beyond the reach of constructive methods, and has applications in computer science, number theory, and geometry.</p>",
+        "mathExpressions": ["R(k,k) \\geq 2^{k/2} \\quad \\text{(probabilistic lower bound)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-08-c2",
+        "title": "Burnside's Lemma & Polya Enumeration",
+        "contentHtml": "<p><strong>Burnside's lemma</strong> (also called the Cauchy-Frobenius lemma) counts distinct objects under symmetry. If a group G acts on a set X, the number of distinct objects (orbits) is the average number of elements fixed by each group element.</p><p>Example: how many distinct necklaces can be made from 4 beads of 2 colors? Without symmetry, there are 2<sup>4</sup> = 16 colorings. But a necklace can be rotated (and possibly flipped). The rotation group has 4 elements; Burnside's lemma gives (16 + 0 + 4 + 0)/4 = 6 distinct necklaces (accounting for rotational symmetry only).</p><p><strong>P&oacute;lya enumeration</strong> extends Burnside's lemma into a powerful machine. It uses the <strong>cycle index polynomial</strong> of the symmetry group to count colorings by weight, giving a generating function that tracks how many of each color are used.</p><p>These tools are essential in chemistry (counting distinct molecular structures), physics (enumerating crystal structures), and computer science (counting equivalence classes of combinatorial objects up to symmetry).</p>",
+        "mathExpressions": ["|X/G| = \\frac{1}{|G|} \\sum_{g \\in G} |X^g| \\quad \\text{(Burnside's lemma)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comb-08-c3",
+        "title": "Ramsey Theory Connections",
+        "contentHtml": "<p><strong>Ramsey theory</strong> is the mathematical study of the principle that \"complete disorder is impossible.\" In any sufficiently large structure, some organized substructure must emerge. The foundational result, <strong>Ramsey's theorem</strong>, states that for any integers p and q, there exists a minimum number R(p,q) such that any 2-coloring of the edges of K_{R(p,q)} contains a red K_p or a blue K_q.</p><p>Despite its elegant statement, computing Ramsey numbers is notoriously difficult. We know R(3,3) = 6 and R(4,4) = 18, but R(5,5) remains unknown (bounded between 43 and 48). Erd&#337;s famously quipped that if aliens demanded we compute R(5,5) or be destroyed, we should marshal all our computers; but if they demanded R(6,6), we should prepare for war.</p><p>Ramsey theory extends far beyond graphs. The <strong>Hales-Jewett theorem</strong>, <strong>Van der Waerden's theorem</strong> (any 2-coloring of the integers contains arbitrarily long monochromatic arithmetic progressions), and the <strong>Graham-Rothschild theorem</strong> all express the same deep principle.</p><p>These results connect combinatorics to logic, ergodic theory, and additive number theory. The interplay between combinatorial, probabilistic, and algebraic methods makes Ramsey theory one of the most vibrant areas of modern mathematics.</p>",
+        "mathExpressions": ["R(3,3) = 6, \\quad R(4,4) = 18, \\quad 43 \\leq R(5,5) \\leq 48"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comb-q57", "comb-q58", "comb-q59", "comb-q60", "comb-q61", "comb-q62", "comb-q63", "comb-q64"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,213 @@
+[
+  {
+    "id": "mastery-gt-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "What is the Ramsey number R(3,3)?",
+    "options": ["5", "6", "7", "9"],
+    "correctAnswer": "6",
+    "explanation": "R(3,3) = 6 means any 2-coloring of edges of K_6 contains a monochromatic triangle, and K_5 has a coloring that avoids this. This is one of the few exactly known Ramsey numbers.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The chromatic polynomial of any tree on n vertices is k(k-1)^(n-1).",
+    "correctAnswer": "True",
+    "explanation": "A tree on n vertices can be colored greedily: the root has k choices, and each subsequent vertex (in BFS/DFS order) has exactly k-1 choices since it has exactly one already-colored neighbor. This gives P(T,k) = k(k-1)^(n-1) for any tree T.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Turán's theorem: the maximum number of edges in a K_{r+1}-free graph on n vertices is achieved by the Turán graph T(n,r). For n=6 and r=2 (triangle-free), how many edges does T(6,2) have?",
+    "acceptableAnswers": ["9"],
+    "correctAnswer": "9",
+    "explanation": "T(6,2) is the complete bipartite graph K_{3,3}, which has 3×3 = 9 edges. Turán's theorem gives ex(6,K_3) = floor(n²(1-1/r)/2) = floor(36·(1/2)/2) = 9.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-4",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this proof that every 2-connected graph is Hamiltonian.",
+    "steps": [
+      "Let G be a 2-connected graph on n vertices.",
+      "By Menger's theorem, there exist 2 internally vertex-disjoint paths between any pair of vertices.",
+      "Start with any cycle C in G (exists since G is 2-connected).",
+      "If C is not Hamiltonian, there is a vertex v not on C adjacent to some vertex on C.",
+      "Since G is 2-connected, v has at least 2 neighbors on C, so we can extend C to include v.",
+      "Repeating this process eventually yields a Hamiltonian cycle."
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong: a vertex v not on C need not be adjacent to any vertex on C. It must be connected to C (since G is connected), but it could be connected only through other vertices not on C. The Petersen graph is 2-connected but not Hamiltonian, disproving the entire claim.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-gt-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A d-regular graph on n vertices has adjacency matrix eigenvalues d = λ_1 ≥ λ_2 ≥ ... ≥ λ_n. The spectral gap is d - λ_2. Which property does a LARGE spectral gap indicate?",
+    "options": [
+      "The graph has many connected components",
+      "The graph is a good expander",
+      "The graph has high chromatic number",
+      "The graph contains a large clique"
+    ],
+    "correctAnswer": "The graph is a good expander",
+    "explanation": "The Expander Mixing Lemma and Cheeger's inequality relate the spectral gap to expansion: a large gap d - λ_2 means random walks mix rapidly and edge distribution between vertex subsets is close to uniform, which are hallmarks of expander graphs.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-6",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each graph theory result with what it determines or bounds.",
+    "pairs": [
+      {"left": "Turán's theorem", "right": "Max edges in K_{r+1}-free graph"},
+      {"left": "Ramsey's theorem", "right": "Guaranteed monochromatic clique size"},
+      {"left": "Brooks' theorem", "right": "Chromatic number ≤ Δ (non-complete, non-odd-cycle)"},
+      {"left": "Cheeger inequality", "right": "Spectral gap vs. edge expansion"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Turán gives the extremal edge count, Ramsey guarantees monochromatic subgraphs, Brooks bounds chromatic number by max degree (with two exceptions), and Cheeger's inequality relates the spectral gap λ_1 - λ_2 to the edge expansion constant h(G).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-7",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to prove that every graph G satisfies χ(G) ≤ Δ(G) + 1 by greedy coloring.",
+    "steps": [
+      "Fix an arbitrary ordering v_1, v_2, ..., v_n of the vertices of G.",
+      "Process vertices in order: when coloring v_i, consider its already-colored neighbors.",
+      "Vertex v_i has at most Δ(G) neighbors in total, so at most Δ(G) colors are used by its neighbors.",
+      "Since we have Δ(G) + 1 colors available, at least one color is unused among v_i's neighbors.",
+      "Assign v_i the smallest available color.",
+      "By induction, all n vertices receive a valid color using at most Δ(G) + 1 colors."
+    ],
+    "correctAnswer": null,
+    "explanation": "The greedy algorithm processes vertices sequentially. Each vertex has at most Δ(G) neighbors, so at most Δ(G) colors are forbidden, leaving at least one of the Δ(G)+1 colors available.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-gt-8",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The best known bounds for the Ramsey number R(4,4) place it at exactly what value?",
+    "acceptableAnswers": ["18"],
+    "correctAnswer": "18",
+    "explanation": "R(4,4) = 18 is known exactly. Any 2-coloring of K_{18} must contain a monochromatic K_4, and there exists a 2-coloring of K_{17} with no monochromatic K_4.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-9",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Petersen graph is vertex-transitive but NOT edge-transitive.",
+    "correctAnswer": "False",
+    "explanation": "The Petersen graph is both vertex-transitive AND edge-transitive. Its automorphism group is S_5 (order 120), which acts transitively on both vertices and edges. It is one of the most symmetric graphs known.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The chromatic polynomial of the cycle graph C_4 is:",
+    "options": [
+      "(k-1)^4 + (k-1)",
+      "(k-1)^4 - (k-1)",
+      "k(k-1)^3",
+      "k(k-1)(k-2)(k-3)"
+    ],
+    "correctAnswer": "(k-1)^4 + (k-1)",
+    "explanation": "For any cycle C_n, the chromatic polynomial is (k-1)^n + (-1)^n (k-1). For C_4: (k-1)^4 + (k-1). This can be derived by deletion-contraction or using the transfer matrix method.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-11",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about expander graphs.",
+    "steps": [
+      "Let G be a d-regular graph on n vertices with adjacency matrix A.",
+      "The eigenvalues of A are d = λ_1 ≥ λ_2 ≥ ... ≥ λ_n ≥ -d.",
+      "By the Alon-Boppana bound, for any infinite family of d-regular graphs, lim inf λ_2 ≥ 2√(d-1).",
+      "A Ramanujan graph satisfies λ_2 ≤ 2√(d-1), which is the best possible expansion.",
+      "Therefore, Ramanujan graphs exist for every degree d ≥ 3.",
+      "It follows that explicit optimal expanders are known for all degrees."
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is false. Ramanujan graphs are known to exist for d-1 being a prime power (via the Lubotzky-Phillips-Sarnak and Margulis constructions) and more recently for all d via Marcus-Spielman-Srivastava (2013), but the latter is an existence result via interlacing polynomials, not explicit constructions. Explicit Ramanujan graphs for arbitrary degree remain an open problem.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-gt-12",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "By Turán's theorem, what is the maximum number of edges in a graph on 8 vertices with no K_4 (complete graph on 4 vertices)?",
+    "acceptableAnswers": ["21"],
+    "correctAnswer": "21",
+    "explanation": "Turán's theorem with n=8, r=3 (forbidding K_4 = K_{r+1}): ex(8,K_4) = (1-1/3)·64/2 = (2/3)·32 = 64/3 ≈ 21.33, so floor gives 21. Equivalently, T(8,3) partitions 8 vertices into parts of sizes 3,3,2 giving 3·3+3·2+3·2 = 9+6+6 = 21 edges.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-13",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each spectral graph theory concept with its combinatorial interpretation.",
+    "pairs": [
+      {"left": "Number of zero Laplacian eigenvalues", "right": "Number of connected components"},
+      {"left": "Second-smallest Laplacian eigenvalue (Fiedler value)", "right": "Algebraic connectivity"},
+      {"left": "Largest adjacency eigenvalue", "right": "Related to maximum degree and walk counts"},
+      {"left": "Sum of squares of adjacency eigenvalues", "right": "Twice the number of edges"}
+    ],
+    "correctAnswer": null,
+    "explanation": "The Laplacian spectrum encodes connectivity: multiplicity of eigenvalue 0 equals the number of components. The Fiedler value measures how well-connected the graph is. The largest adjacency eigenvalue bounds max degree and counts closed walks. tr(A²) = Σλ_i² = 2|E|.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-gt-14",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to prove that K_5 has chromatic polynomial k(k-1)(k-2)(k-3)(k-4).",
+    "steps": [
+      "K_5 is the complete graph on 5 vertices, so every pair of vertices is adjacent.",
+      "Color vertex v_1: there are k choices.",
+      "Color vertex v_2: it is adjacent to v_1, so there are k-1 choices.",
+      "Color vertex v_3: it is adjacent to v_1 and v_2, so there are k-2 choices.",
+      "Color vertex v_4: it is adjacent to v_1, v_2, v_3, so there are k-3 choices.",
+      "Color vertex v_5: it is adjacent to all previous vertices, so there are k-4 choices.",
+      "By the multiplication principle, P(K_5, k) = k(k-1)(k-2)(k-3)(k-4)."
+    ],
+    "correctAnswer": null,
+    "explanation": "In a complete graph, each new vertex is adjacent to all previously colored vertices, so the available colors decrease by one at each step. This generalizes: P(K_n, k) = k(k-1)...(k-n+1) = k^{(n)}, the falling factorial.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-gt-15",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "For the complete bipartite graph K_{3,3}, the chromatic number is 3.",
+    "correctAnswer": "False",
+    "explanation": "K_{3,3} is bipartite, so its chromatic number is 2 (color one part with color 1, the other with color 2). All bipartite graphs with at least one edge have chromatic number exactly 2. The subscripts 3,3 refer to part sizes, not chromatic number.",
+    "xpReward": 40
+  }
+]

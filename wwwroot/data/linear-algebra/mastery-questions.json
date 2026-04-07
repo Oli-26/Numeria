@@ -1,0 +1,216 @@
+[
+  {
+    "id": "mastery-la-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which matrix has Jordan normal form [[2, 1, 0], [0, 2, 1], [0, 0, 2]]? (A single Jordan block of size 3 with eigenvalue 2)",
+    "options": [
+      "Any 3x3 matrix with eigenvalue 2 of algebraic multiplicity 3",
+      "A 3x3 matrix with eigenvalue 2 of algebraic multiplicity 3 and geometric multiplicity 1",
+      "A 3x3 matrix with eigenvalue 2 of algebraic multiplicity 3 and geometric multiplicity 3",
+      "A 3x3 matrix with eigenvalue 2 of algebraic multiplicity 2"
+    ],
+    "correctAnswer": "A 3x3 matrix with eigenvalue 2 of algebraic multiplicity 3 and geometric multiplicity 1",
+    "explanation": "A single Jordan block of size 3 means the eigenvalue 2 has algebraic multiplicity 3 (it's a 3x3 block) but geometric multiplicity 1 (only one linearly independent eigenvector, spanning the one-dimensional eigenspace). If the geometric multiplicity were 3, the matrix would be diagonalizable (three 1x1 Jordan blocks = the scalar matrix 2I). If the geometric multiplicity were 2, we'd get one 2x2 block and one 1x1 block. The number of Jordan blocks for an eigenvalue equals its geometric multiplicity.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-2",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "If A is a 5x5 matrix with eigenvalues 1, 1, 2, 2, 2, what is tr(A) + det(A)?",
+    "correctAnswer": "16",
+    "acceptableAnswers": ["16", "16.0"],
+    "explanation": "The trace of a matrix equals the sum of its eigenvalues: tr(A) = 1 + 1 + 2 + 2 + 2 = 8. The determinant equals the product of eigenvalues: det(A) = 1 * 1 * 2 * 2 * 2 = 8. Therefore tr(A) + det(A) = 8 + 8 = 16. These are fundamental identities: the trace is the coefficient of lambda^(n-1) in the characteristic polynomial (with appropriate sign), and the determinant is the constant term (up to sign). Both are similarity invariants, so they depend only on the eigenvalues.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-3",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: Every real symmetric matrix is diagonalizable over the reals.",
+    "correctAnswer": "True",
+    "explanation": "This is the Spectral Theorem for real symmetric matrices: every real symmetric matrix A (satisfying A = A^T) has all real eigenvalues and is orthogonally diagonalizable, meaning A = QDQ^T where Q is orthogonal and D is diagonal. The proof uses the fact that eigenvalues of symmetric matrices are real (since x^T A x = x^T lambda x, taking conjugates gives lambda = conjugate(lambda)), and eigenvectors for distinct eigenvalues are orthogonal (since lambda <x,y> = <Ax,y> = <x,Ay> = mu <x,y>). This is one of the most powerful results in linear algebra.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each matrix decomposition to its key property or use case:",
+    "pairs": [
+      { "left": "SVD (A = U Sigma V^T)", "right": "Works for ANY matrix, reveals rank and best low-rank approximations" },
+      { "left": "Eigendecomposition (A = PDP^{-1})", "right": "Only for diagonalizable square matrices, reveals eigenvalues" },
+      { "left": "QR decomposition", "right": "Orthogonal times upper triangular, used in iterative eigenvalue algorithms" },
+      { "left": "Jordan Normal Form", "right": "Works for any square matrix over C, canonical form up to block permutation" },
+      { "left": "Cholesky (A = LL^T)", "right": "Only for symmetric positive definite matrices, numerically stable" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each decomposition has specific existence conditions and applications. SVD is the most general -- it exists for any m x n matrix and is the workhorse of data science (PCA, pseudoinverse, image compression). Eigendecomposition requires diagonalizability but is the simplest for computing matrix powers. QR exists for any matrix and is used in the QR algorithm for finding eigenvalues. Jordan form always exists over C and is the theoretical canonical form for classifying matrices up to similarity. Cholesky requires the strongest hypothesis (SPD) but is the fastest and most stable decomposition when applicable.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-5",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about determinants:",
+    "steps": [
+      "Let A and B be n x n matrices",
+      "det(A + B) = det(A) + det(B) by linearity of the determinant",
+      "Example: det(I + I) = det(I) + det(I) = 1 + 1 = 2",
+      "But det(2I) = 2^n, which equals 2 only when n = 1",
+      "Contradiction for n >= 2"
+    ],
+    "correctAnswer": "2",
+    "explanation": "The error is in Step 2. The determinant is NOT linear in the matrix as a whole. The determinant is multilinear in the ROWS (or columns) individually, not additive over matrix addition. That is, det is linear in each row separately while holding other rows fixed, but det(A + B) != det(A) + det(B) in general. The example in steps 3-5 actually proves this: det(2I) = 2^n != 2 = 1 + 1 for n >= 2. This is one of the most common misconceptions in linear algebra -- confusing multilinearity (linear in each argument of a multilinear map) with linearity of the whole function.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-la-6",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Arrange the steps to prove: if A is a real n x n matrix and A^T A = 0, then A = 0.",
+    "steps": [
+      "Assume A^T A = 0, where A is a real n x n matrix.",
+      "For any vector x, we have x^T (A^T A) x = 0.",
+      "Rewrite: (Ax)^T (Ax) = 0, which means ||Ax||^2 = 0.",
+      "Since we're working over the reals, ||Ax||^2 = 0 implies Ax = 0.",
+      "Since Ax = 0 for every vector x, the matrix A must be the zero matrix."
+    ],
+    "correctAnswer": null,
+    "explanation": "This proof elegantly uses the connection between A^T A and the norm of Ax. The key insight is that x^T A^T A x = (Ax)^T(Ax) = ||Ax||^2, converting an algebraic condition into a geometric one. Over the reals, a squared norm equals zero only for the zero vector. Since this holds for ALL x, choosing x = e_i (standard basis vectors) shows every column of A is zero. Note: this argument fails over fields where a^2 + b^2 = 0 doesn't imply a = b = 0, such as finite fields. Over the complex numbers, one would use A*A = 0 (with conjugate transpose) instead.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-la-7",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Let V be a finite-dimensional vector space and V* its dual space. Which statement is TRUE?",
+    "options": [
+      "V and V* are canonically isomorphic (without choosing a basis)",
+      "V and V* have the same dimension but are not canonically isomorphic",
+      "dim(V*) = dim(V) only when V has an inner product",
+      "V* is always infinite-dimensional"
+    ],
+    "correctAnswer": "V and V* have the same dimension but are not canonically isomorphic",
+    "explanation": "For a finite-dimensional vector space V, its dual V* = Hom(V, F) has the same dimension as V (each basis {e_i} of V yields a dual basis {e_i*} of V*). However, the isomorphism V -> V* depends on the choice of basis -- there is no canonical (basis-free) isomorphism. In contrast, V and V** (the double dual) ARE canonically isomorphic via the evaluation map v -> (f -> f(v)). An inner product on V does provide a canonical isomorphism V -> V* via v -> <v, -> (the Riesz representation theorem), which is why options get confused. But the inner product is additional structure, not intrinsic to V.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-8",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "If A is a 4x4 matrix with characteristic polynomial (lambda - 3)^2 * (lambda + 1)^2, what is tr(A^2)?",
+    "correctAnswer": "20",
+    "acceptableAnswers": ["20", "20.0"],
+    "explanation": "The eigenvalues of A are 3, 3, -1, -1. The eigenvalues of A^2 are the squares of the eigenvalues of A: 9, 9, 1, 1. The trace of A^2 is the sum of its eigenvalues: 9 + 9 + 1 + 1 = 20. This works because if Av = lambda*v, then A^2 v = lambda^2 v, so eigenvalues of A^2 are squares of eigenvalues of A (with the same algebraic multiplicities). The trace identity tr(A^2) = sum of lambda_i^2 holds regardless of whether A is diagonalizable. Note also that tr(A^2) = sum_{i,j} a_{ij}^2 only for symmetric matrices; in general tr(A^2) = sum_{i,j} a_{ij} * a_{ji}.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-9",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: If A and B are n x n matrices with the same eigenvalues (including multiplicities), then A and B are similar.",
+    "correctAnswer": "False",
+    "explanation": "Having the same eigenvalues (same characteristic polynomial) is necessary but not sufficient for similarity. Counterexample: A = [[1, 1], [0, 1]] and B = [[1, 0], [0, 1]] = I both have eigenvalue 1 with algebraic multiplicity 2, but A is not similar to B = I (since PAP^{-1} = PIP^{-1} = I only if A = I). Similar matrices have the same Jordan normal form (up to block ordering), and A has a 2x2 Jordan block while B has two 1x1 blocks. The complete similarity invariant is the Jordan form, not just the characteristic polynomial. Equivalently, one must also match the minimal polynomial and the invariant factor decomposition.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-10",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Let A be a real 3x3 matrix with singular values sigma_1 >= sigma_2 >= sigma_3 > 0. What is the operator norm ||A||_2 (the largest factor by which A can stretch a vector)?",
+    "options": [
+      "sigma_1 + sigma_2 + sigma_3",
+      "sigma_1",
+      "sqrt(sigma_1^2 + sigma_2^2 + sigma_3^2)",
+      "sigma_1 * sigma_2 * sigma_3"
+    ],
+    "correctAnswer": "sigma_1",
+    "explanation": "The operator 2-norm (spectral norm) of a matrix equals its largest singular value: ||A||_2 = sigma_1 = max_{||x||=1} ||Ax||. This follows directly from the SVD: A = U Sigma V^T, so ||Ax|| = ||U Sigma V^T x|| = ||Sigma V^T x|| (since U is orthogonal). The maximum of ||Sigma y|| over unit vectors y is achieved when y = e_1, giving sigma_1. The sum of singular values gives the nuclear norm, the square root of the sum of squares gives the Frobenius norm, and the product gives |det(A)|. Each norm captures different geometric information about the linear map.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-11",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each property of a square matrix to the equivalent condition on its eigenvalues:",
+    "pairs": [
+      { "left": "tr(A) = 0", "right": "Sum of eigenvalues is zero" },
+      { "left": "det(A) = 0", "right": "At least one eigenvalue is zero" },
+      { "left": "A is nilpotent", "right": "All eigenvalues are zero" },
+      { "left": "A is idempotent (A^2 = A)", "right": "Every eigenvalue is 0 or 1" }
+    ],
+    "correctAnswer": null,
+    "explanation": "These identities connect matrix properties to spectral conditions. tr(A) = sum of eigenvalues (counting multiplicity) by Newton's identities or direct computation of the characteristic polynomial coefficient. det(A) = product of eigenvalues, so it's zero iff some eigenvalue is zero (i.e., A is singular). Nilpotent matrices satisfy A^k = 0, so all eigenvalues must be zero (if Av = lambda*v, then A^k v = lambda^k v = 0, so lambda = 0). Idempotent: if A^2 = A and Av = lambda*v, then lambda^2 v = lambda v, so lambda(lambda-1) = 0, meaning lambda in {0, 1}. The rank of an idempotent matrix equals its trace (the number of eigenvalues equal to 1).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-12",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about rank:",
+    "steps": [
+      "Let A be m x n and B be n x p",
+      "rank(AB) <= min(rank(A), rank(B)) since the image of AB is contained in the image of A",
+      "Also rank(AB) >= rank(A) + rank(B) - n by the Sylvester rank inequality",
+      "Suppose A is 3x4 with rank 3 and B is 4x3 with rank 3",
+      "Then rank(AB) >= 3 + 3 - 4 = 2 and rank(AB) <= min(3,3) = 3",
+      "So rank(AB) is either 2 or 3, meaning AB is always invertible"
+    ],
+    "correctAnswer": "6",
+    "explanation": "The error is in Step 6. From the inequalities 2 <= rank(AB) <= 3, we know AB is a 3x3 matrix with rank at least 2. But rank 2 does NOT make a 3x3 matrix invertible -- invertibility requires rank exactly 3 (full rank). The conclusion should be: AB might or might not be invertible. It could have rank 2 (singular) or rank 3 (invertible). A concrete example where rank(AB) = 2: let A = [I_3 | 0] (3x4) and B = [0; I_3] with a zero row inserted (4x3, rank 3). Both have rank 3 but AB can fail to be full rank depending on the specific matrices.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-la-13",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Arrange the steps to prove: eigenvectors of a real symmetric matrix corresponding to distinct eigenvalues are orthogonal.",
+    "steps": [
+      "Let A be real symmetric (A = A^T) with Av = lambda*v and Aw = mu*w, where lambda != mu.",
+      "Compute <Av, w> = <lambda*v, w> = lambda * <v, w>.",
+      "Also compute <v, Aw> = <v, mu*w> = mu * <v, w>.",
+      "Since A is symmetric, <Av, w> = v^T A^T w = v^T A w = <v, Aw>.",
+      "Therefore lambda * <v, w> = mu * <v, w>.",
+      "Since lambda != mu, we can subtract: (lambda - mu) * <v, w> = 0, and since lambda - mu != 0, we get <v, w> = 0."
+    ],
+    "correctAnswer": null,
+    "explanation": "This proof hinges on the symmetry condition A = A^T, which ensures <Av, w> = <v, Aw>. This is the defining property of self-adjoint operators. By computing the inner product two ways and using the fact that distinct eigenvalues are unequal, we force the inner product of the eigenvectors to be zero. This argument generalizes to any self-adjoint operator on an inner product space (Hermitian matrices over C, using A* = A). It is the first step in proving the Spectral Theorem: once we know eigenvectors are orthogonal, we can build an orthonormal eigenbasis.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-la-14",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "A 3x3 real matrix A satisfies A^3 = A. If A has rank 2, how many possible characteristic polynomials can A have?",
+    "correctAnswer": "3",
+    "acceptableAnswers": ["3", "three"],
+    "explanation": "From A^3 = A we get A(A^2 - I) = 0, so the minimal polynomial divides t(t-1)(t+1). Thus every eigenvalue is in {0, 1, -1}. Since A has rank 2, the nullity is 1, so eigenvalue 0 has algebraic multiplicity exactly 1. The remaining two eigenvalues come from {1, -1}. The possibilities are: eigenvalues (0, 1, 1) with characteristic polynomial t(t-1)^2; eigenvalues (0, -1, -1) with characteristic polynomial t(t+1)^2; and eigenvalues (0, 1, -1) with characteristic polynomial t(t-1)(t+1). All three are realizable using diagonal matrices diag(0,1,1), diag(0,-1,-1), and diag(0,1,-1) respectively. So there are exactly 3 possible characteristic polynomials.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-la-15",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "True or False: For any square matrix A, the trace of A equals the trace of A^T.",
+    "correctAnswer": "True",
+    "explanation": "This is true and follows directly from the definition: tr(A) = sum of diagonal entries a_{ii}, and the diagonal entries of A^T are the same as those of A since (A^T)_{ii} = A_{ii}. Transposing a matrix only swaps off-diagonal entries (a_{ij} <-> a_{ji} for i != j) while leaving the diagonal unchanged. This means tr(A) = tr(A^T) for any square matrix, regardless of whether it's symmetric, invertible, or has any other special properties. More generally, tr(AB) = tr(BA) for any matrices A, B where both products are defined and square, which is a much deeper identity.",
+    "xpReward": 40
+  }
+]
