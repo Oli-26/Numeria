@@ -1,0 +1,378 @@
+@page "/cards"
+@inject IProgressService Progress
+@inject IContentRepository Content
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/profile")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Hall of Cards</h1>
+</div>
+
+<p class="cards-subtitle">Complete all lessons in a topic to earn its card.</p>
+
+@if (profile != null && topics != null)
+{
+    <div class="cards-count">
+        <strong>@profile.CompletionCards.Count</strong> / @topics.Count collected
+    </div>
+
+    <div class="cards-grid">
+        @foreach (var topic in topics)
+        {
+            var card = profile.CompletionCards.FirstOrDefault(c => c.TopicId == topic.Id);
+            var earned = card != null;
+
+            <div class="completion-card @(earned ? "earned" : "locked")" @onclick="() => { if (earned) FlipCard(topic.Id); }">
+                @if (earned && flippedCard == topic.Id)
+                {
+                    <div class="card-back">
+                        <h3>@topic.Name</h3>
+                        <p class="card-desc">@topic.Description</p>
+                        <div class="card-date">Earned @card!.EarnedDate</div>
+                        <div class="card-badge">MASTERED</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-front">
+                        <div class="card-art">
+                            @((MarkupString)GetCardSvg(topic.Id, topic.Color, earned))
+                        </div>
+                        <div class="card-title">@topic.Name</div>
+                        @if (!earned)
+                        {
+                            <div class="card-lock"><Icon Name="lock" Size="18" /></div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="loading">Loading...</div>
+}
+
+@code {
+    private UserProfile? profile;
+    private List<Topic>? topics;
+    private string? flippedCard;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            profile = await Progress.GetProfileAsync();
+            topics = await Content.GetTopicsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private void FlipCard(string topicId)
+    {
+        flippedCard = flippedCard == topicId ? null : topicId;
+    }
+
+    private string GetCardSvg(string topicId, string color, bool earned)
+    {
+        var opacity = earned ? "1" : "0.2";
+        var bg = earned ? color : "#888";
+        return topicId switch
+        {
+            "calculus" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gc' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gc)' opacity='{opacity}'/>
+                <text x='80' y='55' text-anchor='middle' font-size='42' font-family='Georgia,serif' fill='#fff' opacity='0.9'>∫</text>
+                <path d='M30 85 Q55 50 80 75 Q105 100 130 65' stroke='#fff' stroke-width='2' fill='none' opacity='0.5'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>CALCULUS</text>
+            </svg>",
+
+            "linear-algebra" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gla' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gla)' opacity='{opacity}'/>
+                <rect x='50' y='25' width='60' height='60' rx='4' stroke='#fff' stroke-width='2' fill='none' opacity='0.6'/>
+                <line x1='80' y1='25' x2='80' y2='85' stroke='#fff' stroke-width='1' opacity='0.3'/>
+                <line x1='50' y1='55' x2='110' y2='55' stroke='#fff' stroke-width='1' opacity='0.3'/>
+                <circle cx='65' cy='40' r='4' fill='#fff' opacity='0.8'/><circle cx='95' cy='40' r='4' fill='#fff' opacity='0.5'/>
+                <circle cx='65' cy='70' r='4' fill='#fff' opacity='0.5'/><circle cx='95' cy='70' r='4' fill='#fff' opacity='0.8'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>LINEAR ALGEBRA</text>
+            </svg>",
+
+            "topology" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gt' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gt)' opacity='{opacity}'/>
+                <ellipse cx='80' cy='52' rx='38' ry='24' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
+                <ellipse cx='80' cy='52' rx='12' ry='24' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.4'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>TOPOLOGY</text>
+            </svg>",
+
+            "number-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gnt' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gnt)' opacity='{opacity}'/>
+                <text x='40' y='45' font-size='22' font-family='Georgia,serif' fill='#fff' opacity='0.6'>2</text>
+                <text x='60' y='60' font-size='28' font-family='Georgia,serif' fill='#fff' opacity='0.8'>3</text>
+                <text x='85' y='45' font-size='24' font-family='Georgia,serif' fill='#fff' opacity='0.7'>5</text>
+                <text x='105' y='65' font-size='20' font-family='Georgia,serif' fill='#fff' opacity='0.5'>7</text>
+                <text x='55' y='80' font-size='18' font-family='Georgia,serif' fill='#fff' opacity='0.4'>11</text>
+                <text x='90' y='82' font-size='16' font-family='Georgia,serif' fill='#fff' opacity='0.35'>13</text>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>NUMBER THEORY</text>
+            </svg>",
+
+            "probability" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gp' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gp)' opacity='{opacity}'/>
+                <rect x='58' y='22' width='44' height='44' rx='6' stroke='#fff' stroke-width='2' fill='none' opacity='0.7' transform='rotate(12 80 44)'/>
+                <circle cx='70' cy='35' r='3' fill='#fff' opacity='0.8'/><circle cx='90' cy='35' r='3' fill='#fff' opacity='0.8'/>
+                <circle cx='80' cy='47' r='3' fill='#fff' opacity='0.8'/>
+                <circle cx='70' cy='55' r='3' fill='#fff' opacity='0.8'/><circle cx='90' cy='55' r='3' fill='#fff' opacity='0.8'/>
+                <path d='M30 80 Q50 40 80 60 Q110 80 130 50' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.35'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>PROBABILITY</text>
+            </svg>",
+
+            "group-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gg' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gg)' opacity='{opacity}'/>
+                <polygon points='80,20 115,45 105,80 55,80 45,45' stroke='#fff' stroke-width='2' fill='none' opacity='0.7'/>
+                <polygon points='80,30 107,50 99,75 61,75 53,50' stroke='#fff' stroke-width='1' fill='none' opacity='0.3' stroke-dasharray='4,3'/>
+                <circle cx='80' cy='52' r='3' fill='#fff' opacity='0.6'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>GROUP THEORY</text>
+            </svg>",
+
+            "graph-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='ggt' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#ggt)' opacity='{opacity}'/>
+                <line x1='50' y1='35' x2='110' y2='35' stroke='#fff' stroke-width='1.5' opacity='0.5'/>
+                <line x1='50' y1='35' x2='80' y2='72' stroke='#fff' stroke-width='1.5' opacity='0.5'/>
+                <line x1='110' y1='35' x2='80' y2='72' stroke='#fff' stroke-width='1.5' opacity='0.5'/>
+                <line x1='50' y1='35' x2='40' y2='72' stroke='#fff' stroke-width='1.5' opacity='0.5'/>
+                <line x1='110' y1='35' x2='120' y2='72' stroke='#fff' stroke-width='1.5' opacity='0.5'/>
+                <circle cx='50' cy='35' r='6' fill='#fff' opacity='0.8'/><circle cx='110' cy='35' r='6' fill='#fff' opacity='0.8'/>
+                <circle cx='80' cy='72' r='6' fill='#fff' opacity='0.8'/><circle cx='40' cy='72' r='6' fill='#fff' opacity='0.6'/>
+                <circle cx='120' cy='72' r='6' fill='#fff' opacity='0.6'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>GRAPH THEORY</text>
+            </svg>",
+
+            "differential-geometry" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gdg' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gdg)' opacity='{opacity}'/>
+                <path d='M30 65 C50 25, 70 25, 80 50 C90 75, 110 75, 130 35' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
+                <path d='M75 50 L85 42' stroke='#fff' stroke-width='1.5' opacity='0.5' marker-end='url(#arw)'/>
+                <circle cx='80' cy='50' r='2.5' fill='#fff' opacity='0.7'/>
+                <text x='80' y='108' text-anchor='middle' font-size='9' fill='#fff' opacity='0.7'>DIFFERENTIAL GEOMETRY</text>
+            </svg>",
+
+            "set-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gst' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gst)' opacity='{opacity}'/>
+                <circle cx='65' cy='48' r='25' stroke='#fff' stroke-width='2' fill='none' opacity='0.6'/>
+                <circle cx='95' cy='48' r='25' stroke='#fff' stroke-width='2' fill='none' opacity='0.6'/>
+                <text x='58' y='42' font-size='10' fill='#fff' opacity='0.5'>A</text>
+                <text x='98' y='42' font-size='10' fill='#fff' opacity='0.5'>B</text>
+                <text x='77' y='55' font-size='14' font-family='Georgia,serif' fill='#fff' opacity='0.8'>∩</text>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>SET THEORY</text>
+            </svg>",
+
+            "fractals" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gf' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gf)' opacity='{opacity}'/>
+                <polygon points='80,18 120,80 40,80' stroke='#fff' stroke-width='2' fill='none' opacity='0.7'/>
+                <polygon points='60,80 80,49 100,80' stroke='#fff' stroke-width='1.5' fill='{bg}' opacity='0.8'/>
+                <polygon points='60,49 70,33 80,49' stroke='#fff' stroke-width='1' fill='none' opacity='0.5'/>
+                <polygon points='80,49 90,33 100,49' stroke='#fff' stroke-width='1' fill='none' opacity='0.5'/>
+                <polygon points='70,80 80,64 90,80' stroke='#fff' stroke-width='1' fill='none' opacity='0.5'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>FRACTALS</text>
+            </svg>",
+
+            "fourier-analysis" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gfa' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gfa)' opacity='{opacity}'/>
+                <path d='M20 50 Q35 20 50 50 Q65 80 80 50 Q95 20 110 50 Q125 80 140 50' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
+                <path d='M20 50 Q50 35 80 50 Q110 65 140 50' stroke='#fff' stroke-width='1' fill='none' opacity='0.3' stroke-dasharray='4,3'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>FOURIER ANALYSIS</text>
+            </svg>",
+
+            "complex-analysis" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gca' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gca)' opacity='{opacity}'/>
+                <line x1='30' y1='55' x2='130' y2='55' stroke='#fff' stroke-width='1' opacity='0.3'/>
+                <line x1='80' y1='20' x2='80' y2='88' stroke='#fff' stroke-width='1' opacity='0.3'/>
+                <text x='132' y='52' font-size='9' fill='#fff' opacity='0.4'>Re</text>
+                <text x='82' y='19' font-size='9' fill='#fff' opacity='0.4'>Im</text>
+                <circle cx='80' cy='55' r='22' stroke='#fff' stroke-width='2' fill='none' opacity='0.5'/>
+                <path d='M58 55 A22 22 0 0 1 102 55' stroke='#fff' stroke-width='2' fill='none' opacity='0.8' stroke-dasharray='3,2'/>
+                <circle cx='95' cy='40' r='3' fill='#fff' opacity='0.8'/>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>COMPLEX ANALYSIS</text>
+            </svg>",
+
+            "philosophy-of-math" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gph' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gph)' opacity='{opacity}'/>
+                <text x='80' y='58' text-anchor='middle' font-size='38' font-family='Georgia,serif' fill='#fff' opacity='0.8'>φ</text>
+                <text x='50' y='40' font-size='14' fill='#fff' opacity='0.2' font-family='Georgia,serif'>?</text>
+                <text x='105' y='45' font-size='12' fill='#fff' opacity='0.2' font-family='Georgia,serif'>∴</text>
+                <text x='45' y='78' font-size='10' fill='#fff' opacity='0.15' font-family='Georgia,serif'>∃</text>
+                <text x='110' y='75' font-size='11' fill='#fff' opacity='0.15' font-family='Georgia,serif'>∀</text>
+                <text x='80' y='108' text-anchor='middle' font-size='9' fill='#fff' opacity='0.7'>PHILOSOPHY OF MATH</text>
+            </svg>",
+
+            "combinatorics" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gcmb' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gcmb)' opacity='{opacity}'/>
+                <rect x='40' y='22' width='18' height='18' rx='3' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.6'/>
+                <rect x='62' y='22' width='18' height='18' rx='3' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.6'/>
+                <rect x='84' y='22' width='18' height='18' rx='3' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.6'/>
+                <rect x='51' y='44' width='18' height='18' rx='3' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.5'/>
+                <rect x='73' y='44' width='18' height='18' rx='3' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.5'/>
+                <rect x='62' y='66' width='18' height='18' rx='3' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.4'/>
+                <text x='49' y='35' text-anchor='middle' font-size='11' fill='#fff' opacity='0.8' font-weight='bold'>1</text>
+                <text x='71' y='35' text-anchor='middle' font-size='11' fill='#fff' opacity='0.8' font-weight='bold'>2</text>
+                <text x='93' y='35' text-anchor='middle' font-size='11' fill='#fff' opacity='0.8' font-weight='bold'>1</text>
+                <text x='60' y='57' text-anchor='middle' font-size='11' fill='#fff' opacity='0.7' font-weight='bold'>3</text>
+                <text x='82' y='57' text-anchor='middle' font-size='11' fill='#fff' opacity='0.7' font-weight='bold'>3</text>
+                <text x='71' y='79' text-anchor='middle' font-size='11' fill='#fff' opacity='0.6' font-weight='bold'>6</text>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>COMBINATORICS</text>
+            </svg>",
+
+            "differential-equations" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gde' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gde)' opacity='{opacity}'/>
+                <path d='M25 70 C40 70 40 30 55 30 C70 30 70 70 85 70 C100 70 100 30 115 30 C130 30 130 70 140 70' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
+                <path d='M25 50 Q50 20 80 50 Q110 80 140 50' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.3' stroke-dasharray='4,3'/>
+                <circle cx='55' cy='30' r='3' fill='#fff' opacity='0.6'/>
+                <circle cx='115' cy='30' r='3' fill='#fff' opacity='0.6'/>
+                <text x='80' y='108' text-anchor='middle' font-size='9' fill='#fff' opacity='0.7'>DIFFERENTIAL EQUATIONS</text>
+            </svg>",
+
+            "computation" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <defs><linearGradient id='gco' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='{bg}'/><stop offset='100%' stop-color='{bg}' stop-opacity='0.6'/></linearGradient></defs>
+                <rect width='160' height='120' rx='8' fill='url(#gco)' opacity='{opacity}'/>
+                <rect x='35' y='20' width='90' height='12' rx='2' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.4'/>
+                <circle cx='42' cy='26' r='3' fill='#fff' opacity='0.7'/>
+                <rect x='48' y='24' width='20' height='4' rx='1' fill='#fff' opacity='0.3'/>
+                <line x1='30' y1='45' x2='130' y2='45' stroke='#fff' stroke-width='1' opacity='0.2'/>
+                <text x='45' y='58' font-size='9' font-family='monospace' fill='#fff' opacity='0.5'>q0</text>
+                <text x='80' y='58' font-size='9' font-family='monospace' fill='#fff' opacity='0.5'>q1</text>
+                <text x='115' y='58' font-size='9' font-family='monospace' fill='#fff' opacity='0.5'>q2</text>
+                <circle cx='45' cy='55' r='10' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.7'/>
+                <circle cx='80' cy='55' r='10' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.7'/>
+                <circle cx='115' cy='55' r='10' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.7'/>
+                <circle cx='115' cy='55' r='12' stroke='#fff' stroke-width='1' fill='none' opacity='0.4'/>
+                <path d='M55 55 L70 55' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.6' marker-end='url(#arw)'/>
+                <path d='M90 55 L105 55' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.6' marker-end='url(#arw)'/>
+                <text x='62' y='50' font-size='7' font-family='monospace' fill='#fff' opacity='0.4'>0,1</text>
+                <text x='97' y='50' font-size='7' font-family='monospace' fill='#fff' opacity='0.4'>0,1</text>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>COMPUTATION</text>
+            </svg>",
+
+            _ => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
+                <rect width='160' height='120' rx='8' fill='{bg}' opacity='{opacity}'/>
+                <text x='80' y='55' text-anchor='middle' font-size='32' font-family='Georgia,serif' fill='#fff' opacity='0.8'>∑</text>
+                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>MATHEMATICS</text>
+            </svg>"
+        };
+    }
+}
+
+<style>
+    .cards-subtitle {
+        color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; text-align: center;
+    }
+
+    .cards-count {
+        text-align: center; margin-bottom: 20px;
+        font-size: 0.9rem; color: var(--text-secondary);
+    }
+    .cards-count strong { font-size: 1.3rem; color: var(--primary); }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    .completion-card {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: 0 4px 16px var(--shadow);
+        border: 2px solid var(--border);
+        aspect-ratio: 4/3;
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: default;
+    }
+
+    .completion-card:active { transform: scale(0.97); }
+
+    .completion-card.earned {
+        cursor: pointer;
+        border-color: transparent;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .completion-card.earned:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    }
+
+    .completion-card.locked {
+        opacity: 0.55;
+    }
+
+    /* Front */
+    .card-front {
+        width: 100%; height: 100%; position: relative;
+        animation: cardIn 0.4s ease;
+    }
+
+    .card-art { width: 100%; height: 100%; }
+    .card-art svg { width: 100%; height: 100%; display: block; }
+
+    .card-title {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        padding: 6px 8px;
+        font-size: 0.75rem; font-weight: 700; color: #fff;
+        text-align: center;
+        background: linear-gradient(transparent, rgba(0,0,0,0.5));
+    }
+
+    .card-lock {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        color: var(--text-muted);
+    }
+
+    /* Back */
+    .card-back {
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 12px; text-align: center;
+        background: var(--bg-card);
+        animation: cardFlip 0.4s ease;
+    }
+
+    .card-back h3 { font-size: 0.9rem; margin: 0 0 4px; }
+    .card-desc { font-size: 0.7rem; color: var(--text-muted); margin: 0 0 6px; line-height: 1.4; }
+    .card-date { font-size: 0.65rem; color: var(--text-muted); }
+
+    .card-badge {
+        margin-top: 6px; padding: 2px 10px; border-radius: 10px;
+        font-size: 0.6rem; font-weight: 800; letter-spacing: 1px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        color: var(--xp-text);
+    }
+
+    @@keyframes cardIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @@keyframes cardFlip {
+        from { opacity: 0; transform: rotateY(90deg); }
+        to { opacity: 1; transform: rotateY(0); }
+    }
+
+    @@media (min-width: 500px) {
+        .cards-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+</style>

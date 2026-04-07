@@ -11,8 +11,8 @@ public class LeaderboardService : ILeaderboardService
     // Dreamlo codes -- replace with your own from https://dreamlo.com
     // Private code: for adding scores (keep secret in a real app, but fine for sideloaded)
     // Public code: for reading scores
-    private const string PrivateCode = "REPLACE_WITH_YOUR_PRIVATE_CODE";
-    private const string PublicCode = "REPLACE_WITH_YOUR_PUBLIC_CODE";
+    private const string PrivateCode = "U6eHU52II0y0CFKhdItvoQiD8z82QmUkuJXqiw2oK6HQ";
+    private const string PublicCode = "69d3eb8f8f40bc2f600e8597";
     private const string BaseUrl = "http://dreamlo.com/lb";
 
     public bool IsConfigured => PrivateCode != "REPLACE_WITH_YOUR_PRIVATE_CODE";
@@ -109,13 +109,20 @@ public class LeaderboardService : ILeaderboardService
         }
     }
 
+    private static int ParseInt(JsonElement el)
+    {
+        if (el.ValueKind == JsonValueKind.Number) return el.GetInt32();
+        if (el.ValueKind == JsonValueKind.String && int.TryParse(el.GetString(), out var v)) return v;
+        return 0;
+    }
+
     private static LeaderboardEntry ParseEntry(JsonElement el)
     {
         return new LeaderboardEntry
         {
             Name = el.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "",
-            Score = el.TryGetProperty("score", out var s) ? s.GetInt32() : 0,
-            Seconds = el.TryGetProperty("seconds", out var sec) ? sec.GetInt32() : 0,
+            Score = el.TryGetProperty("score", out var s) ? ParseInt(s) : 0,
+            Seconds = el.TryGetProperty("seconds", out var sec) ? ParseInt(sec) : 0,
             Text = el.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "",
             Date = el.TryGetProperty("date", out var d) ? d.GetString() ?? "" : ""
         };

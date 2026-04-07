@@ -7,7 +7,9 @@ public enum QuestionType
     ConceptMatch,
     VisualIdentify,
     ProofOrdering,
-    VisualPuzzle
+    VisualPuzzle,
+    TrueOrFalse,
+    FindTheError
 }
 
 public enum DifficultyLevel

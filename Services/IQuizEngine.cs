@@ -13,7 +13,7 @@ public class QuizResult
 public interface IQuizEngine
 {
     Task<List<Question>> GenerateQuizAsync(string topicId, string? lessonId = null, int count = 5);
-    Task<List<Question>> GenerateMixedQuizAsync(int count = 10);
+    Task<List<Question>> GenerateMixedQuizAsync(IEnumerable<string>? completedTopicIds = null, int count = 5);
     QuizResult ValidateAnswer(Question question, string userAnswer);
     int CalculateQuizXp(List<QuizResult> results, int streak);
 }

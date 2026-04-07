@@ -1,24 +1,26 @@
+@implements IDisposable
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <nav class="bottom-nav">
     <a class="nav-item @(IsActive("/") ? "active" : "")" href="/" @onclick:preventDefault @onclick='() => Navigate("/")'>
-        <span class="nav-icon">\uD83C\uDFE0</span>
+        <span class="nav-icon"><Icon Name="home" Size="22" /></span>
         <span class="nav-label">Home</span>
     </a>
     <a class="nav-item @(IsActive("/profile") ? "active" : "")" href="/profile" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
-        <span class="nav-icon">\uD83D\uDC64</span>
+        <span class="nav-icon"><Icon Name="user" Size="22" /></span>
         <span class="nav-label">Profile</span>
     </a>
     <a class="nav-item @(IsActive("/leaderboard") ? "active" : "")" href="/leaderboard" @onclick:preventDefault @onclick='() => Navigate("/leaderboard")'>
-        <span class="nav-icon">\uD83C\uDFC6</span>
+        <span class="nav-icon"><Icon Name="trophy" Size="22" /></span>
         <span class="nav-label">Ranks</span>
     </a>
     <a class="nav-item @(IsActive("/shop") ? "active" : "")" href="/shop" @onclick:preventDefault @onclick='() => Navigate("/shop")'>
-        <span class="nav-icon">\uD83D\uDC8E</span>
+        <span class="nav-icon"><Icon Name="gem" Size="22" /></span>
         <span class="nav-label">Shop</span>
     </a>
     <a class="nav-item @(IsActive("/settings") ? "active" : "")" href="/settings" @onclick:preventDefault @onclick='() => Navigate("/settings")'>
-        <span class="nav-icon">\u2699\uFE0F</span>
+        <span class="nav-icon"><Icon Name="settings" Size="22" /></span>
         <span class="nav-label">Settings</span>
     </a>
 </nav>
@@ -29,11 +31,18 @@
     protected override void OnInitialized()
     {
         currentUri = Nav.ToBaseRelativePath(Nav.Uri);
-        Nav.LocationChanged += (_, _) =>
-        {
-            currentUri = Nav.ToBaseRelativePath(Nav.Uri);
-            StateHasChanged();
-        };
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        currentUri = Nav.ToBaseRelativePath(Nav.Uri);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
     }
 
     private bool IsActive(string path)
@@ -43,8 +52,9 @@
         return relative.StartsWith(path);
     }
 
-    private void Navigate(string path)
+    private async Task Navigate(string path)
     {
+        try { await JS.InvokeVoidAsync("Sounds.playNav"); } catch { }
         Nav.NavigateTo(path);
     }
 }
@@ -73,17 +83,52 @@
         font-size: 0.75rem;
         padding: 4px 12px;
         border-radius: 8px;
-        transition: color 0.2s ease;
+        transition: color 0.25s ease, transform 0.15s ease;
         -webkit-tap-highlight-color: transparent;
+        position: relative;
+    }
+
+    .nav-item:active {
+        transform: scale(0.9);
     }
 
     .nav-item.active {
         color: var(--primary);
     }
 
+    .nav-item.active::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 3px;
+        background: var(--primary);
+        border-radius: 0 0 3px 3px;
+        animation: navIndicator 0.3s ease;
+    }
+
+    @@keyframes navIndicator {
+        from { width: 0; opacity: 0; }
+        to { width: 20px; opacity: 1; }
+    }
+
     .nav-icon {
         font-size: 1.4rem;
         margin-bottom: 2px;
+        transition: transform 0.25s ease;
+    }
+
+    .nav-item.active .nav-icon {
+        animation: navBounce 0.4s ease;
+    }
+
+    @@keyframes navBounce {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.25); }
+        70% { transform: scale(0.95); }
+        100% { transform: scale(1); }
     }
 
     .nav-label {

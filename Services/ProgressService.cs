@@ -137,7 +137,13 @@ public class ProgressService : IProgressService
         {
             profile.CurrentStreak++;
         }
-        else if (profile.LastActivityDate != today)
+        else if (profile.StreakFreezeDays > 0 && profile.CurrentStreak > 0)
+        {
+            // Use a streak freeze instead of resetting
+            profile.StreakFreezeDays--;
+            profile.CurrentStreak++;
+        }
+        else
         {
             profile.CurrentStreak = 1;
         }
@@ -161,7 +167,7 @@ public class ProgressService : IProgressService
         var profile = await GetProfileAsync();
         if (profile.LastSessionStart != null && DateTime.TryParse(profile.LastSessionStart, out var start))
         {
-            var elapsed = (int)(DateTime.Now - start).TotalMinutes;
+            var elapsed = Math.Min((int)(DateTime.Now - start).TotalMinutes, 30);
             if (elapsed > 0)
             {
                 profile.TotalStudyMinutes += elapsed;

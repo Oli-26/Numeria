@@ -56,8 +56,8 @@
         "title": "The Medical Test Problem",
         "contentHtml": "<p>Classic example: A disease affects 1% of people. A test is 95% accurate (both ways). You test positive. What's the probability you have the disease?</p><p>Most people guess ~95%. The actual answer: about <strong>16%</strong>!</p><p>Why? With 1000 people: 10 have the disease (9.5 test positive). 990 don't (49.5 false positives). So 9.5/(9.5+49.5) \u2248 16%.</p><p>This is the <strong>base rate fallacy</strong> \u2014 ignoring how rare the disease is leads to wildly wrong intuitions.</p>",
         "mathExpressions": ["P(\\text{disease}|+) = \\frac{0.95 \\times 0.01}{0.95 \\times 0.01 + 0.05 \\times 0.99} \\approx 0.16"],
-        "visualizationType": null,
-        "visualizationConfig": null
+        "visualizationType": "bayes-visual",
+        "visualizationConfig": {}
       },
       {
         "id": "prob-02-c3",
@@ -92,8 +92,8 @@
         "title": "The Normal Distribution",
         "contentHtml": "<p>The <strong>normal (Gaussian) distribution</strong> is the bell curve \u2014 the most important distribution in statistics.</p><p>Characterized by mean \u03bc (center) and standard deviation \u03c3 (spread).</p><p>The <strong>68-95-99.7 rule:</strong><br>\u2022 68% of data within 1\u03c3 of the mean<br>\u2022 95% within 2\u03c3<br>\u2022 99.7% within 3\u03c3</p><p>Heights, test scores, measurement errors, and countless natural phenomena follow this distribution.</p>",
         "mathExpressions": ["f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}} e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}"],
-        "visualizationType": null,
-        "visualizationConfig": null
+        "visualizationType": "bell-curve",
+        "visualizationConfig": {}
       },
       {
         "id": "prob-03-c3",
@@ -142,5 +142,149 @@
     ],
     "quizQuestionIds": ["prob-q16", "prob-q17", "prob-q18", "prob-q19", "prob-q20"],
     "puzzleId": "prob-p01"
+  },
+  {
+    "id": "prob-05",
+    "topicId": "probability",
+    "order": 5,
+    "title": "Moment Generating Functions",
+    "description": "Encoding distributions through transforms",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "prob-05-c1",
+        "title": "MGF Definition & Uniqueness",
+        "contentHtml": "<p>The <strong>moment generating function</strong> (MGF) of a random variable X is M(t) = E[e<sup>tX</sup>]. It is a powerful tool that <strong>uniquely determines</strong> the distribution of X (when it exists in a neighborhood of t = 0).</p><p>Why \"moment generating\"? Because the n-th derivative of M(t) evaluated at t = 0 gives the n-th moment: M'(0) = E[X], M''(0) = E[X²], and so on.</p><p>If two random variables have the same MGF, they have the same distribution. This makes MGFs a powerful tool for proving distributional results.</p>",
+        "mathExpressions": ["M_X(t) = E[e^{tX}], \\quad M_X^{(n)}(0) = E[X^n]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-05-c2",
+        "title": "Computing Moments from the MGF",
+        "contentHtml": "<p>The MGF encodes all moments of X. By expanding e<sup>tX</sup> as a Taylor series: e<sup>tX</sup> = 1 + tX + t²X²/2! + ..., taking expectations gives M(t) = 1 + tE[X] + t²E[X²]/2! + ...</p><p>To find E[X]: differentiate M(t) once, set t = 0. To find E[X²]: differentiate twice, set t = 0. The variance is then Var(X) = M''(0) - [M'(0)]².</p><p>A key property: if X and Y are independent, then M<sub>X+Y</sub>(t) = M<sub>X</sub>(t) · M<sub>Y</sub>(t). The MGF converts sums of independent variables into products, making it ideal for proving the CLT and other limit theorems.</p>",
+        "mathExpressions": ["\\text{Var}(X) = M''(0) - [M'(0)]^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-05-c3",
+        "title": "MGFs of Common Distributions",
+        "contentHtml": "<p><strong>Normal(μ, σ²):</strong> M(t) = exp(μt + σ²t²/2). Differentiating confirms E[X] = μ and Var(X) = σ².</p><p><strong>Exponential(λ):</strong> M(t) = λ/(λ - t) for t < λ. Differentiating gives E[X] = 1/λ.</p><p><strong>Poisson(λ):</strong> M(t) = exp(λ(e<sup>t</sup> - 1)). This elegantly shows that the sum of independent Poisson variables is again Poisson: their MGFs multiply, and exp(λ₁(e<sup>t</sup>-1)) · exp(λ₂(e<sup>t</sup>-1)) = exp((λ₁+λ₂)(e<sup>t</sup>-1)).</p>",
+        "mathExpressions": ["M_{\\text{Normal}}(t) = e^{\\mu t + \\sigma^2 t^2 / 2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q34", "prob-q35", "prob-q36", "prob-q37", "prob-q38"],
+    "puzzleId": null
+  },
+  {
+    "id": "prob-06",
+    "topicId": "probability",
+    "order": 6,
+    "title": "Markov Chains",
+    "description": "Memoryless processes and long-run behavior",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "prob-06-c1",
+        "title": "States & Transition Matrices",
+        "contentHtml": "<p>A <strong>Markov chain</strong> is a sequence of random states where the probability of moving to the next state depends <em>only</em> on the current state, not the history. This is the <strong>Markov property</strong> (memorylessness).</p><p>The <strong>transition matrix</strong> P has entries P<sub>ij</sub> = probability of moving from state i to state j. Each row sums to 1 (it's a stochastic matrix).</p><p>For <strong>n-step transitions</strong>, the probability of going from state i to state j in exactly n steps is given by the (i,j) entry of P<sup>n</sup> -- just raise the matrix to the n-th power!</p>",
+        "mathExpressions": ["P(X_{n+1} = j \\mid X_n = i) = P_{ij}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-06-c2",
+        "title": "Stationary Distributions & Ergodicity",
+        "contentHtml": "<p>A <strong>stationary distribution</strong> π is a probability vector satisfying πP = π. It represents the long-run proportion of time spent in each state.</p><p>The <strong>Ergodic Theorem</strong> states that for an irreducible, aperiodic Markov chain (one that can reach any state from any state, without periodic cycling), P<sup>n</sup> converges to a matrix where every row is π.</p><p>This means no matter where you start, the chain eventually \"forgets\" its initial state and settles into the stationary distribution. This is one of the most powerful results in applied probability.</p>",
+        "mathExpressions": ["\\pi P = \\pi, \\quad \\sum_i \\pi_i = 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-06-c3",
+        "title": "Applications of Markov Chains",
+        "contentHtml": "<p><strong>Google's PageRank:</strong> The web is modeled as a Markov chain where states are web pages and transitions are links. The stationary distribution ranks pages by importance -- this is how Google originally ranked search results.</p><p><strong>Random walks:</strong> A particle moves left or right with fixed probabilities. Markov chains model diffusion, stock prices, and even board games.</p><p><strong>MCMC (Markov Chain Monte Carlo):</strong> By carefully designing a Markov chain whose stationary distribution matches a target distribution, we can sample from distributions that are otherwise impossible to compute. This revolutionized Bayesian statistics and is used in physics, biology, and machine learning.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q39", "prob-q40", "prob-q41", "prob-q42", "prob-q43"],
+    "puzzleId": null
+  },
+  {
+    "id": "prob-07",
+    "topicId": "probability",
+    "order": 7,
+    "title": "Information Theory",
+    "description": "Quantifying uncertainty and communication",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "prob-07-c1",
+        "title": "Shannon Entropy",
+        "contentHtml": "<p><strong>Shannon entropy</strong> measures the average <strong>uncertainty</strong> (or information content) of a random variable: H(X) = -Σ p(x) log₂ p(x).</p><p>A fair coin has H = 1 bit (maximum uncertainty for two outcomes). A biased coin with P(H) = 0.99 has H ≈ 0.08 bits (very predictable, low entropy).</p><p>Entropy is maximized when all outcomes are equally likely, and equals zero when the outcome is certain. It quantifies how much \"surprise\" you should expect on average from a random source.</p>",
+        "mathExpressions": ["H(X) = -\\sum_{x} p(x) \\log_2 p(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-07-c2",
+        "title": "Mutual Information & KL Divergence",
+        "contentHtml": "<p><strong>Mutual information</strong> I(X;Y) measures how much knowing X reduces uncertainty about Y (and vice versa). I(X;Y) = H(X) + H(Y) - H(X,Y) = H(X) - H(X|Y).</p><p>The <strong>Kullback-Leibler divergence</strong> D<sub>KL</sub>(P || Q) = Σ P(x) log(P(x)/Q(x)) measures how one distribution differs from another. It is always non-negative (Gibbs' inequality) and equals zero only when P = Q.</p><p>KL divergence is <strong>not</strong> a true distance (it's asymmetric: D<sub>KL</sub>(P||Q) ≠ D<sub>KL</sub>(Q||P)), but it's fundamental in machine learning (loss functions), statistics (model selection), and physics (free energy).</p>",
+        "mathExpressions": ["D_{KL}(P \\| Q) = \\sum_x P(x) \\log \\frac{P(x)}{Q(x)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-07-c3",
+        "title": "Channel Capacity & Shannon's Theorems",
+        "contentHtml": "<p>A <strong>communication channel</strong> is noisy: bits get flipped. <strong>Channel capacity</strong> C is the maximum rate at which information can be transmitted reliably.</p><p><strong>Shannon's Noisy Channel Coding Theorem</strong> (1948) is astonishing: for any rate below capacity, there exist codes that achieve <em>arbitrarily small</em> error probability. Above capacity, reliable communication is impossible.</p><p>For a binary symmetric channel with error probability p: C = 1 - H(p) = 1 + p log₂ p + (1-p) log₂(1-p). Shannon's work founded information theory and laid the mathematical groundwork for the entire digital communications revolution.</p>",
+        "mathExpressions": ["C = 1 - H(p) \\quad \\text{(binary symmetric channel)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q44", "prob-q45", "prob-q46", "prob-q47", "prob-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "prob-08",
+    "topicId": "probability",
+    "order": 8,
+    "title": "Stochastic Processes",
+    "description": "Randomness evolving through time",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "prob-08-c1",
+        "title": "Random Walks & Gambler's Ruin",
+        "contentHtml": "<p>A <strong>random walk</strong> starts at position 0 and at each step moves +1 (with probability p) or -1 (with probability 1-p).</p><p>In 1D with a fair coin (p = 1/2), the walk is <strong>recurrent</strong>: it will return to the origin infinitely often with probability 1. The same is true in 2D. But in 3D and higher, the walk is <strong>transient</strong> -- it drifts away and may never return!</p><p>The <strong>Gambler's Ruin</strong> problem asks: starting with $k, playing a fair game, what is the probability of reaching $N before going broke? The answer is k/N. Against a house edge, ruin is almost certain for long play.</p>",
+        "mathExpressions": ["P(\\text{ruin}) = 1 - \\frac{k}{N} \\quad \\text{(fair game)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-08-c2",
+        "title": "Brownian Motion",
+        "contentHtml": "<p><strong>Brownian motion</strong> (the Wiener process) W(t) is the continuous-time limit of a random walk. It is the most fundamental continuous stochastic process.</p><p>Key properties: W(0) = 0; increments W(t) - W(s) are normal with mean 0 and variance t-s; increments over non-overlapping intervals are independent; paths are continuous but <strong>nowhere differentiable</strong> (infinitely jagged at every scale).</p><p>Brownian motion was first observed physically by botanist Robert Brown (1827) watching pollen particles, and was explained mathematically by Einstein (1905) as evidence for atomic theory. Wiener gave the rigorous mathematical construction.</p>",
+        "mathExpressions": ["W(t) - W(s) \\sim N(0, t-s) \\quad \\text{for } t > s"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "prob-08-c3",
+        "title": "Applications: Black-Scholes & Diffusion",
+        "contentHtml": "<p>The <strong>Black-Scholes model</strong> assumes stock prices follow <strong>geometric Brownian motion</strong>: dS = μS dt + σS dW. This led to the Black-Scholes formula for option pricing, which revolutionized finance and earned Scholes and Merton the 1997 Nobel Prize in Economics.</p><p><strong>Diffusion processes</strong> model heat flow, chemical reactions, and population genetics. The diffusion equation ∂u/∂t = D ∂²u/∂x² connects probability (the density of a Brownian particle) to physics (heat conduction).</p><p>Stochastic processes bridge pure mathematics, physics, finance, and biology, making them among the most widely applied tools in modern science.</p>",
+        "mathExpressions": ["dS = \\mu S\\, dt + \\sigma S\\, dW"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["prob-q49", "prob-q50", "prob-q51", "prob-q52", "prob-q53"],
+    "puzzleId": null
   }
 ]

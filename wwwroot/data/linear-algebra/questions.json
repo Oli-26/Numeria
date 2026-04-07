@@ -8,7 +8,7 @@
     "mathExpression": "\\begin{pmatrix} 2 \\\\ 3 \\end{pmatrix} + \\begin{pmatrix} 1 \\\\ -1 \\end{pmatrix} = ?",
     "correctAnswer": "(3, 2)",
     "acceptableAnswers": ["(3, 2)", "(3,2)", "3,2", "(3, 2)"],
-    "explanation": "Add component-wise: (2+1, 3+(-1)) = (3, 2).",
+    "explanation": "Vector addition works component by component: add the first components together (2 + 1 = 3), then the second components (3 + (-1) = 2), giving the result (3, 2). Geometrically, place the tail of the second vector at the head of the first -- the result points from the origin to where you end up. This 'tip-to-tail' method is the parallelogram rule of vector addition.",
     "xpReward": 20
   },
   {
@@ -19,7 +19,7 @@
     "prompt": "What does scalar multiplication do to a vector?",
     "options": ["Rotates it", "Scales its length", "Adds a constant", "Transposes it"],
     "correctAnswer": "Scales its length",
-    "explanation": "Multiplying by a scalar stretches or shrinks the vector (and may flip its direction if negative).",
+    "explanation": "Scalar multiplication scales a vector's length (magnitude) without changing its direction (unless the scalar is negative, which flips the direction). Why the wrong answers are wrong: 'Rotates it' would require a matrix, not a scalar; 'Adds a constant' describes translation, not scaling; 'Transposes it' is a matrix operation, not a scalar one. Analogy: if the vector is an arrow, multiplying by 2 makes the arrow twice as long; multiplying by -1 flips the arrow around; multiplying by 0.5 cuts it in half.",
     "xpReward": 20
   },
   {
@@ -31,7 +31,7 @@
     "mathExpression": "3 \\cdot \\begin{pmatrix} 2 \\\\ 1 \\end{pmatrix} = ?",
     "correctAnswer": "(6, 3)",
     "acceptableAnswers": ["(6, 3)", "(6,3)", "6,3"],
-    "explanation": "Multiply each component by 3: (6, 3).",
+    "explanation": "Scalar multiplication applies to each component independently: 3 * (2, 1) = (3*2, 3*1) = (6, 3). The resulting vector points in the same direction as (2, 1) but is 3 times as long. The original vector has length sqrt(4+1) = sqrt(5); the scaled vector has length 3*sqrt(5) = sqrt(36+9) = sqrt(45).",
     "xpReward": 20
   },
   {
@@ -42,7 +42,7 @@
     "prompt": "Two non-parallel vectors in 2D span:",
     "options": ["A line", "A point", "All of 2D space", "A cube"],
     "correctAnswer": "All of 2D space",
-    "explanation": "Two linearly independent vectors form a basis for 2D -- any 2D vector can be expressed as their combination.",
+    "explanation": "Two non-parallel (linearly independent) vectors in 2D span all of 2D space because any point in the plane can be reached by some combination a*v1 + b*v2. Why the wrong answers are wrong: 'A line' would only result from one vector or two parallel vectors; 'A point' would mean no vectors at all; 'A cube' is a 3D object and irrelevant to 2D. Analogy: think of the two vectors as compass directions -- if they point in genuinely different directions, you can navigate to any location on the 2D map by combining steps along each direction.",
     "xpReward": 25
   },
   {
@@ -57,7 +57,7 @@
       { "left": "Span", "right": "All reachable combinations" }
     ],
     "correctAnswer": null,
-    "explanation": "These are the foundational concepts of vector spaces.",
+    "explanation": "These are the foundational concepts of vector spaces. A Vector has both magnitude (how long) and direction (which way) -- like an arrow. A Basis is the smallest set of vectors that can build every vector in the space through linear combinations -- it's the 'coordinate system.' The Span of a set of vectors is the collection of all vectors you can reach by scaling and adding them. Mnemonic: vectors are arrows, a basis is a minimal toolkit, and the span is everything you can build with that toolkit.",
     "xpReward": 30
   },
   {
@@ -68,7 +68,7 @@
     "prompt": "A 2\u00d72 matrix represents a transformation that takes:",
     "options": ["Numbers to numbers", "2D vectors to 2D vectors", "3D vectors to 2D vectors", "Matrices to matrices"],
     "correctAnswer": "2D vectors to 2D vectors",
-    "explanation": "A 2\u00d72 matrix is a linear transformation from 2D to 2D.",
+    "explanation": "A 2x2 matrix takes a 2D vector as input and produces a 2D vector as output, so it represents a linear transformation from 2D to 2D. Why the wrong answers are wrong: 'Numbers to numbers' would be a 1x1 matrix (just a scalar); '3D to 2D' would require a 2x3 matrix; 'Matrices to matrices' would need a higher-order operation. Analogy: think of a 2x2 matrix as a machine with a 2-slot input and a 2-slot output -- it transforms 2D space into 2D space.",
     "xpReward": 20
   },
   {
@@ -80,7 +80,7 @@
     "mathExpression": "\\begin{pmatrix} 2 & 0 \\\\ 0 & 3 \\end{pmatrix} \\begin{pmatrix} 1 \\\\ 1 \\end{pmatrix} = ?",
     "correctAnswer": "(2, 3)",
     "acceptableAnswers": ["(2, 3)", "(2,3)", "2,3"],
-    "explanation": "(2\u00d71 + 0\u00d71, 0\u00d71 + 3\u00d71) = (2, 3). This matrix scales x by 2 and y by 3.",
+    "explanation": "Matrix-vector multiplication: row 1 dot input = 2*1 + 0*1 = 2; row 2 dot input = 0*1 + 3*1 = 3. Result: (2, 3). This diagonal matrix [[2,0],[0,3]] scales the x-component by 2 and the y-component by 3 independently. Geometrically, it stretches space horizontally by factor 2 and vertically by factor 3, turning a unit square into a 2x3 rectangle.",
     "xpReward": 25
   },
   {
@@ -91,7 +91,7 @@
     "prompt": "Is matrix multiplication commutative (AB = BA)?",
     "options": ["Always", "Never", "Generally no", "Only for square matrices"],
     "correctAnswer": "Generally no",
-    "explanation": "Matrix multiplication is not commutative in general. AB \u2260 BA for most matrices.",
+    "explanation": "Matrix multiplication is generally not commutative: AB != BA for most pairs of matrices. Why the wrong answers are wrong: 'Always' is false -- take A = [[1,1],[0,0]] and B = [[0,0],[1,1]], then AB != BA; 'Never' is too strong -- diagonal matrices do commute, and any matrix commutes with the identity; 'Only for square matrices' is wrong because even most square matrices don't commute. The key insight: AB means 'first apply B, then A,' while BA means 'first apply A, then B' -- order of transformations matters, just like rotating then reflecting differs from reflecting then rotating.",
     "xpReward": 20
   },
   {
@@ -103,7 +103,7 @@
     "mathExpression": null,
     "options": ["[[0, -1], [1, 0]]", "[[1, 0], [0, -1]]", "[[0, 1], [-1, 0]]", "[[1, 1], [0, 1]]"],
     "correctAnswer": "[[0, -1], [1, 0]]",
-    "explanation": "Rotation by 90\u00b0 CCW sends (1,0) to (0,1) and (0,1) to (-1,0), giving the matrix [[0,-1],[1,0]].",
+    "explanation": "To find a rotation matrix, track where the standard basis vectors go. 90 degrees CCW sends (1,0) to (0,1) and (0,1) to (-1,0). These become the columns of the matrix: [[0,-1],[1,0]]. Verification: [[0,-1],[1,0]] * (1,0) = (0,1) and [[0,-1],[1,0]] * (0,1) = (-1,0). Why the other options are wrong: [[1,0],[0,-1]] reflects across the x-axis; [[0,1],[-1,0]] rotates 90 degrees clockwise; [[1,1],[0,1]] is a shear transformation.",
     "xpReward": 25
   },
   {
@@ -118,7 +118,7 @@
       { "left": "Shear", "right": "Slants space sideways" }
     ],
     "correctAnswer": null,
-    "explanation": "Each geometric transformation corresponds to a specific matrix structure.",
+    "explanation": "Each geometric transformation corresponds to a specific matrix structure. Rotation turns vectors around the origin without changing their length (rotation matrices are orthogonal). Scaling stretches or compresses along the coordinate axes (diagonal matrices). Shear slants space sideways, like pushing the top of a deck of cards while holding the bottom fixed (upper or lower triangular with 1's on the diagonal). Recognizing these patterns helps you read what any 2x2 matrix does geometrically.",
     "xpReward": 30
   },
   {
@@ -483,5 +483,386 @@
     "correctAnswer": null,
     "explanation": "Positive definiteness connects eigenvalues, quadratic forms, and factorizations.",
     "xpReward": 50
+  },
+  {
+    "id": "la-q41",
+    "lessonId": "la-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A set of vectors is linearly independent if:",
+    "options": ["They are all unit vectors", "No vector can be written as a combination of the others", "They are all orthogonal", "They span the whole space"],
+    "correctAnswer": "No vector can be written as a combination of the others",
+    "explanation": "Linear independence means the only way to combine them to get zero is with all coefficients zero \u2014 no vector is redundant.",
+    "xpReward": 25
+  },
+  {
+    "id": "la-q42",
+    "lessonId": "la-05",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is the dimension of the vector space of all 2\u00d72 matrices?",
+    "correctAnswer": "4",
+    "acceptableAnswers": ["4", "4.0"],
+    "explanation": "A 2\u00d72 matrix has 4 entries, each an independent parameter. A basis has 4 elements (e.g., the four matrices with a single 1).",
+    "xpReward": 25
+  },
+  {
+    "id": "la-q43",
+    "lessonId": "la-06",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is the projection of vector (3, 4) onto vector (1, 0)?",
+    "correctAnswer": "(3, 0)",
+    "acceptableAnswers": ["(3, 0)", "(3,0)", "3,0"],
+    "explanation": "proj\u2081(3,4) = [(3,4)\u00b7(1,0)/|(1,0)|\u00b2](1,0) = [3/1](1,0) = (3, 0). The projection drops the y-component.",
+    "xpReward": 25
+  },
+  {
+    "id": "la-q44",
+    "lessonId": "la-06",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "An orthonormal basis has vectors that are:",
+    "options": ["Orthogonal only", "Unit length only", "Both orthogonal and unit length", "Linearly independent only"],
+    "correctAnswer": "Both orthogonal and unit length",
+    "explanation": "Orthonormal = orthogonal (mutually perpendicular) + normalized (each has length 1). This makes computations especially clean.",
+    "xpReward": 25
+  },
+  {
+    "id": "la-q45",
+    "lessonId": "la-07",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The singular values of a matrix are always:",
+    "correctAnswer": "non-negative",
+    "acceptableAnswers": ["non-negative", "nonnegative", "non negative", ">= 0", "\u2265 0"],
+    "explanation": "Singular values are defined as the square roots of eigenvalues of A\u1d40A, which are non-negative. They are always \u2265 0.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q46",
+    "lessonId": "la-07",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Low-rank approximation via SVD is used in image compression because:",
+    "options": ["It removes colors", "Keeping only the largest singular values captures most of the information", "It converts images to text", "It doubles the resolution"],
+    "correctAnswer": "Keeping only the largest singular values captures most of the information",
+    "explanation": "The largest singular values correspond to the most important structure. Discarding small singular values removes noise/detail with minimal visual loss.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q47",
+    "lessonId": "la-08",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A quadratic form x\u1d40Ax represents a bowl opening upward when A is:",
+    "options": ["Negative definite", "Positive definite", "Singular", "Skew-symmetric"],
+    "correctAnswer": "Positive definite",
+    "explanation": "Positive definite means x\u1d40Ax > 0 for all nonzero x, giving a paraboloid (bowl) opening upward with a unique minimum at the origin.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q48",
+    "lessonId": "la-08",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The trace of a symmetric matrix equals the sum of its:",
+    "correctAnswer": "eigenvalues",
+    "acceptableAnswers": ["eigenvalues", "eigen values", "eigenvalue"],
+    "explanation": "For any square matrix, trace(A) = sum of eigenvalues. For symmetric matrices, all eigenvalues are real, making this especially meaningful.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q49",
+    "lessonId": "la-09",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A generalized eigenvector of rank 2 satisfies:",
+    "options": ["(A - lambda I)v = 0", "(A - lambda I)^2 v = 0 but (A - lambda I)v != 0", "Av = 2 lambda v", "A^2 v = lambda v"],
+    "correctAnswer": "(A - lambda I)^2 v = 0 but (A - lambda I)v != 0",
+    "explanation": "A rank-2 generalized eigenvector is annihilated by (A - lambda I)^2 but not by (A - lambda I) itself. It extends the eigenspace when there aren't enough ordinary eigenvectors.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q50",
+    "lessonId": "la-09",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A Jordan block J_k(lambda) has what on its superdiagonal?",
+    "options": ["Zeros", "Ones", "Lambda", "The eigenvalues"],
+    "correctAnswer": "Ones",
+    "explanation": "A Jordan block has lambda on the main diagonal and 1's on the superdiagonal (one above the main diagonal). All other entries are zero.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q51",
+    "lessonId": "la-09",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The solution to dx/dt = Ax with initial condition x(0) is x(t) = ...",
+    "correctAnswer": "e^(tA)x(0)",
+    "acceptableAnswers": ["e^(tA)x(0)", "e^{tA}x(0)", "exp(tA)x(0)", "e^(At)x(0)", "e^{At}x(0)"],
+    "explanation": "The matrix exponential e^{tA} generalizes the scalar solution e^{at} to systems of linear ODEs.",
+    "xpReward": 35
+  },
+  {
+    "id": "la-q52",
+    "lessonId": "la-09",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "If a 3x3 matrix has eigenvalue lambda=2 with algebraic multiplicity 3 but geometric multiplicity 1, its Jordan form has:",
+    "options": ["Three 1x1 blocks", "One 3x3 Jordan block", "One 2x2 and one 1x1 block", "A diagonal matrix"],
+    "correctAnswer": "One 3x3 Jordan block",
+    "explanation": "Geometric multiplicity 1 means only one Jordan block for this eigenvalue. Since algebraic multiplicity is 3, it must be a single 3x3 Jordan block J_3(2).",
+    "xpReward": 35
+  },
+  {
+    "id": "la-q53",
+    "lessonId": "la-09",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each concept in Jordan theory:",
+    "pairs": [
+      { "left": "Jordan block", "right": "Lambda on diagonal, 1's on superdiagonal" },
+      { "left": "Generalized eigenvector", "right": "Killed by (A - lambda I)^k but not (A - lambda I)^{k-1}" },
+      { "left": "Matrix exponential", "right": "Solves dx/dt = Ax" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Jordan normal form provides the structure needed to compute matrix exponentials and understand non-diagonalizable systems.",
+    "xpReward": 40
+  },
+  {
+    "id": "la-q54",
+    "lessonId": "la-10",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "If V has dimension 3 and W has dimension 4, what is the dimension of V tensor W?",
+    "mathExpression": "\\dim(V \\otimes W) = ?",
+    "correctAnswer": "12",
+    "acceptableAnswers": ["12", "12.0"],
+    "explanation": "dim(V tensor W) = dim(V) * dim(W) = 3 * 4 = 12.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q55",
+    "lessonId": "la-10",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "In quantum mechanics, an entangled state is one that:",
+    "options": ["Is a pure tensor u tensor v", "Cannot be written as a pure tensor", "Has eigenvalue zero", "Is in a one-dimensional space"],
+    "correctAnswer": "Cannot be written as a pure tensor",
+    "explanation": "Entanglement means the joint state of two systems cannot be decomposed as a product of individual states. Mathematically, it's a non-pure tensor in the tensor product space.",
+    "xpReward": 35
+  },
+  {
+    "id": "la-q56",
+    "lessonId": "la-10",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The universal property of the tensor product says that every bilinear map factors through:",
+    "options": ["The direct sum", "The tensor product", "The dual space", "The quotient space"],
+    "correctAnswer": "The tensor product",
+    "explanation": "The tensor product V tensor W is characterized by the property that every bilinear map from V x W factors uniquely through it as a linear map.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q57",
+    "lessonId": "la-10",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "In the tensor product, (cu) tensor v equals c times what?",
+    "correctAnswer": "u tensor v",
+    "acceptableAnswers": ["u tensor v", "u⊗v", "(u tensor v)", "u ⊗ v"],
+    "explanation": "Scalars float freely in tensor products: (cu) tensor v = u tensor (cv) = c(u tensor v).",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q58",
+    "lessonId": "la-10",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each tensor product application:",
+    "pairs": [
+      { "left": "Quantum mechanics", "right": "Composite system state spaces" },
+      { "left": "Differential geometry", "right": "Metric and curvature tensors" },
+      { "left": "Machine learning", "right": "Multi-dimensional array operations" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Tensor products provide the mathematical framework for combining vector spaces, with applications across physics, geometry, and computation.",
+    "xpReward": 40
+  },
+  {
+    "id": "la-q59",
+    "lessonId": "la-11",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A matrix with a large condition number is called:",
+    "options": ["Positive definite", "Well-conditioned", "Ill-conditioned", "Orthogonal"],
+    "correctAnswer": "Ill-conditioned",
+    "explanation": "A large condition number means small input perturbations cause large output changes. Such matrices are ill-conditioned and numerically dangerous.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q60",
+    "lessonId": "la-11",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The condition number of a matrix can be expressed as sigma_max / sigma_min. What are sigma_max and sigma_min?",
+    "correctAnswer": "singular values",
+    "acceptableAnswers": ["singular values", "the singular values", "largest and smallest singular values", "the largest and smallest singular values"],
+    "explanation": "The condition number equals the ratio of the largest to smallest singular values. When this ratio is huge, the matrix is nearly singular.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q61",
+    "lessonId": "la-11",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "QR factorization decomposes A into:",
+    "options": ["A lower and upper triangular matrix", "An orthogonal matrix and an upper triangular matrix", "Two symmetric matrices", "A diagonal and a permutation matrix"],
+    "correctAnswer": "An orthogonal matrix and an upper triangular matrix",
+    "explanation": "A = QR where Q is orthogonal (Q^T Q = I) and R is upper triangular. This is more numerically stable than LU for many problems.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q62",
+    "lessonId": "la-11",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Conjugate Gradient method is designed for systems where A is:",
+    "options": ["Any square matrix", "Symmetric positive definite", "Upper triangular", "Sparse and rectangular"],
+    "correctAnswer": "Symmetric positive definite",
+    "explanation": "CG exploits symmetry and positive definiteness to minimize the quadratic form x^T A x - 2 b^T x. For general systems, GMRES is used instead.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q63",
+    "lessonId": "la-11",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each numerical method to its key property:",
+    "pairs": [
+      { "left": "Modified Gram-Schmidt", "right": "Numerically stable orthogonalization" },
+      { "left": "Conjugate Gradient", "right": "Iterative solver for symmetric positive definite systems" },
+      { "left": "GMRES", "right": "Iterative solver for general non-symmetric systems" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each method addresses a specific numerical challenge in solving large linear algebra problems.",
+    "xpReward": 40
+  },
+  {
+    "id": "la-q64",
+    "lessonId": "la-12",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "In PCA, the principal components are the eigenvectors of:",
+    "options": ["The data matrix X", "The identity matrix", "The covariance matrix X^T X", "The inverse of X"],
+    "correctAnswer": "The covariance matrix X^T X",
+    "explanation": "PCA finds directions of maximum variance by computing eigenvectors of the covariance matrix (or equivalently, the right singular vectors of the centered data matrix).",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q65",
+    "lessonId": "la-12",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The kernel trick allows algorithms to:",
+    "options": ["Avoid matrix multiplication", "Operate in high-dimensional feature space without computing coordinates", "Speed up sorting", "Reduce the number of eigenvalues"],
+    "correctAnswer": "Operate in high-dimensional feature space without computing coordinates",
+    "explanation": "By replacing dot products with kernel evaluations k(x,y), algorithms implicitly work in a high-dimensional (even infinite-dimensional) space without ever computing the explicit feature maps.",
+    "xpReward": 35
+  },
+  {
+    "id": "la-q66",
+    "lessonId": "la-12",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "In the transformer attention mechanism, what operation computes the similarity between queries and keys?",
+    "correctAnswer": "matrix multiplication",
+    "acceptableAnswers": ["matrix multiplication", "dot product", "QK^T", "Q K^T", "matmul", "dot products"],
+    "explanation": "Attention computes QK^T -- the matrix of pairwise dot products between query and key vectors -- to determine how much each position attends to each other position.",
+    "xpReward": 30
+  },
+  {
+    "id": "la-q67",
+    "lessonId": "la-12",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of the attention mechanism in a transformer:",
+    "steps": [
+      "Embed each token as a vector",
+      "Apply linear maps to produce Query (Q), Key (K), and Value (V) matrices",
+      "Compute similarity scores: QK^T / sqrt(d_k)",
+      "Apply softmax to get attention weights",
+      "Multiply attention weights by V to get output",
+      "Concatenate multi-head outputs and apply final linear projection"
+    ],
+    "correctAnswer": null,
+    "explanation": "The attention mechanism is a pipeline of linear algebra operations (matrix multiplications) with a single nonlinearity (softmax).",
+    "xpReward": 50
+  },
+  {
+    "id": "la-q68",
+    "lessonId": "la-12",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each ML technique to its linear algebra foundation:",
+    "pairs": [
+      { "left": "PCA", "right": "Eigendecomposition of covariance matrix" },
+      { "left": "Kernel SVM", "right": "Inner products in RKHS" },
+      { "left": "Transformer attention", "right": "Softmax of QK^T times V" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Modern machine learning is built on linear algebra -- matrices and their operations are the fundamental computational primitives.",
+    "xpReward": 40
+  },
+
+  {
+    "id": "la-q69",
+    "lessonId": "la-01",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "The zero vector is linearly dependent with any set of vectors.",
+    "correctAnswer": "True",
+    "explanation": "True. Any set containing the zero vector is linearly dependent because 1 * 0 + 0 * v1 + 0 * v2 + ... = 0, giving a nontrivial linear combination (the coefficient of the zero vector is 1, which is nonzero) that produces the zero vector. Intuitively, the zero vector adds no new 'direction' to the set, so it always creates redundancy.",
+    "xpReward": 20
+  },
+  {
+    "id": "la-q70",
+    "lessonId": "la-03",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "If a 3x3 matrix has determinant 5, then the matrix is invertible.",
+    "correctAnswer": "True",
+    "explanation": "True. A square matrix is invertible if and only if its determinant is nonzero. Since det(A) = 5 != 0, the matrix is invertible. The determinant measures the factor by which the matrix scales volumes; a nonzero determinant means the transformation doesn't collapse any dimension, so the mapping can be reversed.",
+    "xpReward": 20
+  },
+  {
+    "id": "la-q71",
+    "lessonId": "la-04",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Every square matrix can be diagonalized.",
+    "correctAnswer": "False",
+    "explanation": "False. A square matrix can be diagonalized only if it has n linearly independent eigenvectors (where n is the matrix size). Not all matrices have this property. For example, the matrix [[0, 1], [0, 0]] has eigenvalue 0 with algebraic multiplicity 2 but geometric multiplicity 1 (only one independent eigenvector), so it cannot be diagonalized. Such matrices require Jordan normal form instead.",
+    "xpReward": 25
+  },
+  {
+    "id": "la-q72",
+    "lessonId": "la-02",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this matrix multiplication:",
+    "steps": [
+      "Compute A * B where A = [[1, 2], [3, 4]] and B = [[5, 6], [7, 8]]",
+      "Top-left entry: 1*5 + 2*7 = 5 + 14 = 19",
+      "Top-right entry: 1*6 + 2*8 = 6 + 16 = 22",
+      "Bottom-left entry: 3*5 + 4*7 = 15 + 21 = 36",
+      "Bottom-right entry: 3*6 + 4*8 = 18 + 32 = 50",
+      "So A * B = [[19, 22], [36, 50]]"
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong. The bottom-left entry should be 3*5 + 4*7 = 15 + 28 = 43, not 36. The error is computing 4*7 = 21 instead of the correct 4*7 = 28. The correct result is A * B = [[19, 22], [43, 50]]. This kind of arithmetic slip in matrix multiplication is very common and is why careful computation (or a calculator) matters.",
+    "xpReward": 35
   }
 ]

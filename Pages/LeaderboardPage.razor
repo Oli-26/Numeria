@@ -7,14 +7,14 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>\u2190</button>
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Leaderboard</h1>
 </div>
 
 @if (!Leaderboard.IsConfigured)
 {
     <div class="demo-banner card">
-        <small>Demo data \u2014 connect Dreamlo to see real scores</small>
+        <small>Demo data — connect Dreamlo to see real scores</small>
     </div>
 }
 
@@ -23,10 +23,10 @@
     <!-- Your stats card -->
     <div class="card your-score-card">
         <div class="your-score-left">
-            <div class="your-avatar">@profile.DisplayName[0]</div>
+            <div class="your-avatar">@(profile.DisplayName.Length > 0 ? profile.DisplayName[0] : '?')</div>
             <div class="your-info">
                 <strong>@profile.DisplayName</strong>
-                <small>Level @myLevel \u00b7 @profile.TopicsCompleted.Count topics completed</small>
+                <small>Level @myLevel · @profile.TopicsCompleted.Count topics completed</small>
             </div>
         </div>
         <div class="your-score-right">
@@ -48,7 +48,7 @@
         }
         else
         {
-            <div class="submitted-msg">\u2705 Score submitted!</div>
+            <div class="submitted-msg"><Icon Name="checkmark-circle" Size="20" /> Score submitted!</div>
         }
     </div>
 }
@@ -78,15 +78,15 @@
                     <div class="lb-rank">
                         @if (rank == 1)
                         {
-                            <span class="medal gold">\uD83E\uDD47</span>
+                            <span class="medal gold"><Icon Name="gold" Size="28" Stroke="none" /></span>
                         }
                         else if (rank == 2)
                         {
-                            <span class="medal silver">\uD83E\uDD48</span>
+                            <span class="medal silver"><Icon Name="silver" Size="28" Stroke="none" /></span>
                         }
                         else if (rank == 3)
                         {
-                            <span class="medal bronze">\uD83E\uDD49</span>
+                            <span class="medal bronze"><Icon Name="bronze" Size="28" Stroke="none" /></span>
                         }
                         else
                         {
@@ -94,10 +94,10 @@
                         }
                     </div>
                     <div class="lb-player">
-                        <div class="lb-avatar" style="background: @GetAvatarColor(rank)">@entry.Name[0]</div>
+                        <div class="lb-avatar" style="background: @GetAvatarColor(rank)">@(entry.Name.Length > 0 ? entry.Name[0] : '?')</div>
                         <div class="lb-name-col">
                             <strong>@entry.Name.Replace("_", " ")</strong>
-                            <small>Lvl @entry.Seconds \u00b7 @entry.Text</small>
+                            <small>Lvl @entry.Seconds · @entry.Text</small>
                         </div>
                     </div>
                     <div class="lb-score">

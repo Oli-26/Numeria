@@ -1,0 +1,454 @@
+@page "/mastery/{TopicId}"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IQuizEngine QuizEngine
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">Mastery Challenge</h1>
+</div>
+
+@if (!topicCompleted)
+{
+    <div class="card mastery-locked">
+        <div class="mastery-locked-icon"><Icon Name="lock" Size="36" /></div>
+        <h2>Complete All Lessons First</h2>
+        <p>Finish every lesson in @(topic?.Name ?? "this topic") to unlock mastery challenges.</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Go to Lessons</button>
+    </div>
+}
+else if (state == MState.Intro)
+{
+    <div class="mastery-intro">
+        <div class="mastery-tier-display">
+            <div class="mastery-current-badge" style="background: @GetTierColor(currentTier)">
+                <Icon Name="@GetTierIcon(currentTier)" Size="28" />
+            </div>
+            <div class="mastery-tier-label">@GetTierName(currentTier)</div>
+        </div>
+
+        <div class="mastery-tiers card">
+            <h3>Mastery Tiers</h3>
+            @for (int t = 1; t <= 4; t++)
+            {
+                var tier = t;
+                var achieved = currentTier >= tier;
+                var isCurrent = currentTier == tier - 1;
+                <div class="mastery-tier-row @(achieved ? "achieved" : "") @(isCurrent ? "current-target" : "")">
+                    <div class="tier-badge-sm" style="background: @(achieved ? GetTierColor(tier) : "var(--bg-surface)")">
+                        <Icon Name="@GetTierIcon(tier)" Size="16" />
+                    </div>
+                    <div class="tier-info">
+                        <strong>@GetTierName(tier)</strong>
+                        <small>Score @GetTierThreshold(tier)%+ on @GetTierQuestionCount(tier) hard questions</small>
+                    </div>
+                    @if (achieved)
+                    {
+                        <span class="tier-check"><Icon Name="check" Size="14" /></span>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (currentTier < 4)
+        {
+            <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px" @onclick="StartQuiz">
+                @(currentTier == 0 ? "Begin Mastery Challenge" : $"Attempt {GetTierName(currentTier + 1)}")
+            </button>
+        }
+        else
+        {
+            <div class="mastery-maxed card">
+                <div class="mastery-maxed-icon"><Icon Name="crown" Size="32" /></div>
+                <h2>Grandmaster Achieved!</h2>
+                <p>You have proven complete mastery of @(topic?.Name ?? "this topic").</p>
+            </div>
+        }
+    </div>
+}
+else if (state == MState.Quiz)
+{
+    <div class="mastery-quiz">
+        <div class="mastery-quiz-header">
+            <span class="mastery-quiz-tier" style="color: @GetTierColor(targetTier)">
+                <Icon Name="@GetTierIcon(targetTier)" Size="16" /> @GetTierName(targetTier) Challenge
+            </span>
+            <span class="quiz-progress">@(currentQ + 1) / @quizQuestions.Count</span>
+        </div>
+
+        <div class="progress-bar-container" style="margin-bottom: 16px">
+            <div class="progress-bar-fill animate-in" style="width: @(((double)currentQ / quizQuestions.Count * 100).ToString("F0"))%; background: @GetTierColor(targetTier)"></div>
+        </div>
+
+        @if (currentQ < quizQuestions.Count)
+        {
+            var q = quizQuestions[currentQ];
+            <div class="question-enter" @key="currentQ">
+                <p class="question-prompt">@q.Prompt</p>
+
+                @if (q.MathExpression != null)
+                {
+                    <div class="math-display" id="mastery-math-@currentQ"></div>
+                }
+
+                @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.VisualIdentify)
+                {
+                    <div class="options-grid">
+                        @if (q.Options != null)
+                        {
+                            @foreach (var opt in q.Options)
+                            {
+                                var cls = "";
+                                if (answered)
+                                {
+                                    if (opt == q.CorrectAnswer) cls = "correct";
+                                    else if (opt == selectedAnswer && !lastCorrect) cls = "incorrect";
+                                }
+                                <button class="option-btn @cls" @onclick="() => SelectAnswer(opt)" disabled="@answered">@opt</button>
+                            }
+                        }
+                    </div>
+                }
+                else if (q.Type == QuestionType.TrueOrFalse)
+                {
+                    <div class="options-grid">
+                        @foreach (var opt in new[] { "True", "False" })
+                        {
+                            var cls = "";
+                            if (answered)
+                            {
+                                if (opt == q.CorrectAnswer) cls = "correct";
+                                else if (opt == selectedAnswer && !lastCorrect) cls = "incorrect";
+                            }
+                            <button class="option-btn @cls" @onclick="() => SelectAnswer(opt)" disabled="@answered">@opt</button>
+                        }
+                    </div>
+                }
+                else if (q.Type == QuestionType.FillIn)
+                {
+                    <div class="fill-in-section">
+                        <input type="text" class="fill-input" @bind="fillAnswer" @bind:event="oninput"
+                               placeholder="Type your answer..." disabled="@answered"
+                               @onkeydown="HandleKey" />
+                        @if (!answered)
+                        {
+                            <button class="btn btn-primary" @onclick="SubmitFillIn" disabled="@string.IsNullOrWhiteSpace(fillAnswer)">Submit</button>
+                        }
+                    </div>
+                }
+
+                @if (answered)
+                {
+                    <div class="feedback @(lastCorrect ? "feedback-correct anim-correct" : "feedback-incorrect anim-incorrect")">
+                        <span class="feedback-icon">@if (lastCorrect) { <Icon Name="check" Size="14" /> } else { <Icon Name="x-mark" Size="14" /> }</span>
+                        <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
+                        @if (!lastCorrect && q.CorrectAnswer != null)
+                        {
+                            <span class="correct-answer">@q.CorrectAnswer</span>
+                        }
+                    </div>
+                    @if (q.Explanation != null)
+                    {
+                        <div class="explanation">@q.Explanation</div>
+                    }
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 8px" @onclick="NextQuestion">
+                        @(currentQ < quizQuestions.Count - 1 ? "Next Question" : "See Results")
+                    </button>
+                }
+            </div>
+        }
+    </div>
+}
+else if (state == MState.Result)
+{
+    <div class="mastery-result card count-up">
+        @if (passed)
+        {
+            <div class="mastery-result-badge" style="background: @GetTierColor(targetTier)">
+                <Icon Name="@GetTierIcon(targetTier)" Size="28" />
+            </div>
+            <h2>@GetTierName(targetTier) Achieved!</h2>
+        }
+        else
+        {
+            <div class="mastery-result-badge" style="background: var(--bg-surface)"><Icon Name="muscle" Size="28" /></div>
+            <h2>Not Quite</h2>
+        }
+
+        <div class="results-stats stagger-in">
+            <div class="stat-card correct-stat count-up">
+                <span class="stat-number">@correctCount</span>
+                <span class="stat-label">Correct</span>
+            </div>
+            <div class="stat-card score-stat count-up">
+                <span class="stat-number">@score%</span>
+                <span class="stat-label">Score</span>
+            </div>
+            <div class="stat-card" style="background: rgba(240,160,48,0.1); color: var(--accent);">
+                <span class="stat-number count-up">@GetTierThreshold(targetTier)%</span>
+                <span class="stat-label">Needed</span>
+            </div>
+        </div>
+
+        @if (passed)
+        {
+            <div class="xp-earned pulse">
+                <span class="xp-badge" style="font-size: 1rem; padding: 6px 14px">+@xpEarned XP</span>
+            </div>
+        }
+        else
+        {
+            <p style="color: var(--text-muted); margin: 12px 0">You needed @GetTierThreshold(targetTier)% to pass. Keep practicing!</p>
+        }
+
+        <div style="display: flex; gap: 10px; margin-top: 16px">
+            @if (!passed)
+            {
+                <button class="btn btn-primary" style="flex:1" @onclick="StartQuiz">Try Again</button>
+            }
+            <button class="btn btn-outline" style="flex:1" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Back to Topic</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+
+    enum MState { Intro, Quiz, Result }
+    private MState state = MState.Intro;
+    private Topic? topic;
+    private bool topicCompleted;
+    private int currentTier;
+    private int targetTier;
+
+    // Quiz state
+    private List<Question> quizQuestions = new();
+    private int currentQ;
+    private int correctCount;
+    private bool answered;
+    private bool lastCorrect;
+    private string selectedAnswer = "";
+    private string fillAnswer = "";
+    private int score;
+    private bool passed;
+    private int xpEarned;
+
+    private static readonly Random _rng = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            var topics = await Content.GetTopicsAsync();
+            topic = topics.FirstOrDefault(t => t.Id == TopicId);
+            topicCompleted = profile.TopicsCompleted.Contains(TopicId);
+            currentTier = profile.TopicMastery.GetValueOrDefault(TopicId, 0);
+            StateHasChanged();
+        }
+
+        if (state == MState.Quiz && currentQ < quizQuestions.Count)
+        {
+            var q = quizQuestions[currentQ];
+            if (q.MathExpression != null)
+                try { await JS.InvokeVoidAsync("renderMath", $"mastery-math-{currentQ}", q.MathExpression, true); } catch { }
+        }
+    }
+
+    private async Task StartQuiz()
+    {
+        targetTier = currentTier + 1;
+        var allMastery = await Content.GetMasteryQuestionsAsync(TopicId);
+
+        if (allMastery.Count == 0)
+        {
+            // Fallback to regular hard questions
+            var regular = await Content.GetQuestionsAsync(TopicId);
+            allMastery = regular.Where(q => q.Difficulty >= 2).ToList();
+        }
+
+        var count = GetTierQuestionCount(targetTier);
+        quizQuestions = allMastery.OrderBy(_ => _rng.Next()).Take(count).ToList();
+
+        if (quizQuestions.Count < count)
+        {
+            // Pad with regular questions if not enough mastery questions
+            var regular = await Content.GetQuestionsAsync(TopicId);
+            var extras = regular.Where(q => !quizQuestions.Any(mq => mq.Id == q.Id))
+                .OrderBy(_ => _rng.Next())
+                .Take(count - quizQuestions.Count);
+            quizQuestions.AddRange(extras);
+        }
+
+        if (quizQuestions.Count == 0) return;
+
+        currentQ = 0;
+        correctCount = 0;
+        answered = false;
+        fillAnswer = "";
+        selectedAnswer = "";
+        state = MState.Quiz;
+    }
+
+    private async Task SelectAnswer(string answer)
+    {
+        if (answered) return;
+        selectedAnswer = answer;
+        var q = quizQuestions[currentQ];
+        lastCorrect = answer == q.CorrectAnswer;
+        if (lastCorrect) correctCount++;
+        answered = true;
+        try { await JS.InvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+    }
+
+    private async Task SubmitFillIn()
+    {
+        if (answered || string.IsNullOrWhiteSpace(fillAnswer)) return;
+        var q = quizQuestions[currentQ];
+        selectedAnswer = fillAnswer.Trim();
+        var result = QuizEngine.ValidateAnswer(q, fillAnswer.Trim());
+        lastCorrect = result.IsCorrect;
+        if (lastCorrect) correctCount++;
+        answered = true;
+        try { await JS.InvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+    }
+
+    private async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SubmitFillIn();
+    }
+
+    private async Task NextQuestion()
+    {
+        currentQ++;
+        answered = false;
+        fillAnswer = "";
+        selectedAnswer = "";
+
+        if (currentQ >= quizQuestions.Count)
+        {
+            score = quizQuestions.Count > 0 ? correctCount * 100 / quizQuestions.Count : 0;
+            passed = score >= GetTierThreshold(targetTier);
+
+            if (passed)
+            {
+                var profile = await Progress.GetProfileAsync();
+                profile.TopicMastery[TopicId] = targetTier;
+                await Progress.SaveProfileAsync(profile);
+                currentTier = targetTier;
+
+                xpEarned = targetTier * 50;
+
+                if (profile.XpBoostsActive > 0 && profile.XpBoostMultiplier > 1)
+                {
+                    xpEarned *= profile.XpBoostMultiplier;
+                    profile.XpBoostsActive--;
+                    if (profile.XpBoostsActive <= 0)
+                        profile.XpBoostMultiplier = 1;
+                    await Progress.SaveProfileAsync(profile);
+                }
+
+                await Gamification.AwardXpAsync(xpEarned);
+
+                try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+                try { await JS.InvokeVoidAsync("Confetti.launch", targetTier * 25); } catch { }
+            }
+            else
+            {
+                try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
+            }
+
+            state = MState.Result;
+        }
+    }
+
+    private int GetTierThreshold(int tier) => tier switch { 1 => 70, 2 => 80, 3 => 90, 4 => 95, _ => 70 };
+    private int GetTierQuestionCount(int tier) => tier switch { 1 => 8, 2 => 10, 3 => 12, 4 => 15, _ => 8 };
+    private string GetTierName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
+    private string GetTierIcon(int tier) => tier switch { 0 => "sword", 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
+    private string GetTierColor(int tier) => tier switch { 1 => "#CD7F32", 2 => "#C0C0C0", 3 => "#FFD700", 4 => "linear-gradient(135deg, #FFD700, #FF6B35)", _ => "var(--bg-surface)" };
+}
+
+<style>
+    .mastery-locked { text-align: center; padding: 40px 24px; }
+    .mastery-locked:hover { transform: none; }
+    .mastery-locked-icon { color: var(--text-muted); margin-bottom: 12px; }
+    .mastery-locked p { color: var(--text-muted); margin: 8px 0 20px; }
+
+    .mastery-intro { max-width: 500px; margin: 0 auto; }
+
+    .mastery-tier-display { text-align: center; margin-bottom: 20px; }
+    .mastery-current-badge {
+        width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; color: white;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .mastery-tier-label { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+    .mastery-tiers { padding: 16px; }
+    .mastery-tiers:hover { transform: none; }
+    .mastery-tiers h3 { margin-bottom: 12px; }
+
+    .mastery-tier-row {
+        display: flex; align-items: center; gap: 12px; padding: 10px 0;
+        border-bottom: 1px solid var(--border); opacity: 0.5;
+        transition: opacity 0.2s ease;
+    }
+    .mastery-tier-row:last-child { border-bottom: none; }
+    .mastery-tier-row.achieved { opacity: 1; }
+    .mastery-tier-row.current-target { opacity: 1; }
+
+    .tier-badge-sm {
+        width: 36px; height: 36px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; flex-shrink: 0;
+    }
+    .tier-info { flex: 1; }
+    .tier-info strong { display: block; font-size: 0.9rem; }
+    .tier-info small { color: var(--text-muted); font-size: 0.8rem; }
+    .tier-check { color: var(--success); font-weight: 700; font-size: 1.1rem; }
+
+    /* Quiz */
+    .mastery-quiz { max-width: 600px; margin: 0 auto; }
+    .mastery-quiz-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+    .mastery-quiz-tier { font-weight: 700; font-size: 0.9rem; }
+
+    .fill-in-section { display: flex; gap: 10px; }
+    .fill-input {
+        flex: 1; padding: 12px 16px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 1rem; font-family: var(--font-main);
+        background: var(--bg-card); color: var(--text-primary); outline: none;
+    }
+    .fill-input:focus { border-color: var(--primary); }
+
+    /* Result */
+    .mastery-result { text-align: center; padding: 24px; max-width: 500px; margin: 0 auto; }
+    .mastery-result:hover { transform: none; }
+
+    .mastery-result-badge {
+        width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; animation: countPop 0.5s ease;
+    }
+
+    .results-stats { display: flex; justify-content: center; gap: 16px; margin: 16px 0; }
+    .stat-card {
+        display: flex; flex-direction: column; align-items: center;
+        padding: 12px 20px; border-radius: var(--radius-md); min-width: 70px;
+    }
+    .correct-stat { background: rgba(76,175,80,0.1); color: var(--success); }
+    .score-stat { background: rgba(74,95,224,0.1); color: var(--primary); }
+    .stat-number { font-size: 1.5rem; font-weight: 700; }
+    .stat-label { font-size: 0.8rem; opacity: 0.8; }
+
+    .mastery-maxed { text-align: center; padding: 24px; margin-top: 16px; border-color: #FFD700; }
+    .mastery-maxed:hover { transform: none; }
+    .mastery-maxed-icon { font-size: 3rem; margin-bottom: 8px; }
+    .mastery-maxed p { color: var(--text-muted); margin: 8px 0 0; }
+</style>

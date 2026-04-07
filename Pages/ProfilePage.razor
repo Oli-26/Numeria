@@ -3,104 +3,143 @@
 @inject IGamificationService Gamification
 @inject IAchievementRepository AchievementRepo
 @inject IContentRepository Content
+@inject IJSRuntime JS
+@inject NavigationManager Nav
 
-<h1>Profile</h1>
-
+<div class="profile-page">
 @if (profile != null)
 {
     <div class="profile-header card">
         <div class="avatar-display">
             <div class="avatar-circle">
-                @profile.DisplayName[0]
+                <span class="avatar-letter">@(profile.DisplayName.Length > 0 ? profile.DisplayName[0] : '?')</span>
+                <div class="avatar-ring"></div>
             </div>
+            <div class="level-badge">Lvl @level</div>
             @if (!string.IsNullOrEmpty(profile.SelectedTitle))
             {
                 <div class="title-badge">@profile.SelectedTitle</div>
             }
         </div>
         <h2>@profile.DisplayName</h2>
-        <div class="level-display">Level @level</div>
 
         <div class="xp-section">
-            <div class="progress-bar-container" style="height: 14px">
-                <div class="progress-bar-fill accent" style="width: @xpPct.ToString("F0")%"></div>
+            <div class="xp-bar-labels">
+                <small>Level @level</small>
+                <small>Level @(level + 1)</small>
             </div>
-            <small>@xpInLevel / @xpNeeded XP to Level @(level + 1)</small>
+            <div class="progress-bar-container" style="height: 14px">
+                <div class="progress-bar-fill accent animate-in" style="width: @xpPct.ToString("F0")%"></div>
+            </div>
+            <small class="xp-detail">@xpInLevel / @xpNeeded XP</small>
         </div>
+
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <span class="streak-fire"><Icon Name="fire" Size="16" /></span> <strong>@profile.CurrentStreak</strong> day streak
+            </div>
+            <div class="quick-stat">
+                <span><Icon Name="star-filled" Size="16" Fill="currentColor" /></span> <strong>@profile.TotalXp</strong> XP
+            </div>
+            <div class="quick-stat">
+                <span><Icon Name="target" Size="16" /></span> <strong>@overallAccuracy%</strong> accuracy
+            </div>
+        </div>
+        <button class="btn btn-sm btn-outline share-profile-btn" @onclick='() => Nav.NavigateTo("/share")'>
+            <Icon Name="trending-up" Size="14" /> Share Progress
+        </button>
+    </div>
+
+    <!-- Hall of Cards banner -->
+    <div class="card cards-banner card-clickable" @onclick='() => Nav.NavigateTo("/cards")'>
+        <div class="cards-banner-left">
+            <span class="cards-banner-icon">🃏</span>
+            <div>
+                <strong>Hall of Cards</strong>
+                <small>@profile.CompletionCards.Count collected</small>
+            </div>
+        </div>
+        <span class="cards-banner-arrow">→</span>
     </div>
 
     <!-- Tab navigation -->
     <div class="tab-bar">
-        <button class="tab @(activeTab == "overview" ? "active" : "")" @onclick='() => activeTab = "overview"'>Overview</button>
-        <button class="tab @(activeTab == "topics" ? "active" : "")" @onclick='() => activeTab = "topics"'>Topics</button>
-        <button class="tab @(activeTab == "history" ? "active" : "")" @onclick='() => activeTab = "history"'>History</button>
-        <button class="tab @(activeTab == "achievements" ? "active" : "")" @onclick='() => activeTab = "achievements"'>Awards</button>
+        <button class="tab @(activeTab == "overview" ? "active" : "")" @onclick='() => SetTab("overview")'>Overview</button>
+        <button class="tab @(activeTab == "topics" ? "active" : "")" @onclick='() => SetTab("topics")'>Topics</button>
+        <button class="tab @(activeTab == "history" ? "active" : "")" @onclick='() => SetTab("history")'>History</button>
+        <button class="tab @(activeTab == "achievements" ? "active" : "")" @onclick='() => SetTab("achievements")'>Awards</button>
     </div>
 
     @if (activeTab == "overview")
     {
-        <div class="stats-grid section">
+        <div class="stats-grid section stagger-in tab-content" @key='"overview"'>
             <div class="stat-tile card">
-                <span class="stat-value">@profile.TotalXp</span>
+                <span class="stat-icon"><Icon Name="star-filled" Size="20" Fill="currentColor" /></span>
+                <span class="stat-value" id="cnt-xp">@profile.TotalXp</span>
                 <span class="stat-name">Total XP</span>
             </div>
             <div class="stat-tile card">
-                <span class="stat-value">@profile.Points</span>
+                <span class="stat-icon"><Icon Name="gem" Size="20" /></span>
+                <span class="stat-value" id="cnt-pts">@profile.Points</span>
                 <span class="stat-name">Points</span>
             </div>
             <div class="stat-tile card">
-                <span class="stat-value streak-val">\uD83D\uDD25 @profile.CurrentStreak</span>
+                <span class="stat-icon"><Icon Name="fire" Size="20" /></span>
+                <span class="stat-value streak-val" id="cnt-streak">@profile.CurrentStreak</span>
                 <span class="stat-name">Streak</span>
             </div>
             <div class="stat-tile card">
-                <span class="stat-value">@profile.LessonsCompleted.Count</span>
+                <span class="stat-icon"><Icon Name="book" Size="20" /></span>
+                <span class="stat-value" id="cnt-lessons">@profile.LessonsCompleted.Count</span>
                 <span class="stat-name">Lessons</span>
             </div>
             <div class="stat-tile card">
-                <span class="stat-value">@profile.TotalQuestionsAnswered</span>
+                <span class="stat-icon"><Icon Name="brain" Size="20" /></span>
+                <span class="stat-value" id="cnt-questions">@profile.TotalQuestionsAnswered</span>
                 <span class="stat-name">Questions</span>
             </div>
             <div class="stat-tile card">
-                <span class="stat-value">@overallAccuracy%</span>
+                <span class="stat-icon"><Icon Name="target" Size="20" /></span>
+                <span class="stat-value" id="cnt-acc">@overallAccuracy%</span>
                 <span class="stat-name">Accuracy</span>
             </div>
         </div>
 
         <div class="section">
-            <h3>More Stats</h3>
+            <h3>Detailed Stats</h3>
             <div class="detail-stats">
                 <div class="detail-row">
-                    <span>Longest Streak</span>
+                    <span><Icon Name="fire" Size="16" /> Longest Streak</span>
                     <strong>@profile.LongestStreak days</strong>
                 </div>
                 <div class="detail-row">
-                    <span>Quizzes Taken</span>
+                    <span><Icon Name="pencil" Size="16" /> Quizzes Taken</span>
                     <strong>@profile.QuizHistory.Count</strong>
                 </div>
                 <div class="detail-row">
-                    <span>Best Quiz Score</span>
+                    <span><Icon Name="trophy" Size="16" /> Best Quiz Score</span>
                     <strong>@(profile.QuizHistory.Count > 0 ? profile.QuizHistory.Max(q => q.Score) : 0)%</strong>
                 </div>
                 <div class="detail-row">
-                    <span>Average Score</span>
+                    <span><Icon Name="trending-up" Size="16" /> Average Score</span>
                     <strong>@(profile.QuizHistory.Count > 0 ? ((int)profile.QuizHistory.Average(q => q.Score)) : 0)%</strong>
                 </div>
                 <div class="detail-row">
-                    <span>Study Time</span>
+                    <span><Icon Name="clock" Size="16" /> Study Time</span>
                     <strong>@FormatTime(profile.TotalStudyMinutes)</strong>
                 </div>
                 <div class="detail-row">
-                    <span>Perfect Quizzes</span>
+                    <span><Icon Name="award" Size="16" /> Perfect Quizzes</span>
                     <strong>@profile.QuizHistory.Count(q => q.Score == 100)</strong>
                 </div>
                 <div class="detail-row">
-                    <span>Hints Used</span>
+                    <span><Icon Name="lightbulb" Size="16" /> Hints Used</span>
                     <strong>@profile.HintsUsed</strong>
                 </div>
             </div>
         </div>
 
-        <!-- Activity heatmap (last 28 days) -->
+        <!-- Activity heatmap -->
         <div class="section">
             <h3>Activity (Last 4 Weeks)</h3>
             <div class="heatmap">
@@ -127,7 +166,7 @@
 
     @if (activeTab == "topics")
     {
-        <div class="section">
+        <div class="section stagger-in tab-content" @key='"topics"'>
             @if (topics != null)
             {
                 @foreach (var topic in topics)
@@ -136,13 +175,21 @@
                     var accuracy = ts != null && ts.QuestionsAnswered > 0 ? ts.CorrectAnswers * 100 / ts.QuestionsAnswered : 0;
                     var progress = topicProgress.ContainsKey(topic.Id) ? topicProgress[topic.Id] : 0;
 
-                    <div class="card topic-stat-card">
-                        <div class="topic-stat-header" style="border-left: 4px solid @topic.Color; padding-left: 12px">
-                            <h3 style="color: @topic.Color; margin: 0">@topic.Name</h3>
-                            <div class="progress-bar-container" style="margin-top: 6px">
-                                <div class="progress-bar-fill" style="width: @progress.ToString("F0")%; background: @topic.Color"></div>
+                    <div class="card topic-stat-card" style="border-left: 4px solid @topic.Color">
+                        <div class="topic-stat-header">
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <h3 style="color: @topic.Color; margin: 0">@topic.Name</h3>
+                                @if (profile.TopicMastery.GetValueOrDefault(topic.Id, 0) > 0)
+                                {
+                                    <span class="mastery-badge-sm" title="@GetMasteryName(profile.TopicMastery[topic.Id])" style="background: @GetMasteryColor(profile.TopicMastery[topic.Id])">
+                                        <Icon Name="@GetMasteryIcon(profile.TopicMastery[topic.Id])" Size="14" />
+                                    </span>
+                                }
                             </div>
-                            <small>@progress.ToString("F0")% complete</small>
+                            <span class="chip" style="color: @topic.Color; border: 1px solid @topic.Color; background: transparent">@progress.ToString("F0")%</span>
+                        </div>
+                        <div class="progress-bar-container" style="margin-top: 8px">
+                            <div class="progress-bar-fill animate-in" style="width: @progress.ToString("F0")%; background: @topic.Color"></div>
                         </div>
                         <div class="topic-stat-grid">
                             <div class="topic-mini-stat">
@@ -170,13 +217,17 @@
 
     @if (activeTab == "history")
     {
-        <div class="section">
+        <div class="section tab-content" @key='"history"'>
             @if (profile.QuizHistory.Count == 0)
             {
-                <div class="empty-state">No quizzes taken yet. Start a lesson to see your history!</div>
+                <div class="empty-state">
+                    <div class="empty-icon"><Icon Name="pencil" Size="32" /></div>
+                    <p>No quizzes taken yet. Start a lesson to see your history!</p>
+                </div>
             }
             else
             {
+                <div class="stagger-in">
                 @foreach (var quiz in profile.QuizHistory.OrderByDescending(q => q.Date).ThenByDescending(q => q.XpEarned).Take(30))
                 {
                     var topicName = topics?.FirstOrDefault(t => t.Id == quiz.TopicId)?.Name ?? "Mixed";
@@ -189,32 +240,50 @@
                         </div>
                         <div class="history-info">
                             <strong style="color: @topicColor">@topicName</strong>
-                            <small>@quiz.Date \u00b7 @quiz.CorrectCount/@quiz.QuestionsCount correct \u00b7 +@quiz.XpEarned XP</small>
+                            <small>@quiz.CorrectCount/@quiz.QuestionsCount correct</small>
+                        </div>
+                        <div class="history-right">
+                            <span class="history-xp">+@quiz.XpEarned XP</span>
+                            <small>@quiz.Date</small>
                         </div>
                     </div>
                 }
+                </div>
             }
         </div>
     }
 
     @if (activeTab == "achievements")
     {
-        <div class="section">
+        <div class="section tab-content" @key='"achievements"'>
             <div class="achievement-summary">
-                <span class="xp-badge">@profile.AchievementsUnlocked.Count / @allAchievements.Count unlocked</span>
+                <div class="achievement-ring">
+                    <svg viewBox="0 0 100 100" class="achievement-ring-svg">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg-surface)" stroke-width="8"/>
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--primary)" stroke-width="8"
+                                stroke-dasharray="@(achievementPct * 2.64) 264"
+                                stroke-dashoffset="0" stroke-linecap="round"
+                                transform="rotate(-90 50 50)"
+                                style="transition: stroke-dasharray 1s ease"/>
+                    </svg>
+                    <div class="achievement-ring-text">
+                        <strong>@profile.AchievementsUnlocked.Count</strong>
+                        <small>/ @allAchievements.Count</small>
+                    </div>
+                </div>
             </div>
-            <div class="achievements-grid">
+            <div class="achievements-grid stagger-in">
                 @foreach (var a in allAchievements.OrderByDescending(a => profile.AchievementsUnlocked.Contains(a.Id)))
                 {
                     var unlocked = profile.AchievementsUnlocked.Contains(a.Id);
                     <div class="achievement-tile card @(unlocked ? "unlocked" : "locked")">
-                        <div class="achievement-icon">@(unlocked ? "\uD83C\uDFC6" : "\uD83D\uDD12")</div>
+                        <div class="achievement-icon">@if (unlocked) { <Icon Name="trophy" Size="24" /> } else { <Icon Name="lock" Size="24" /> }</div>
                         <div class="achievement-info">
                             <strong>@a.Name</strong>
                             <small>@a.Description</small>
                             @if (unlocked)
                             {
-                                <small class="achievement-xp">+@a.XpReward XP</small>
+                                <span class="achievement-xp">+@a.XpReward XP</span>
                             }
                         </div>
                     </div>
@@ -225,8 +294,25 @@
 }
 else
 {
-    <div class="loading">Loading profile...</div>
+    <div class="skeleton-profile" style="padding-top: 8px">
+        <div class="card" style="text-align:center;padding:28px 24px;margin-bottom:16px">
+            <div class="skeleton skeleton-circle skeleton-avatar"></div>
+            <div class="skeleton skeleton-text medium" style="margin:0 auto 8px;width:40%"></div>
+            <div class="skeleton skeleton-text short" style="margin:0 auto 16px;width:25%"></div>
+            <div class="skeleton" style="height:14px;max-width:280px;margin:0 auto;border-radius:10px"></div>
+        </div>
+        <div class="skeleton" style="height:40px;border-radius:var(--radius-md);margin-bottom:16px"></div>
+        <div class="skeleton-stats">
+            <div class="skeleton skeleton-stat"></div>
+            <div class="skeleton skeleton-stat"></div>
+            <div class="skeleton skeleton-stat"></div>
+            <div class="skeleton skeleton-stat"></div>
+            <div class="skeleton skeleton-stat"></div>
+            <div class="skeleton skeleton-stat"></div>
+        </div>
+    </div>
 }
+</div>
 
 @code {
     private UserProfile? profile;
@@ -238,6 +324,7 @@ else
     private int xpNeeded;
     private double xpPct;
     private int overallAccuracy;
+    private double achievementPct;
     private string activeTab = "overview";
     private List<(string date, string label)> last28Days = new();
 
@@ -258,8 +345,9 @@ else
             xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
             overallAccuracy = profile.TotalQuestionsAnswered > 0
                 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0;
+            achievementPct = allAchievements.Count > 0
+                ? (double)profile.AchievementsUnlocked.Count / allAchievements.Count * 100 : 0;
 
-            // Build last 28 days
             for (int i = 27; i >= 0; i--)
             {
                 var d = DateTime.Now.AddDays(-i);
@@ -268,8 +356,34 @@ else
 
             await Progress.TickSessionTimeAsync();
             StateHasChanged();
+            await RunCounters();
         }
     }
+
+    private async Task RunCounters()
+    {
+        await Task.Yield(); // let the DOM update
+        try
+        {
+            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-xp", profile!.TotalXp, 800, "", "");
+            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-pts", profile.Points, 700, "", "");
+            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-streak", profile.CurrentStreak, 500, "", "");
+            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-lessons", profile.LessonsCompleted.Count, 600, "", "");
+            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-questions", profile.TotalQuestionsAnswered, 700, "", "");
+            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-acc", overallAccuracy, 600, "", "%");
+        }
+        catch { }
+    }
+
+    private async Task SetTab(string tab)
+    {
+        activeTab = tab;
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
+    private string GetMasteryIcon(int tier) => tier switch { 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
+    private string GetMasteryColor(int tier) => tier switch { 1 => "#CD7F32", 2 => "#C0C0C0", 3 => "#FFD700", 4 => "#FF6B35", _ => "var(--bg-surface)" };
 
     private string FormatTime(int minutes)
     {
@@ -281,31 +395,82 @@ else
 }
 
 <style>
+    .profile-page { padding-top: 8px; }
+
+    /* Cards banner */
+    .cards-banner {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 18px; margin-bottom: 16px;
+        background: linear-gradient(135deg, rgba(74, 95, 224, 0.06), rgba(180, 140, 255, 0.06));
+        border: 1px solid rgba(74, 95, 224, 0.15);
+    }
+    .cards-banner:hover { transform: none; }
+    .cards-banner-left { display: flex; align-items: center; gap: 12px; }
+    .cards-banner-icon { font-size: 1.6rem; }
+    .cards-banner-left strong { display: block; font-size: 0.95rem; }
+    .cards-banner-left small { color: var(--text-muted); font-size: 0.8rem; }
+    .cards-banner-arrow { font-size: 1.2rem; color: var(--primary); }
+
     .profile-header {
         text-align: center;
-        padding: 24px;
+        padding: 28px 24px 20px;
         margin-bottom: 16px;
+        background: linear-gradient(180deg, rgba(74, 95, 224, 0.06) 0%, var(--bg-card) 60%);
     }
 
-    .avatar-display { margin-bottom: 12px; }
+    .avatar-display { margin-bottom: 8px; position: relative; display: inline-block; }
 
     .avatar-circle {
-        width: 72px; height: 72px; border-radius: 50%;
+        width: 80px; height: 80px; border-radius: 50%;
         background: linear-gradient(135deg, var(--primary), var(--primary-light));
         color: white; display: flex; align-items: center; justify-content: center;
-        font-size: 2rem; font-weight: 700; margin: 0 auto 8px;
+        font-size: 2.2rem; font-weight: 700; margin: 0 auto;
+        position: relative;
+    }
+
+    .avatar-ring {
+        position: absolute; inset: -4px; border-radius: 50%;
+        border: 3px solid transparent;
+        background: linear-gradient(135deg, var(--primary), var(--accent)) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        animation: ringRotate 4s linear infinite;
+    }
+
+    @@keyframes ringRotate {
+        to { transform: rotate(360deg); }
+    }
+
+    .level-badge {
+        position: absolute; bottom: -4px; right: -8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        color: var(--xp-text); padding: 2px 8px; border-radius: 10px;
+        font-size: 0.7rem; font-weight: 700;
+        box-shadow: 0 2px 6px rgba(240, 160, 48, 0.3);
     }
 
     .title-badge {
-        display: inline-block;
+        display: inline-block; margin-top: 6px;
         background: linear-gradient(135deg, var(--accent), var(--accent-light));
         color: var(--xp-text); padding: 2px 12px; border-radius: 12px;
         font-size: 0.8rem; font-weight: 600;
     }
 
-    .level-display { color: var(--primary); font-weight: 700; font-size: 1.1rem; margin: 4px 0 12px; }
-    .xp-section { max-width: 280px; margin: 0 auto; }
-    .xp-section small { color: var(--text-muted); }
+    .profile-header h2 { margin: 8px 0 0; }
+
+    .xp-section { max-width: 280px; margin: 12px auto 0; }
+    .xp-bar-labels { display: flex; justify-content: space-between; }
+    .xp-bar-labels small, .xp-detail { color: var(--text-muted); font-size: 0.75rem; }
+    .xp-detail { display: block; text-align: center; margin-top: 4px; }
+
+    .quick-stats {
+        display: flex; justify-content: center; gap: 16px; margin-top: 16px;
+        padding-top: 16px; border-top: 1px solid var(--border);
+    }
+    .quick-stat {
+        display: flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--text-secondary);
+    }
+    .quick-stat strong { color: var(--text-primary); }
 
     /* Tabs */
     .tab-bar {
@@ -315,16 +480,25 @@ else
     .tab {
         flex: 1; padding: 8px 4px; border: none; background: transparent;
         color: var(--text-muted); font-weight: 600; font-size: 0.85rem;
-        border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease;
+        border-radius: var(--radius-sm); cursor: pointer;
+        transition: all 0.25s ease;
         -webkit-tap-highlight-color: transparent;
     }
-    .tab.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow); }
+    .tab:active { transform: scale(0.95); }
+    .tab.active {
+        background: var(--bg-card); color: var(--primary);
+        box-shadow: 0 2px 8px var(--shadow);
+    }
 
     /* Stats grid */
     .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .stat-tile { text-align: center; padding: 12px 8px; }
+    .stat-tile {
+        text-align: center; padding: 14px 8px;
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
     .stat-tile:hover { transform: none; }
-    .stat-value { display: block; font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+    .stat-icon { font-size: 1.2rem; }
+    .stat-value { display: block; font-size: 1.4rem; font-weight: 700; color: var(--primary); }
     .stat-name { font-size: 0.75rem; color: var(--text-muted); }
     .streak-val { color: var(--warning); }
 
@@ -332,18 +506,20 @@ else
     .detail-stats { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: var(--radius-md); overflow: hidden; }
     .detail-row {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 10px 14px; background: var(--bg-card);
+        padding: 11px 14px; background: var(--bg-card);
+        transition: background 0.15s ease;
     }
+    .detail-row:active { background: var(--bg-surface); }
     .detail-row span { color: var(--text-secondary); font-size: 0.9rem; }
     .detail-row strong { color: var(--text-primary); }
 
     /* Heatmap */
-    .heatmap {
-        display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
-    }
+    .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
     .heatmap-cell {
-        aspect-ratio: 1; border-radius: 3px; position: relative;
+        aspect-ratio: 1; border-radius: 4px; position: relative;
+        transition: transform 0.15s ease;
     }
+    .heatmap-cell:active { transform: scale(1.3); }
     .heatmap-cell.none { background: var(--bg-surface); }
     .heatmap-cell.low { background: rgba(74, 95, 224, 0.2); }
     .heatmap-cell.med { background: rgba(74, 95, 224, 0.4); }
@@ -358,6 +534,7 @@ else
     /* Topic stats */
     .topic-stat-card { margin-bottom: 10px; padding: 14px; }
     .topic-stat-card:hover { transform: none; }
+    .topic-stat-header { display: flex; justify-content: space-between; align-items: center; }
     .topic-stat-card small { color: var(--text-muted); font-size: 0.8rem; }
     .topic-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
     .topic-mini-stat { text-align: center; }
@@ -375,19 +552,43 @@ else
     .history-score.great { background: rgba(76, 175, 80, 0.15); color: var(--success); }
     .history-score.ok { background: rgba(255, 152, 0, 0.15); color: var(--warning); }
     .history-score.low { background: rgba(239, 83, 80, 0.15); color: var(--error); }
-    .history-info { display: flex; flex-direction: column; gap: 2px; }
+    .history-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
     .history-info small { color: var(--text-muted); font-size: 0.8rem; }
+    .history-right { text-align: right; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+    .history-xp { font-weight: 700; font-size: 0.85rem; color: var(--accent); }
+    .history-right small { color: var(--text-muted); font-size: 0.75rem; }
 
     /* Achievements */
-    .achievement-summary { text-align: center; margin-bottom: 12px; }
+    .achievement-summary { text-align: center; margin-bottom: 16px; }
+    .achievement-ring {
+        display: inline-block; position: relative; width: 100px; height: 100px;
+    }
+    .achievement-ring-svg { width: 100%; height: 100%; }
+    .achievement-ring-text {
+        position: absolute; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+    }
+    .achievement-ring-text strong { font-size: 1.4rem; color: var(--primary); }
+    .achievement-ring-text small { font-size: 0.8rem; color: var(--text-muted); }
+
     .achievements-grid { display: flex; flex-direction: column; gap: 8px; }
-    .achievement-tile { display: flex; align-items: center; gap: 12px; padding: 12px; }
+    .achievement-tile { display: flex; align-items: center; gap: 12px; padding: 14px; }
     .achievement-tile:hover { transform: none; }
-    .achievement-tile.locked { opacity: 0.45; }
-    .achievement-tile.unlocked { border-color: var(--accent); }
+    .achievement-tile.locked { opacity: 0.4; }
+    .achievement-tile.unlocked { border-left: 3px solid var(--accent); }
     .achievement-icon { font-size: 1.5rem; flex-shrink: 0; }
     .achievement-info { display: flex; flex-direction: column; }
     .achievement-info small { color: var(--text-muted); font-size: 0.8rem; }
-    .achievement-xp { color: var(--accent) !important; font-weight: 600; }
+    .achievement-xp {
+        display: inline-block; margin-top: 4px; font-size: 0.75rem;
+        color: var(--accent); font-weight: 700;
+    }
+
+    .mastery-badge-sm {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem;
+    }
+
     .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
 </style>

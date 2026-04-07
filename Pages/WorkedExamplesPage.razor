@@ -1,0 +1,144 @@
+@page "/worked-examples/{TopicId}"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Worked Examples</h1>
+</div>
+
+@if (examples.Count == 0)
+{
+    <div class="loading">Loading examples...</div>
+}
+else if (currentExample < examples.Count)
+{
+    <div class="we-nav">
+        <span>@(currentExample + 1) / @examples.Count</span>
+        <div class="we-nav-dots">
+            @for (int i = 0; i < examples.Count; i++)
+            {
+                var idx = i;
+                <span class="we-dot @(idx == currentExample ? "active" : idx < currentExample ? "done" : "")" @onclick="() => currentExample = idx"></span>
+            }
+        </div>
+    </div>
+
+    <WorkedExample Problem="@examples[currentExample].Problem" ProblemMath="@examples[currentExample].ProblemMath"
+                   Steps="@examples[currentExample].Steps" XpReward="@examples[currentExample].Xp"
+                   OnComplete="OnExampleComplete" />
+}
+else
+{
+    <div class="card" style="text-align: center; padding: 32px">
+        <Icon Name="checkmark-circle" Size="40" Stroke="var(--success)" />
+        <h2 style="margin-top: 12px">All Done!</h2>
+        <p style="color: var(--text-secondary)">You earned @totalXp XP from worked examples.</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Back to Topic</button>
+    </div>
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+
+    private record ExampleDef(string Problem, string? ProblemMath, List<WorkedExample.WorkedStep> Steps, int Xp);
+
+    private List<ExampleDef> examples = new();
+    private int currentExample;
+    private int totalXp;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            examples = GetExamples(TopicId);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnExampleComplete(int xp)
+    {
+        totalXp += xp;
+        if (xp > 0) await Gamification.AwardXpAsync(xp);
+        currentExample++;
+    }
+
+    private static List<ExampleDef> GetExamples(string topicId) => topicId switch
+    {
+        "calculus" => new()
+        {
+            new("Find the derivative of f(x) = 3x^4 - 2x^2 + 5x - 7", "f(x) = 3x^4 - 2x^2 + 5x - 7", new()
+            {
+                new("What rule do we apply to each term?", "choice", "Power rule", new() { "Chain rule", "Product rule", "Power rule", "Quotient rule" }, "Each term is a simple power of x, so we use the power rule: d/dx(x^n) = nx^(n-1).", null, null),
+                new("What is d/dx(3x^4)?", "fillin", "12x^3", null, "Power rule: 4 * 3 = 12, reduce exponent by 1: x^3.", "\\frac{d}{dx}(3x^4) = 12x^3", new() { "12x^3", "12x\u00b3", "12*x^3" }),
+                new("What is d/dx(-2x^2)?", "fillin", "-4x", null, "Power rule: 2 * (-2) = -4, reduce exponent: x^1 = x.", null, new() { "-4x", "-4*x" }),
+                new("What is d/dx(5x)?", "fillin", "5", null, "The derivative of 5x is just 5. (Power rule with n=1: 1*5*x^0 = 5.)", null, new() { "5", "5.0" }),
+                new("What is d/dx(-7)?", "fillin", "0", null, "The derivative of any constant is 0.", null, new() { "0", "zero" }),
+                new("Combine all terms. What is f'(x)?", "fillin", "12x^3-4x+5", null, "f'(x) = 12x^3 - 4x + 5. Each term differentiated and combined.", "f'(x) = 12x^3 - 4x + 5", new() { "12x^3-4x+5", "12x^3 - 4x + 5" })
+            }, 40),
+            new("Evaluate the definite integral of 2x+1 from x=0 to x=3", "\\int_0^3 (2x + 1)\\, dx", new()
+            {
+                new("What is the antiderivative of 2x?", "fillin", "x^2", null, "Reverse power rule: increase exponent to 2, divide by 2. Coefficient 2 cancels: x^2.", null, new() { "x^2", "x\u00b2" }),
+                new("What is the antiderivative of 1?", "fillin", "x", null, "The antiderivative of 1 is x (since d/dx(x) = 1).", null, new() { "x" }),
+                new("So the antiderivative F(x) = x^2 + x. What is F(3)?", "fillin", "12", null, "F(3) = 9 + 3 = 12.", null, new() { "12" }),
+                new("What is F(0)?", "fillin", "0", null, "F(0) = 0 + 0 = 0.", null, new() { "0" }),
+                new("Final answer: F(3) - F(0) = ?", "fillin", "12", null, "12 - 0 = 12. The definite integral equals 12.", "\\int_0^3 (2x+1)\\,dx = [x^2+x]_0^3 = 12 - 0 = 12", new() { "12" })
+            }, 35),
+        },
+        "linear-algebra" => new()
+        {
+            new("Multiply the matrices A and B", "A = \\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}, \\quad B = \\begin{pmatrix} 5 & 6 \\\\ 7 & 8 \\end{pmatrix}", new()
+            {
+                new("To find (AB)_{11}: multiply row 1 of A by column 1 of B. What is 1*5 + 2*7?", "fillin", "19", null, "(1)(5) + (2)(7) = 5 + 14 = 19.", null, new() { "19" }),
+                new("(AB)_{12}: row 1 of A times column 2 of B. What is 1*6 + 2*8?", "fillin", "22", null, "(1)(6) + (2)(8) = 6 + 16 = 22.", null, new() { "22" }),
+                new("(AB)_{21}: row 2 of A times column 1 of B. What is 3*5 + 4*7?", "fillin", "43", null, "(3)(5) + (4)(7) = 15 + 28 = 43.", null, new() { "43" }),
+                new("(AB)_{22}: row 2 of A times column 2 of B. What is 3*6 + 4*8?", "fillin", "50", null, "(3)(6) + (4)(8) = 18 + 32 = 50.", null, new() { "50" }),
+                new("What is det(AB)? (Use det = ad - bc)", "fillin", "4", null, "det(AB) = 19*50 - 22*43 = 950 - 946 = 4. Note: det(A)*det(B) = (4-6)(40-42) = (-2)(-2) = 4. They match!", null, new() { "4" })
+            }, 35),
+            new("Find the eigenvalues of the matrix", "A = \\begin{pmatrix} 4 & 1 \\\\ 2 & 3 \\end{pmatrix}", new()
+            {
+                new("Write the characteristic equation det(A - lambda*I) = 0. What is (4-lambda)(3-lambda) - (1)(2)?", "choice", "(4-lambda)(3-lambda) - 2 = 0", new() { "(4-lambda)(3-lambda) + 2 = 0", "(4-lambda)(3-lambda) - 2 = 0", "4*3 - lambda = 0", "(lambda-4)(lambda-3) + 2 = 0" }, "det(A-lambdaI) = (4-lambda)(3-lambda) - 1*2 = 0.", null, null),
+                new("Expand: what quadratic do you get?", "choice", "lambda^2 - 7*lambda + 10 = 0", new() { "lambda^2 - 7*lambda + 12 = 0", "lambda^2 - 7*lambda + 10 = 0", "lambda^2 + 7*lambda + 10 = 0", "lambda^2 - 12*lambda + 7 = 0" }, "(4-l)(3-l) - 2 = 12 - 7l + l^2 - 2 = l^2 - 7l + 10 = 0.", null, null),
+                new("Factor: (lambda - ?)(lambda - ?) = 0. What are the two eigenvalues?", "fillin", "2 and 5", null, "lambda^2 - 7l + 10 = (l-2)(l-5) = 0. So lambda = 2 and lambda = 5.", null, new() { "2 and 5", "5 and 2", "2, 5", "5, 2" }),
+            }, 30),
+        },
+        "probability" => new()
+        {
+            new("A disease affects 1% of people. A test is 95% accurate. You test positive. What's the probability you have the disease?", null, new()
+            {
+                new("What is P(disease)? (the prior)", "fillin", "0.01", null, "1% of people have the disease, so P(D) = 0.01.", null, new() { "0.01", "1%", "0.01" }),
+                new("What is P(positive | disease)? (sensitivity)", "fillin", "0.95", null, "The test correctly identifies 95% of sick people.", null, new() { "0.95", "95%", ".95" }),
+                new("What is P(positive | no disease)? (false positive rate)", "fillin", "0.05", null, "The test incorrectly flags 5% of healthy people.", null, new() { "0.05", "5%", ".05" }),
+                new("Using Bayes: P(D|+) = P(+|D)*P(D) / P(+). What is the numerator P(+|D)*P(D)?", "fillin", "0.0095", null, "0.95 * 0.01 = 0.0095.", null, new() { "0.0095", ".0095" }),
+                new("What is P(+)? Use total probability: P(+|D)*P(D) + P(+|~D)*P(~D)", "fillin", "0.0590", null, "0.0095 + 0.05*0.99 = 0.0095 + 0.0495 = 0.059.", null, new() { "0.059", "0.0590", ".059" }),
+                new("Final answer: P(D|+) = 0.0095/0.059. Roughly what percent?", "choice", "About 16%", new() { "About 5%", "About 16%", "About 50%", "About 95%" }, "0.0095/0.059 = 0.161 = about 16%. Despite a positive test, there's only a 16% chance you're sick! This is the base rate fallacy in action.", null, null)
+            }, 45),
+        },
+        "number-theory" => new()
+        {
+            new("Use the Euclidean algorithm to find GCD(252, 105)", null, new()
+            {
+                new("Divide 252 by 105. What is the remainder?", "fillin", "42", null, "252 = 2 * 105 + 42. The remainder is 42.", null, new() { "42" }),
+                new("Now divide 105 by 42. What is the remainder?", "fillin", "21", null, "105 = 2 * 42 + 21. The remainder is 21.", null, new() { "21" }),
+                new("Divide 42 by 21. What is the remainder?", "fillin", "0", null, "42 = 2 * 21 + 0. The remainder is 0, so we stop.", null, new() { "0" }),
+                new("The last nonzero remainder is the GCD. What is GCD(252, 105)?", "fillin", "21", null, "GCD = 21. The Euclidean algorithm always terminates and gives the correct GCD.", null, new() { "21" })
+            }, 30),
+        },
+        _ => new()
+    };
+}
+
+<style>
+    .we-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text-muted); font-size: 0.85rem; }
+    .we-nav-dots { display: flex; gap: 6px; }
+    .we-dot {
+        width: 10px; height: 10px; border-radius: 50%; background: var(--border); cursor: pointer; transition: all 0.2s ease;
+    }
+    .we-dot.active { background: var(--primary); transform: scale(1.3); }
+    .we-dot.done { background: var(--success); }
+
+    .share-profile-btn { margin-top: 12px; }
+</style>

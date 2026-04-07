@@ -1,0 +1,437 @@
+@page "/proofs"
+@page "/proofs/{ChallengeId}"
+@inject IChallengeRepository ChallengeRepo
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Proof Builder</h1>
+    </div>
+    <div class="locked-feature card">
+        <div class="locked-icon"><Icon Name="lock" Size="36" /></div>
+        <h2>Locked</h2>
+        <p>Purchase the Proof Builder from the Shop to unlock.</p>
+        <button class="btn btn-accent btn-lg" @onclick='() => Nav.NavigateTo("/shop")'>
+            <Icon Name="gem" Size="18" /> Go to Shop
+        </button>
+    </div>
+}
+else if (activeChallenge == null)
+{
+    <!-- Challenge list -->
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Proof Builder</h1>
+    </div>
+    <p class="pb-subtitle">Drag-and-drop proof blocks into the correct logical order. Distractors are included — not every block belongs!</p>
+
+    @if (challenges != null)
+    {
+        <div class="pb-list stagger-in">
+            @foreach (var c in challenges)
+            {
+                var completed = completedIds.Contains(c.Id);
+                <div class="card card-clickable pb-card @(completed ? "pb-done" : "")" @onclick="() => StartChallenge(c)">
+                    <div class="pb-card-left">
+                        <div class="pb-diff">
+                            @for (int i = 0; i < c.Difficulty; i++) { <span class="pb-star"><Icon Name="star-filled" Size="12" Fill="currentColor" /></span> }
+                            @for (int i = c.Difficulty; i < 3; i++) { <span class="pb-star dim"><Icon Name="star-filled" Size="12" Fill="currentColor" /></span> }
+                        </div>
+                        <strong>@c.Title</strong>
+                        <small>@c.Goal</small>
+                    </div>
+                    <div class="pb-card-right">
+                        @if (completed)
+                        {
+                            <span class="pb-check"><Icon Name="check" Size="14" /></span>
+                        }
+                        else
+                        {
+                            <span class="pb-xp">+@c.XpReward XP</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="loading">Loading challenges...</div>
+    }
+}
+else
+{
+    <!-- Active challenge -->
+    <div class="page-header">
+        <button class="back-btn" @onclick="BackToList"><Icon Name="arrow-left" Size="18" /></button>
+        <h1>@activeChallenge.Title</h1>
+    </div>
+
+    <div class="pb-goal card">
+        <strong>Goal:</strong> @activeChallenge.Goal
+        @if (activeChallenge.GoalMath != null)
+        {
+            <div class="math-display" id="proof-goal-math"></div>
+        }
+    </div>
+
+    @if (!submitted)
+    {
+        <!-- Proof workspace -->
+        <div class="pb-workspace">
+            <h3>Your Proof</h3>
+            <div class="pb-proof-area">
+                @if (proofSlots.Count == 0)
+                {
+                    <div class="pb-empty">Tap blocks below to build your proof</div>
+                }
+                @for (int i = 0; i < proofSlots.Count; i++)
+                {
+                    var idx = i;
+                    var block = activeChallenge.AvailableBlocks.FirstOrDefault(b => b.Id == proofSlots[i]);
+                    if (block == null) continue;
+                    <div class="pb-slot @(block.Type == "given" ? "pb-given" : "")">
+                        <span class="pb-slot-num">@(idx + 1)</span>
+                        <span class="pb-slot-text">@block.Text</span>
+                        @if (block.Type != "given")
+                        {
+                            <div class="pb-slot-actions">
+                                @if (idx > givenCount)
+                                {
+                                    <button class="pb-move" @onclick="() => MoveUp(idx)"><Icon Name="chevron-up" Size="14" /></button>
+                                }
+                                @if (idx < proofSlots.Count - 1)
+                                {
+                                    <button class="pb-move" @onclick="() => MoveDown(idx)"><Icon Name="chevron-down" Size="14" /></button>
+                                }
+                                <button class="pb-remove" @onclick="() => RemoveBlock(idx)"><Icon Name="x-mark" Size="14" /></button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <h3>Available Blocks</h3>
+            <div class="pb-blocks">
+                @foreach (var block in shuffledBlocks)
+                {
+                    var used = proofSlots.Contains(block.Id);
+                    <button class="pb-block @(used ? "pb-used" : "") @GetBlockTypeClass(block.Type)"
+                            disabled="@used"
+                            @onclick="() => AddBlock(block.Id)">
+                        @block.Text
+                    </button>
+                }
+            </div>
+
+            <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px"
+                    @onclick="SubmitProof"
+                    disabled="@(proofSlots.Count <= givenCount)">
+                Check Proof
+            </button>
+        </div>
+    }
+    else
+    {
+        <!-- Result -->
+        <div class="pb-result card @(isCorrect ? "pb-correct" : "pb-wrong")">
+            <div class="pb-result-icon">@if (isCorrect) { <Icon Name="check" Size="14" /> } else { <Icon Name="x-mark" Size="14" /> }</div>
+            <h2>@(isCorrect ? "Proof Complete!" : "Not Quite Right")</h2>
+
+            @if (isCorrect)
+            {
+                <div class="xp-earned pulse">
+                    <span class="xp-badge" style="font-size: 1rem; padding: 6px 14px">+@activeChallenge.XpReward XP</span>
+                </div>
+            }
+            else
+            {
+                <div class="pb-hint">
+                    <strong>Hint:</strong> Check whether you included any distractor blocks, and whether your logical order makes sense. Each step should follow from previous steps.
+                </div>
+            }
+
+            <div class="pb-explanation">
+                <h3>Explanation</h3>
+                <p>@activeChallenge.Explanation</p>
+            </div>
+
+            @if (!isCorrect)
+            {
+                <div class="pb-correct-order">
+                    <h3>Correct Proof</h3>
+                    @for (int i = 0; i < activeChallenge.CorrectOrder.Count; i++)
+                    {
+                        var block = activeChallenge.AvailableBlocks.FirstOrDefault(b => b.Id == activeChallenge.CorrectOrder[i]);
+                        @if (block != null)
+                        {
+                            <div class="pb-correct-step">
+                                <span class="pb-slot-num">@(i + 1)</span>
+                                <span>@block.Text</span>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+
+            <div style="display: flex; gap: 10px; margin-top: 16px">
+                @if (!isCorrect)
+                {
+                    <button class="btn btn-primary" style="flex: 1" @onclick="RetryChallenge">Try Again</button>
+                }
+                <button class="btn btn-outline" style="flex: 1" @onclick="BackToList">
+                    @(isCorrect ? "More Proofs" : "Back to List")
+                </button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string? ChallengeId { get; set; }
+
+    private List<ProofChallenge>? challenges;
+    private ProofChallenge? activeChallenge;
+    private List<ProofBlock> shuffledBlocks = new();
+    private List<string> proofSlots = new();
+    private HashSet<string> completedIds = new();
+    private bool submitted;
+    private bool isCorrect;
+    private bool unlocked;
+    private int givenCount;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-proofs");
+            if (!unlocked) { StateHasChanged(); return; }
+
+            challenges = await ChallengeRepo.GetProofChallengesAsync();
+            completedIds = profile.ChallengesCompleted.ToHashSet();
+
+            if (ChallengeId != null)
+            {
+                var c = challenges.FirstOrDefault(x => x.Id == ChallengeId);
+                if (c != null) InitChallenge(c);
+            }
+
+            StateHasChanged();
+        }
+
+        if (activeChallenge?.GoalMath != null && !submitted)
+        {
+            try { await JS.InvokeVoidAsync("renderMath", "proof-goal-math", activeChallenge.GoalMath, true); } catch { }
+        }
+    }
+
+    private void StartChallenge(ProofChallenge c)
+    {
+        InitChallenge(c);
+    }
+
+    private void InitChallenge(ProofChallenge c)
+    {
+        activeChallenge = c;
+        submitted = false;
+        isCorrect = false;
+        proofSlots = new List<string>(c.GivenIds);
+        givenCount = c.GivenIds.Count;
+        var rng = new Random();
+        shuffledBlocks = c.AvailableBlocks
+            .Where(b => !c.GivenIds.Contains(b.Id))
+            .OrderBy(_ => rng.Next())
+            .ToList();
+    }
+
+    private void AddBlock(string blockId)
+    {
+        if (!proofSlots.Contains(blockId))
+        {
+            proofSlots.Add(blockId);
+        }
+    }
+
+    private void RemoveBlock(int index)
+    {
+        if (index >= givenCount)
+            proofSlots.RemoveAt(index);
+    }
+
+    private void MoveUp(int index)
+    {
+        if (index > givenCount)
+            (proofSlots[index], proofSlots[index - 1]) = (proofSlots[index - 1], proofSlots[index]);
+    }
+
+    private void MoveDown(int index)
+    {
+        if (index < proofSlots.Count - 1 && index >= givenCount)
+            (proofSlots[index], proofSlots[index + 1]) = (proofSlots[index + 1], proofSlots[index]);
+    }
+
+    private async Task SubmitProof()
+    {
+        submitted = true;
+        isCorrect = proofSlots.SequenceEqual(activeChallenge!.CorrectOrder);
+
+        if (isCorrect)
+        {
+            try { await JS.InvokeVoidAsync("Sounds.playCorrect"); } catch { }
+            try { await JS.InvokeVoidAsync("Confetti.launch", 50); } catch { }
+
+            if (!completedIds.Contains(activeChallenge.Id))
+            {
+                completedIds.Add(activeChallenge.Id);
+                await Gamification.AwardXpAsync(activeChallenge.XpReward);
+                var profile = await Progress.GetProfileAsync();
+                if (!profile.ChallengesCompleted.Contains(activeChallenge.Id))
+                {
+                    profile.ChallengesCompleted.Add(activeChallenge.Id);
+                    await Progress.SaveProfileAsync(profile);
+                }
+            }
+        }
+        else
+        {
+            try { await JS.InvokeVoidAsync("Sounds.playWrong"); } catch { }
+        }
+    }
+
+    private void RetryChallenge()
+    {
+        if (activeChallenge != null) InitChallenge(activeChallenge);
+    }
+
+    private void BackToList()
+    {
+        activeChallenge = null;
+        submitted = false;
+    }
+
+    private string GetBlockTypeClass(string type) => type switch
+    {
+        "given" => "pb-type-given",
+        "conclusion" => "pb-type-conclusion",
+        "distractor" => "",
+        _ => ""
+    };
+}
+
+<style>
+    .locked-feature {
+        text-align: center; padding: 40px 24px;
+    }
+    .locked-feature:hover { transform: none; }
+    .locked-icon { color: var(--text-muted); margin-bottom: 12px; }
+    .locked-feature h2 { margin-bottom: 8px; }
+    .locked-feature p { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
+
+    .pb-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
+
+    .pb-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .pb-card { display: flex; align-items: center; gap: 12px; padding: 14px; }
+    .pb-card:hover { transform: none; }
+    .pb-card.pb-done { border-left: 3px solid var(--success); }
+    .pb-card-left { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .pb-card-left small { color: var(--text-muted); font-size: 0.8rem; }
+    .pb-card-right { flex-shrink: 0; }
+    .pb-diff { margin-bottom: 2px; }
+    .pb-star { color: var(--accent); font-size: 0.75rem; }
+    .pb-star.dim { opacity: 0.25; }
+    .pb-check { color: var(--success); font-weight: 700; font-size: 1.2rem; }
+    .pb-xp { font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+
+    /* Goal */
+    .pb-goal { padding: 14px; margin-bottom: 16px; background: rgba(74,95,224,0.06); border-color: rgba(74,95,224,0.15); }
+    .pb-goal:hover { transform: none; }
+
+    /* Workspace */
+    .pb-workspace h3 { font-size: 0.95rem; margin: 16px 0 8px; color: var(--text-secondary); }
+
+    .pb-proof-area {
+        min-height: 60px; padding: 8px; border: 2px dashed var(--border);
+        border-radius: var(--radius-md); background: var(--bg-surface);
+        display: flex; flex-direction: column; gap: 6px;
+    }
+
+    .pb-empty { color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.9rem; }
+
+    .pb-slot {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px; background: var(--bg-card);
+        border: 1px solid var(--border); border-radius: var(--radius-sm);
+        font-size: 0.85rem; animation: staggerUp 0.3s ease;
+    }
+    .pb-slot.pb-given { background: rgba(74,95,224,0.06); border-color: var(--primary-light); }
+
+    .pb-slot-num {
+        width: 22px; height: 22px; border-radius: 50%;
+        background: var(--primary); color: white; display: flex;
+        align-items: center; justify-content: center;
+        font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
+    }
+    .pb-slot-text { flex: 1; }
+
+    .pb-slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .pb-move, .pb-remove {
+        width: 26px; height: 26px; border: 1px solid var(--border);
+        border-radius: 4px; background: var(--bg-surface);
+        cursor: pointer; font-size: 0.7rem; display: flex;
+        align-items: center; justify-content: center; color: var(--text-muted);
+        -webkit-tap-highlight-color: transparent;
+    }
+    .pb-move:active, .pb-remove:active { background: var(--border); }
+    .pb-remove { color: var(--error); border-color: rgba(239,83,80,0.3); }
+
+    /* Available blocks */
+    .pb-blocks { display: flex; flex-direction: column; gap: 6px; }
+
+    .pb-block {
+        text-align: left; padding: 10px 14px;
+        background: var(--bg-card); border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.85rem;
+        color: var(--text-primary); cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .pb-block:hover:not(:disabled) { border-color: var(--primary-light); background: var(--bg-surface); }
+    .pb-block:active:not(:disabled) { transform: scale(0.98); }
+    .pb-block.pb-used { opacity: 0.3; text-decoration: line-through; cursor: default; }
+    .pb-block.pb-type-given { display: none; }
+
+    /* Result */
+    .pb-result { padding: 24px; text-align: center; }
+    .pb-result:hover { transform: none; }
+    .pb-result.pb-correct { border-color: var(--success); }
+    .pb-result.pb-wrong { border-color: var(--error); }
+    .pb-result-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .pb-correct .pb-result-icon { color: var(--success); }
+    .pb-wrong .pb-result-icon { color: var(--error); }
+
+    .pb-hint {
+        text-align: left; padding: 12px; margin: 12px 0;
+        background: rgba(240,160,48,0.08); border: 1px solid rgba(240,160,48,0.2);
+        border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary);
+    }
+
+    .pb-explanation { text-align: left; margin: 16px 0; }
+    .pb-explanation h3 { font-size: 0.95rem; margin-bottom: 6px; }
+    .pb-explanation p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+    .pb-correct-order { text-align: left; margin: 12px 0; }
+    .pb-correct-order h3 { font-size: 0.95rem; margin-bottom: 8px; }
+    .pb-correct-step {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 8px 0; font-size: 0.85rem; color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+    }
+    .pb-correct-step:last-child { border-bottom: none; }
+</style>

@@ -2,55 +2,256 @@
 @inject IProgressService Progress
 @inject IThemeService ThemeService
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <h1>Settings</h1>
 
 <div class="settings-list">
     <div class="card settings-item">
-        <h3>Theme</h3>
-        <p>Change your current theme from the <a href="/shop">Shop</a>.</p>
-        <p>Current: <strong>@activeTheme</strong></p>
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="palette" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Theme</h3>
+                <p>Current: <strong>@FormatThemeName(activeTheme)</strong></p>
+            </div>
+            <button class="btn btn-sm btn-outline" @onclick='() => Nav.NavigateTo("/shop")'>Browse</button>
+        </div>
+        @if (activeTheme != "default")
+        {
+            <button class="btn btn-sm btn-outline reset-theme-btn" @onclick="ResetTheme">
+                Reset to Default
+            </button>
+        }
     </div>
 
     <div class="card settings-item">
-        <h3>Reset Progress</h3>
-        <p>This will erase all your XP, achievements, and purchases. This cannot be undone.</p>
-        @if (!confirmReset)
-        {
-            <button class="btn btn-outline" style="color: var(--error); border-color: var(--error)" @onclick="() => confirmReset = true">
-                Reset All Progress
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="zap" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Sound Effects</h3>
+                <p>@(soundEnabled ? "On" : "Off")</p>
+            </div>
+            <button class="toggle-btn @(soundEnabled ? "on" : "")" @onclick="ToggleSound">
+                <span class="toggle-knob"></span>
             </button>
-        }
-        else
+        </div>
+    </div>
+
+    <div class="card settings-item">
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="pencil" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Display Name</h3>
+                <p>@currentName</p>
+            </div>
+            <button class="btn btn-sm btn-outline" @onclick="() => editingName = true" style="@(editingName ? "display:none" : "")">Edit</button>
+        </div>
+        @if (editingName)
         {
-            <div class="confirm-reset">
-                <p style="color: var(--error); font-weight: 600">Are you sure?</p>
-                <div style="display: flex; gap: 10px">
-                    <button class="btn btn-sm btn-outline" @onclick="() => confirmReset = false">Cancel</button>
-                    <button class="btn btn-sm" style="background: var(--error); color: white" @onclick="DoReset">Yes, Reset Everything</button>
+            <div class="name-edit">
+                <input type="text" class="name-input" @bind="newName" @bind:event="oninput"
+                       placeholder="Enter new name..." maxlength="30" @onkeydown="HandleNameKeydown" />
+                <div class="name-edit-buttons">
+                    <button class="btn btn-sm btn-outline" @onclick="CancelNameEdit">Cancel</button>
+                    <button class="btn btn-sm btn-primary" @onclick="SaveName"
+                            disabled="@(string.IsNullOrWhiteSpace(newName) || newName.Trim() == currentName)">Save</button>
                 </div>
             </div>
         }
     </div>
 
     <div class="card settings-item">
-        <h3>About</h3>
-        <p>MathVoyager v1.0</p>
-        <p style="color: var(--text-muted)">A visual math learning app. Built with Blazor WebAssembly.</p>
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="trending-up" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Export Stats</h3>
+                <p>Copy your progress summary</p>
+            </div>
+            <button class="btn btn-sm btn-outline" @onclick="ExportStats">Copy</button>
+        </div>
+    </div>
+
+    <div class="card settings-item danger-item">
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="x-mark" Size="24" Stroke="var(--error)" /></div>
+            <div class="settings-info">
+                <h3>Reset Progress</h3>
+                <p>Erase all data. Cannot be undone.</p>
+            </div>
+            @if (!confirmReset)
+            {
+                <button class="btn btn-sm btn-danger" @onclick="() => confirmReset = true">Reset</button>
+            }
+        </div>
+        @if (confirmReset)
+        {
+            <div class="confirm-box">
+                <p>Are you sure? All XP, achievements, and purchases will be lost.</p>
+                <div class="confirm-buttons">
+                    <button class="btn btn-sm btn-outline" @onclick="() => confirmReset = false">Cancel</button>
+                    <button class="btn btn-sm btn-danger" @onclick="DoReset">Yes, Reset Everything</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="card settings-item dev-item">
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="zap" Size="24" Stroke="var(--accent)" /></div>
+            <div class="settings-info">
+                <h3>Dev Mode</h3>
+                <p>@(devMode ? "Active — everything unlocked" : "Unlock all features, items, and give max points")</p>
+            </div>
+            <button class="toggle-btn @(devMode ? "on" : "")" @onclick="ToggleDevMode">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card settings-item about-card">
+        <div class="about-brand">
+            <img src="numeria-icon.svg" alt="Numeria" class="about-icon" />
+            <div>
+                <h3>Numeria</h3>
+                <p>v1.0</p>
+            </div>
+        </div>
+        <p class="about-desc">A visual math learning app. Built with Blazor WebAssembly.</p>
     </div>
 </div>
 
 @code {
     private string activeTheme = "default";
     private bool confirmReset;
+    private bool soundEnabled = true;
+    private string currentName = "";
+    private string newName = "";
+    private bool editingName;
+    private bool devMode;
+
+    [Inject] private IShopRepository ShopRepo { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             activeTheme = await ThemeService.GetActiveThemeAsync();
+            var profile = await Progress.GetProfileAsync();
+            currentName = profile.DisplayName;
+            newName = currentName;
+            devMode = profile.ShopPurchases.Contains("__dev_mode__");
+            try
+            {
+                var muted = await JS.InvokeAsync<string>("localStorage.getItem", "numeria-sound-muted");
+                soundEnabled = muted != "true";
+            }
+            catch { }
             StateHasChanged();
         }
+    }
+
+    private async Task ToggleDevMode()
+    {
+        devMode = !devMode;
+        var profile = await Progress.GetProfileAsync();
+
+        if (devMode)
+        {
+            // Grant max points
+            profile.Points = 99999;
+
+            // Add dev mode marker
+            if (!profile.ShopPurchases.Contains("__dev_mode__"))
+                profile.ShopPurchases.Add("__dev_mode__");
+
+            // Unlock ALL shop items (current and future-proof: grab everything from shop data)
+            var allItems = await ShopRepo.GetShopItemsAsync();
+            foreach (var item in allItems)
+            {
+                if (!profile.ShopPurchases.Contains(item.Id))
+                    profile.ShopPurchases.Add(item.Id);
+            }
+
+            await Progress.SaveProfileAsync(profile);
+            await JS.InvokeVoidAsync("showToast", "Dev mode ON — everything unlocked!", "");
+            try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+        }
+        else
+        {
+            profile.ShopPurchases.Remove("__dev_mode__");
+            await Progress.SaveProfileAsync(profile);
+            await JS.InvokeVoidAsync("showToast", "Dev mode OFF", "");
+        }
+    }
+
+    private async Task ToggleSound()
+    {
+        soundEnabled = !soundEnabled;
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "numeria-sound-muted", soundEnabled ? "false" : "true");
+            await JS.InvokeVoidAsync("eval", $"window.Sounds._muted = {(soundEnabled ? "false" : "true")}");
+            if (soundEnabled)
+                try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        }
+        catch { }
+    }
+
+    private async Task SaveName()
+    {
+        if (string.IsNullOrWhiteSpace(newName)) return;
+        var profile = await Progress.GetProfileAsync();
+        profile.DisplayName = newName.Trim();
+        await Progress.SaveProfileAsync(profile);
+        currentName = profile.DisplayName;
+        editingName = false;
+        await JS.InvokeVoidAsync("showToast", "Name updated!", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private void CancelNameEdit()
+    {
+        newName = currentName;
+        editingName = false;
+    }
+
+    private async Task HandleNameKeydown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SaveName();
+        if (e.Key == "Escape") CancelNameEdit();
+    }
+
+    private async Task ExportStats()
+    {
+        var profile = await Progress.GetProfileAsync();
+        var text = $"Numeria Stats\n" +
+                   $"Name: {profile.DisplayName}\n" +
+                   $"Total XP: {profile.TotalXp}\n" +
+                   $"Level: {Gamification.GetLevel(profile.TotalXp)}\n" +
+                   $"Streak: {profile.CurrentStreak} days\n" +
+                   $"Lessons: {profile.LessonsCompleted.Count}\n" +
+                   $"Quizzes: {profile.QuizHistory.Count}\n" +
+                   $"Accuracy: {(profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0)}%\n" +
+                   $"Achievements: {profile.AchievementsUnlocked.Count}";
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            await JS.InvokeVoidAsync("showToast", "Stats copied!", "");
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("showToast", "Could not copy", "");
+        }
+    }
+
+    [Inject] private IGamificationService Gamification { get; set; } = default!;
+
+    private async Task ResetTheme()
+    {
+        await ThemeService.ApplyThemeAsync("default");
+        activeTheme = "default";
+        await JS.InvokeVoidAsync("showToast", "Theme reset to default.", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
     }
 
     private async Task DoReset()
@@ -61,28 +262,93 @@
         activeTheme = "default";
         await JS.InvokeVoidAsync("showToast", "Progress reset.", "");
     }
+
+    private string FormatThemeName(string theme) => theme switch
+    {
+        "default" => "Default",
+        "dark" => "Dark Mode",
+        "chalkboard" => "Chalkboard",
+        "neon" => "Neon Glow",
+        "blueprint" => "Blueprint",
+        _ => theme
+    };
 }
 
 <style>
     .settings-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        display: flex; flex-direction: column; gap: 10px;
     }
 
-    .settings-item {
-        padding: 16px;
-    }
-
+    .settings-item { padding: 16px; }
     .settings-item:hover { transform: none; }
 
-    .settings-item h3 {
-        margin-bottom: 6px;
+    .settings-row {
+        display: flex; align-items: center; gap: 14px;
     }
 
-    .settings-item p {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        margin-bottom: 8px;
+    .settings-icon {
+        font-size: 1.5rem; flex-shrink: 0; width: 36px; text-align: center;
     }
+
+    .settings-info { flex: 1; }
+    .settings-info h3 { margin: 0; font-size: 1rem; }
+    .settings-info p { margin: 2px 0 0; color: var(--text-muted); font-size: 0.85rem; }
+
+    .reset-theme-btn { margin-top: 10px; width: 100%; }
+
+    /* Toggle */
+    .toggle-btn {
+        width: 48px; height: 28px; border-radius: 14px; border: none;
+        background: var(--border); cursor: pointer; position: relative;
+        transition: background 0.25s ease; flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .toggle-btn.on { background: var(--primary); }
+    .toggle-knob {
+        position: absolute; top: 3px; left: 3px;
+        width: 22px; height: 22px; border-radius: 50%;
+        background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        transition: transform 0.25s ease;
+    }
+    .toggle-btn.on .toggle-knob { transform: translateX(20px); }
+
+    /* Name edit */
+    .name-edit { margin-top: 12px; }
+    .name-input {
+        width: 100%; padding: 10px 14px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 1rem; font-family: var(--font-main);
+        background: var(--bg-surface); color: var(--text-primary); outline: none;
+        transition: border-color 0.2s ease; box-sizing: border-box;
+    }
+    .name-input:focus { border-color: var(--primary); }
+    .name-edit-buttons { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+
+    /* Danger */
+    .danger-item { border-color: rgba(239, 83, 80, 0.2); }
+    .btn-danger {
+        background: var(--error); color: white; border: none;
+        padding: 6px 14px; border-radius: var(--radius-sm);
+        font-weight: 600; font-size: 0.85rem; cursor: pointer;
+        transition: opacity 0.15s ease;
+    }
+    .btn-danger:active { opacity: 0.8; }
+
+    .confirm-box {
+        margin-top: 12px; padding: 14px; background: rgba(239, 83, 80, 0.06);
+        border-radius: var(--radius-sm); border: 1px solid rgba(239, 83, 80, 0.2);
+        animation: staggerUp 0.3s ease;
+    }
+    .confirm-box p { color: var(--error); font-size: 0.9rem; margin: 0 0 10px; font-weight: 500; }
+    .confirm-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* Dev */
+    .dev-item { border-color: rgba(240,160,48,0.2); }
+
+    /* About */
+    .about-card { padding: 20px; }
+    .about-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .about-icon { width: 44px; height: 44px; border-radius: 10px; }
+    .about-brand h3 { margin: 0; }
+    .about-brand p { margin: 0; color: var(--text-muted); font-size: 0.8rem; }
+    .about-desc { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
 </style>

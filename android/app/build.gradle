@@ -3,6 +3,14 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.mathvoyager.app"
     compileSdk = rootProject.ext.compileSdkVersion
+    signingConfigs {
+        release {
+            storeFile file('mathvoyager-release.keystore')
+            storePassword '***REMOVED***'
+            keyAlias 'mathvoyager'
+            keyPassword '***REMOVED***'
+        }
+    }
     defaultConfig {
         applicationId "com.mathvoyager.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -19,6 +27,7 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

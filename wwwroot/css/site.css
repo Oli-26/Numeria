@@ -76,7 +76,7 @@ a {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card:hover, .card:active {
+.card-clickable:hover, .card-clickable:active {
     transform: translateY(-2px);
     box-shadow: 0 4px 16px var(--shadow);
 }
@@ -284,6 +284,77 @@ a {
     background: rgba(239, 83, 80, 0.1);
 }
 
+/* Shared quiz layout & feedback styles */
+.quiz-progress {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.question-prompt {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feedback {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.feedback-correct {
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.feedback-incorrect {
+    background: rgba(239, 83, 80, 0.1);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.feedback-icon { font-size: 1.2rem; }
+.correct-answer { margin-left: auto; font-weight: 500; }
+
+.explanation {
+    background: var(--bg-surface);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.anim-correct { animation: popCorrect 0.4s ease; }
+.anim-incorrect { animation: shakeWrong 0.4s ease; }
+
+@keyframes popCorrect {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shakeWrong {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+}
+
 /* Math expression container */
 .math-display {
     background: var(--bg-surface);
@@ -325,7 +396,13 @@ a {
     font-size: 1.5rem;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 4px;
+    padding: 12px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -8px;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -386,28 +463,342 @@ strong {
     color: var(--text-primary);
 }
 
-/* Touch feedback: active states */
+/* ── Enhanced touch feedback ── */
 .card-clickable:active {
-    transform: scale(0.98) !important;
-    transition: transform 0.1s ease;
+    transform: scale(0.97) !important;
+    box-shadow: 0 1px 4px var(--shadow) !important;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .btn:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
+    filter: brightness(0.92);
+    transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+.btn:not(:active) {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:active, .btn-accent:active {
+    box-shadow: none;
 }
 
 /* Smooth option button press */
 .option-btn:active:not(:disabled) {
     transform: scale(0.97);
-    transition: transform 0.1s ease;
+    transition: transform 0.08s ease;
+}
+
+/* ── Skeleton loaders ── */
+.skeleton {
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    animation: skeletonShimmer 1.5s ease infinite;
+}
+
+@keyframes skeletonShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.skeleton-text {
+    height: 14px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.skeleton-text.short { width: 40%; }
+.skeleton-text.medium { width: 65%; }
+.skeleton-text.long { width: 90%; }
+
+.skeleton-circle {
+    border-radius: 50%;
+}
+
+.skeleton-card {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+/* Skeleton layout for dashboard */
+.skeleton-dashboard .skeleton-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.skeleton-dashboard .skeleton-topics {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton-dashboard .skeleton-topic {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+/* Skeleton for profile */
+.skeleton-profile .skeleton-avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 12px;
+}
+
+.skeleton-profile .skeleton-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.skeleton-profile .skeleton-stat {
+    height: 70px;
+    border-radius: var(--radius-md);
+}
+
+/* ── Progress bar animate from 0 ── */
+.progress-bar-fill.animate-in {
+    animation: progressGrow 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes progressGrow {
+    from { width: 0% !important; }
+}
+
+/* ── Tab content crossfade ── */
+.tab-content {
+    animation: tabFade 0.25s ease;
+}
+
+@keyframes tabFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Page-level fade in */
 .main-content {
-    animation: pageIn 0.2s ease;
+    animation: pageIn 0.3s ease;
 }
 
 @keyframes pageIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Staggered card entrance ── */
+.stagger-in > * {
+    opacity: 0;
+    animation: staggerUp 0.4s ease forwards;
+}
+.stagger-in > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.16s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.20s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.24s; }
+.stagger-in > *:nth-child(7) { animation-delay: 0.28s; }
+.stagger-in > *:nth-child(8) { animation-delay: 0.32s; }
+.stagger-in > *:nth-child(9) { animation-delay: 0.36s; }
+.stagger-in > *:nth-child(10) { animation-delay: 0.40s; }
+
+@keyframes staggerUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Progress bar shimmer ── */
+.progress-bar-fill {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2.5s ease infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+/* ── Card hover glow ── */
+.card-clickable:hover {
+    box-shadow: 0 6px 24px var(--shadow), 0 0 0 1px rgba(74, 95, 224, 0.08);
+}
+
+/* ── Pulse animation ── */
+.pulse {
+    animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ── XP float animation ── */
+.xp-float {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--accent);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    animation: xpFloat 1.2s ease forwards;
+}
+
+@keyframes xpFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    60% { opacity: 1; transform: translateY(-40px) scale(1.15); }
+    100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+}
+
+/* ── Confetti container ── */
+#confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 998;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── Streak flame animation ── */
+.streak-fire {
+    display: inline-block;
+    animation: flamePulse 0.8s ease infinite alternate;
+}
+
+@keyframes flamePulse {
+    from { transform: scale(1) rotate(-3deg); filter: brightness(1); }
+    to { transform: scale(1.15) rotate(3deg); filter: brightness(1.2); }
+}
+
+/* ── Question slide transition ── */
+.question-enter {
+    animation: questionSlideIn 0.35s ease;
+}
+
+@keyframes questionSlideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Results count-up effect ── */
+.count-up {
+    animation: countPop 0.5s ease;
+}
+
+@keyframes countPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Level-up glow burst ── */
+.level-up-burst {
+    animation: levelBurst 0.8s ease;
+}
+
+@keyframes levelBurst {
+    0% { transform: scale(0.8); opacity: 0; box-shadow: 0 0 0 0 rgba(76,175,80,0.4); }
+    50% { transform: scale(1.05); box-shadow: 0 0 30px 10px rgba(76,175,80,0.3); }
+    100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+}
+
+/* ── Achievement pop-in ── */
+.achievement-pop {
+    animation: achievePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes achievePop {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* ── Ripple effect for tappable elements ── */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.25) 10%, transparent 70%);
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ripple:active::after {
+    transform: scale(2.5);
+    opacity: 1;
+    transition: 0s;
+}
+
+/* ── Smooth tab indicator ── */
+.tab-nav {
+    position: relative;
+}
+
+.tab-nav .tab-item {
+    transition: color 0.25s ease, background 0.25s ease;
+}
+
+/* ── Toast enhanced ── */
+.toast {
+    backdrop-filter: blur(8px);
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(100%) scale(0.9); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
 }

@@ -25,13 +25,16 @@ public class QuizEngine : IQuizEngine
         return pool.OrderBy(_ => _random.Next()).Take(count).ToList();
     }
 
-    public async Task<List<Question>> GenerateMixedQuizAsync(int count = 10)
+    public async Task<List<Question>> GenerateMixedQuizAsync(IEnumerable<string>? completedTopicIds = null, int count = 5)
     {
         var topics = await _contentRepo.GetTopicsAsync();
+        var topicFilter = completedTopicIds?.ToHashSet();
         var allQuestions = new List<Question>();
 
         foreach (var topic in topics)
         {
+            if (topicFilter != null && !topicFilter.Contains(topic.Id))
+                continue;
             var questions = await _contentRepo.GetQuestionsAsync(topic.Id);
             allQuestions.AddRange(questions);
         }

@@ -10,6 +10,14 @@
 {
     <div class="loading">Preparing quiz...</div>
 }
+else if (quizState == QuizState.Empty)
+{
+    <div class="card" style="text-align: center; padding: 32px 24px;">
+        <h2>No Questions Available</h2>
+        <p style="color: var(--text-muted); margin: 8px 0 16px;">There aren't enough questions for this quiz yet. Try another topic or complete more lessons.</p>
+        <button class="btn btn-primary" @onclick="() => OnComplete.InvokeAsync(0)">Go Back</button>
+    </div>
+}
 else if (quizState == QuizState.InProgress)
 {
     <Notepad />
@@ -30,7 +38,7 @@ else if (quizState == QuizState.InProgress)
             var q = questions[currentIndex];
         }
 
-        <div class="question-section">
+        <div class="question-section question-enter" @key="currentIndex">
             <p class="question-prompt">@q.Prompt</p>
 
             @if (q.MathExpression != null)
@@ -39,7 +47,7 @@ else if (quizState == QuizState.InProgress)
             }
             @if (!answerSubmitted && !hintShown && hintsAvailable > 0 && q.CorrectAnswer != null)
             {
-                <button class="hint-btn" @onclick="UseHint">\uD83D\uDCA1 Use Hint (@hintsAvailable left)</button>
+                <button class="hint-btn" @onclick="UseHint"><Icon Name="lightbulb" Size="16" /> Use Hint (@hintsAvailable left)</button>
             }
             @if (hintShown && q.CorrectAnswer != null)
             {
@@ -130,7 +138,7 @@ else if (quizState == QuizState.InProgress)
                                     @left
                                 </button>
                                 <span class="match-arrow @(hasMatch ? "connected" : "")">
-                                    @(hasMatch ? "\u2194" : "\u2022\u2022\u2022")
+                                    @(hasMatch ? "↔" : "•••")
                                 </span>
                                 @if (hasMatch)
                                 {
@@ -171,11 +179,56 @@ else if (quizState == QuizState.InProgress)
                 }
             </div>
         }
+        else if (q.Type == QuestionType.TrueOrFalse)
+        {
+            <div class="tf-section">
+                <div class="tf-buttons">
+                    <button class="tf-btn true-btn @(answerSubmitted && q.CorrectAnswer == "True" ? "correct" : answerSubmitted && q.CorrectAnswer != "True" ? "incorrect" : "")"
+                            @onclick='() => SelectOption("True")'
+                            disabled="@answerSubmitted">
+                        <Icon Name="check" Size="18" /> True
+                    </button>
+                    <button class="tf-btn false-btn @(answerSubmitted && q.CorrectAnswer == "False" ? "correct" : answerSubmitted && q.CorrectAnswer != "False" ? "incorrect" : "")"
+                            @onclick='() => SelectOption("False")'
+                            disabled="@answerSubmitted">
+                        <Icon Name="x-mark" Size="18" /> False
+                    </button>
+                </div>
+            </div>
+        }
+        else if (q.Type == QuestionType.FindTheError)
+        {
+            <div class="find-error-section">
+                <p class="error-hint">One of these steps contains an error. Tap the wrong step:</p>
+                @if (q.Steps != null)
+                {
+                    @for (int i = 0; i < q.Steps.Count; i++)
+                    {
+                        var idx = i;
+                        var stepNum = i + 1;
+                        var isSelected = errorSelectedStep == idx;
+                        var showResult = answerSubmitted;
+                        var isTheError = q.CorrectAnswer == stepNum.ToString();
+                        <div class="error-step @(isSelected && !showResult ? "selected" : "") @(showResult && isTheError ? "error-found" : "") @(showResult && isSelected && !isTheError ? "wrong-pick" : "")"
+                             @onclick="() => SelectErrorStep(idx)">
+                            <span class="error-step-num">@stepNum</span>
+                            <span>@q.Steps[idx]</span>
+                        </div>
+                    }
+                }
+                @if (!answerSubmitted && errorSelectedStep >= 0)
+                {
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px" @onclick="SubmitFindError">
+                        Submit
+                    </button>
+                }
+            </div>
+        }
 
         @if (answerSubmitted)
         {
             <div class="feedback @(lastCorrect ? "feedback-correct anim-correct" : "feedback-incorrect anim-incorrect")">
-                <span class="feedback-icon">@(lastCorrect ? "\u2713" : "\u2717")</span>
+                <span class="feedback-icon">@if (lastCorrect) { <Icon Name="check" Size="18" /> } else { <Icon Name="x-mark" Size="18" /> }</span>
                 <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
                 @if (!lastCorrect && q.CorrectAnswer != null)
                 {
@@ -189,7 +242,7 @@ else if (quizState == QuizState.InProgress)
             @if (!lastCorrect && TopicId != null && q.LessonId != null)
             {
                 <button class="btn btn-sm btn-outline review-concept-btn" @onclick="() => ReviewConcept(q.LessonId)">
-                    \uD83D\uDCD6 Review this concept
+                    <Icon Name="book" Size="16" /> Review this concept
                 </button>
             }
             <button class="btn btn-primary" style="width: 100%; margin-top: 8px" @onclick="NextQuestion">
@@ -200,31 +253,31 @@ else if (quizState == QuizState.InProgress)
 }
 else if (quizState == QuizState.Complete)
 {
-    <div class="quiz-results card">
+    <div class="quiz-results card count-up">
         <h2>Quiz Complete!</h2>
 
-        <div class="results-stats">
-            <div class="stat-card correct-stat">
+        <div class="results-stats stagger-in">
+            <div class="stat-card correct-stat count-up">
                 <span class="stat-number">@correctCount</span>
                 <span class="stat-label">Correct</span>
             </div>
-            <div class="stat-card wrong-stat">
+            <div class="stat-card wrong-stat count-up">
                 <span class="stat-number">@wrongCount</span>
                 <span class="stat-label">Wrong</span>
             </div>
-            <div class="stat-card score-stat">
+            <div class="stat-card score-stat count-up">
                 <span class="stat-number">@(questions.Count > 0 ? (correctCount * 100 / questions.Count) : 0)%</span>
                 <span class="stat-label">Score</span>
             </div>
         </div>
 
-        <div class="xp-earned">
+        <div class="xp-earned pulse">
             <span class="xp-badge" style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
         </div>
 
         @if (quizEvent?.LeveledUp == true)
         {
-            <div class="level-up-banner">
+            <div class="level-up-banner level-up-burst">
                 Level Up! You're now Level @quizEvent.NewLevel
             </div>
         }
@@ -234,7 +287,7 @@ else if (quizState == QuizState.Complete)
             <div class="new-achievements">
                 @foreach (var a in quizEvent.NewAchievements)
                 {
-                    <div class="achievement-unlock">
+                    <div class="achievement-unlock achievement-pop">
                         @a.Name -- @a.Description
                     </div>
                 }
@@ -252,7 +305,7 @@ else if (quizState == QuizState.Complete)
     [Parameter] public string? LessonId { get; set; }
     [Parameter] public EventCallback<int> OnComplete { get; set; }
 
-    private enum QuizState { Loading, InProgress, Complete }
+    private enum QuizState { Loading, InProgress, Complete, Empty }
     private QuizState quizState = QuizState.Loading;
 
     private List<Question> questions = new();
@@ -276,6 +329,9 @@ else if (quizState == QuizState.Complete)
     private int hintsAvailable;
     private bool hintShown;
 
+    // Find the error state
+    private int errorSelectedStep = -1;
+
     // Ordering state
     private List<string> orderedSteps = new();
 
@@ -297,7 +353,7 @@ else if (quizState == QuizState.Complete)
                     // Reload the same questions in the same order
                     var allQuestions = TopicId != null
                         ? await QuizEngine.GenerateQuizAsync(TopicId, LessonId, 100)
-                        : await QuizEngine.GenerateMixedQuizAsync(100);
+                        : await QuizEngine.GenerateMixedQuizAsync(count: 100);
 
                     var questionLookup = allQuestions.ToDictionary(q => q.Id);
                     var restoredQuestions = new List<Question>();
@@ -340,13 +396,21 @@ else if (quizState == QuizState.Complete)
                 else if (TopicId != null)
                     questions = await QuizEngine.GenerateQuizAsync(TopicId, null, 5);
                 else
-                    questions = await QuizEngine.GenerateMixedQuizAsync(10);
+                {
+                    var profile = await Progress.GetProfileAsync();
+                    var completedTopics = profile.TopicsCompleted.Count > 0 ? profile.TopicsCompleted : null;
+                    questions = await QuizEngine.GenerateMixedQuizAsync(completedTopics, 5);
+                }
 
                 if (questions.Count > 0)
                 {
                     quizState = QuizState.InProgress;
                     InitQuestion();
                     await SaveQuizState();
+                }
+                else
+                {
+                    quizState = QuizState.Empty;
                 }
             }
 
@@ -382,15 +446,11 @@ else if (quizState == QuizState.Complete)
     private async Task LoadHintCount()
     {
         var p = await Progress.GetProfileAsync();
-        var allItems = new List<ShopItem>(); // we count from purchases
         var totalBought = 0;
         foreach (var purchase in p.ShopPurchases)
         {
-            if (purchase.StartsWith("hint-pack"))
-            {
-                var count = purchase.Contains("10") ? 10 : 3;
-                totalBought += count;
-            }
+            if (purchase == "hint-pack-10") totalBought += 10;
+            else if (purchase == "hint-pack-3") totalBought += 3;
         }
         hintsAvailable = totalBought - p.HintsUsed;
     }
@@ -411,6 +471,7 @@ else if (quizState == QuizState.Complete)
         fillInAnswer = "";
         selectedLeft = null;
         hintShown = false;
+        errorSelectedStep = -1;
         userMatches.Clear();
         matchResults.Clear();
 
@@ -458,6 +519,28 @@ else if (quizState == QuizState.Complete)
         await RecordResult(result);
     }
 
+    private void SelectErrorStep(int idx)
+    {
+        if (answerSubmitted) return;
+        errorSelectedStep = idx;
+    }
+
+    private async Task SubmitFindError()
+    {
+        if (answerSubmitted || errorSelectedStep < 0) return;
+        var q = questions[currentIndex];
+        var userPick = (errorSelectedStep + 1).ToString();
+        bool correct = userPick == q.CorrectAnswer;
+        var result = new QuizResult
+        {
+            Question = q,
+            UserAnswer = $"Step {userPick}",
+            IsCorrect = correct,
+            XpEarned = correct ? q.XpReward : 0
+        };
+        await RecordResult(result);
+    }
+
     private async Task SubmitMatching()
     {
         var q = questions[currentIndex];
@@ -499,6 +582,7 @@ else if (quizState == QuizState.Complete)
         }
 
         await SaveQuizState();
+        try { await JS.InvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
     }
 
     private void ReviewConcept(string lessonId)
@@ -524,6 +608,16 @@ else if (quizState == QuizState.Complete)
     {
         var profile = await Progress.GetProfileAsync();
         totalXpEarned = QuizEngine.CalculateQuizXp(results, profile.CurrentStreak);
+
+        if (profile.XpBoostsActive > 0 && profile.XpBoostMultiplier > 1)
+        {
+            totalXpEarned *= profile.XpBoostMultiplier;
+            profile.XpBoostsActive--;
+            if (profile.XpBoostsActive <= 0)
+                profile.XpBoostMultiplier = 1;
+            await Progress.SaveProfileAsync(profile);
+        }
+
         quizEvent = await Gamification.AwardXpAsync(totalXpEarned);
 
         var score = questions.Count > 0 ? correctCount * 100 / questions.Count : 0;
@@ -532,6 +626,14 @@ else if (quizState == QuizState.Complete)
 
         quizState = QuizState.Complete;
         await SessionState.ClearSessionStateAsync();
+        try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
+        try { await JS.InvokeVoidAsync("XpFloat.show", totalXpEarned, null, null); } catch { }
+        if (quizEvent.LeveledUp)
+            try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+        if (quizEvent.NewAchievements.Count > 0)
+            try { await JS.InvokeVoidAsync("Sounds.playAchievement"); } catch { }
+        if (score >= 80)
+            try { await JS.InvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40); } catch { }
     }
 
     private async Task Finish()
@@ -601,11 +703,6 @@ else if (quizState == QuizState.Complete)
         margin-bottom: 8px;
     }
 
-    .quiz-progress {
-        color: var(--text-muted);
-        font-size: 0.9rem;
-    }
-
     .quiz-score {
         display: flex;
         gap: 12px;
@@ -617,19 +714,6 @@ else if (quizState == QuizState.Complete)
 
     .question-section {
         margin-bottom: 16px;
-    }
-
-    .question-prompt {
-        font-size: 1.1rem;
-        font-weight: 600;
-        line-height: 1.5;
-        margin-bottom: 8px;
-    }
-
-    .options-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
     }
 
     .fill-in-section {
@@ -836,40 +920,6 @@ else if (quizState == QuizState.Complete)
         cursor: default;
     }
 
-    .feedback {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
-        border-radius: var(--radius-sm);
-        font-weight: 600;
-        margin-top: 12px;
-    }
-
-    .feedback-correct {
-        background: rgba(76, 175, 80, 0.1);
-        color: var(--success);
-        border: 1px solid var(--success);
-    }
-
-    .feedback-incorrect {
-        background: rgba(239, 83, 80, 0.1);
-        color: var(--error);
-        border: 1px solid var(--error);
-    }
-
-    .feedback-icon { font-size: 1.2rem; }
-    .correct-answer { margin-left: auto; font-weight: 500; }
-
-    .explanation {
-        background: var(--bg-surface);
-        padding: 12px;
-        border-radius: var(--radius-sm);
-        margin-top: 8px;
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        line-height: 1.5;
-    }
 
     .quiz-results {
         text-align: center;
@@ -923,28 +973,50 @@ else if (quizState == QuizState.Complete)
         margin: 12px 0;
     }
 
+    /* True or False */
+    .tf-section { margin-top: 8px; }
+    .tf-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tf-btn {
+        padding: 20px; border: 3px solid var(--border); border-radius: var(--radius-md);
+        font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+        background: var(--bg-card); color: var(--text-primary);
+        -webkit-tap-highlight-color: transparent;
+    }
+    .tf-btn:active:not(:disabled) { transform: scale(0.96); }
+    .true-btn { border-color: rgba(76, 175, 80, 0.3); }
+    .true-btn:hover:not(:disabled) { background: rgba(76, 175, 80, 0.08); border-color: var(--success); }
+    .false-btn { border-color: rgba(239, 83, 80, 0.3); }
+    .false-btn:hover:not(:disabled) { background: rgba(239, 83, 80, 0.08); border-color: var(--error); }
+    .tf-btn.correct { background: rgba(76, 175, 80, 0.15); border-color: var(--success); color: var(--success); }
+    .tf-btn.incorrect { background: rgba(239, 83, 80, 0.15); border-color: var(--error); color: var(--error); }
+
+    /* Find the Error */
+    .find-error-section { display: flex; flex-direction: column; gap: 8px; }
+    .error-hint { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 4px; }
+    .error-step {
+        display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px;
+        background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--radius-sm);
+        cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent; color: var(--text-primary);
+    }
+    .error-step:hover { border-color: var(--primary-light); }
+    .error-step.selected { border-color: var(--warning); background: rgba(255, 152, 0, 0.08); }
+    .error-step.error-found { border-color: var(--error); background: rgba(239, 83, 80, 0.12); }
+    .error-step.wrong-pick { border-color: var(--text-muted); opacity: 0.6; }
+    .error-step-num {
+        width: 24px; height: 24px; border-radius: 50%; background: var(--bg-surface);
+        color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    }
+    .error-step.selected .error-step-num { background: var(--warning); color: white; }
+    .error-step.error-found .error-step-num { background: var(--error); color: white; }
+
     .review-concept-btn {
         width: 100%;
         margin-top: 8px;
         border-style: dashed;
     }
 
-    .anim-correct { animation: popCorrect 0.4s ease; }
-    .anim-incorrect { animation: shakeWrong 0.4s ease; }
-
-    @@keyframes popCorrect {
-        0% { transform: scale(0.9); opacity: 0; }
-        50% { transform: scale(1.03); }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    @@keyframes shakeWrong {
-        0%, 100% { transform: translateX(0); }
-        20% { transform: translateX(-8px); }
-        40% { transform: translateX(8px); }
-        60% { transform: translateX(-5px); }
-        80% { transform: translateX(5px); }
-    }
 
     .hint-btn {
         display: inline-block;

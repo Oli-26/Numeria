@@ -192,8 +192,8 @@
         "title": "The Dot Product",
         "contentHtml": "<p>The <strong>dot product</strong> of two vectors measures how much they point in the same direction.</p><p>Compute it by multiplying corresponding components and summing: (a,b)\u00b7(c,d) = ac + bd.</p><p>Key properties:</p><p>\u2022 If the dot product is <strong>0</strong>, the vectors are <strong>perpendicular</strong> (orthogonal)<br>\u2022 It relates to the angle: u\u00b7v = |u||v|cos\u03b8<br>\u2022 u\u00b7u = |u|\u00b2 (the squared length)</p>",
         "mathExpressions": ["\\vec{u} \\cdot \\vec{v} = u_1 v_1 + u_2 v_2 + \\cdots + u_n v_n"],
-        "visualizationType": null,
-        "visualizationConfig": null
+        "visualizationType": "dot-product-viz",
+        "visualizationConfig": {}
       },
       {
         "id": "la-06-c2",
@@ -286,5 +286,149 @@
     ],
     "quizQuestionIds": ["la-q36", "la-q37", "la-q38", "la-q39", "la-q40"],
     "puzzleId": "la-p02"
+  },
+  {
+    "id": "la-09",
+    "topicId": "linear-algebra",
+    "order": 9,
+    "title": "Jordan Normal Form",
+    "description": "Generalized eigenvectors and matrix exponentials",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "la-09-c1",
+        "title": "Generalized Eigenvectors & Jordan Blocks",
+        "contentHtml": "<p>Not every matrix is diagonalizable -- when eigenvalues repeat, there may not be enough independent eigenvectors. The fix: <strong>generalized eigenvectors</strong>.</p><p>A generalized eigenvector of rank k satisfies (A - lambda I)^k v = 0 but (A - lambda I)^{k-1} v is not zero. These fill in the missing dimensions.</p><p>A <strong>Jordan block</strong> J_k(lambda) is a k x k matrix with lambda on the diagonal and 1's on the superdiagonal. It represents the action of A on a chain of generalized eigenvectors.</p>",
+        "mathExpressions": ["J_k(\\lambda) = \\begin{pmatrix} \\lambda & 1 & & \\\\ & \\lambda & \\ddots & \\\\ & & \\ddots & 1 \\\\ & & & \\lambda \\end{pmatrix}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-09-c2",
+        "title": "Every Matrix Has a Jordan Form",
+        "contentHtml": "<p>The <strong>Jordan Normal Form Theorem</strong> states that every square matrix over the complex numbers is similar to a block-diagonal matrix of Jordan blocks:</p><p>A = P J P^{-1}, where J = diag(J_{k1}(lambda_1), J_{k2}(lambda_2), ...).</p><p>This is the \"best possible\" simplification when diagonalization fails. If all Jordan blocks are 1x1, you recover ordinary diagonalization.</p><p>The Jordan form is unique up to the ordering of blocks, making it a complete invariant for similarity of matrices.</p>",
+        "mathExpressions": ["A = P \\begin{pmatrix} J_{k_1}(\\lambda_1) & & \\\\ & J_{k_2}(\\lambda_2) & \\\\ & & \\ddots \\end{pmatrix} P^{-1}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-09-c3",
+        "title": "Matrix Exponentials via Jordan Form",
+        "contentHtml": "<p>The <strong>matrix exponential</strong> e^{tA} is essential for solving systems of linear differential equations: dx/dt = Ax has solution x(t) = e^{tA} x(0).</p><p>Computing e^{tA} directly is hard, but the Jordan form makes it tractable: e^{tA} = P e^{tJ} P^{-1}.</p><p>The exponential of a Jordan block has a beautiful pattern: e^{tJ_k(lambda)} = e^{lambda t} times a matrix with polynomial entries t, t^2/2!, ..., t^{k-1}/(k-1)! on the superdiagonals.</p><p>This explains why repeated eigenvalues produce solutions with polynomial-times-exponential growth: terms like t e^{lambda t} and t^2 e^{lambda t}.</p>",
+        "mathExpressions": ["e^{tA} = P e^{tJ} P^{-1}, \\quad \\frac{dx}{dt} = Ax \\implies x(t) = e^{tA} x(0)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q49", "la-q50", "la-q51", "la-q52", "la-q53"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-10",
+    "topicId": "linear-algebra",
+    "order": 10,
+    "title": "Tensor Products",
+    "description": "Multilinear maps and higher-dimensional algebra",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "la-10-c1",
+        "title": "Multilinear Maps & Tensor Products",
+        "contentHtml": "<p>A <strong>bilinear map</strong> is a function f(u, v) that is linear in each argument separately. The <strong>tensor product</strong> V tensor W is the universal space for bilinear maps out of V x W.</p><p>The element u tensor v represents the \"pure tensor\" of u and v. Not every element of V tensor W is a pure tensor -- general elements are sums of pure tensors.</p><p>Key property: if V has dimension m and W has dimension n, then V tensor W has dimension mn. A basis is {e_i tensor f_j} where {e_i} and {f_j} are bases for V and W.</p>",
+        "mathExpressions": ["\\dim(V \\otimes W) = \\dim(V) \\cdot \\dim(W)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-10-c2",
+        "title": "Universal Property & Basis",
+        "contentHtml": "<p>The tensor product is characterized by a <strong>universal property</strong>: every bilinear map V x W to Z factors uniquely through V tensor W. This means V tensor W is the \"freest\" bilinear construction.</p><p>Key computational rules:</p><p>(u1 + u2) tensor v = u1 tensor v + u2 tensor v (linear in first argument)</p><p>u tensor (v1 + v2) = u tensor v1 + u tensor v2 (linear in second argument)</p><p>(c u) tensor v = u tensor (c v) = c (u tensor v) (scalars float freely)</p><p>These rules let you compute with tensors concretely while the universal property provides theoretical power.</p>",
+        "mathExpressions": ["(cu) \\otimes v = u \\otimes (cv) = c(u \\otimes v)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-10-c3",
+        "title": "Applications of Tensor Products",
+        "contentHtml": "<p>Tensor products appear throughout mathematics and physics:</p><p><strong>Quantum mechanics:</strong> The state space of a composite quantum system is the tensor product of the individual state spaces. <strong>Entanglement</strong> occurs precisely when a state is NOT a pure tensor -- it cannot be decomposed into independent subsystem states.</p><p><strong>Differential geometry:</strong> Tensors on manifolds (like the metric tensor and curvature tensor) live in tensor products of tangent and cotangent spaces.</p><p><strong>Machine learning:</strong> Multi-dimensional arrays (\"tensors\" in frameworks like PyTorch) are elements of tensor products of vector spaces, and operations like the attention mechanism involve tensor contractions.</p>",
+        "mathExpressions": ["\\mathcal{H}_{AB} = \\mathcal{H}_A \\otimes \\mathcal{H}_B \\quad \\text{(composite quantum system)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q54", "la-q55", "la-q56", "la-q57", "la-q58"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-11",
+    "topicId": "linear-algebra",
+    "order": 11,
+    "title": "Numerical Linear Algebra",
+    "description": "Stability, factorization, and iterative methods",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "la-11-c1",
+        "title": "Floating Point & Condition Numbers",
+        "contentHtml": "<p>Computers use <strong>floating point arithmetic</strong>, which introduces rounding errors. A key question: when does a small error in the input cause a large error in the output?</p><p>The <strong>condition number</strong> kappa(A) of a matrix measures this sensitivity. For a square matrix, kappa(A) = ||A|| * ||A^{-1}||.</p><p>If kappa(A) is large (the matrix is <strong>ill-conditioned</strong>), even tiny perturbations in b can cause huge changes in the solution to Ax = b. If kappa(A) is close to 1 (<strong>well-conditioned</strong>), the solution is stable.</p><p>Rule of thumb: if kappa(A) is around 10^k, you lose about k digits of accuracy.</p>",
+        "mathExpressions": ["\\kappa(A) = \\|A\\| \\cdot \\|A^{-1}\\| = \\frac{\\sigma_{\\max}}{\\sigma_{\\min}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-11-c2",
+        "title": "QR Factorization & Gram-Schmidt in Practice",
+        "contentHtml": "<p><strong>QR factorization</strong> writes A = QR where Q is orthogonal and R is upper triangular. It's the numerically stable way to solve least squares and eigenvalue problems.</p><p>The classical <strong>Gram-Schmidt process</strong> is mathematically elegant but numerically unstable: rounding errors accumulate and the resulting vectors lose orthogonality.</p><p>The fix is <strong>modified Gram-Schmidt</strong>: instead of computing all projections at once, subtract each projection immediately before computing the next. This simple reordering dramatically improves numerical stability.</p><p><strong>Householder reflections</strong> provide an even more stable alternative by using orthogonal transformations to zero out columns.</p>",
+        "mathExpressions": ["A = QR, \\quad Q^T Q = I, \\quad R \\text{ upper triangular}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-11-c3",
+        "title": "Iterative Methods: CG & GMRES",
+        "contentHtml": "<p>For large sparse systems (millions of unknowns), direct methods like Gaussian elimination are too expensive. <strong>Iterative methods</strong> find approximate solutions that improve with each iteration.</p><p><strong>Conjugate Gradient (CG)</strong> solves Ax = b when A is symmetric positive definite. It's guaranteed to converge in at most n steps, but in practice converges much faster when the eigenvalues are clustered.</p><p><strong>GMRES</strong> (Generalized Minimal Residual) handles general (non-symmetric) systems. It minimizes the residual ||Ax - b|| over a growing Krylov subspace at each step.</p><p>Both methods only need matrix-vector products Av, never the full matrix. This makes them ideal for problems where A is defined implicitly (e.g., from PDEs or graph Laplacians).</p>",
+        "mathExpressions": ["x_{k+1} = x_k + \\alpha_k p_k \\quad \\text{(conjugate gradient update)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q59", "la-q60", "la-q61", "la-q62", "la-q63"],
+    "puzzleId": null
+  },
+  {
+    "id": "la-12",
+    "topicId": "linear-algebra",
+    "order": 12,
+    "title": "Linear Algebra in Machine Learning",
+    "description": "PCA, kernels, and the attention mechanism",
+    "xpReward": 220,
+    "concepts": [
+      {
+        "id": "la-12-c1",
+        "title": "PCA Deep Dive",
+        "contentHtml": "<p><strong>Principal Component Analysis</strong> finds the directions of maximum variance in data. Given data matrix X (centered), the principal components are the eigenvectors of the covariance matrix X^T X (or equivalently, the right singular vectors from SVD of X).</p><p>The classic application: <strong>eigenfaces</strong>. Treating each face image as a high-dimensional vector, PCA finds the \"directions\" in face-space that capture the most variation. The top eigenvectors look like ghostly faces -- they form a basis for representing and recognizing faces.</p><p><strong>Dimensionality reduction:</strong> Projecting data onto the top k principal components captures most variance with far fewer dimensions, enabling visualization and noise removal.</p>",
+        "mathExpressions": ["\\text{Cov} = \\frac{1}{n} X^T X = V \\Lambda V^T, \\quad \\text{PCs are columns of } V"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-12-c2",
+        "title": "Kernel Methods & RKHS",
+        "contentHtml": "<p>The <strong>kernel trick</strong> lets algorithms that depend only on dot products (like SVM, PCA) operate in a high-dimensional feature space without ever computing the coordinates explicitly.</p><p>A kernel function k(x, y) computes the inner product in feature space: k(x, y) = phi(x) . phi(y), where phi maps inputs to a (potentially infinite-dimensional) space.</p><p>A <strong>Reproducing Kernel Hilbert Space</strong> (RKHS) is a function space where evaluation at a point is a continuous linear functional. Every positive definite kernel defines an RKHS, and vice versa. This provides the rigorous foundation for kernel methods.</p><p>Common kernels: polynomial k(x,y) = (x.y + c)^d, Gaussian RBF k(x,y) = exp(-||x-y||^2 / 2 sigma^2).</p>",
+        "mathExpressions": ["k(x, y) = \\langle \\phi(x), \\phi(y) \\rangle_{\\mathcal{H}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "la-12-c3",
+        "title": "Attention as Linear Algebra",
+        "contentHtml": "<p>The <strong>attention mechanism</strong> in transformers (the architecture behind GPT, BERT, etc.) is fundamentally a sequence of linear algebra operations.</p><p>Each token is embedded as a vector. Three linear maps produce <strong>Query</strong> (Q), <strong>Key</strong> (K), and <strong>Value</strong> (V) matrices. Attention computes:</p><p>Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V</p><p>The Q K^T product computes pairwise dot products (similarities) between queries and keys -- this is a big matrix multiplication. The softmax normalizes these into attention weights. Multiplying by V produces a weighted combination of value vectors.</p><p>Multi-head attention runs several attention operations in parallel (each with different linear projections), then concatenates and linearly projects the results. The entire mechanism is a composition of matrix multiplications and a pointwise nonlinearity.</p>",
+        "mathExpressions": ["\\text{Attention}(Q, K, V) = \\text{softmax}\\!\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right) V"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["la-q64", "la-q65", "la-q66", "la-q67", "la-q68"],
+    "puzzleId": null
   }
 ]

@@ -8,7 +8,7 @@
 @implements IDisposable
 
 <div class="page-header">
-    <button class="back-btn" @onclick="GoBack">\u2190</button>
+    <button class="back-btn" @onclick="GoBack"><Icon Name="arrow-left" Size="18" /></button>
     <h1>@(lesson?.Title ?? "Lesson")</h1>
 </div>
 
@@ -30,7 +30,7 @@
                     </button>
                 }
                 <button class="concept-dot quiz-dot @(currentConceptIndex >= lesson.Concepts.Count ? "active" : "")"
-                        @onclick="StartQuiz">\u26A1</button>
+                        @onclick="StartQuiz"><Icon Name="zap" Size="16" /></button>
             </div>
 
             @if (currentConceptIndex < lesson.Concepts.Count)
@@ -60,7 +60,7 @@
                     <div class="concept-nav">
                         @if (currentConceptIndex > 0)
                         {
-                            <button class="btn btn-outline" @onclick="PrevConcept">\u2190 Previous</button>
+                            <button class="btn btn-outline" @onclick="PrevConcept"><Icon Name="arrow-left" Size="16" /> Previous</button>
                         }
                         else
                         {
@@ -68,11 +68,11 @@
                         }
                         @if (currentConceptIndex < lesson.Concepts.Count - 1)
                         {
-                            <button class="btn btn-primary" @onclick="NextConcept">Next \u2192</button>
+                            <button class="btn btn-primary" @onclick="NextConcept">Next ></button>
                         }
                         else
                         {
-                            <button class="btn btn-accent" @onclick="StartQuiz">Take Quiz \u26A1</button>
+                            <button class="btn btn-accent" @onclick="StartQuiz">Take Quiz <Icon Name="zap" Size="16" /></button>
                         }
                     </div>
                 </div>
@@ -138,6 +138,7 @@ else
         await Progress.MarkConceptViewedAsync(concept.Id);
         currentConceptIndex++;
         await SaveState();
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
     }
 
     private async Task PrevConcept()
@@ -145,6 +146,7 @@ else
         if (currentConceptIndex > 0)
             currentConceptIndex--;
         await SaveState();
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
     }
 
     private async Task JumpToConcept(int index)
@@ -160,8 +162,11 @@ else
     private async Task StartQuiz()
     {
         if (lesson == null) return;
-        var concept = lesson.Concepts[currentConceptIndex];
-        await Progress.MarkConceptViewedAsync(concept.Id);
+        if (currentConceptIndex < lesson.Concepts.Count)
+        {
+            var concept = lesson.Concepts[currentConceptIndex];
+            await Progress.MarkConceptViewedAsync(concept.Id);
+        }
         showQuiz = true;
         await SaveState();
     }
@@ -188,7 +193,19 @@ else
                 if (!profile.TopicsCompleted.Contains(TopicId))
                 {
                     profile.TopicsCompleted.Add(TopicId);
+                    // Award completion card
+                    if (!profile.CompletionCards.Any(c => c.TopicId == TopicId))
+                    {
+                        profile.CompletionCards.Add(new CompletionCard
+                        {
+                            TopicId = TopicId,
+                            EarnedDate = DateTime.Now.ToString("yyyy-MM-dd")
+                        });
+                    }
                     await Progress.SaveProfileAsync(profile);
+                    try { await JS.InvokeVoidAsync("Confetti.launch", 100); } catch { }
+                    try { await JS.InvokeVoidAsync("Sounds.playAchievement"); } catch { }
+                    try { await JS.InvokeVoidAsync("showToast", $"Topic complete! New card earned!", "achievement"); } catch { }
                 }
             }
         }

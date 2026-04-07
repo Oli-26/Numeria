@@ -13,6 +13,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<IContentRepository, ContentRepository>();
 builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
 builder.Services.AddScoped<IShopRepository, ShopRepository>();
+builder.Services.AddScoped<IChallengeRepository, ChallengeRepository>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
 builder.Services.AddScoped<IGamificationService, GamificationService>();
 builder.Services.AddScoped<IQuizEngine, QuizEngine>();

@@ -8,7 +8,7 @@
     "mathExpression": "\\lim_{x \\to 2} \\frac{x^2 - 4}{x - 2}",
     "options": ["2", "4", "0", "Undefined"],
     "correctAnswer": "4",
-    "explanation": "Factor: (x+2)(x-2)/(x-2) = x+2. At x=2, this equals 4.",
+    "explanation": "Step-by-step: (1) Factor the numerator: x^2 - 4 = (x+2)(x-2). (2) Cancel the common factor: (x+2)(x-2)/(x-2) = x+2 (valid when x != 2). (3) Evaluate the simplified expression at x = 2: 2 + 2 = 4. Why the wrong answers are wrong: 2 would be just plugging x=2 into the numerator's factor; 0 would mean the limit doesn't exist; 'Undefined' confuses the value f(2) (which is indeed undefined) with the limit (which exists and equals 4). Think of it like this: the 'hole' at x=2 is filled in by the limit.",
     "xpReward": 20
   },
   {
@@ -19,7 +19,7 @@
     "prompt": "A function is continuous at x = a if...",
     "options": ["The function is defined at a", "The limit exists at a", "The limit equals f(a)", "All of the above"],
     "correctAnswer": "All of the above",
-    "explanation": "Continuity requires all three: f(a) exists, the limit exists, and they're equal.",
+    "explanation": "Continuity at x = a requires three conditions simultaneously: (1) f(a) is defined (the function has a value there), (2) lim_{x->a} f(x) exists (left and right limits agree), and (3) lim_{x->a} f(x) = f(a) (the limit equals the actual value). If only the first holds, the function might have a jump. If only the second holds, there might be a removable discontinuity. 'All of the above' is correct because all three are needed. Mnemonic: think of continuity as 'no surprises' -- you can draw the graph without lifting your pen.",
     "xpReward": 20
   },
   {
@@ -31,7 +31,7 @@
     "mathExpression": "\\lim_{x \\to 5} (3x + 1) = ?",
     "correctAnswer": "16",
     "acceptableAnswers": ["16", "16.0"],
-    "explanation": "For a continuous polynomial, just plug in: 3(5) + 1 = 16.",
+    "explanation": "Since 3x + 1 is a polynomial, it is continuous everywhere. For continuous functions, evaluating the limit is as simple as substitution: lim_{x->5} (3x + 1) = 3(5) + 1 = 15 + 1 = 16. This 'direct substitution' works because continuity means the function's value equals its limit. Analogy: imagine walking along the line y = 3x + 1 toward x = 5 -- you arrive exactly at y = 16 with no surprises.",
     "xpReward": 20
   },
   {
@@ -42,7 +42,7 @@
     "prompt": "If the left-hand limit is 3 and the right-hand limit is 5, what is the limit?",
     "options": ["3", "5", "4", "Does not exist"],
     "correctAnswer": "Does not exist",
-    "explanation": "A limit only exists if both one-sided limits are equal. Since 3 \u2260 5, the limit does not exist.",
+    "explanation": "For a two-sided limit to exist, the left-hand limit and right-hand limit must agree. Here lim_{x->a^-} f(x) = 3 and lim_{x->a^+} f(x) = 5, and since 3 != 5, the two-sided limit does not exist. Why the wrong answers are wrong: choosing 3 would only give the left-hand limit; choosing 5 only the right-hand limit; 4 (the average) is a common mistake but limits don't average the sides. Mnemonic: think of two people approaching a door from opposite sides -- if they don't meet at the same point, there's no single meeting place (no limit).",
     "xpReward": 25
   },
   {
@@ -57,7 +57,7 @@
       { "left": "Left-hand limit", "right": "Approaching from below" }
     ],
     "correctAnswer": null,
-    "explanation": "These are the foundational concepts of limits and continuity.",
+    "explanation": "These are the foundational concepts of limits and continuity. A Limit is the value a function approaches as the input gets close to some point -- it answers 'where is the function heading?' Continuity means there are no breaks, jumps, or holes in the graph -- you can draw it without lifting your pen. The Left-hand limit specifically looks at what happens as you approach from values less than the target (from the left on the number line). Together, these three ideas form the bedrock upon which derivatives and integrals are built.",
     "xpReward": 30
   },
   {
@@ -69,7 +69,7 @@
     "mathExpression": "\\frac{d}{dx} x^3 = ?",
     "correctAnswer": "3x^2",
     "acceptableAnswers": ["3x^2", "3x\u00b2", "3*x^2"],
-    "explanation": "Power rule: bring down the 3, reduce exponent by 1. 3x\u00b2.",
+    "explanation": "Using the power rule: d/dx [x^n] = n * x^(n-1). Here n = 3, so d/dx [x^3] = 3 * x^(3-1) = 3x^2. Step-by-step: bring down the exponent as a coefficient (3), then reduce the exponent by one (3 - 1 = 2). Mnemonic: 'bring down, knock down' -- bring down the power to the front, knock the power down by one.",
     "xpReward": 20
   },
   {
@@ -80,7 +80,7 @@
     "prompt": "What does the derivative measure?",
     "options": ["The area under a curve", "The rate of change", "The maximum value", "The x-intercept"],
     "correctAnswer": "The rate of change",
-    "explanation": "The derivative gives the instantaneous rate of change -- the slope at any point.",
+    "explanation": "The derivative measures the instantaneous rate of change of a function -- it tells you the slope of the tangent line at any point. Why the wrong answers are wrong: 'area under a curve' is what the integral measures, not the derivative; 'maximum value' is found using the derivative but isn't what the derivative measures; 'x-intercept' is where f(x) = 0, unrelated to the derivative. Analogy: if your position is f(t), then f'(t) is your velocity -- how fast your position is changing at that instant.",
     "xpReward": 20
   },
   {
@@ -92,7 +92,7 @@
     "mathExpression": "\\frac{d}{dx} 5x^4 = ?",
     "correctAnswer": "20x^3",
     "acceptableAnswers": ["20x^3", "20x\u00b3", "20*x^3"],
-    "explanation": "Power rule: 5 \u00d7 4 = 20, reduce exponent: 20x\u00b3.",
+    "explanation": "Apply the power rule with a constant coefficient: d/dx [c * x^n] = c * n * x^(n-1). Here c = 5 and n = 4, so d/dx [5x^4] = 5 * 4 * x^(4-1) = 20x^3. The constant 5 just multiplies through because differentiation is linear. Step-by-step: (1) multiply coefficient by exponent: 5 * 4 = 20, (2) reduce exponent: 4 - 1 = 3, (3) result: 20x^3.",
     "xpReward": 25
   },
   {
@@ -103,7 +103,7 @@
     "prompt": "If f'(x) > 0, the function is:",
     "options": ["Increasing", "Decreasing", "Constant", "Undefined"],
     "correctAnswer": "Increasing",
-    "explanation": "A positive derivative means positive slope, which means the function is going up.",
+    "explanation": "When f'(x) > 0, the tangent line has a positive slope, which means the function is increasing at that point. Why the wrong answers are wrong: 'Decreasing' would require f'(x) < 0; 'Constant' would require f'(x) = 0; 'Undefined' doesn't follow from a positive derivative -- in fact, having a positive derivative means f is very well-defined there. Analogy: if you're hiking and your elevation's rate of change is positive, you're going uphill.",
     "xpReward": 20
   },
   {
@@ -115,7 +115,7 @@
     "mathExpression": "\\frac{d}{dx} 7x = ?",
     "correctAnswer": "7",
     "acceptableAnswers": ["7", "7.0"],
-    "explanation": "The derivative of ax is just a. So d/dx(7x) = 7.",
+    "explanation": "By the power rule, d/dx [7x] = d/dx [7x^1] = 7 * 1 * x^(1-1) = 7 * x^0 = 7 * 1 = 7. Alternatively, since 7x is a straight line with slope 7, its derivative (rate of change) is simply 7 everywhere. The derivative of any linear function ax + b is just the slope a. Mnemonic: the derivative of a line IS its slope.",
     "xpReward": 20
   },
   {
@@ -488,5 +488,405 @@
     "correctAnswer": null,
     "explanation": "This is the core algorithm behind training neural networks.",
     "xpReward": 50
+  },
+  {
+    "id": "calc-q41",
+    "lessonId": "calc-05",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Using the quotient rule, what is d/dx [x/(x+1)]?",
+    "mathExpression": "\\frac{d}{dx}\\left[\\frac{x}{x+1}\\right] = ?",
+    "correctAnswer": "1/(x+1)^2",
+    "acceptableAnswers": ["1/(x+1)^2", "1/(x+1)\u00b2", "(x+1)^(-2)"],
+    "explanation": "Quotient rule: [(x+1)(1) - x(1)] / (x+1)\u00b2 = 1/(x+1)\u00b2.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q42",
+    "lessonId": "calc-05",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is d/dx [e^(x\u00b2)]?",
+    "mathExpression": "\\frac{d}{dx}[e^{x^2}] = ?",
+    "correctAnswer": "2xe^(x^2)",
+    "acceptableAnswers": ["2xe^(x^2)", "2x*e^(x^2)", "2x e^(x^2)", "2xe^(x\u00b2)"],
+    "explanation": "Chain rule: the outer derivative of e^u is e^u, and the inner derivative of x\u00b2 is 2x. So 2x\u00b7e^(x\u00b2).",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q43",
+    "lessonId": "calc-06",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "What is the second-order Taylor approximation of cos(x) around x=0?",
+    "mathExpression": "\\cos(x) \\approx ?",
+    "correctAnswer": "1-x^2/2",
+    "acceptableAnswers": ["1-x^2/2", "1 - x^2/2", "1 - x\u00b2/2", "1-0.5x^2"],
+    "explanation": "cos(x) = 1 - x\u00b2/2! + x\u2074/4! - ... The second-order approximation is 1 - x\u00b2/2.",
+    "xpReward": 25
+  },
+  {
+    "id": "calc-q44",
+    "lessonId": "calc-06",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The radius of convergence of a power series determines:",
+    "options": ["How many terms to use", "The interval where the series converges", "The value at x=0", "The number of derivatives"],
+    "correctAnswer": "The interval where the series converges",
+    "explanation": "The radius of convergence R gives the interval (-R, R) centered at the expansion point where the series sums to a finite value.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q45",
+    "lessonId": "calc-07",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Solve the differential equation dy/dx = 2x with y(0) = 3. What is y(x)?",
+    "mathExpression": "\\frac{dy}{dx} = 2x, \\quad y(0) = 3",
+    "correctAnswer": "x^2+3",
+    "acceptableAnswers": ["x^2+3", "x\u00b2+3", "x^2 + 3", "3+x^2"],
+    "explanation": "Integrate: y = x\u00b2 + C. Using y(0) = 3: 0 + C = 3, so C = 3. y = x\u00b2 + 3.",
+    "xpReward": 25
+  },
+  {
+    "id": "calc-q46",
+    "lessonId": "calc-07",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The logistic equation dy/dt = ry(1 - y/K) models:",
+    "options": ["Unbounded exponential growth", "Population growth with carrying capacity", "Simple harmonic motion", "Radioactive decay"],
+    "correctAnswer": "Population growth with carrying capacity",
+    "explanation": "The logistic equation starts with exponential growth but slows as y approaches the carrying capacity K, producing an S-shaped curve.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q47",
+    "lessonId": "calc-08",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "For f(x,y) = x\u00b2y + 3y, what is \u2202f/\u2202y?",
+    "mathExpression": "f(x,y) = x^2 y + 3y, \\quad \\frac{\\partial f}{\\partial y} = ?",
+    "correctAnswer": "x^2+3",
+    "acceptableAnswers": ["x^2+3", "x\u00b2+3", "x^2 + 3", "3+x^2"],
+    "explanation": "Treat x as a constant: d/dy(x\u00b2y) = x\u00b2, d/dy(3y) = 3. So \u2202f/\u2202y = x\u00b2 + 3.",
+    "xpReward": 25
+  },
+  {
+    "id": "calc-q48",
+    "lessonId": "calc-08",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A double integral \u222c f(x,y) dA computes:",
+    "options": ["The slope of a surface", "The volume under a surface", "The gradient", "A line integral"],
+    "correctAnswer": "The volume under a surface",
+    "explanation": "Just as a single integral gives area under a curve, a double integral gives the volume under a surface z = f(x,y).",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q49",
+    "lessonId": "calc-09",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A sequence is Cauchy if:",
+    "options": ["It converges to zero", "Its terms get arbitrarily close to each other", "It is bounded", "It is monotone increasing"],
+    "correctAnswer": "Its terms get arbitrarily close to each other",
+    "explanation": "A Cauchy sequence has the property that for any epsilon > 0, eventually all terms are within epsilon of each other. In the reals, this is equivalent to convergence.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q50",
+    "lessonId": "calc-09",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The ratio test says a series converges absolutely if the limit of |a_{n+1}/a_n| is:",
+    "options": ["Equal to 1", "Greater than 1", "Less than 1", "Equal to 0"],
+    "correctAnswer": "Less than 1",
+    "explanation": "If the ratio limit L < 1, the series converges absolutely. If L > 1, it diverges. If L = 1, the test is inconclusive.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q51",
+    "lessonId": "calc-09",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the radius of convergence of the power series sum of x^n/n! (the series for e^x)?",
+    "mathExpression": "\\sum_{n=0}^{\\infty} \\frac{x^n}{n!}",
+    "correctAnswer": "infinity",
+    "acceptableAnswers": ["infinity", "Infinity", "inf", "infinite", "∞"],
+    "explanation": "Using the ratio test: |x|/(n+1) approaches 0 for any x, so the series converges for all x. The radius of convergence is infinity.",
+    "xpReward": 35
+  },
+  {
+    "id": "calc-q52",
+    "lessonId": "calc-09",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each convergence test to its key idea:",
+    "pairs": [
+      { "left": "Ratio test", "right": "Compare consecutive term ratios to 1" },
+      { "left": "Comparison test", "right": "Bound terms by a known convergent series" },
+      { "left": "Integral test", "right": "Compare sum to an improper integral" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each test provides a different strategy for determining whether an infinite series converges.",
+    "xpReward": 40
+  },
+  {
+    "id": "calc-q53",
+    "lessonId": "calc-09",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the radius of convergence of the geometric series sum of x^n?",
+    "mathExpression": "\\sum_{n=0}^{\\infty} x^n",
+    "correctAnswer": "1",
+    "acceptableAnswers": ["1", "1.0"],
+    "explanation": "The geometric series converges for |x| < 1 and diverges for |x| >= 1, so R = 1.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q54",
+    "lessonId": "calc-10",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The divergence of a vector field measures:",
+    "options": ["How much the field rotates", "How much the field spreads out from a point", "The gradient of the field", "The field's magnitude"],
+    "correctAnswer": "How much the field spreads out from a point",
+    "explanation": "Divergence measures the net outflow per unit volume. Positive divergence means a source; negative means a sink.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q55",
+    "lessonId": "calc-10",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The curl of a vector field measures:",
+    "options": ["How much the field spreads out", "The rotational tendency of the field", "The field's maximum value", "The total flux through a surface"],
+    "correctAnswer": "The rotational tendency of the field",
+    "explanation": "Curl measures the infinitesimal rotation at each point. If you placed a tiny paddle wheel in the field, the curl tells you how fast and in what direction it would spin.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q56",
+    "lessonId": "calc-10",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Divergence Theorem relates:",
+    "options": ["A line integral to a double integral", "A surface integral (flux) to a volume integral of divergence", "Two line integrals", "A gradient to a curl"],
+    "correctAnswer": "A surface integral (flux) to a volume integral of divergence",
+    "explanation": "The Divergence Theorem says the total flux through a closed surface equals the integral of divergence over the enclosed volume.",
+    "xpReward": 35
+  },
+  {
+    "id": "calc-q57",
+    "lessonId": "calc-10",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "If F = (x, y, z), what is div F (nabla dot F)?",
+    "mathExpression": "\\nabla \\cdot (x, y, z) = ?",
+    "correctAnswer": "3",
+    "acceptableAnswers": ["3", "3.0"],
+    "explanation": "div F = d(x)/dx + d(y)/dy + d(z)/dz = 1 + 1 + 1 = 3.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q58",
+    "lessonId": "calc-10",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each theorem to what it relates:",
+    "pairs": [
+      { "left": "Green's Theorem", "right": "Line integral around a 2D curve to double integral of curl" },
+      { "left": "Stokes' Theorem", "right": "Line integral around a 3D curve to surface integral of curl" },
+      { "left": "Divergence Theorem", "right": "Surface integral of flux to volume integral of divergence" }
+    ],
+    "correctAnswer": null,
+    "explanation": "All three generalize the Fundamental Theorem of Calculus: integral over interior = evaluation on boundary.",
+    "xpReward": 40
+  },
+  {
+    "id": "calc-q59",
+    "lessonId": "calc-11",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Cauchy-Riemann equations are conditions for a complex function to be:",
+    "options": ["Continuous", "Bounded", "Holomorphic (complex-differentiable)", "Real-valued"],
+    "correctAnswer": "Holomorphic (complex-differentiable)",
+    "explanation": "A complex function f = u + iv is holomorphic if u and v satisfy the Cauchy-Riemann equations: du/dx = dv/dy and du/dy = -dv/dx.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q60",
+    "lessonId": "calc-11",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Cauchy's Integral Theorem states that the integral of a holomorphic function around a closed contour is:",
+    "options": ["2 pi i", "1", "0", "Undefined"],
+    "correctAnswer": "0",
+    "explanation": "If f is holomorphic on and inside a closed contour, the contour integral is zero. This is the foundation of complex analysis.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q61",
+    "lessonId": "calc-11",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "The residue theorem says a contour integral equals 2 pi i times the sum of what?",
+    "correctAnswer": "residues",
+    "acceptableAnswers": ["residues", "the residues", "Residues", "The residues", "the sum of residues"],
+    "explanation": "The integral of f around a closed contour equals 2 pi i times the sum of the residues at all poles enclosed by the contour.",
+    "xpReward": 35
+  },
+  {
+    "id": "calc-q62",
+    "lessonId": "calc-11",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A holomorphic function is automatically:",
+    "options": ["Constant", "Bounded", "Infinitely differentiable and analytic", "Discontinuous at some points"],
+    "correctAnswer": "Infinitely differentiable and analytic",
+    "explanation": "Complex differentiability once implies differentiability infinitely many times. This is far more rigid than real differentiability.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q63",
+    "lessonId": "calc-11",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to evaluate a real integral using the residue theorem:",
+    "steps": [
+      "Identify the real integral to evaluate (e.g., integral from -infinity to infinity)",
+      "Extend the integrand to a complex function f(z)",
+      "Choose a closed contour in the complex plane (e.g., semicircle)",
+      "Find the poles of f(z) inside the contour",
+      "Compute the residue at each pole",
+      "Apply the residue theorem: integral = 2 pi i times sum of residues",
+      "Take the limit as the contour grows and extract the real integral"
+    ],
+    "correctAnswer": null,
+    "explanation": "This technique turns hard real integrals into routine residue calculations by exploiting the power of complex analysis.",
+    "xpReward": 50
+  },
+  {
+    "id": "calc-q64",
+    "lessonId": "calc-12",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Dirichlet function (1 on rationals, 0 on irrationals) is:",
+    "options": ["Riemann integrable", "Not Riemann integrable but Lebesgue integrable", "Neither Riemann nor Lebesgue integrable", "Continuous everywhere"],
+    "correctAnswer": "Not Riemann integrable but Lebesgue integrable",
+    "explanation": "Riemann sums can't converge because every interval contains both rationals and irrationals. But the Lebesgue integral sees that the rationals have measure 0, so the integral is 0.",
+    "xpReward": 35
+  },
+  {
+    "id": "calc-q65",
+    "lessonId": "calc-12",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the Lebesgue measure of the set of rational numbers in [0,1]?",
+    "correctAnswer": "0",
+    "acceptableAnswers": ["0", "0.0", "zero"],
+    "explanation": "The rationals are countable. Each point has measure 0, and a countable union of measure-0 sets has measure 0.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q66",
+    "lessonId": "calc-12",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "The Dominated Convergence Theorem allows you to interchange limits and integrals when:",
+    "options": ["The functions are continuous", "The convergence is uniform", "The functions are bounded by an integrable function", "The domain is compact"],
+    "correctAnswer": "The functions are bounded by an integrable function",
+    "explanation": "If |f_n| <= g where g is integrable, and f_n converges pointwise to f, then the integral of f_n converges to the integral of f.",
+    "xpReward": 35
+  },
+  {
+    "id": "calc-q67",
+    "lessonId": "calc-12",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "A sigma-algebra is a collection of subsets that is closed under:",
+    "options": ["Finite unions only", "Complements and countable unions", "Arbitrary intersections only", "Countable intersections but not unions"],
+    "correctAnswer": "Complements and countable unions",
+    "explanation": "A sigma-algebra must contain the empty set, be closed under complements, and be closed under countable unions. This ensures measurable sets form a rich, well-behaved collection.",
+    "xpReward": 30
+  },
+  {
+    "id": "calc-q68",
+    "lessonId": "calc-12",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each concept to its role in measure theory:",
+    "pairs": [
+      { "left": "Sigma-algebra", "right": "Defines which sets are measurable" },
+      { "left": "Lebesgue measure", "right": "Assigns length/area/volume to sets" },
+      { "left": "Dominated Convergence", "right": "Justifies interchanging limits and integrals" }
+    ],
+    "correctAnswer": null,
+    "explanation": "These three pillars support modern integration theory and its applications in analysis and probability.",
+    "xpReward": 40
+  },
+
+  {
+    "id": "calc-q69",
+    "lessonId": "calc-01",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "If lim_{x->a} f(x) = L, then f(a) = L.",
+    "correctAnswer": "False",
+    "explanation": "False. The limit describes the value f(x) approaches as x gets close to a, but f(a) itself may be different or even undefined. For example, f(x) = (x^2 - 1)/(x - 1) has lim_{x->1} f(x) = 2, but f(1) is undefined because of division by zero. The limit and the function value are independent unless the function is continuous at a.",
+    "xpReward": 20
+  },
+  {
+    "id": "calc-q70",
+    "lessonId": "calc-02",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "The derivative of a constant function is always zero.",
+    "correctAnswer": "True",
+    "explanation": "True. If f(x) = c for some constant c, then f'(x) = lim_{h->0} [f(x+h) - f(x)]/h = lim_{h->0} [c - c]/h = lim_{h->0} 0/h = 0. Intuitively, a constant function is a flat horizontal line, and the slope of a horizontal line is zero everywhere. This also follows immediately from the power rule: c = c*x^0, so d/dx [c] = c*0*x^(-1) = 0.",
+    "xpReward": 20
+  },
+  {
+    "id": "calc-q71",
+    "lessonId": "calc-03",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "The integral of 1/x from -1 to 1 equals zero because 1/x is an odd function.",
+    "correctAnswer": "False",
+    "explanation": "False. While 1/x is indeed an odd function, the integral from -1 to 1 does not exist (it is divergent) because 1/x has a non-integrable singularity at x = 0. The function blows up to +infinity from the right and -infinity from the left. You cannot simply say the positive and negative infinities 'cancel out.' The improper integral must be split at 0, and both halves diverge independently. This is a classic trap: symmetry arguments only work when the integral converges in the first place.",
+    "xpReward": 25
+  },
+  {
+    "id": "calc-q72",
+    "lessonId": "calc-02",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this derivative calculation using the product rule:",
+    "steps": [
+      "Let f(x) = x^2 * e^x",
+      "By the product rule: f'(x) = (d/dx x^2) * (d/dx e^x)",
+      "f'(x) = 2x * e^x",
+      "f'(1) = 2(1) * e^1 = 2e"
+    ],
+    "correctAnswer": "2",
+    "explanation": "Step 2 is wrong. The product rule states (fg)' = f'g + fg', NOT f'g'. The correct computation is f'(x) = (2x)(e^x) + (x^2)(e^x) = e^x(2x + x^2). The mistake is multiplying the two derivatives together instead of applying the product rule correctly. With the correct formula, f'(1) = e(2 + 1) = 3e, not 2e.",
+    "xpReward": 35
+  },
+  {
+    "id": "calc-q73",
+    "lessonId": "calc-03",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this integration:",
+    "steps": [
+      "Evaluate the integral of 2x * e^(x^2) dx using substitution",
+      "Let u = x^2, so du = x dx",
+      "Substituting: integral of 2 * e^u du",
+      "= 2e^u + C",
+      "= 2e^(x^2) + C"
+    ],
+    "correctAnswer": "2",
+    "explanation": "Step 2 is wrong. If u = x^2, then du/dx = 2x, which gives du = 2x dx (not x dx). The correct substitution recognizes that 2x dx = du, so the integral of 2x * e^(x^2) dx becomes the integral of e^u du = e^u + C = e^(x^2) + C. The error in step 2 (writing du = x dx instead of du = 2x dx) caused a stray factor of 2 to appear in step 3, ultimately doubling the correct answer.",
+    "xpReward": 35
   }
 ]

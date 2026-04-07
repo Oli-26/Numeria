@@ -1,0 +1,263 @@
+@page "/fortune"
+@inject IProgressService Progress
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Fortune Cookie</h1>
+</div>
+
+@if (todayCookie != null)
+{
+    @if (!revealed)
+    {
+        <div class="cookie-wrapper" @onclick="RevealCookie">
+            <div class="cookie-card cookie-closed">
+                <div class="cookie-glow"></div>
+                <div class="cookie-icon"><Icon Name="cookie" Size="40" /></div>
+                <p class="cookie-tap">Tap to open today's cookie</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="cookie-wrapper">
+            <div class="cookie-card cookie-open">
+                <div class="cookie-category"><Icon Name="@GetCategoryIcon(todayCookie.Category)" Size="14" /> @GetCategoryLabel(todayCookie.Category)</div>
+                <p class="cookie-text">@todayCookie.Text</p>
+                <div class="cookie-date">@DateTime.Now.ToString("MMMM d, yyyy")</div>
+            </div>
+        </div>
+    }
+
+    <!-- History -->
+    <div class="section" style="margin-top: 24px">
+        <h3>Recent Cookies</h3>
+        @if (history.Count == 0)
+        {
+            <p style="color: var(--text-muted); font-size: 0.9rem">Come back each day for a new cookie!</p>
+        }
+        else
+        {
+            <div class="cookie-history stagger-in">
+                @foreach (var item in history)
+                {
+                    <div class="card cookie-history-item @(item.Date == today ? "cookie-today" : "")">
+                        <div class="cookie-hist-header">
+                            <span class="cookie-hist-cat"><Icon Name="@GetCategoryIcon(item.Cookie.Category)" Size="12" /> @GetCategoryLabel(item.Cookie.Category)</span>
+                            <small>@item.Date</small>
+                        </div>
+                        <p>@item.Cookie.Text</p>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="loading">Loading...</div>
+}
+
+@code {
+    private List<FortuneCookie>? allCookies;
+    private FortuneCookie? todayCookie;
+    private bool revealed;
+    private string today = "";
+    private List<HistoryItem> history = new();
+
+    private class FortuneCookie
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = "";
+        public string Category { get; set; } = "";
+    }
+
+    private class HistoryItem
+    {
+        public string Date { get; set; } = "";
+        public FortuneCookie Cookie { get; set; } = new();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            allCookies = await Http.GetFromJsonAsync<List<FortuneCookie>>("data/fortune-cookies.json") ?? new();
+            today = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (allCookies.Count == 0) { StateHasChanged(); return; }
+
+            // Pick today's cookie deterministically from date
+            var daysSinceEpoch = (int)(DateTime.Now - new DateTime(2024, 1, 1)).TotalDays;
+            var index = daysSinceEpoch % allCookies.Count;
+            todayCookie = allCookies[index];
+
+            // Check if already viewed today
+            var profile = await Progress.GetProfileAsync();
+            revealed = profile.ViewedCookieDates.Contains(today);
+
+            // Build history from viewed dates (last 14 days)
+            history.Clear();
+            for (int i = 0; i < 14; i++)
+            {
+                var date = DateTime.Now.AddDays(-i).ToString("yyyy-MM-dd");
+                if (profile.ViewedCookieDates.Contains(date))
+                {
+                    var days = (int)(DateTime.Now.AddDays(-i) - new DateTime(2024, 1, 1)).TotalDays;
+                    var idx = days % allCookies.Count;
+                    history.Add(new HistoryItem { Date = date, Cookie = allCookies[idx] });
+                }
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task RevealCookie()
+    {
+        revealed = true;
+        try { await JS.InvokeVoidAsync("Sounds.playReveal"); } catch { }
+
+        var profile = await Progress.GetProfileAsync();
+        if (!profile.ViewedCookieDates.Contains(today))
+        {
+            profile.ViewedCookieDates.Add(today);
+            await Progress.SaveProfileAsync(profile);
+
+            // Add to history
+            if (todayCookie != null && !history.Any(h => h.Date == today))
+                history.Insert(0, new HistoryItem { Date = today, Cookie = todayCookie });
+        }
+    }
+
+    private string GetCategoryLabel(string cat) => cat switch
+    {
+        "paradox" => "Paradox",
+        "fact" => "Fact",
+        "quote" => "Quote",
+        "fun" => "Fun",
+        "history" => "History",
+        "beauty" => "Beauty",
+        "probability" => "Probability",
+        "topology" => "Topology",
+        "mystery" => "Mystery",
+        _ => "Math"
+    };
+
+    private string GetCategoryIcon(string cat) => cat switch
+    {
+        "paradox" => "bolt",
+        "fact" => "lightbulb",
+        "quote" => "message",
+        "fun" => "star",
+        "history" => "scroll",
+        "beauty" => "star-filled",
+        "probability" => "dice",
+        "topology" => "search",
+        "mystery" => "help",
+        _ => "star-filled"
+    };
+}
+
+<style>
+    .cookie-wrapper {
+        display: flex; justify-content: center; padding: 20px 0;
+    }
+
+    .cookie-card {
+        width: 100%; max-width: 360px; border-radius: var(--radius-lg);
+        padding: 32px 24px; text-align: center; position: relative;
+        overflow: hidden;
+    }
+
+    /* Closed state */
+    .cookie-closed {
+        background: linear-gradient(135deg, #2d2b6b, #4a3a99);
+        cursor: pointer; -webkit-tap-highlight-color: transparent;
+        animation: cookiePulse 2s ease infinite;
+    }
+    .cookie-closed:active { transform: scale(0.97); }
+
+    .cookie-glow {
+        position: absolute; inset: -2px; border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, #7eb4ff, #b48cff, #ff8ec6, #7eb4ff);
+        background-size: 300% 300%;
+        animation: glowRotate 3s ease infinite;
+        z-index: 0; opacity: 0.5;
+    }
+
+    .cookie-closed > *:not(.cookie-glow) { position: relative; z-index: 1; }
+
+    .cookie-icon {
+        font-size: 4rem; margin-bottom: 12px;
+        animation: cookieBob 3s ease-in-out infinite;
+    }
+
+    .cookie-tap {
+        color: rgba(255,255,255,0.7); font-size: 0.9rem; margin: 0;
+    }
+
+    @@keyframes cookiePulse {
+        0%, 100% { box-shadow: 0 4px 20px rgba(126,180,255,0.2); }
+        50% { box-shadow: 0 8px 40px rgba(180,140,255,0.35); }
+    }
+
+    @@keyframes cookieBob {
+        0%, 100% { transform: translateY(0) rotate(-3deg); }
+        50% { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    @@keyframes glowRotate {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Open state */
+    .cookie-open {
+        background: var(--bg-card); border: 1px solid var(--border);
+        box-shadow: 0 8px 32px var(--shadow);
+        animation: cookieReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @@keyframes cookieReveal {
+        0% { opacity: 0; transform: scale(0.8) rotateY(90deg); }
+        50% { transform: scale(1.05) rotateY(0deg); }
+        100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+    }
+
+    .cookie-category {
+        font-size: 0.8rem; font-weight: 600; color: var(--primary);
+        margin-bottom: 12px; letter-spacing: 0.5px;
+    }
+
+    .cookie-text {
+        font-size: 1.05rem; line-height: 1.7; color: var(--text-primary);
+        font-style: italic; margin: 0 0 16px;
+    }
+
+    .cookie-date {
+        font-size: 0.75rem; color: var(--text-muted);
+    }
+
+    /* History */
+    .cookie-history { display: flex; flex-direction: column; gap: 8px; }
+
+    .cookie-history-item { padding: 12px 14px; }
+    .cookie-history-item:hover { transform: none; }
+    .cookie-history-item p {
+        margin: 6px 0 0; font-size: 0.85rem; color: var(--text-secondary);
+        line-height: 1.5; font-style: italic;
+    }
+
+    .cookie-today { border-left: 3px solid var(--primary); }
+
+    .cookie-hist-header {
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .cookie-hist-cat { font-size: 0.75rem; font-weight: 600; color: var(--primary); }
+    .cookie-hist-header small { color: var(--text-muted); font-size: 0.75rem; }
+</style>

@@ -1,0 +1,453 @@
+@page "/hall-of-fame"
+@inject IProgressService Progress
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Hall of Fame</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase the "Hall of Fame" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Hall of Fame</h1>
+</div>
+
+<div class="hof-tabs">
+    <button class="tab @(mode == "timeline" ? "active" : "")" @onclick='() => mode = "timeline"'>Timeline</button>
+    <button class="tab @(mode == "trumps" ? "active" : "")" @onclick='() => mode = "trumps"'>Top Trumps</button>
+</div>
+
+@if (mode == "timeline")
+{
+    <div class="era-filter">
+        <button class="chip @(eraFilter == null ? "chip-active" : "")" @onclick="() => eraFilter = null">All</button>
+        <button class="chip @(eraFilter == "ancient" ? "chip-active" : "")" @onclick='() => eraFilter = "ancient"'>Ancient</button>
+        <button class="chip @(eraFilter == "medieval" ? "chip-active" : "")" @onclick='() => eraFilter = "medieval"'>Medieval</button>
+        <button class="chip @(eraFilter == "enlightenment" ? "chip-active" : "")" @onclick='() => eraFilter = "enlightenment"'>1600-1800</button>
+        <button class="chip @(eraFilter == "modern" ? "chip-active" : "")" @onclick='() => eraFilter = "modern"'>1800+</button>
+    </div>
+
+    <div class="timeline">
+        @foreach (var m in GetFilteredMathematicians())
+        {
+            var person = m;
+            <div class="timeline-item" @onclick="() => TogglePerson(person)">
+                <div class="timeline-dot" style="background: @person.Color"></div>
+                <div class="timeline-card card">
+                    <div class="timeline-header">
+                        <div class="timeline-initial" style="background: @person.Color">@person.Name[0]</div>
+                        <div class="timeline-info">
+                            <strong>@person.Name</strong>
+                            <small>@person.Years | @person.Origin</small>
+                        </div>
+                    </div>
+                    <div class="timeline-tagline">@person.Tagline</div>
+
+                    @if (selectedPerson?.Name == person.Name)
+                    {
+                        <div class="timeline-expanded">
+                            <div class="hof-section">
+                                <h4>Contribution</h4>
+                                <p>@((MarkupString)person.Contribution)</p>
+                            </div>
+                            <div class="hof-section">
+                                <h4>Why It's Amazing</h4>
+                                <p>@((MarkupString)person.WhyAmazing)</p>
+                            </div>
+                            @if (person.Drama != null)
+                            {
+                                <div class="hof-drama">
+                                    <Icon Name="star-filled" Size="14" Fill="var(--accent)" /> @person.Drama
+                                </div>
+                            }
+                            <div class="trump-stats-mini">
+                                <span title="Genius">G:@person.Genius</span>
+                                <span title="Impact">I:@person.Impact</span>
+                                <span title="Breadth">B:@person.Breadth</span>
+                                <span title="Drama">D:@person.DramaStat</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="trumps-intro">Tap two cards to compare. Highest stat wins!</p>
+
+    @if (trumpBattle)
+    {
+        <div class="trump-battle">
+            <div class="trump-card @(trumpWinner == 1 ? "trump-winner" : trumpWinner == 2 ? "trump-loser" : "")"
+                 style="border-color: @trumpCard1!.Color">
+                <div class="trump-name" style="background: @trumpCard1!.Color">@trumpCard1!.Name</div>
+                <div class="trump-years">@trumpCard1!.Years</div>
+                <div class="trump-stat-list">
+                    <div class="trump-stat @(trumpCategory == "genius" && trumpCard1!.Genius >= trumpCard2!.Genius ? "stat-win" : "")">
+                        <span>Genius</span><strong>@trumpCard1!.Genius</strong>
+                    </div>
+                    <div class="trump-stat @(trumpCategory == "impact" && trumpCard1!.Impact >= trumpCard2!.Impact ? "stat-win" : "")">
+                        <span>Impact</span><strong>@trumpCard1!.Impact</strong>
+                    </div>
+                    <div class="trump-stat @(trumpCategory == "breadth" && trumpCard1!.Breadth >= trumpCard2!.Breadth ? "stat-win" : "")">
+                        <span>Breadth</span><strong>@trumpCard1!.Breadth</strong>
+                    </div>
+                    <div class="trump-stat @(trumpCategory == "drama" && trumpCard1!.DramaStat >= trumpCard2!.DramaStat ? "stat-win" : "")">
+                        <span>Drama</span><strong>@trumpCard1!.DramaStat</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="trump-vs">VS</div>
+            <div class="trump-card @(trumpWinner == 2 ? "trump-winner" : trumpWinner == 1 ? "trump-loser" : "")"
+                 style="border-color: @trumpCard2!.Color">
+                <div class="trump-name" style="background: @trumpCard2!.Color">@trumpCard2!.Name</div>
+                <div class="trump-years">@trumpCard2!.Years</div>
+                <div class="trump-stat-list">
+                    <div class="trump-stat @(trumpCategory == "genius" && trumpCard2!.Genius >= trumpCard1!.Genius ? "stat-win" : "")">
+                        <span>Genius</span><strong>@trumpCard2!.Genius</strong>
+                    </div>
+                    <div class="trump-stat @(trumpCategory == "impact" && trumpCard2!.Impact >= trumpCard1!.Impact ? "stat-win" : "")">
+                        <span>Impact</span><strong>@trumpCard2!.Impact</strong>
+                    </div>
+                    <div class="trump-stat @(trumpCategory == "breadth" && trumpCard2!.Breadth >= trumpCard1!.Breadth ? "stat-win" : "")">
+                        <span>Breadth</span><strong>@trumpCard2!.Breadth</strong>
+                    </div>
+                    <div class="trump-stat @(trumpCategory == "drama" && trumpCard2!.DramaStat >= trumpCard1!.DramaStat ? "stat-win" : "")">
+                        <span>Drama</span><strong>@trumpCard2!.DramaStat</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (trumpWinner > 0)
+        {
+            <div class="trump-result">
+                @(trumpWinner == 1 ? trumpCard1!.Name : trumpCard2!.Name) wins on @trumpCategory!
+            </div>
+        }
+        <div class="trump-actions">
+            @if (trumpWinner == 0)
+            {
+                <button class="btn btn-sm btn-primary" @onclick='() => CompareStat("genius")'>Genius</button>
+                <button class="btn btn-sm btn-accent" @onclick='() => CompareStat("impact")'>Impact</button>
+                <button class="btn btn-sm btn-outline" @onclick='() => CompareStat("breadth")'>Breadth</button>
+                <button class="btn btn-sm btn-outline" @onclick='() => CompareStat("drama")'>Drama</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" @onclick="NewTrumpRound">New Round</button>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="trump-pick-grid">
+            @foreach (var m in mathematicians)
+            {
+                var person = m;
+                var isSelected = trumpPick1?.Name == person.Name || trumpPick2?.Name == person.Name;
+                <div class="trump-pick @(isSelected ? "picked" : "")" style="border-left: 3px solid @person.Color"
+                     @onclick="() => PickTrump(person)">
+                    <strong>@person.Name</strong>
+                    <small>@person.Years</small>
+                </div>
+            }
+        </div>
+        @if (trumpPick1 != null && trumpPick2 != null)
+        {
+            <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 12px" @onclick="StartBattle">
+                Battle!
+            </button>
+        }
+        else
+        {
+            <small class="pick-hint">Pick @(trumpPick1 == null ? "first" : "second") mathematician</small>
+        }
+    }
+}
+
+}
+
+@code {
+    private bool unlocked;
+    private string mode = "timeline";
+    private string? eraFilter;
+
+    // Timeline
+    private Mathematician? selectedPerson;
+
+    // Top Trumps
+    private Mathematician? trumpPick1;
+    private Mathematician? trumpPick2;
+    private Mathematician? trumpCard1;
+    private Mathematician? trumpCard2;
+    private bool trumpBattle;
+    private int trumpWinner;
+    private string? trumpCategory;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-halloffame");
+            StateHasChanged();
+        }
+    }
+
+    private void TogglePerson(Mathematician m) => selectedPerson = selectedPerson?.Name == m.Name ? null : m;
+
+    private List<Mathematician> GetFilteredMathematicians() =>
+        eraFilter == null ? mathematicians : mathematicians.Where(m => m.Era == eraFilter).ToList();
+
+    private void PickTrump(Mathematician m)
+    {
+        if (trumpPick1 == null) trumpPick1 = m;
+        else if (trumpPick1.Name == m.Name) trumpPick1 = null;
+        else if (trumpPick2 == null) trumpPick2 = m;
+        else if (trumpPick2.Name == m.Name) trumpPick2 = null;
+    }
+
+    private void StartBattle()
+    {
+        trumpCard1 = trumpPick1;
+        trumpCard2 = trumpPick2;
+        trumpBattle = true;
+        trumpWinner = 0;
+        trumpCategory = null;
+    }
+
+    private void CompareStat(string stat)
+    {
+        trumpCategory = stat;
+        var v1 = stat switch { "genius" => trumpCard1!.Genius, "impact" => trumpCard1!.Impact, "breadth" => trumpCard1!.Breadth, _ => trumpCard1!.DramaStat };
+        var v2 = stat switch { "genius" => trumpCard2!.Genius, "impact" => trumpCard2!.Impact, "breadth" => trumpCard2!.Breadth, _ => trumpCard2!.DramaStat };
+        trumpWinner = v1 > v2 ? 1 : v2 > v1 ? 2 : 0;
+    }
+
+    private void NewTrumpRound()
+    {
+        trumpPick1 = null; trumpPick2 = null; trumpBattle = false; trumpWinner = 0; trumpCategory = null;
+    }
+
+    private record Mathematician(string Name, string Years, string Origin, string Era, string Color, string Tagline,
+        string Contribution, string WhyAmazing, string? Drama, int Genius, int Impact, int Breadth, int DramaStat);
+
+    private List<Mathematician> mathematicians = new()
+    {
+        new("Euclid", "~300 BC", "Alexandria", "ancient", "#4A90D9",
+            "The father of geometry",
+            "Wrote <strong>The Elements</strong>, history's most influential textbook. Axiomatized geometry: 5 postulates, hundreds of theorems built rigorously from them. Created the template for all of mathematics that followed.",
+            "2,300 years later, The Elements is still the second most printed book (after the Bible). His axiomatic method -- start with self-evident truths, derive everything else -- became the foundation of ALL mathematics. Every proof you've ever seen follows Euclid's blueprint.",
+            "His 5th postulate (parallel lines) seemed too complex. For 2,000 years mathematicians tried to prove it from the others. Failing led to the discovery of non-Euclidean geometry -- curved space!", 8, 10, 7, 5),
+
+        new("Archimedes", "~287-212 BC", "Syracuse", "ancient", "#E74C3C",
+            "The greatest mind of antiquity",
+            "Discovered the principles of levers, buoyancy, and the method of exhaustion (proto-calculus). Calculated pi to remarkable accuracy. Invented the Archimedean screw and war machines.",
+            "He was doing calculus 2,000 years before Newton and Leibniz. His <strong>Method of Mechanical Theorems</strong> (lost for centuries, rediscovered in 1906 on a palimpsest) shows he understood integration conceptually. He might be the most ahead-of-his-time scientist ever.",
+            "Killed by a Roman soldier during the siege of Syracuse, reportedly saying \"Do not disturb my circles!\" His tomb bore a sphere inscribed in a cylinder -- his proudest theorem.", 10, 9, 8, 9),
+
+        new("Al-Khwarizmi", "~780-850", "Persia", "medieval", "#2ECC71",
+            "The father of algebra",
+            "Wrote <strong>Al-Kitab al-Mukhtasar</strong>, which gave us the word \"algebra\" (al-jabr = restoring). Systematized solving linear and quadratic equations. Introduced Hindu-Arabic numerals to the Islamic world.",
+            "The word \"algorithm\" comes from his name (Algoritmi). He transformed math from geometric reasoning into symbolic manipulation. Every equation you solve, every line of code that runs -- the conceptual framework traces back to this one book.",
+            null, 8, 10, 6, 3),
+
+        new("Fibonacci", "1170-1250", "Italy", "medieval", "#F39C12",
+            "He brought numbers to Europe",
+            "Wrote <strong>Liber Abaci</strong> (1202), introducing Hindu-Arabic numerals (0-9) to Europe, replacing Roman numerals. Described the Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13... where each number is the sum of the previous two.",
+            "Europe was STILL using Roman numerals for commerce until Fibonacci showed that 0-9 was vastly superior. Try multiplying XLVII by MCMXII. His sequence appears in sunflower spirals, pinecone patterns, and the golden ratio. He didn't discover it (Indian mathematicians knew it), but he brought it to the West.",
+            null, 6, 9, 5, 4),
+
+        new("Newton", "1643-1727", "England", "enlightenment", "#4A5FE0",
+            "Invented calculus and decoded the universe",
+            "Co-invented calculus (independently from Leibniz). Discovered the laws of motion and universal gravitation. Developed the generalized binomial theorem. Made foundational contributions to optics.",
+            "He unified earthly physics (falling apples) with celestial mechanics (orbiting planets) into ONE framework. The <strong>Principia Mathematica</strong> is arguably the most important scientific work ever written. He did most of it during a plague lockdown at age 23.",
+            "The Newton-Leibniz priority dispute was one of the bitterest feuds in science. Newton used his position as Royal Society president to publicly discredit Leibniz. The feud held back British mathematics for a century.", 10, 10, 9, 8),
+
+        new("Leibniz", "1646-1716", "Germany", "enlightenment", "#9B59B6",
+            "The other inventor of calculus",
+            "Co-invented calculus with far superior notation (dy/dx, the integral sign). Invented binary arithmetic (the foundation of all computers). Made major contributions to philosophy, logic, and mechanical calculators.",
+            "His notation won. We write dy/dx and integral signs because of Leibniz, not Newton. He envisioned a \"calculus of thought\" -- a universal logical language -- 200 years before formal logic existed. He essentially predicted computer science.",
+            "Died in obscurity, abandoned by his patron, his funeral attended by only his secretary. History has been kinder -- he's now recognized as one of the greatest polymaths ever.", 9, 9, 10, 7),
+
+        new("Euler", "1707-1783", "Switzerland", "enlightenment", "#1ABC9C",
+            "The most prolific mathematician in history",
+            "Contributed to virtually every branch of mathematics: calculus, number theory, graph theory, topology, mechanics, optics, astronomy. Introduced most modern notation: f(x), e, i, pi, sigma notation. Published over 800 papers.",
+            "He was so productive that journals were still publishing his backlog 50 years after his death. He could do enormous calculations in his head. Euler's identity e^(i*pi)+1=0 unites the five most important constants in one equation -- often called the most beautiful equation in mathematics.",
+            "Went blind in both eyes but his productivity INCREASED. He dictated papers from memory, producing more mathematics blind than most produce sighted.", 10, 10, 10, 7),
+
+        new("Gauss", "1777-1855", "Germany", "enlightenment", "#7B68EE",
+            "The Prince of Mathematics",
+            "Number theory (quadratic reciprocity, prime number theorem conjecture), non-Euclidean geometry (which he kept secret), statistics (Gaussian distribution), magnetism, astronomy (predicted Ceres' orbit). Proved the Fundamental Theorem of Algebra.",
+            "He was making groundbreaking discoveries as a teenager. At 19, he proved that a regular 17-gon could be constructed with compass and straightedge -- a problem open for 2,000 years. He kept many discoveries unpublished, so others \"rediscovered\" his work decades later.",
+            "When told someone had independently discovered non-Euclidean geometry, he replied he'd known it for decades but feared publishing because it was too radical. Multiple mathematicians were devastated to discover Gauss had beaten them years earlier.", 10, 10, 9, 6),
+
+        new("Galois", "1811-1832", "France", "modern", "#E74C3C",
+            "Died at 20, changed mathematics forever",
+            "Invented group theory and Galois theory, proving that there is NO general formula for solving polynomial equations of degree 5 or higher. Established the connection between field extensions and group symmetry.",
+            "He solved a 300-year-old problem (the insolvability of the quintic) by inventing an entirely new field of mathematics. His work connects algebra to symmetry in a way that underlies all of modern abstract algebra and much of physics. He did this as a <strong>teenager</strong>.",
+            "Wrote his mathematical testament the night before a duel (over a woman or politics -- historians debate). He was killed the next morning at age 20. His scribbled notes, annotated \"I have no time,\" launched group theory.", 10, 10, 6, 10),
+
+        new("Riemann", "1826-1866", "Germany", "modern", "#3498DB",
+            "Reshaped geometry and number theory",
+            "Created Riemannian geometry (curved spaces of any dimension), which Einstein later used for general relativity. Posed the Riemann Hypothesis about the zeros of the zeta function -- the most famous unsolved problem in mathematics.",
+            "His 1854 lecture on the foundations of geometry literally gave Einstein the mathematical language to describe curved spacetime 60 years later. Without Riemann, no general relativity. The Riemann Hypothesis, if proven, would reveal the deep structure of prime numbers.",
+            "Died of tuberculosis at 39. His housekeeper reportedly burned many of his unpublished papers. We'll never know what was lost.", 10, 10, 7, 7),
+
+        new("Cantor", "1845-1918", "Germany", "modern", "#8E44AD",
+            "Proved infinity comes in sizes",
+            "Created set theory. Proved that the real numbers are uncountable (diagonal argument). Introduced transfinite numbers: infinite cardinals and ordinals. Showed infinity is not one thing but an endless hierarchy.",
+            "He proved that there are <strong>more</strong> real numbers than natural numbers -- a result so counterintuitive that many mathematicians rejected it violently. \"I see it but I don't believe it,\" he wrote. His work is now the foundation of all modern mathematics.",
+            "Suffered severe depression, possibly worsened by vicious attacks from Kronecker who called him a \"corrupter of youth.\" Spent his final years in a sanatorium. His ideas are now universally accepted.", 10, 10, 7, 9),
+
+        new("Noether", "1882-1935", "Germany", "modern", "#E67E22",
+            "The mother of modern algebra",
+            "Noether's theorem: every symmetry in physics corresponds to a conservation law (translation symmetry = conservation of momentum, etc.). Revolutionized abstract algebra: ring theory, ideal theory, homological algebra.",
+            "Einstein called her the most important woman in the history of mathematics. Noether's theorem is one of the deepest results in physics -- it reveals WHY conservation laws exist. Her algebraic work reshaped the entire field into its modern abstract form.",
+            "Denied a paid position for years because she was a woman. Hilbert fought for her, arguing \"the university is not a bathhouse\" where gender should matter. Fled Nazi Germany in 1933, died two years later.", 9, 10, 8, 8),
+
+        new("Ramanujan", "1887-1920", "India", "modern", "#2ECC71",
+            "The man who knew infinity",
+            "Self-taught genius who produced ~3,900 results in number theory, infinite series, and continued fractions. Many results were so far ahead that mathematicians are still proving them correct today. His partition function and mock theta functions opened new fields.",
+            "He had almost no formal training. His notebooks, filled with formulas without proofs, continue to generate PhD theses a century later. Hardy rated mathematical ability on a scale of 0-100: he gave himself 25, Hilbert 80, and Ramanujan 100.",
+            "Wrote to Hardy from India with pages of bizarre formulas. Hardy initially thought it was a crank -- then realized some results were \"scarcely possible to believe.\" Died at 32 of illness, likely worsened by the English climate and diet.", 10, 8, 6, 10),
+
+        new("Godel", "1906-1978", "Austria", "modern", "#607D8B",
+            "Proved that math can never be complete",
+            "Incompleteness theorems (1931): any consistent system rich enough to include arithmetic contains true statements that cannot be proven within that system. Proved the consistency of the Axiom of Choice and Continuum Hypothesis with ZF.",
+            "He shattered Hilbert's dream of a complete, consistent foundation for all mathematics. His theorems show that mathematical truth transcends formal proof -- there will ALWAYS be truths we can't prove. It's the most important result in mathematical logic, and one of the deepest in all of human thought.",
+            "Became increasingly paranoid, eventually refusing to eat for fear of being poisoned. Would only eat food prepared by his wife. When she was hospitalized, he starved to death. Weighed 30kg at death.", 10, 10, 5, 10),
+
+        new("Turing", "1912-1954", "England", "modern", "#4A5FE0",
+            "Father of computer science",
+            "Formalized computation with the Turing machine (1936). Proved the halting problem is undecidable. Led the effort to crack Enigma at Bletchley Park, shortening WWII by an estimated 2 years. Proposed the Turing test for AI.",
+            "Every computer, phone, and server is a physical realization of his abstract machine. He simultaneously founded theoretical computer science AND helped win a world war. His 1936 paper is to CS what Newton's Principia is to physics.",
+            "Prosecuted for homosexuality in 1952, forced to undergo chemical castration. Died of cyanide poisoning (possibly suicide) at 41. Received a royal pardon in 2013 and appears on the British 50-pound note since 2021.", 10, 10, 7, 10),
+
+        new("Grothendieck", "1928-2014", "Germany/France", "modern", "#9B59B6",
+            "Rebuilt algebraic geometry from scratch",
+            "Revolutionized algebraic geometry with schemes, toposes, and derived categories. His work on the Weil conjectures, etale cohomology, and descent theory reshaped mathematics. Received the Fields Medal in 1966.",
+            "He didn't just solve problems -- he rebuilt entire fields from the ground up, creating new foundations that made previously impossible problems trivial. Mathematicians describe his approach as \"rising sea\": instead of attacking a problem, he built so much theory that the problem dissolved.",
+            "Withdrew from mathematics in 1970 over military funding of research. Became increasingly reclusive, eventually living as a hermit in the French Pyrenees. Left behind 20,000 pages of unpublished manuscripts.", 10, 10, 8, 10),
+
+        new("Maryam Mirzakhani", "1977-2017", "Iran", "modern", "#E91E63",
+            "First woman to win the Fields Medal",
+            "Made groundbreaking contributions to the dynamics and geometry of Riemann surfaces and their moduli spaces. Proved results on the growth rate of simple closed geodesics on hyperbolic surfaces.",
+            "Her work connected topology, geometry, and dynamics in ways nobody had seen before. She proved that the number of simple closed geodesics of length at most L on a hyperbolic surface grows polynomially -- a conjecture that had been open for decades. The Fields Medal (2014) was long overdue recognition.",
+            "Doodled on huge sheets of paper, which her daughter called \"painting.\" Diagnosed with breast cancer in 2013, she continued working until her death at 40. Iran's president broke with tradition to publish an unveiled photo of her in tribute.", 9, 8, 6, 8),
+
+        new("Terence Tao", "1975-", "Australia", "modern", "#00BCD4",
+            "The Mozart of Math",
+            "Contributions to harmonic analysis, PDE, combinatorics, number theory, random matrices. Proved (with Green) that primes contain arbitrarily long arithmetic progressions. Over 350 papers across dozens of fields.",
+            "He's arguably the greatest living mathematician, with an extraordinary ability to move between wildly different fields. His blog is a masterclass in mathematical exposition. Youngest ever IMO gold medalist (age 13), Fields Medal at 31.",
+            "Scored 760 on the math SAT at age 8. His approach is collaborative and generous -- the opposite of the stereotypical solitary genius. He's described as making everyone around him smarter.", 10, 9, 10, 3)
+    };
+}
+
+<style>
+    .hof-tabs {
+        display: flex; gap: 4px; background: var(--bg-surface); border-radius: var(--radius-md);
+        padding: 4px; margin-bottom: 16px;
+    }
+    .tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted);
+        font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-sm); cursor: pointer;
+        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
+    .tab.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow); }
+
+    .era-filter { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .chip-active { background: var(--primary) !important; color: white !important; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 20px; }
+    .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+
+    .timeline-item { position: relative; margin-bottom: 12px; cursor: pointer; }
+    .timeline-dot { position: absolute; left: -16px; top: 18px; width: 12px; height: 12px; border-radius: 50%; z-index: 1; }
+
+    .timeline-card { padding: 12px 14px; transition: border-color 0.2s ease; }
+    .timeline-card:hover { transform: none; }
+
+    .timeline-header { display: flex; align-items: center; gap: 10px; }
+    .timeline-initial {
+        width: 36px; height: 36px; border-radius: 50%; color: white; display: flex;
+        align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0;
+    }
+    .timeline-info strong { display: block; font-size: 0.95rem; }
+    .timeline-info small { color: var(--text-muted); font-size: 0.8rem; }
+
+    .timeline-tagline { color: var(--text-secondary); font-style: italic; font-size: 0.85rem; margin-top: 6px; }
+
+    .timeline-expanded { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); animation: expandIn 0.25s ease; }
+
+    .hof-section { margin-bottom: 10px; }
+    .hof-section h4 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
+    .hof-section p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+    .hof-drama {
+        display: flex; align-items: flex-start; gap: 6px; padding: 8px 10px;
+        background: rgba(240,160,48,0.08); border-radius: var(--radius-sm);
+        font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px;
+    }
+
+    .trump-stats-mini { display: flex; gap: 10px; margin-top: 8px; }
+    .trump-stats-mini span {
+        font-size: 0.75rem; font-weight: 700; color: var(--primary); background: rgba(74,95,224,0.08);
+        padding: 2px 8px; border-radius: 10px;
+    }
+
+    @@keyframes expandIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Top Trumps */
+    .trumps-intro { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin: 0 0 12px; }
+
+    .trump-pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .trump-pick {
+        padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .trump-pick:active { transform: scale(0.97); }
+    .trump-pick.picked { background: rgba(74,95,224,0.08); border-color: var(--primary); }
+    .trump-pick strong { display: block; font-size: 0.85rem; }
+    .trump-pick small { color: var(--text-muted); font-size: 0.75rem; }
+    .pick-hint { display: block; text-align: center; color: var(--text-muted); margin-top: 10px; }
+
+    .trump-battle { display: flex; gap: 10px; align-items: stretch; margin-bottom: 12px; }
+    .trump-vs { display: flex; align-items: center; font-weight: 800; color: var(--text-muted); font-size: 0.9rem; }
+
+    .trump-card {
+        flex: 1; border: 2px solid var(--border); border-radius: var(--radius-md);
+        overflow: hidden; transition: all 0.3s ease;
+    }
+    .trump-winner { box-shadow: 0 0 16px rgba(76,175,80,0.3); border-color: var(--success) !important; }
+    .trump-loser { opacity: 0.5; }
+
+    .trump-name {
+        padding: 8px; color: white; font-weight: 700; font-size: 0.85rem; text-align: center;
+    }
+    .trump-years { text-align: center; font-size: 0.75rem; color: var(--text-muted); padding: 4px; }
+
+    .trump-stat-list { padding: 6px 8px; }
+    .trump-stat { display: flex; justify-content: space-between; padding: 4px 6px; border-radius: 4px; margin-bottom: 2px; font-size: 0.8rem; }
+    .trump-stat span { color: var(--text-muted); }
+    .trump-stat strong { color: var(--text-primary); }
+    .trump-stat.stat-win { background: rgba(76,175,80,0.12); }
+    .trump-stat.stat-win strong { color: var(--success); }
+
+    .trump-result { text-align: center; font-weight: 700; color: var(--success); margin-bottom: 10px; font-size: 1rem; }
+    .trump-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+</style>

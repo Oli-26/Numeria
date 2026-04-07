@@ -164,8 +164,8 @@
         "title": "The Chain Rule",
         "contentHtml": "<p>The <strong>chain rule</strong> handles <strong>nested functions</strong> \u2014 a function inside another function.</p><p>Think of it as peeling an onion: differentiate the outer layer, then multiply by the derivative of the inner layer.</p><p>Example: d/dx [sin(x\u00b2)] = cos(x\u00b2) \u00b7 2x</p><p>This is arguably the most important derivative rule. It appears everywhere in multivariable calculus and machine learning (backpropagation is repeated application of the chain rule!).</p>",
         "mathExpressions": ["\\frac{d}{dx} f(g(x)) = f'(g(x)) \\cdot g'(x)"],
-        "visualizationType": null,
-        "visualizationConfig": null
+        "visualizationType": "chain-rule-viz",
+        "visualizationConfig": {}
       },
       {
         "id": "calc-05-c3",
@@ -286,5 +286,149 @@
     ],
     "quizQuestionIds": ["calc-q36", "calc-q37", "calc-q38", "calc-q39", "calc-q40"],
     "puzzleId": "calc-p03"
+  },
+  {
+    "id": "calc-09",
+    "topicId": "calculus",
+    "order": 9,
+    "title": "Sequences & Series",
+    "description": "Convergence, power series, and analytic functions",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "calc-09-c1",
+        "title": "Convergence of Sequences",
+        "contentHtml": "<p>A <strong>sequence</strong> (a_n) converges to a limit L if the terms get arbitrarily close to L as n grows. Formally, for every epsilon > 0, there exists N such that |a_n - L| < epsilon for all n > N.</p><p>A <strong>Cauchy sequence</strong> is one where the terms get arbitrarily close to <em>each other</em>: for every epsilon > 0, there exists N such that |a_m - a_n| < epsilon for all m, n > N.</p><p>In the real numbers, a sequence converges if and only if it is Cauchy. This is the <strong>completeness</strong> of the reals -- there are no \"gaps\" for sequences to fall into.</p>",
+        "mathExpressions": ["a_n \\to L \\iff \\forall \\varepsilon > 0,\\; \\exists N : n > N \\implies |a_n - L| < \\varepsilon"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-09-c2",
+        "title": "Series Convergence Tests",
+        "contentHtml": "<p>A <strong>series</strong> is the sum of a sequence: S = sum of a_n. It converges if the partial sums S_N = a_1 + a_2 + ... + a_N approach a finite limit.</p><p>Key tests for convergence:</p><p><strong>Ratio test:</strong> If |a_{n+1}/a_n| approaches L < 1, the series converges absolutely. If L > 1, it diverges.</p><p><strong>Root test:</strong> If |a_n|^{1/n} approaches L < 1, the series converges absolutely.</p><p><strong>Comparison test:</strong> If 0 <= a_n <= b_n and the sum of b_n converges, so does the sum of a_n.</p><p><strong>Integral test:</strong> If f(n) = a_n where f is positive and decreasing, then the sum and the integral from 1 to infinity of f converge or diverge together.</p>",
+        "mathExpressions": ["\\text{Ratio: } \\lim_{n\\to\\infty} \\left|\\frac{a_{n+1}}{a_n}\\right| = L < 1 \\implies \\sum a_n \\text{ converges}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-09-c3",
+        "title": "Power Series & Analytic Functions",
+        "contentHtml": "<p>A <strong>power series</strong> is a series of the form sum of c_n (x - a)^n. It converges within some <strong>radius of convergence</strong> R around the center a.</p><p>Inside the radius, the series converges absolutely. Outside, it diverges. On the boundary |x - a| = R, anything can happen.</p><p>The radius can be found via the ratio or root test: R = 1 / lim |c_{n+1}/c_n| (when this limit exists).</p><p>A function that equals its power series in a neighborhood of every point in its domain is called <strong>analytic</strong>. Most familiar functions (polynomials, exp, sin, cos) are analytic. Analytic functions are infinitely differentiable and completely determined by their Taylor coefficients.</p>",
+        "mathExpressions": ["\\sum_{n=0}^{\\infty} c_n (x - a)^n, \\quad R = \\frac{1}{\\limsup_{n\\to\\infty} |c_n|^{1/n}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q49", "calc-q50", "calc-q51", "calc-q52", "calc-q53"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-10",
+    "topicId": "calculus",
+    "order": 10,
+    "title": "Vector Calculus",
+    "description": "Fields, line integrals, and the great theorems",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "calc-10-c1",
+        "title": "Vector Fields & Differential Operators",
+        "contentHtml": "<p>A <strong>vector field</strong> assigns a vector to every point in space -- think of wind velocity at each location, or the gravitational pull at each point around a planet.</p><p>Three fundamental differential operators act on vector fields:</p><p><strong>Gradient</strong> (grad f = nabla f): Takes a scalar field to a vector field pointing uphill.</p><p><strong>Divergence</strong> (div F = nabla . F): Measures how much a vector field \"spreads out\" from a point. Positive divergence = source, negative = sink.</p><p><strong>Curl</strong> (curl F = nabla x F): Measures the rotational tendency of a field. Nonzero curl means the field \"swirls.\"</p>",
+        "mathExpressions": ["\\nabla f = \\left(\\frac{\\partial f}{\\partial x}, \\frac{\\partial f}{\\partial y}, \\frac{\\partial f}{\\partial z}\\right)", "\\nabla \\cdot \\mathbf{F} = \\frac{\\partial F_1}{\\partial x} + \\frac{\\partial F_2}{\\partial y} + \\frac{\\partial F_3}{\\partial z}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-10-c2",
+        "title": "Line & Surface Integrals",
+        "contentHtml": "<p>A <strong>line integral</strong> integrates a function or vector field along a curve. For a vector field F along curve C, the line integral measures the total \"work\" done by F along C.</p><p>A <strong>surface integral</strong> integrates over a 2D surface in 3D space. For a vector field, the surface integral measures the total \"flux\" -- how much of the field passes through the surface.</p><p>These integrals are the building blocks of the three great theorems of vector calculus.</p>",
+        "mathExpressions": ["\\int_C \\mathbf{F} \\cdot d\\mathbf{r} \\quad \\text{(line integral / work)}", "\\iint_S \\mathbf{F} \\cdot d\\mathbf{S} \\quad \\text{(surface integral / flux)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-10-c3",
+        "title": "Green's, Stokes', and the Divergence Theorem",
+        "contentHtml": "<p>Three theorems unify vector calculus by relating integrals over a region to integrals over its boundary:</p><p><strong>Green's Theorem</strong> (2D): The circulation of F around a closed curve C equals the double integral of curl F over the enclosed region R. Example: to find the work done by a force around a loop, integrate the curl over the interior instead.</p><p><strong>Stokes' Theorem</strong> (3D curves/surfaces): The line integral of F around the boundary of a surface S equals the surface integral of curl F over S.</p><p><strong>Divergence Theorem</strong> (3D volumes): The flux of F through a closed surface S equals the triple integral of div F over the enclosed volume V. Example: the total outflow through a closed surface equals the total \"source strength\" inside.</p><p>All three are higher-dimensional versions of the Fundamental Theorem of Calculus: integral over interior = evaluation on boundary.</p>",
+        "mathExpressions": ["\\oint_C \\mathbf{F} \\cdot d\\mathbf{r} = \\iint_R (\\nabla \\times \\mathbf{F}) \\cdot d\\mathbf{S} \\quad \\text{(Stokes')}", "\\oiint_S \\mathbf{F} \\cdot d\\mathbf{S} = \\iiint_V (\\nabla \\cdot \\mathbf{F})\\, dV \\quad \\text{(Divergence)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q54", "calc-q55", "calc-q56", "calc-q57", "calc-q58"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-11",
+    "topicId": "calculus",
+    "order": 11,
+    "title": "Complex Analysis",
+    "description": "Calculus with complex numbers",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "calc-11-c1",
+        "title": "Complex Functions & Cauchy-Riemann",
+        "contentHtml": "<p>A <strong>complex function</strong> f(z) maps complex numbers to complex numbers. Writing z = x + iy and f(z) = u(x,y) + iv(x,y), a function is <strong>holomorphic</strong> (complex-differentiable) if it satisfies the <strong>Cauchy-Riemann equations</strong>.</p><p>These two simple equations impose incredibly strong constraints: holomorphic functions are automatically infinitely differentiable, analytic (equal to their Taylor series), and satisfy the maximum principle.</p><p>Being holomorphic is far more restrictive than being real-differentiable. This rigidity is what gives complex analysis its power.</p>",
+        "mathExpressions": ["\\frac{\\partial u}{\\partial x} = \\frac{\\partial v}{\\partial y}, \\quad \\frac{\\partial u}{\\partial y} = -\\frac{\\partial v}{\\partial x}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-11-c2",
+        "title": "Contour Integration & Cauchy's Formula",
+        "contentHtml": "<p><strong>Contour integration</strong> is integration along paths in the complex plane. The fundamental result is <strong>Cauchy's Integral Theorem</strong>: the integral of a holomorphic function around any closed loop is zero (if the interior is in the domain).</p><p><strong>Cauchy's Integral Formula</strong> is even more remarkable: a holomorphic function's value at any point inside a contour is completely determined by its values on the contour:</p><p>This means knowing a holomorphic function on a circle tells you everything about it inside. No real-valued analog exists!</p>",
+        "mathExpressions": ["f(z_0) = \\frac{1}{2\\pi i} \\oint_C \\frac{f(z)}{z - z_0}\\, dz"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-11-c3",
+        "title": "Residue Theorem & Applications",
+        "contentHtml": "<p>When a function has <strong>singularities</strong> (poles) inside a contour, the integral is no longer zero. Instead, it equals 2 pi i times the sum of <strong>residues</strong> at each pole.</p><p>A residue is the coefficient of the 1/(z - z_0) term in the Laurent series expansion around a singularity.</p><p>The real magic: the residue theorem can evaluate <strong>real integrals</strong> that are otherwise extremely difficult. By cleverly choosing contours in the complex plane, integrals like the integral from -infinity to infinity of sin(x)/x dx = pi fall out effortlessly.</p>",
+        "mathExpressions": ["\\oint_C f(z)\\, dz = 2\\pi i \\sum_{k} \\text{Res}(f, z_k)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q59", "calc-q60", "calc-q61", "calc-q62", "calc-q63"],
+    "puzzleId": null
+  },
+  {
+    "id": "calc-12",
+    "topicId": "calculus",
+    "order": 12,
+    "title": "Measure Theory & Lebesgue Integration",
+    "description": "A more powerful theory of integration",
+    "xpReward": 220,
+    "concepts": [
+      {
+        "id": "calc-12-c1",
+        "title": "Why Riemann Integration Isn't Enough",
+        "contentHtml": "<p>The <strong>Dirichlet function</strong> equals 1 on rationals and 0 on irrationals. It's not Riemann integrable because every interval contains both rationals and irrationals, so upper and lower Riemann sums never agree.</p><p>Yet intuitively, the rationals are \"negligible\" (they form a countable set in an uncountable real line), so the integral \"should\" be 0.</p><p>Riemann integration also has problems with limits: the limit of a sequence of Riemann-integrable functions may not be Riemann-integrable, and you can't always interchange limits and integrals. These failures motivated a better theory.</p>",
+        "mathExpressions": ["f(x) = \\begin{cases} 1 & x \\in \\mathbb{Q} \\\\ 0 & x \\notin \\mathbb{Q} \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-12-c2",
+        "title": "Sigma-Algebras & Measures",
+        "contentHtml": "<p>A <strong>sigma-algebra</strong> on a set X is a collection of subsets closed under complements and countable unions. It tells us which sets are \"measurable.\"</p><p>A <strong>measure</strong> assigns a non-negative size to each measurable set, generalizing the notion of length/area/volume. The most important example is <strong>Lebesgue measure</strong> on the real line, which assigns the interval [a,b] the measure b - a.</p><p>A <strong>measurable function</strong> is one where preimages of measurable sets are measurable. This is the class of functions we can integrate in the Lebesgue sense.</p><p>Key insight: single points (and even countable sets like the rationals) have Lebesgue measure zero. Sets of measure zero are \"negligible\" for integration.</p>",
+        "mathExpressions": ["\\mu([a,b]) = b - a, \\quad \\mu(\\mathbb{Q}) = 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "calc-12-c3",
+        "title": "Lebesgue Integral & Convergence Theorems",
+        "contentHtml": "<p>The <strong>Lebesgue integral</strong> partitions the <em>range</em> of a function (instead of the domain, as Riemann does). For each value y, measure the set where f(x) is approximately y, and sum up y times that measure.</p><p>This approach handles the Dirichlet function easily: the set where f = 1 (the rationals) has measure 0, so the integral is 0, as expected.</p><p>The greatest payoff is the <strong>Dominated Convergence Theorem</strong>: if f_n converges to f pointwise, and all f_n are bounded by an integrable function g, then the integral of f_n converges to the integral of f. You can freely interchange limits and integrals under a simple boundedness condition.</p><p>This theorem is the workhorse of modern analysis, probability theory, and functional analysis.</p>",
+        "mathExpressions": ["f_n \\to f \\text{ pointwise}, \\; |f_n| \\le g \\implies \\int f_n \\to \\int f"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["calc-q64", "calc-q65", "calc-q66", "calc-q67", "calc-q68"],
+    "puzzleId": null
   }
 ]

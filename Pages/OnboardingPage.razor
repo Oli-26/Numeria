@@ -1,0 +1,277 @@
+@page "/welcome"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="onboarding">
+    @if (step == 1)
+    {
+        <div class="ob-step ob-fade-in">
+            <div class="ob-icon"><Icon Name="rocket" Size="40" /></div>
+            <h1>Welcome to Numeria!</h1>
+            <p class="ob-tagline">Your personal journey through the world of mathematics. Learn concepts, solve problems, and level up your skills.</p>
+            <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep2">Get Started</button>
+        </div>
+    }
+    else if (step == 2)
+    {
+        <div class="ob-step ob-fade-in">
+            <div class="ob-icon"><Icon Name="pencil" Size="40" /></div>
+            <h1>What should we call you?</h1>
+            <input type="text" class="ob-input" @bind="userName" @bind:event="oninput"
+                   placeholder="Enter your name..." maxlength="30" @onkeydown="HandleKeydown" />
+            <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep3"
+                    disabled="@string.IsNullOrWhiteSpace(userName)">Next</button>
+        </div>
+    }
+    else if (step == 3)
+    {
+        <div class="ob-step ob-fade-in">
+            <div class="ob-icon"><Icon Name="book" Size="40" /></div>
+            <h1>Pick your first topic</h1>
+            <p class="ob-tagline">Choose something that interests you. You can explore all topics later!</p>
+            @if (topics != null)
+            {
+                <div class="ob-topics">
+                    @foreach (var topic in topics)
+                    {
+                        var isSelected = selectedTopicId == topic.Id;
+                        <div class="ob-topic-card @(isSelected ? "selected" : "")"
+                             style="border-color: @(isSelected ? topic.Color : "transparent")"
+                             @onclick="() => SelectTopic(topic.Id)">
+                            <span class="ob-topic-icon" style="color: @topic.Color">@topic.Icon</span>
+                            <strong>@topic.Name</strong>
+                            <small>@topic.Difficulty</small>
+                        </div>
+                    }
+                </div>
+            }
+            <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep4"
+                    disabled="@(selectedTopicId == null)">Next</button>
+        </div>
+    }
+    else if (step == 4)
+    {
+        <div class="ob-step ob-fade-in">
+            <div class="ob-icon"><Icon Name="gift" Size="40" /></div>
+            <h1>You're all set, @userName!</h1>
+            <p class="ob-tagline">Your adventure begins now. Earn XP, unlock achievements, and master mathematics at your own pace.</p>
+            <button class="btn btn-primary btn-lg ob-btn" @onclick="StartLearning">Start Learning</button>
+        </div>
+    }
+
+    <div class="ob-dots">
+        @for (int i = 1; i <= 4; i++)
+        {
+            var dotStep = i;
+            <span class="ob-dot @(dotStep == step ? "active" : dotStep < step ? "done" : "")"></span>
+        }
+    </div>
+</div>
+
+@code {
+    private int step = 1;
+    private string userName = "";
+    private string? selectedTopicId;
+    private List<Topic>? topics;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            topics = await Content.GetTopicsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GoToStep2()
+    {
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        step = 2;
+    }
+
+    private async Task GoToStep3()
+    {
+        if (string.IsNullOrWhiteSpace(userName)) return;
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        step = 3;
+    }
+
+    private async Task GoToStep4()
+    {
+        if (selectedTopicId == null) return;
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        step = 4;
+    }
+
+    private void SelectTopic(string topicId)
+    {
+        selectedTopicId = topicId;
+    }
+
+    private async Task HandleKeydown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await GoToStep3();
+    }
+
+    private async Task StartLearning()
+    {
+        var profile = await Progress.GetProfileAsync();
+        profile.DisplayName = userName.Trim();
+        if (selectedTopicId != null)
+            profile.SuggestedTopicIds = new List<string> { selectedTopicId };
+        await Progress.SaveProfileAsync(profile);
+        try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+        Nav.NavigateTo("/");
+    }
+}
+
+<style>
+    .onboarding {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 24px;
+        text-align: center;
+    }
+
+    .ob-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        max-width: 420px;
+        width: 100%;
+    }
+
+    .ob-fade-in {
+        animation: obFadeIn 0.4s ease;
+    }
+
+    .ob-icon {
+        font-size: 3.5rem;
+        margin-bottom: 8px;
+    }
+
+    .ob-step h1 {
+        font-size: 1.6rem;
+        margin: 0;
+        color: var(--text-primary);
+    }
+
+    .ob-tagline {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .ob-input {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 1.1rem;
+        font-family: var(--font-main);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .ob-input:focus {
+        border-color: var(--primary);
+    }
+
+    .ob-btn {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .ob-topics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 100%;
+    }
+
+    .ob-topic-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 16px 10px;
+        background: var(--bg-card);
+        border: 2px solid transparent;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .ob-topic-card:hover {
+        background: var(--bg-surface);
+    }
+
+    .ob-topic-card.selected {
+        background: rgba(74, 95, 224, 0.08);
+        box-shadow: 0 0 0 2px rgba(74, 95, 224, 0.2);
+    }
+
+    .ob-topic-icon {
+        font-size: 1.8rem;
+    }
+
+    .ob-topic-card strong {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+
+    .ob-topic-card small {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .ob-dots {
+        display: flex;
+        gap: 8px;
+        margin-top: 32px;
+    }
+
+    .ob-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .ob-dot.active {
+        background: var(--primary);
+        transform: scale(1.2);
+    }
+
+    .ob-dot.done {
+        background: var(--primary-light);
+    }
+
+    @@keyframes obFadeIn {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 400px) {
+        .ob-topics {
+            grid-template-columns: 1fr;
+        }
+
+        .ob-step h1 {
+            font-size: 1.3rem;
+        }
+    }
+</style>

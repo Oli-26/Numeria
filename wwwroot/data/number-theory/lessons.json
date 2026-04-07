@@ -28,8 +28,8 @@
         "title": "The Fundamental Theorem of Arithmetic",
         "contentHtml": "<p>Every integer greater than 1 has a <strong>unique</strong> prime factorization (up to the order of factors).</p><p>This sounds obvious, but it's remarkably powerful. It means the primes are a complete \"basis\" for multiplication, just like basis vectors span a vector space.</p><p>Fun fact: this theorem <strong>fails</strong> in some other number systems! In \u2124[\u221a-5], the number 6 = 2\u00d73 = (1+\u221a-5)(1-\u221a-5) has two distinct factorizations. This failure led to the invention of ideals and algebraic number theory.</p>",
         "mathExpressions": ["n = p_1^{a_1} \\cdot p_2^{a_2} \\cdots p_k^{a_k} \\quad \\text{(unique)}"],
-        "visualizationType": null,
-        "visualizationConfig": null
+        "visualizationType": "factor-tree",
+        "visualizationConfig": {}
       }
     ],
     "quizQuestionIds": ["nt-q01", "nt-q02", "nt-q03", "nt-q04", "nt-q05"],
@@ -142,5 +142,149 @@
     ],
     "quizQuestionIds": ["nt-q16", "nt-q17", "nt-q18", "nt-q19", "nt-q20"],
     "puzzleId": "nt-p01"
+  },
+  {
+    "id": "nt-05",
+    "topicId": "number-theory",
+    "order": 5,
+    "title": "Diophantine Equations",
+    "description": "Solving equations in integers",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "nt-05-c1",
+        "title": "Linear Diophantine Equations",
+        "contentHtml": "<p>A <strong>Diophantine equation</strong> is an equation where we seek only <strong>integer</strong> solutions. Named after Diophantus of Alexandria (~250 AD).</p><p>The simplest type is the <strong>linear Diophantine equation</strong>: ax + by = c. This has integer solutions if and only if gcd(a, b) divides c.</p><p><strong>Bezout's Identity</strong> guarantees that for any integers a and b, there exist integers x and y such that ax + by = gcd(a, b). The Extended Euclidean Algorithm finds these x and y efficiently.</p>",
+        "mathExpressions": ["ax + by = c \\quad \\text{has solutions iff } \\gcd(a,b) \\mid c"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-05-c2",
+        "title": "Pythagorean Triples & Fermat's Last Theorem",
+        "contentHtml": "<p><strong>Pythagorean triples</strong> are integer solutions to x² + y² = z². Examples: (3,4,5), (5,12,13), (8,15,17).</p><p>Every primitive triple (where gcd(x,y,z) = 1) has the form x = m² - n², y = 2mn, z = m² + n² for coprime m > n > 0 with m - n odd.</p><p><strong>Fermat's Last Theorem</strong> states that x&#x207F; + y&#x207F; = z&#x207F; has no positive integer solutions for n > 2. Pierre de Fermat claimed a proof in 1637 but never wrote it down. After 358 years, <strong>Andrew Wiles</strong> finally proved it in 1995 using deep connections between elliptic curves and modular forms.</p>",
+        "mathExpressions": ["x^n + y^n = z^n \\quad \\text{has no positive integer solutions for } n > 2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-05-c3",
+        "title": "Pell's Equation",
+        "contentHtml": "<p><strong>Pell's equation</strong> is the Diophantine equation x² - Dy² = 1, where D is a positive non-square integer.</p><p>Despite its simplicity, it always has infinitely many solutions. The smallest positive solution (x₁, y₁) is called the <strong>fundamental solution</strong>, and all other solutions can be generated from it.</p><p>For D = 2: the fundamental solution is (3, 2) since 9 - 8 = 1. The next is (17, 12) since 289 - 288 = 1. Solutions grow exponentially! Continued fractions provide the most elegant method for finding the fundamental solution.</p>",
+        "mathExpressions": ["x^2 - Dy^2 = 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q34", "nt-q35", "nt-q36", "nt-q37", "nt-q38"],
+    "puzzleId": null
+  },
+  {
+    "id": "nt-06",
+    "topicId": "number-theory",
+    "order": 6,
+    "title": "Quadratic Residues",
+    "description": "Squares modulo primes and reciprocity",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "nt-06-c1",
+        "title": "Quadratic Residues mod p",
+        "contentHtml": "<p>An integer a is a <strong>quadratic residue</strong> mod p if there exists some x such that x² ≡ a (mod p). Otherwise, a is a <strong>quadratic non-residue</strong>.</p><p>For p = 7: the squares mod 7 are 1² = 1, 2² = 4, 3² = 2 (since 9 mod 7 = 2). So {1, 2, 4} are the quadratic residues mod 7, and {3, 5, 6} are the non-residues.</p><p>Exactly half of the nonzero residues mod an odd prime p are quadratic residues: there are (p-1)/2 of each.</p>",
+        "mathExpressions": ["x^2 \\equiv a \\pmod{p}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-06-c2",
+        "title": "Legendre Symbol & Euler's Criterion",
+        "contentHtml": "<p>The <strong>Legendre symbol</strong> (a/p) is defined for an odd prime p: it equals 1 if a is a quadratic residue mod p, -1 if a is a non-residue, and 0 if p divides a.</p><p><strong>Euler's Criterion</strong> gives a computational formula: a<sup>(p-1)/2</sup> ≡ (a/p) (mod p). This connects quadratic residues to modular exponentiation.</p><p>Example: Is 2 a quadratic residue mod 7? Compute 2³ = 8 ≡ 1 (mod 7). Since the result is 1, yes, 2 is a QR mod 7. Indeed, 3² = 9 ≡ 2 (mod 7).</p>",
+        "mathExpressions": ["a^{(p-1)/2} \\equiv \\left(\\frac{a}{p}\\right) \\pmod{p}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-06-c3",
+        "title": "Quadratic Reciprocity",
+        "contentHtml": "<p>The <strong>Law of Quadratic Reciprocity</strong>, called by Gauss his <em>theorema aureum</em> (golden theorem), relates the quadratic residue character of two odd primes with respect to each other:</p><p>(p/q)(q/p) = (-1)<sup>(p-1)(q-1)/4</sup></p><p>In plain language: whether p is a square mod q is linked to whether q is a square mod p, with a sign flip only when both primes are 3 mod 4.</p><p>Gauss gave six different proofs during his lifetime. Over 200 proofs are known today, making it one of the most-proved theorems in mathematics. It is a cornerstone that foreshadows deep patterns in algebraic number theory and class field theory.</p>",
+        "mathExpressions": ["\\left(\\frac{p}{q}\\right)\\left(\\frac{q}{p}\\right) = (-1)^{\\frac{p-1}{2}\\cdot\\frac{q-1}{2}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q39", "nt-q40", "nt-q41", "nt-q42", "nt-q43"],
+    "puzzleId": null
+  },
+  {
+    "id": "nt-07",
+    "topicId": "number-theory",
+    "order": 7,
+    "title": "Arithmetic Functions",
+    "description": "Functions on the integers and their deep structure",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "nt-07-c1",
+        "title": "Euler's Totient & Divisor Functions",
+        "contentHtml": "<p><strong>Euler's totient function</strong> φ(n) counts the integers from 1 to n that are coprime to n. For a prime p, φ(p) = p - 1. For a prime power, φ(p<sup>k</sup>) = p<sup>k</sup> - p<sup>k-1</sup>.</p><p>The <strong>divisor function</strong> d(n) (also written τ(n)) counts the number of divisors of n. The <strong>sum-of-divisors</strong> function σ(n) adds them up.</p><p>Example: For n = 12, the divisors are {1, 2, 3, 4, 6, 12}, so d(12) = 6 and σ(12) = 28. Also φ(12) = 4, since {1, 5, 7, 11} are coprime to 12.</p>",
+        "mathExpressions": ["\\varphi(n) = n \\prod_{p \\mid n}\\left(1 - \\frac{1}{p}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-07-c2",
+        "title": "Multiplicative Functions & Mobius Function",
+        "contentHtml": "<p>An arithmetic function f is <strong>multiplicative</strong> if f(mn) = f(m)f(n) whenever gcd(m,n) = 1. Both φ and σ are multiplicative, which makes them much easier to compute: factor n, compute on each prime power, and multiply.</p><p>The <strong>Mobius function</strong> μ(n) is defined as: μ(1) = 1; μ(n) = (-1)<sup>k</sup> if n is a product of k distinct primes; μ(n) = 0 if n has a squared prime factor.</p><p>μ acts as an \"inclusion-exclusion\" bookkeeper. A key identity: Σ<sub>d|n</sub> μ(d) = 0 for all n > 1 (and = 1 for n = 1). This makes μ the identity element for a certain algebraic operation on arithmetic functions.</p>",
+        "mathExpressions": ["\\mu(n) = \\begin{cases} 1 & n=1 \\\\ (-1)^k & n = p_1 p_2 \\cdots p_k \\\\ 0 & p^2 \\mid n \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-07-c3",
+        "title": "Mobius Inversion & Dirichlet Convolution",
+        "contentHtml": "<p>The <strong>Mobius Inversion Formula</strong> states: if g(n) = Σ<sub>d|n</sub> f(d), then f(n) = Σ<sub>d|n</sub> μ(d) g(n/d). This lets you \"undo\" a summation over divisors.</p><p>This is a special case of <strong>Dirichlet convolution</strong>: (f * g)(n) = Σ<sub>d|n</sub> f(d) g(n/d). Under this operation, arithmetic functions form a ring, and μ is the inverse of the constant function 1.</p><p>Dirichlet convolution connects to <strong>Dirichlet series</strong>: if F(s) = Σ f(n)/n<sup>s</sup> and G(s) = Σ g(n)/n<sup>s</sup>, then the series for f*g is F(s)G(s). The Riemann zeta function ζ(s) is the Dirichlet series for the constant function 1, making it central to the theory.</p>",
+        "mathExpressions": ["(f * g)(n) = \\sum_{d \\mid n} f(d)\\, g\\!\\left(\\frac{n}{d}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q44", "nt-q45", "nt-q46", "nt-q47", "nt-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "nt-08",
+    "topicId": "number-theory",
+    "order": 8,
+    "title": "Analytic Number Theory",
+    "description": "Using analysis to understand the primes",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "nt-08-c1",
+        "title": "The Prime Counting Function & Prime Number Theorem",
+        "contentHtml": "<p>The <strong>prime counting function</strong> π(x) counts the number of primes up to x. How fast does it grow?</p><p>The <strong>Prime Number Theorem</strong> (proved independently by Hadamard and de la Vallee Poussin in 1896) gives the answer: π(x) ~ x / ln(x). Primes thin out logarithmically, but never run out.</p><p>A sharper estimate uses the logarithmic integral: π(x) ~ Li(x) = ∫₂ˣ dt/ln(t). Remarkably, the error in this approximation is controlled by the zeros of the Riemann zeta function.</p>",
+        "mathExpressions": ["\\pi(x) \\sim \\frac{x}{\\ln x} \\sim \\text{Li}(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-08-c2",
+        "title": "The Riemann Zeta Function in Depth",
+        "contentHtml": "<p>The <strong>Riemann zeta function</strong> ζ(s) = Σ 1/n<sup>s</sup> converges for Re(s) > 1, but can be <strong>analytically continued</strong> to all complex numbers (except s = 1, where it has a pole).</p><p>The <strong>functional equation</strong> relates ζ(s) to ζ(1-s), revealing a deep symmetry about the line Re(s) = 1/2. The <strong>trivial zeros</strong> are at s = -2, -4, -6, ...; the <strong>non-trivial zeros</strong> all lie in the critical strip 0 < Re(s) < 1.</p><p>The Riemann Hypothesis asserts all non-trivial zeros have Re(s) = 1/2. Over 10 trillion zeros have been computed and all lie on this critical line, yet no proof exists. A proof would sharpen our understanding of prime distribution to an extraordinary degree.</p>",
+        "mathExpressions": ["\\zeta(s) = \\sum_{n=1}^{\\infty} \\frac{1}{n^s} = \\prod_{p \\text{ prime}} \\frac{1}{1 - p^{-s}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nt-08-c3",
+        "title": "Dirichlet's Theorem on Primes in Arithmetic Progressions",
+        "contentHtml": "<p><strong>Dirichlet's Theorem</strong> (1837) states: if a and d are coprime, then the arithmetic progression a, a+d, a+2d, a+3d, ... contains <strong>infinitely many primes</strong>.</p><p>For example, there are infinitely many primes of the form 4k+1 (5, 13, 17, 29, ...) and infinitely many of the form 4k+3 (3, 7, 11, 19, 23, ...).</p><p>The proof introduced <strong>Dirichlet L-functions</strong> L(s, χ) = Σ χ(n)/n<sup>s</sup>, where χ is a Dirichlet character. These generalize the zeta function and opened an entirely new approach to number theory: using the tools of <strong>complex analysis</strong> to prove results about integers. This was the birth of analytic number theory.</p>",
+        "mathExpressions": ["L(s, \\chi) = \\sum_{n=1}^{\\infty} \\frac{\\chi(n)}{n^s}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nt-q49", "nt-q50", "nt-q51", "nt-q52", "nt-q53"],
+    "puzzleId": null
   }
 ]

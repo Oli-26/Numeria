@@ -1,0 +1,234 @@
+@page "/compendium"
+@inject IProgressService Progress
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Compendium of Constants</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase the "Compendium of Constants" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Compendium of Constants</h1>
+</div>
+
+<p class="compendium-subtitle">The numbers that define the universe.</p>
+
+<div class="constants-list">
+    @foreach (var c in constants)
+    {
+        var con = c;
+        <div class="card constant-card @(selectedConstant?.Symbol == con.Symbol ? "expanded" : "")" @onclick="() => ToggleConstant(con)">
+            <div class="constant-header">
+                <div class="constant-symbol" style="color: @con.Color">@con.Symbol</div>
+                <div class="constant-title">
+                    <strong>@con.Name</strong>
+                    <span class="constant-value">@con.Value</span>
+                </div>
+                <Icon Name="arrow-left" Size="14" Style="@($"transform: rotate({(selectedConstant?.Symbol == con.Symbol ? "-90deg" : "180deg")}); color: var(--text-muted); transition: transform 0.2s ease")" />
+            </div>
+
+            @if (selectedConstant?.Symbol == con.Symbol)
+            {
+                <div class="constant-body">
+                    <div class="constant-tagline">@con.Tagline</div>
+
+                    <div class="constant-section">
+                        <h3>What is it?</h3>
+                        <p>@((MarkupString)con.WhatIsIt)</p>
+                    </div>
+
+                    <div class="constant-section">
+                        <h3>Why does it matter?</h3>
+                        <p>@((MarkupString)con.WhyMatters)</p>
+                    </div>
+
+                    <div class="constant-section">
+                        <h3>Where does it appear?</h3>
+                        <p>@((MarkupString)con.WhereAppears)</p>
+                    </div>
+
+                    @if (con.FunFact != null)
+                    {
+                        <div class="constant-fun-fact">
+                            <Icon Name="star-filled" Size="14" Fill="var(--accent)" /> @con.FunFact
+                        </div>
+                    }
+
+                    @if (con.Formula != null)
+                    {
+                        <div class="math-display" id="formula-@con.Symbol.GetHashCode()"></div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+}
+
+@code {
+    private bool unlocked;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-compendium");
+            StateHasChanged();
+        }
+
+        // Render KaTeX for expanded constant
+        if (selectedConstant?.Formula != null)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("renderMath", $"formula-{selectedConstant.Symbol.GetHashCode()}", selectedConstant.Formula, true);
+            }
+            catch { }
+        }
+    }
+
+    private record MathConstant(string Symbol, string Name, string Value, string Color, string Tagline,
+        string WhatIsIt, string WhyMatters, string WhereAppears, string? FunFact, string? Formula);
+
+    private MathConstant? selectedConstant;
+
+    private void ToggleConstant(MathConstant c)
+    {
+        selectedConstant = selectedConstant?.Symbol == c.Symbol ? null : c;
+    }
+
+    private List<MathConstant> constants = new()
+    {
+        new("\u03C0", "Pi", "3.14159265358979...", "#4A90D9",
+            "The ratio that connects all circles to all straight lines.",
+            "Pi is the ratio of a circle's circumference to its diameter. It's the same for every circle ever drawn, from a coin to a planet's orbit. It's <strong>irrational</strong> (never repeats, never ends) and <strong>transcendental</strong> (can't be a root of any polynomial with integer coefficients).",
+            "Pi appears everywhere circles, waves, or rotations exist. Without it, we can't compute areas, volumes, or anything involving curves. It's the bridge between the straight world of algebra and the curved world of geometry.",
+            "<strong>Geometry:</strong> circumference = 2\u03C0r, area = \u03C0r\u00B2<br><strong>Trigonometry:</strong> sin and cos have period 2\u03C0<br><strong>Probability:</strong> the normal distribution formula contains \u03C0<br><strong>Physics:</strong> Einstein's field equations, Heisenberg uncertainty, Coulomb's law<br><strong>Number theory:</strong> \u03C0 appears in the distribution of primes!",
+            "In 2024, pi was computed to 105 trillion digits. Nobody needs that many \u2014 only 39 digits of pi are enough to calculate the circumference of the observable universe to the accuracy of a hydrogen atom.",
+            "\\pi = 4\\sum_{k=0}^{\\infty} \\frac{(-1)^k}{2k+1} = 4\\left(1 - \\frac{1}{3} + \\frac{1}{5} - \\frac{1}{7} + \\cdots\\right)"),
+
+        new("e", "Euler's Number", "2.71828182845904...", "#2ECC71",
+            "The base rate of all continuous growth.",
+            "e is the unique number where the function e\u02E3 equals its own derivative. In other words, <strong>e\u02E3 is its own rate of change</strong>. It emerges naturally when you ask: \"What happens if interest compounds continuously?\" Start with $1, compound at 100% interest, increase the compounding frequency to infinity, and you get exactly $e.",
+            "e is the natural base for exponential growth and decay. Population growth, radioactive decay, compound interest, signal attenuation \u2014 every process where the rate of change is proportional to the current value involves e. It makes calculus work cleanly: d/dx(e\u02E3) = e\u02E3.",
+            "<strong>Finance:</strong> continuous compound interest A = Pe\u02B3\u1D57<br><strong>Calculus:</strong> the only function equal to its own derivative<br><strong>Probability:</strong> derangements, Poisson distribution<br><strong>Physics:</strong> radioactive decay, capacitor discharge, thermal cooling<br><strong>Complex analysis:</strong> Euler's formula e\u1D49\u03B8 = cos\u03B8 + isin\u03B8",
+            "The digits of e are provably random-looking, yet it's one of the most structured numbers in existence. It appears as a limit: e = lim(1 + 1/n)\u207F as n \u2192 \u221E.",
+            "e = \\sum_{n=0}^{\\infty} \\frac{1}{n!} = 1 + 1 + \\frac{1}{2} + \\frac{1}{6} + \\frac{1}{24} + \\cdots"),
+
+        new("i", "Imaginary Unit", "\u221A(-1)", "#9B59B6",
+            "The number that shouldn't exist but makes everything work.",
+            "i = \u221A(-1). No real number squared gives -1, so mathematicians invented i. It seems like a hack, but it turned out to be one of the most productive ideas in history. Complex numbers z = a + bi form a 2D number system where multiplication means rotation and scaling.",
+            "Without i, we can't solve x\u00B2 + 1 = 0 or factor every polynomial. The <strong>Fundamental Theorem of Algebra</strong> says every polynomial has roots \u2014 but only if you allow complex numbers. More importantly, complex analysis (calculus with i) is vastly more powerful than real analysis.",
+            "<strong>Electrical engineering:</strong> AC circuits use impedance Z = R + iX<br><strong>Quantum mechanics:</strong> the wave function \u03C8 is complex-valued, i appears in Schr\u00F6dinger's equation<br><strong>Signal processing:</strong> Fourier transforms use e\u1D49\u03C9\u1D57<br><strong>Control theory:</strong> stability analysis in the complex plane<br><strong>Fluid dynamics:</strong> conformal mappings for airfoil design",
+            "i\u1D49 is a real number! Specifically, i\u1D49 = e\u207B\u03C0/\u00B2 \u2248 0.2078. An imaginary number raised to an imaginary power gives a real result.",
+            "e^{i\\pi} + 1 = 0"),
+
+        new("\u03C6", "Golden Ratio", "1.61803398874989...", "#F39C12",
+            "Nature's favorite proportion.",
+            "\u03C6 (phi) is the number where \u03C6 = 1 + 1/\u03C6. Solving: \u03C6 = (1+\u221A5)/2. It's the ratio you get when you divide a line so that the ratio of the whole to the larger part equals the ratio of the larger part to the smaller. It's the limit of consecutive Fibonacci ratios: 1/1, 2/1, 3/2, 5/3, 8/5, 13/8, ... \u2192 \u03C6.",
+            "\u03C6 appears in geometry (pentagons, decagons), number theory (Fibonacci), and optimization (golden section search). Its irrationality is \"the most irrational\" \u2014 it's the hardest number to approximate with fractions, which is why nature uses it for efficient packing.",
+            "<strong>Nature:</strong> sunflower seed spirals, pinecone patterns, nautilus shells<br><strong>Architecture:</strong> Parthenon proportions (debated)<br><strong>Art:</strong> Renaissance composition guidelines<br><strong>Math:</strong> Fibonacci sequence, continued fractions<br><strong>Optimization:</strong> golden section search minimizes function evaluations",
+            "The golden ratio is the continued fraction 1 + 1/(1 + 1/(1 + 1/(1 + ...))). All 1's. This makes it the \"most irrational\" number \u2014 converging more slowly than any other.",
+            "\\varphi = \\frac{1 + \\sqrt{5}}{2} = 1 + \\cfrac{1}{1 + \\cfrac{1}{1 + \\cfrac{1}{1 + \\cdots}}}"),
+
+        new("0", "Zero", "0", "#E74C3C",
+            "Nothing changed everything.",
+            "Zero is the additive identity: a + 0 = a. It seems trivially obvious now, but it took humanity thousands of years to accept that \"nothing\" is a number. The Babylonians used a placeholder, the Greeks rejected the concept, and it wasn't fully embraced until Indian mathematicians (Brahmagupta, 628 AD) gave it rules.",
+            "Zero is the boundary between positive and negative, the origin of every coordinate system, and the key to our place-value number system. Without zero, we can't write 101 (is it eleven? one hundred and one?). It enables algebra: solving equations means finding where something equals zero.",
+            "<strong>Place value:</strong> distinguishes 1, 10, 100, 1000<br><strong>Algebra:</strong> solve f(x) = 0<br><strong>Calculus:</strong> derivatives = 0 at extrema<br><strong>Computer science:</strong> Boolean false, null pointers, binary<br><strong>Physics:</strong> absolute zero, ground state, vacuum energy (which isn't actually zero!)",
+            "Division by zero is undefined, not because mathematicians are being stubborn, but because allowing it makes the entire number system collapse: if a/0 = b, then a = 0\u00D7b = 0, so everything equals everything.",
+            null),
+
+        new("\u221E", "Infinity", "\u221E", "#3498DB",
+            "Not a number. A direction.",
+            "Infinity is not a number you can do arithmetic with \u2014 it's a concept describing unboundedness. There's no largest natural number: you can always add 1. But Cantor showed infinity comes in <strong>different sizes</strong>. The infinity of natural numbers (\u2135\u2080) is smaller than the infinity of real numbers (\u2135\u2081).",
+            "Infinity is essential for calculus (limits, integrals over infinite domains), topology (compactification), set theory (transfinite cardinals), and physics (singularities, the observable universe). Taming infinity \u2014 making it rigorous \u2014 was the project of 19th-century mathematics.",
+            "<strong>Calculus:</strong> limits as x \u2192 \u221E, improper integrals<br><strong>Set theory:</strong> \u2135\u2080, \u2135\u2081, transfinite ordinals<br><strong>Geometry:</strong> points at infinity, projective plane<br><strong>Physics:</strong> black hole singularities, infinite universe?<br><strong>Computer science:</strong> halting problem, infinite loops",
+            "Hilbert's Hotel: a hotel with infinitely many rooms, all full, can always accommodate one more guest (move everyone up one room). It can even accommodate infinitely many new guests!",
+            "\\aleph_0 < \\aleph_1 < \\aleph_2 < \\cdots"),
+
+        new("\u03B3", "Euler-Mascheroni", "0.57721566490153...", "#8E44AD",
+            "The most mysterious constant you've never heard of.",
+            "\u03B3 (gamma) is the limit of (1 + 1/2 + 1/3 + ... + 1/n) - ln(n) as n \u2192 \u221E. It measures how much the harmonic series overshoots the natural logarithm. Despite appearing everywhere in analysis and number theory, we don't even know if \u03B3 is rational or irrational.",
+            "It quantifies the gap between discrete sums and continuous integrals. It appears in the Riemann zeta function, the Gamma function, estimates for prime numbers, and many asymptotic formulas. It's like the \"dark matter\" of constants \u2014 present everywhere, understood poorly.",
+            "<strong>Number theory:</strong> prime counting estimates<br><strong>Analysis:</strong> digamma function, harmonic series<br><strong>Probability:</strong> Gumbel distribution, extreme value theory<br><strong>Physics:</strong> quantum field theory renormalization",
+            "After centuries of study, nobody has proven whether \u03B3 is rational or irrational. It's probably irrational (strong numerical evidence), but proof has eluded everyone.",
+            "\\gamma = \\lim_{n \\to \\infty} \\left( \\sum_{k=1}^{n} \\frac{1}{k} - \\ln n \\right)"),
+
+        new("\u03B6(3)", "Ap\u00E9ry's Constant", "1.20205690315959...", "#1ABC9C",
+            "The sum that proved the experts wrong.",
+            "\u03B6(3) = 1 + 1/8 + 1/27 + 1/64 + ... = \u03A3 1/n\u00B3. In 1978, Roger Ap\u00E9ry shocked the mathematical world by proving this number is irrational. His proof was so unexpected that mathematicians initially didn't believe him. The techniques were called \"miraculous\" and spawned new fields of research.",
+            "While \u03B6(2) = \u03C0\u00B2/6 (Basel problem, solved by Euler), \u03B6(3) has NO known closed form in terms of other constants. Whether \u03B6(5), \u03B6(7), etc. are irrational remains open. This highlights how much we still don't understand about basic infinite sums.",
+            "<strong>Number theory:</strong> values of the Riemann zeta function<br><strong>Physics:</strong> quantum electrodynamics calculations<br><strong>Combinatorics:</strong> counting certain lattice paths<br><strong>String theory:</strong> appears in scattering amplitude calculations",
+            "Euler computed \u03B6(2k) for all even integers (they're all rational multiples of \u03C0\u00B2\u1D4F). But odd values like \u03B6(3), \u03B6(5), \u03B6(7) remain mysterious. We don't even know if \u03B6(5) is irrational.",
+            "\\zeta(3) = \\sum_{n=1}^{\\infty} \\frac{1}{n^3} = 1 + \\frac{1}{8} + \\frac{1}{27} + \\frac{1}{64} + \\cdots"),
+
+        new("\u221A2", "Pythagoras' Constant", "1.41421356237309...", "#E67E22",
+            "The number that destroyed a religion.",
+            "\u221A2 is the length of the diagonal of a unit square. The Pythagoreans believed all numbers were ratios of integers. When Hippasus proved \u221A2 is irrational (can't be p/q for any integers), legend says they <strong>drowned him</strong>. The proof is one of the most elegant in mathematics: assume \u221A2 = p/q in lowest terms, derive a contradiction.",
+            "It was the first number proven irrational, opening the door to the vast world of irrational and transcendental numbers. It showed that geometry produces numbers that arithmetic can't capture \u2014 a philosophical earthquake for ancient mathematics.",
+            "<strong>Geometry:</strong> diagonal of unit square<br><strong>Music:</strong> the tritone interval (frequency ratio \u221A2)<br><strong>Paper sizes:</strong> A4 paper ratio is 1:\u221A2 (fold it and get the same ratio!)<br><strong>Computer science:</strong> \u221A2 appears in algorithm complexity bounds",
+            "A4 paper (210mm \u00D7 297mm) has sides in ratio 1:\u221A2 = 1:1.4142... This means folding it in half gives you A5 paper with the exact same proportions. This works for the entire A-series. Elegant!",
+            "\\sqrt{2} = 1 + \\cfrac{1}{2 + \\cfrac{1}{2 + \\cfrac{1}{2 + \\cdots}}}")
+    };
+}
+
+<style>
+    .compendium-subtitle {
+        color: var(--text-muted); text-align: center; margin: -8px 0 16px; font-size: 0.9rem;
+    }
+
+    .constants-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .constant-card { padding: 14px 16px; cursor: pointer; transition: all 0.2s ease; }
+    .constant-card:hover { transform: none; }
+    .constant-card.expanded { border-color: var(--primary-light); }
+
+    .constant-header { display: flex; align-items: center; gap: 14px; }
+
+    .constant-symbol {
+        font-size: 1.8rem; font-weight: 700; flex-shrink: 0; width: 44px; text-align: center;
+        font-family: 'Times New Roman', Georgia, serif;
+    }
+
+    .constant-title { flex: 1; }
+    .constant-title strong { display: block; font-size: 0.95rem; }
+    .constant-value { color: var(--text-muted); font-size: 0.8rem; font-family: 'Courier New', monospace; }
+
+    .constant-body { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); animation: expandIn 0.25s ease; }
+
+    .constant-tagline {
+        font-style: italic; color: var(--primary); font-size: 0.95rem; margin-bottom: 14px;
+        padding: 8px 12px; background: rgba(74, 95, 224, 0.06); border-radius: var(--radius-sm);
+    }
+
+    .constant-section { margin-bottom: 14px; }
+    .constant-section h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px; }
+    .constant-section p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+
+    .constant-fun-fact {
+        display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px;
+        background: rgba(240, 160, 48, 0.08); border-radius: var(--radius-sm);
+        font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;
+    }
+
+    @@keyframes expandIn {
+        from { opacity: 0; max-height: 0; }
+        to { opacity: 1; max-height: 1000px; }
+    }
+</style>

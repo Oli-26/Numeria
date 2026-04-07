@@ -1,0 +1,1765 @@
+@page "/playground"
+@inject IJSRuntime JS
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>What If? Playground</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase the "What If? Playground" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>What If? Playground</h1>
+</div>
+
+<p class="playground-subtitle">Break the rules. Twist the constants. See what happens.</p>
+
+<div class="experiment-list">
+    @foreach (var exp in experiments)
+    {
+        var e = exp;
+        <div class="card card-clickable experiment-card" @onclick="() => OpenExperiment(e.Id)">
+            <div class="exp-icon" style="background: @e.Color">@e.Symbol</div>
+            <div class="exp-info">
+                <strong>@e.Title</strong>
+                <small>@e.Subtitle</small>
+            </div>
+            <Icon Name="arrow-left" Size="16" Style="transform: rotate(180deg); color: var(--text-muted)" />
+        </div>
+    }
+</div>
+
+@if (activeExperiment != null)
+{
+    <div class="experiment-overlay" @onclick="CloseExperiment">
+        <div class="experiment-panel" @onclick:stopPropagation>
+            <div class="exp-panel-header">
+                <h2>@activeExperiment.Title</h2>
+                <button class="close-btn" @onclick="CloseExperiment"><Icon Name="x-mark" Size="20" /></button>
+            </div>
+            <p class="exp-description">@activeExperiment.Description</p>
+
+            <div class="canvas-container">
+                <canvas id="playground-canvas"></canvas>
+            </div>
+
+            <div class="exp-controls">
+                @if (activeExperiment.Id == "pi")
+                {
+                    <label>Pi = @piValue.ToString("F2")</label>
+                    <input type="range" min="200" max="500" value="@piSlider" @oninput="OnPiChange" />
+                    <small>Real pi = 3.14. Try 4.0 (squares!) or 2.0 (squished circles)</small>
+                }
+                else if (activeExperiment.Id == "gravity")
+                {
+                    <label>Gravity = @gravityValue.ToString("F1") m/s²</label>
+                    <input type="range" min="1" max="200" value="@gravitySlider" @oninput="OnGravityChange" />
+                    <div class="preset-row">
+                        <button class="btn btn-sm btn-outline" @onclick="() => SetGravity(16)">Moon</button>
+                        <button class="btn btn-sm btn-outline" @onclick="() => SetGravity(98)">Earth</button>
+                        <button class="btn btn-sm btn-outline" @onclick="() => SetGravity(248)">Jupiter</button>
+                    </div>
+                    <small>Height: @((200.0 / gravityValue).ToString("F1"))m | Hang time: @((2 * 20.0 / gravityValue).ToString("F1"))s</small>
+                }
+                else if (activeExperiment.Id == "divzero")
+                {
+                    <label>x = @divZeroX.ToString("F6") | 1/x = @((1.0/divZeroX).ToString("N0"))</label>
+                    <input type="range" min="0" max="1000" value="@divZeroSlider" @oninput="OnDivZeroChange" />
+                    <small>Slide right to approach zero. At x=0.001, 1/x = 1,000. At x=0.0001, 1/x = 10,000...</small>
+                }
+                else if (activeExperiment.Id == "dimension")
+                {
+                    <label>Dimensions: @dimensionCount</label>
+                    <input type="range" min="1" max="20" value="@dimensionCount" @oninput="OnDimensionChange" />
+                    <small>Unit sphere volume peaks at 5D then shrinks toward zero!</small>
+                    <button class="btn btn-sm btn-outline" style="margin-top: 8px; width: 100%" @onclick="() => showDimExplain = !showDimExplain">
+                        @(showDimExplain ? "Hide explanation" : "Why does it shrink?")
+                    </button>
+                    @if (showDimExplain)
+                    {
+                        <div class="explain-box">
+                            <p><strong>The curse of dimensionality.</strong> In high dimensions, most of the volume of a cube is concentrated in its corners, far from the center. The sphere (the set of points within distance 1 of the center) captures less and less of the cube's volume.</p>
+                            <p>Think of it this way: in 2D, a circle covers about 78% of its bounding square. In 3D, a sphere covers 52% of its bounding cube. By 10D, the "sphere" covers just 0.25% of the cube. The corners dominate.</p>
+                            <p>The formula is V_n = pi^(n/2) / Gamma(n/2 + 1). The gamma function in the denominator grows factorially, eventually overwhelming the pi^(n/2) in the numerator.</p>
+                        </div>
+                    }
+                }
+                else if (activeExperiment.Id == "base")
+                {
+                    <label>Number base: @numberBase</label>
+                    <input type="range" min="2" max="16" value="@numberBase" @oninput="OnBaseChange" />
+                    <small>Binary (2), Octal (8), Decimal (10), Hex (16)</small>
+                }
+                else if (activeExperiment.Id == "euclid")
+                {
+                    <label>Curvature: @curvatureValue.ToString("F2")</label>
+                    <input type="range" min="0" max="200" value="@curvatureSlider" @oninput="OnCurvatureChange" />
+                    <small>0 = flat (Euclid), positive = sphere, negative = hyperbolic</small>
+                }
+                else if (activeExperiment.Id == "expo")
+                {
+                    <label>Growth rate: @growthRate.ToString("F2")x per step</label>
+                    <input type="range" min="100" max="300" value="@growthSlider" @oninput="OnGrowthChange" />
+                    <div class="expo-comparison">
+                        @{ var final = Math.Pow(growthRate, 30); }
+                        <small>After 30 steps: <strong>@(final > 1e15 ? final.ToString("E1") : final.ToString("N0"))</strong></small>
+                        <small>@GetExpoComparison(final)</small>
+                    </div>
+                }
+                else if (activeExperiment.Id == "imaginary")
+                {
+                    <label>Angle: @imagAngle°</label>
+                    <input type="range" min="0" max="360" value="@imagAngle" @oninput="OnImagChange" />
+                    <small>Multiplying by i = rotating 90°. Powers of i cycle: i, -1, -i, 1, ...</small>
+                }
+                else if (activeExperiment.Id == "infinity")
+                {
+                    <label>Step @infinityStep of 7</label>
+                    <div class="step-buttons">
+                        <button class="btn btn-sm btn-outline" disabled="@(infinityStep <= 0)" @onclick="() => InfinityNav(-1)">
+                            <Icon Name="arrow-left" Size="14" /> Back
+                        </button>
+                        <button class="btn btn-sm btn-primary" disabled="@(infinityStep >= 7)" @onclick="() => InfinityNav(1)">
+                            Next <Icon Name="arrow-left" Size="14" Style="transform:rotate(180deg)" />
+                        </button>
+                    </div>
+                    <small>@GetInfinityCaption()</small>
+                }
+                else if (activeExperiment.Id == "fracdim")
+                {
+                    <label>Fractal dimension: @fracDimValue.ToString("F2")</label>
+                    <input type="range" min="0" max="250" value="@fracDimSlider" @oninput="OnFracDimChange" />
+                    <div class="fracdim-examples">
+                        <small>@GetFracDimLabel()</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline" style="margin-top: 8px; width: 100%" @onclick="() => showFracExplain = !showFracExplain">
+                        @(showFracExplain ? "Hide explanation" : "How does fractal dimension work?")
+                    </button>
+                    @if (showFracExplain)
+                    {
+                        <div class="explain-box">
+                            <p><strong>Box-counting dimension:</strong> Cover the shape with boxes of side length r. Count how many boxes N(r) touch the shape. As r shrinks: N(r) ~ r^(-D). D is the fractal dimension.</p>
+                            <p>A line: halve the box size, need 2x more boxes. D = log(2)/log(2) = 1. A filled square: halve box size, need 4x more. D = log(4)/log(2) = 2.</p>
+                            <p>The Koch curve: each iteration replaces 1 segment with 4 segments, each 1/3 the length. D = log(4)/log(3) = 1.26. It's more than a line but less than a plane!</p>
+                        </div>
+                    }
+                }
+                else if (activeExperiment.Id == "contagion")
+                {
+                    <label>Rule: @GetCaRuleName()</label>
+                    <div class="preset-row">
+                        <button class="btn btn-sm @(caRule==0?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(0)">Mod</button>
+                        <button class="btn btn-sm @(caRule==1?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(1)">Prime</button>
+                        <button class="btn btn-sm @(caRule==2?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(2)">Collatz</button>
+                        <button class="btn btn-sm @(caRule==3?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(3)">Fib</button>
+                        <button class="btn btn-sm @(caRule==4?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(4)">Life</button>
+                        <button class="btn btn-sm @(caRule==5?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(5)">Wave</button>
+                        <button class="btn btn-sm @(caRule==6?"btn-primary":"btn-outline")" @onclick="() => SetCaRule(6)">XOR</button>
+                    </div>
+                    <div class="step-buttons">
+                        <button class="btn btn-sm btn-outline" @onclick="ResetCa">Reset</button>
+                        <button class="btn btn-sm btn-primary" @onclick="StepCa">Step</button>
+                        @if (caRunning)
+                        {
+                            <button class="btn btn-sm" style="background:var(--error);color:white" @onclick="StopCa">Stop</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-sm btn-accent" @onclick="AutoRunCa">Run</button>
+                        }
+                    </div>
+                    <div class="ca-settings">
+                        <label>Grid: @caGridSize x @caGridSize</label>
+                        <input type="range" min="11" max="61" step="2" value="@caGridSize" @oninput="OnCaGridSizeChange" />
+                        <label>Speed: @caSpeed steps/sec</label>
+                        <input type="range" min="1" max="10" value="@caSpeed" @oninput="OnCaSpeedChange" />
+                        <div class="ca-toggle-row">
+                            <span>8-neighbor mode</span>
+                            <button class="toggle-btn @(ca8Neighbor ? "on" : "")" @onclick="ToggleCa8">
+                                <span class="toggle-knob"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <small>Gen @caGeneration | @GetCaRuleDescription()</small>
+                }
+                else if (activeExperiment.Id == "terraform")
+                {
+                    <label>Terrain: @GetTerrainName()</label>
+                    <div class="preset-row" style="flex-wrap: wrap">
+                        <button class="btn btn-sm @(terrainFunc==0?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(0)">Hills</button>
+                        <button class="btn btn-sm @(terrainFunc==1?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(1)">Ripple</button>
+                        <button class="btn btn-sm @(terrainFunc==2?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(2)">Peaks</button>
+                        <button class="btn btn-sm @(terrainFunc==3?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(3)">Canyon</button>
+                        <button class="btn btn-sm @(terrainFunc==4?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(4)">Alien</button>
+                        <button class="btn btn-sm @(terrainFunc==5?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(5)">Volcano</button>
+                        <button class="btn btn-sm @(terrainFunc==6?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(6)">Dunes</button>
+                        <button class="btn btn-sm @(terrainFunc==7?"btn-primary":"btn-outline")" @onclick="() => SetTerrain(7)">Fractal</button>
+                    </div>
+                    <label>Height: @terrainAmplitude.ToString("F1")x</label>
+                    <input type="range" min="10" max="150" value="@terrainAmp" @oninput="OnTerrainAmpChange" />
+                    <label>Rotation: @terrainRotation°</label>
+                    <input type="range" min="0" max="90" value="@terrainRotation" @oninput="OnTerrainRotChange" />
+                    <label>Detail: @terrainDensity</label>
+                    <input type="range" min="12" max="40" value="@terrainDensity" @oninput="OnTerrainDensityChange" />
+                }
+                else if (activeExperiment.Id == "axioms")
+                {
+                    <label>Toggle axioms and see the consequences:</label>
+                    <div class="axiom-toggles">
+                        <div class="axiom-row">
+                            <span>Axiom of Choice</span>
+                            <button class="toggle-btn @(axiomChoice ? "on" : "")" @onclick="() => ToggleAxiom(0)"><span class="toggle-knob"></span></button>
+                        </div>
+                        <div class="axiom-row">
+                            <span>Law of Excluded Middle</span>
+                            <button class="toggle-btn @(axiomExcludedMiddle ? "on" : "")" @onclick="() => ToggleAxiom(1)"><span class="toggle-knob"></span></button>
+                        </div>
+                        <div class="axiom-row">
+                            <span>Axiom of Infinity</span>
+                            <button class="toggle-btn @(axiomInfinity ? "on" : "")" @onclick="() => ToggleAxiom(2)"><span class="toggle-knob"></span></button>
+                        </div>
+                    </div>
+                }
+                else if (activeExperiment.Id == "rules")
+                {
+                    <label>Toggle arithmetic rules:</label>
+                    <div class="axiom-toggles">
+                        <div class="axiom-row">
+                            <span>a + b = b + a</span>
+                            <button class="toggle-btn @(ruleCommAdd ? "on" : "")" @onclick="() => ToggleRule(0)"><span class="toggle-knob"></span></button>
+                        </div>
+                        <div class="axiom-row">
+                            <span>a x b = b x a</span>
+                            <button class="toggle-btn @(ruleCommMul ? "on" : "")" @onclick="() => ToggleRule(1)"><span class="toggle-knob"></span></button>
+                        </div>
+                        <div class="axiom-row">
+                            <span>(a+b)+c = a+(b+c)</span>
+                            <button class="toggle-btn @(ruleAssoc ? "on" : "")" @onclick="() => ToggleRule(2)"><span class="toggle-knob"></span></button>
+                        </div>
+                        <div class="axiom-row">
+                            <span>Zero exists (a+0=a)</span>
+                            <button class="toggle-btn @(ruleZeroExists ? "on" : "")" @onclick="() => ToggleRule(3)"><span class="toggle-knob"></span></button>
+                        </div>
+                        <div class="axiom-row">
+                            <span>a(b+c) = ab+ac</span>
+                            <button class="toggle-btn @(ruleDistrib ? "on" : "")" @onclick="() => ToggleRule(4)"><span class="toggle-knob"></span></button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+} @* end else unlocked *@
+
+@code {
+    private bool unlocked;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-playground");
+            StateHasChanged();
+        }
+    }
+
+    private record Experiment(string Id, string Title, string Subtitle, string Description, string Symbol, string Color);
+
+    private List<Experiment> experiments = new()
+    {
+        new("pi", "What If Pi Was Different?", "Reshape circles by changing pi", "Pi defines the ratio of circumference to diameter. But what if it was 4? Or 2? Watch how circles morph into squares, ellipses, and alien shapes.", "π", "rgba(74, 95, 224, 0.15)"),
+        new("gravity", "What If Gravity Changed?", "Launch a ball on different planets", "Throw a ball upward and watch its trajectory change as you dial gravity from Moon-strength to Jupiter-strength to absurd extremes.", "g", "rgba(46, 204, 113, 0.15)"),
+        new("divzero", "What If You Divide By Zero?", "Approach the forbidden operation", "We're told you can't divide by zero. But what happens as you get closer and closer? Watch 1/x as x approaches zero from both sides.", "1/0", "rgba(231, 76, 60, 0.15)"),
+        new("dimension", "What If Space Had More Dimensions?", "Sphere volume in N dimensions", "A unit sphere in 2D has area π. In 3D, volume 4π/3. In higher dimensions? The volume peaks at dimension 5, then shrinks toward zero. Infinity is weird.", "Nᴰ", "rgba(155, 89, 182, 0.15)"),
+        new("base", "What If We Didn't Count In Base 10?", "See numbers in any base", "Humans have 10 fingers, so we use base 10. Computers use base 2. What does counting look like in base 3? Base 7? Base 16?", "0₁₆", "rgba(241, 196, 15, 0.15)"),
+        new("euclid", "What If Parallel Lines Could Meet?", "Bend the geometry of space", "In Euclidean geometry, parallel lines never meet. But on a sphere they do! Dial the curvature from flat to spherical to hyperbolic.", "∦", "rgba(26, 188, 156, 0.15)"),
+        new("expo", "What If Growth Never Stopped?", "Exponential growth visualized", "Start with 1. Multiply by a small number each step. Watch how absurdly fast it grows — and why exponentials dominate everything.", "eˣ", "rgba(230, 126, 34, 0.15)"),
+        new("imaginary", "What If √-1 Existed?", "Visualize complex multiplication", "We invented i = √-1. Multiplying by i rotates a point 90° in the complex plane. Watch numbers spiral through the four quadrants.", "i", "rgba(22, 160, 133, 0.15)"),
+        new("infinity", "What If Infinity Came in Sizes?", "Some infinities are bigger than others", "There are as many even numbers as natural numbers (both infinite!). But Cantor proved there are MORE real numbers than natural numbers. Watch the diagonal argument unfold step by step.", "ℵ", "rgba(52, 152, 219, 0.15)"),
+        new("fracdim", "What If Dimensions Could Be Fractional?", "Shapes between 1D and 2D", "A line is 1D. A plane is 2D. But what about a coastline? A crumpled ball of paper? Fractal dimension measures how 'space-filling' a shape is. Explore objects with dimension 0.63, 1.26, 1.58...", "D?", "rgba(192, 57, 43, 0.15)"),
+        new("contagion", "What If Numbers Were Contagious?", "Cellular automata meets number theory", "Seed a grid with a number. It spreads to neighbors following a rule you choose. Some rules create chaos, some create stunning symmetry, some die out. Tweak the rule and watch math come alive.", "CA", "rgba(211, 84, 0, 0.15)"),
+        new("terraform", "Terraform with Math", "Shape worlds using functions", "Start with flat terrain. Stack mathematical functions to sculpt mountains, valleys, and alien landscapes. Your world is defined by f(x,y). Rotate and explore.", "f()", "rgba(39, 174, 96, 0.15)"),
+        new("axioms", "Vote on Axioms", "Choose your mathematical universe", "Should the Axiom of Choice be true? What about Excluded Middle? Vote on foundational axioms and see what theorems survive -- and what paradoxes appear.", "?!", "rgba(142, 68, 173, 0.15)"),
+        new("rules", "What If Math Had Different Rules?", "Break arithmetic and see what survives", "What if multiplication was commutative but addition wasn't? What if there was no zero? Toggle fundamental rules on and off, and watch algebra reshape itself.", "a+b", "rgba(44, 62, 80, 0.15)")
+    };
+
+    private Experiment? activeExperiment;
+    private bool canvasReady;
+
+    // Pi experiment
+    private int piSlider = 314;
+    private double piValue => piSlider / 100.0;
+
+    // Gravity experiment
+    private int gravitySlider = 98;
+    private double gravityValue => gravitySlider / 10.0;
+
+    // Divide by zero -- exponential slider: 0 = x=1.0, 1000 = x=0.000001
+    private int divZeroSlider = 500;
+    private double divZeroX => Math.Pow(10, -(divZeroSlider / 166.7)); // 0→1.0, 500→0.001, 1000→0.000001
+
+    // Dimensions
+    private int dimensionCount = 3;
+    private bool showDimExplain;
+
+    // Number base
+    private int numberBase = 10;
+
+    // Curvature
+    private int curvatureSlider = 0;
+    private double curvatureValue => (curvatureSlider - 100) / 100.0;
+
+    // Exponential growth
+    private int growthSlider = 150;
+    private double growthRate => growthSlider / 100.0;
+
+    // Imaginary
+    private int imagAngle = 90;
+
+    // Infinity sizes
+    private int infinityStep = 0;
+
+    // Fractal dimension
+    private bool showFracExplain;
+    private int fracDimSlider = 150;
+    private double fracDimValue => fracDimSlider / 100.0;
+
+    // Contagion automata
+    private int caRule = 0;
+    private int caGridSize = 31;
+    private int[,] caGrid = new int[31, 31];
+    private int caGeneration;
+    private bool caRunning;
+    private bool ca8Neighbor;
+    private int caSpeed = 2; // steps per second
+
+    // Terraform
+    private int terrainFunc = 0;
+    private int terrainAmp = 50;
+    private double terrainAmplitude => terrainAmp / 50.0;
+    private int terrainRotation = 30;
+    private int terrainDensity = 28;
+
+    // Axiom voting
+    private bool axiomChoice = true;
+    private bool axiomExcludedMiddle = true;
+    private bool axiomInfinity = true;
+    // Different rules
+    private bool ruleCommAdd = true;
+    private bool ruleCommMul = true;
+    private bool ruleAssoc = true;
+    private bool ruleZeroExists = true;
+    private bool ruleDistrib = true;
+
+    private async Task OpenExperiment(string id)
+    {
+        activeExperiment = experiments.First(e => e.Id == id);
+        canvasReady = false;
+        StateHasChanged();
+        await Task.Delay(50); // let DOM render
+        await JS.InvokeVoidAsync("MathCanvas.init", "playground-canvas", 340, 260);
+        canvasReady = true;
+        if (id == "contagion") { caRunning = false; ResetCaGrid(); }
+        await DrawExperiment();
+    }
+
+    private void CloseExperiment()
+    {
+        activeExperiment = null;
+    }
+
+    private async Task DrawExperiment()
+    {
+        if (!canvasReady || activeExperiment == null) return;
+        await JS.InvokeVoidAsync("MathCanvas.clear", "playground-canvas");
+
+        switch (activeExperiment.Id)
+        {
+            case "pi": await DrawPi(); break;
+            case "gravity": await DrawGravity(); break;
+            case "divzero": await DrawDivZero(); break;
+            case "dimension": await DrawDimension(); break;
+            case "base": await DrawBase(); break;
+            case "euclid": await DrawEuclid(); break;
+            case "expo": await DrawExpo(); break;
+            case "imaginary": await DrawImaginary(); break;
+            case "infinity": await DrawInfinity(); break;
+            case "fracdim": await DrawFracDim(); break;
+            case "contagion": await DrawContagion(); break;
+            case "terraform": await DrawTerraform(); break;
+            case "axioms": await DrawAxioms(); break;
+            case "rules": await DrawRules(); break;
+        }
+    }
+
+    // --- Drawing methods ---
+    private async Task DrawPi()
+    {
+        var cx = 170.0; var cy = 130.0; var r = 80.0;
+        // Draw "circle" with custom pi
+        var points = new double[65][];
+        for (int i = 0; i <= 64; i++)
+        {
+            var t = 2 * piValue * i / 64;
+            // Use superellipse: |x/a|^n + |y/b|^n = 1 where n varies with pi
+            var n = piValue / Math.PI * 2; // n=2 at real pi (circle), n→∞ at pi=large (square)
+            var angle = 2 * Math.PI * i / 64;
+            var cosA = Math.Cos(angle);
+            var sinA = Math.Sin(angle);
+            var rr = r / Math.Pow(Math.Pow(Math.Abs(cosA), n) + Math.Pow(Math.Abs(sinA), n), 1.0 / n);
+            points[i] = new[] { cx + rr * cosA, cy + rr * sinA };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", points, "#4A5FE0", 2.5);
+        // Diameter line
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx - r, cy }, new[] { cx + r, cy } }, "rgba(74,95,224,0.3)", 1.5);
+        // Labels
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"π = {piValue:F2}", 170, 20, "#4A5FE0", 14, "center");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"C = π × d = {piValue * 2 * r:F0}", 170, 245, "#8888AA", 11, "center");
+    }
+
+    private async Task DrawGravity()
+    {
+        var v0 = 20.0;
+        var g = gravityValue;
+        var yMax = v0 * v0 / (2 * g);
+        var tMax = 2 * v0 / g;
+
+        // Fixed scale so you can SEE the difference between planets
+        var refHeight = 200.0; // max canvas height for trajectory
+        var refYMax = v0 * v0 / (2 * 1.0); // max possible height (g=0.1)
+        var scaleY = refHeight / Math.Max(refYMax * 0.12, 1); // scale to show Earth well
+
+        // Ground line
+        var groundY = 240.0;
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { 20.0, groundY }, new[] { 320.0, groundY } }, "rgba(0,0,0,0.2)", 1);
+
+        // Draw ghost trajectories for reference planets
+        var refs = new[] { (1.6, "Moon", "rgba(200,200,200,0.4)"), (9.8, "Earth", "rgba(100,100,100,0.3)"), (24.8, "Jupiter", "rgba(150,150,150,0.3)") };
+        foreach (var (refG, name, color) in refs)
+        {
+            if (Math.Abs(refG - g) < 0.5) continue; // skip if close to current
+            var refPeak = v0 * v0 / (2 * refG);
+            var h = Math.Min(refPeak * scaleY, refHeight);
+            // Simple arc
+            var arc = new double[20][];
+            for (int i = 0; i < 20; i++)
+            {
+                var t = (double)i / 19;
+                arc[i] = new[] { 40 + t * 260, groundY - h * 4 * t * (1 - t) };
+            }
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", arc, color, 1.5);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                name, 170, groundY - h + 2, color.Replace("0.3", "0.5").Replace("0.4", "0.6"), 9, "center");
+        }
+
+        // Draw current trajectory (bright)
+        var curPeak = Math.Min(yMax * scaleY, refHeight);
+        var pts = new double[40][];
+        for (int i = 0; i < 40; i++)
+        {
+            var t = (double)i / 39;
+            pts[i] = new[] { 40 + t * 260, groundY - curPeak * 4 * t * (1 - t) };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#2ECC71", 3);
+
+        // Ball at peak
+        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", 170, groundY - curPeak, 8, "#E74C3C", null);
+
+        // Height markers
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { 15.0, groundY }, new[] { 15.0, groundY - curPeak } }, "rgba(46,204,113,0.4)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"{yMax:F1}m", 15, groundY - curPeak / 2, "#2ECC71", 10, "center");
+
+        // Labels
+        var planetName = g < 2 ? "Moon-like" : g < 5 ? "Mars-like" : g < 12 ? "Earth-like" : g < 20 ? "Heavy" : "Crushing";
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"g = {g:F1} m/s² ({planetName})  |  Peak: {yMax:F1}m  |  Time: {tMax:F1}s", 170, 16, "#2ECC71", 11, "center");
+    }
+
+    private async Task DrawDivZero()
+    {
+        var cx = 170.0; var cy = 130.0;
+        var curY = 1.0 / divZeroX;
+
+        // Dynamic zoom: scale adjusts to keep the current point visible
+        var yRange = Math.Max(curY * 1.5, 5); // always show at least 5, but zoom to fit
+        var xRange = Math.Max(divZeroX * 3, 0.5);
+        var scaleX = 140.0 / xRange;
+        var scaleY = 110.0 / yRange;
+
+        // Axes
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { 20.0, cy }, new[] { 320.0, cy } }, "rgba(0,0,0,0.15)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx, 10.0 }, new[] { cx, 250.0 } }, "rgba(0,0,0,0.15)", 1);
+
+        // Y-axis labels
+        for (int i = 1; i <= 4; i++)
+        {
+            var labelVal = yRange * i / 4;
+            var labelY = cy - (labelVal / yRange) * 110;
+            if (labelY > 15)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    labelVal >= 1000 ? $"{labelVal:E0}" : $"{labelVal:F0}", cx - 8, labelY + 3, "rgba(0,0,0,0.25)", 8, "right");
+        }
+
+        // Draw 1/x curve -- positive side
+        var pos = new List<double[]>();
+        var step = xRange / 200;
+        for (double x = step; x <= xRange * 2; x += step)
+        {
+            var y = 1.0 / x;
+            var py = cy - y * scaleY;
+            if (py > 10 && py < 250) pos.Add(new[] { cx + x * scaleX, py });
+        }
+        if (pos.Count > 1)
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pos.ToArray(), "#4A5FE0", 2);
+
+        // Negative side
+        var neg = new List<double[]>();
+        for (double x = -xRange * 2; x <= -step; x += step)
+        {
+            var y = 1.0 / x;
+            var py = cy - y * scaleY;
+            if (py > 10 && py < 250) neg.Add(new[] { cx + x * scaleX, py });
+        }
+        if (neg.Count > 1)
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", neg.ToArray(), "#E74C3C", 2);
+
+        // Vertical asymptote hint
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx, 10.0 }, new[] { cx, 250.0 } }, "rgba(231,76,60,0.2)", 1);
+
+        // Current point with crosshair
+        var ptX = cx + divZeroX * scaleX;
+        var ptY = cy - Math.Min(curY, yRange) * scaleY;
+        ptY = Math.Max(ptY, 15);
+        // Dashed crosshair lines
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { ptX, cy }, new[] { ptX, ptY } }, "rgba(243,156,18,0.4)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx, ptY }, new[] { ptX, ptY } }, "rgba(243,156,18,0.4)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", ptX, ptY, 7, "#F39C12", null);
+
+        // Header
+        var xStr = divZeroX < 0.001 ? divZeroX.ToString("E2") : divZeroX.ToString("F4");
+        var yStr = curY > 1e6 ? curY.ToString("E2") : curY.ToString("N0");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"1 / {xStr} = {yStr}", 170, 16, "#F39C12", 13, "center");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            "Infinity isn't a number — it's a direction", 170, 252, "#8888AA", 9, "center");
+    }
+
+    private async Task DrawDimension()
+    {
+        var maxDim = Math.Max(dimensionCount, 10);
+        var barW = 300.0 / maxDim;
+        double maxV = 0;
+        var volumes = new double[maxDim];
+        for (int n = 1; n <= maxDim; n++)
+        {
+            var halfN = n / 2.0;
+            volumes[n - 1] = Math.Pow(Math.PI, halfN) / Gamma(halfN + 1);
+            if (volumes[n - 1] > maxV) maxV = volumes[n - 1];
+        }
+        // Peak dimension label
+        var peakDim = Array.IndexOf(volumes, maxV) + 1;
+
+        for (int n = 1; n <= maxDim; n++)
+        {
+            var h = Math.Max(volumes[n - 1] / maxV * 175, 1);
+            var x = 20 + (n - 1) * barW;
+            var isSelected = n == dimensionCount;
+            var isPeak = n == peakDim;
+            var color = isSelected ? "#9B59B6" : isPeak ? "rgba(155,89,182,0.5)" : "rgba(155,89,182,0.2)";
+            var border = isSelected ? "#7D3C98" : "rgba(155,89,182,0.25)";
+            await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
+                x + 2, 225 - h, barW - 4, h, color, border);
+            // Only label every dimension if room, or selected/peak
+            if (barW > 20 || isSelected || isPeak || n == 1 || n == maxDim)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    $"{n}", x + barW / 2, 242, isSelected ? "#9B59B6" : "#888", 9, "center");
+        }
+
+        // Volume value on top of selected bar
+        var selVol = volumes[dimensionCount - 1];
+        var selX = 20 + (dimensionCount - 1) * barW + barW / 2;
+        var selH = Math.Max(selVol / maxV * 175, 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            selVol < 0.001 ? selVol.ToString("E1") : selVol.ToString("F3"),
+            selX, 225 - selH - 6, "#9B59B6", 9, "center");
+
+        // Percentage of bounding cube
+        var cubeFraction = selVol / Math.Pow(2, dimensionCount) * 100;
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"{dimensionCount}D: V = {(selVol < 0.001 ? selVol.ToString("E2") : selVol.ToString("F4"))}  ({cubeFraction:F1}% of bounding cube)",
+            170, 16, "#9B59B6", 11, "center");
+    }
+
+    private static double Gamma(double z)
+    {
+        if (z < 0.5) return Math.PI / (Math.Sin(Math.PI * z) * Gamma(1 - z));
+        z -= 1;
+        double[] g = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7 };
+        double x = g[0];
+        for (int i = 1; i < 9; i++) x += g[i] / (z + i);
+        double t = z + 7.5;
+        return Math.Sqrt(2 * Math.PI) * Math.Pow(t, z + 0.5) * Math.Exp(-t) * x;
+    }
+
+    private async Task DrawBase()
+    {
+        // Show numbers 0-20 in current base
+        var y = 35.0;
+        for (int n = 0; n <= 20; n++)
+        {
+            var col = n % 3;
+            var row = n / 3;
+            var x = 30 + col * 110.0;
+            var yPos = y + row * 28;
+            var rep = ConvertToBase(n, numberBase);
+            var color = n < numberBase ? "#2ECC71" : "#4A5FE0";
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                $"{n}₁₀ = {rep}", x, yPos, color, 12, "left");
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"Base {numberBase}: digits 0-{(numberBase > 10 ? (char)('A' + numberBase - 11) : (char)('0' + numberBase - 1))}",
+            170, 16, "#F1C40F", 13, "center");
+    }
+
+    private static string ConvertToBase(int n, int b)
+    {
+        if (n == 0) return "0";
+        var digits = "0123456789ABCDEF";
+        var result = "";
+        while (n > 0) { result = digits[n % b] + result; n /= b; }
+        return result;
+    }
+
+    private async Task DrawEuclid()
+    {
+        var cx = 170.0; var cy = 130.0;
+        var k = curvatureValue; // -1 to 1
+        if (Math.Abs(k) < 0.05)
+        {
+            // Flat: parallel lines
+            for (int i = -2; i <= 2; i++)
+            {
+                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                    new[] { new[] { 20.0, cy + i * 30 }, new[] { 320.0, cy + i * 30 } }, "#1ABC9C", 2);
+            }
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Euclidean: parallel lines never meet", 170, 20, "#1ABC9C", 12, "center");
+        }
+        else if (k > 0)
+        {
+            // Spherical: lines converge
+            var r = 120.0 / k;
+            for (int i = -2; i <= 2; i++)
+            {
+                var pts = new double[33][];
+                for (int j = 0; j <= 32; j++)
+                {
+                    var t = -1.0 + 2.0 * j / 32;
+                    var xp = cx + t * 150;
+                    var yp = cy + i * 30 - k * t * t * 80;
+                    pts[j] = new[] { xp, yp };
+                }
+                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#1ABC9C", 2);
+            }
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                $"Spherical (K={k:F2}): lines converge and meet!", 170, 20, "#1ABC9C", 11, "center");
+        }
+        else
+        {
+            // Hyperbolic: lines diverge
+            for (int i = -2; i <= 2; i++)
+            {
+                var pts = new double[33][];
+                for (int j = 0; j <= 32; j++)
+                {
+                    var t = -1.0 + 2.0 * j / 32;
+                    var xp = cx + t * 150;
+                    var yp = cy + i * 30 + Math.Abs(k) * t * t * 80;
+                    pts[j] = new[] { xp, yp };
+                }
+                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#1ABC9C", 2);
+            }
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                $"Hyperbolic (K={k:F2}): lines spread apart!", 170, 20, "#1ABC9C", 11, "center");
+        }
+    }
+
+    private async Task DrawExpo()
+    {
+        var r = growthRate;
+        var steps = 30;
+        var values = new double[steps];
+        values[0] = 1;
+        for (int i = 1; i < steps; i++) values[i] = values[i - 1] * r;
+
+        // Always linear scale -- let the curve rocket off the top
+        // Clamp the visible Y range to show the dramatic takeoff
+        var groundY = 235.0;
+        var topY = 25.0;
+        var chartH = groundY - topY;
+
+        // Find the step where the value first exceeds the visible area
+        // Show the first ~80% of the chart as "linear growth that looks flat"
+        // then the last part shoots up dramatically
+        var maxVisible = values[steps - 1];
+        var midIdx = steps - 1;
+
+        // Use the value at 70% of the way through as the "visible max"
+        // This makes early steps look flat and the end shoots up
+        var visibleMax = Math.Max(values[(int)(steps * 0.65)], 2);
+
+        // Draw the "expected" linear growth for comparison (dashed)
+        var linearEnd = 1 + (r - 1) * (steps - 1); // linear growth same rate
+        var linPts = new double[steps][];
+        for (int i = 0; i < steps; i++)
+        {
+            var x = 30 + i * 280.0 / (steps - 1);
+            var linVal = 1 + (r - 1) * i;
+            var y = groundY - (linVal / visibleMax) * chartH;
+            linPts[i] = new[] { x, Math.Max(y, topY - 5) };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", linPts, "rgba(150,150,150,0.3)", 1.5);
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            "linear", 310, linPts[steps - 1][1] - 4, "rgba(150,150,150,0.5)", 8, "right");
+
+        // Draw exponential curve
+        var pts = new double[steps][];
+        var wentOffScreen = false;
+        for (int i = 0; i < steps; i++)
+        {
+            var x = 30 + i * 280.0 / (steps - 1);
+            var y = groundY - (values[i] / visibleMax) * chartH;
+            if (y < topY - 5) { y = topY - 5; wentOffScreen = true; }
+            pts[i] = new[] { x, y };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#E67E22", 2.5);
+
+        // Starting point
+        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", 30, pts[0][1], 5, "#E67E22", null);
+
+        // Ground line
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { 30.0, groundY }, new[] { 310.0, groundY } }, "rgba(0,0,0,0.15)", 1);
+
+        // "Off the chart!" indicator
+        if (wentOffScreen)
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "OFF THE CHART!", 260, topY + 12, "rgba(231,76,60,0.7)", 10, "center");
+        }
+
+        // Header with value
+        var finalStr = values[steps - 1] > 1e15 ? values[steps - 1].ToString("E1") : values[steps - 1].ToString("N0");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"{r:F2}x per step. After 30: {finalStr}", 170, 14, "#E67E22", 11, "center");
+    }
+
+    private async Task DrawImaginary()
+    {
+        var cx = 170.0; var cy = 130.0; var r = 90.0;
+        // Unit circle
+        var circle = new double[33][];
+        for (int i = 0; i <= 32; i++)
+        {
+            var a = 2 * Math.PI * i / 32;
+            circle[i] = new[] { cx + r * Math.Cos(a), cy - r * Math.Sin(a) };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", circle, "rgba(22,160,133,0.2)", 1.5);
+        // Axes
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx - r - 20, cy }, new[] { cx + r + 20, cy } }, "rgba(0,0,0,0.15)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx, cy - r - 20 }, new[] { cx, cy + r + 20 } }, "rgba(0,0,0,0.15)", 1);
+        // Labels
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "1", cx + r + 8, cy + 4, "#888", 10, "left");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "i", cx + 4, cy - r - 8, "#888", 10, "left");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "-1", cx - r - 14, cy + 4, "#888", 10, "right");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "-i", cx + 4, cy + r + 14, "#888", 10, "left");
+        // Current point
+        var rad = imagAngle * Math.PI / 180;
+        var px = cx + r * Math.Cos(rad);
+        var py = cy - r * Math.Sin(rad);
+        // Line from origin
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx, cy }, new[] { px, py } }, "#16A085", 2);
+        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", px, py, 7, "#16A085", null);
+        // Arc
+        var arc = new List<double[]>();
+        var arcSteps = Math.Max(1, imagAngle / 5);
+        for (int i = 0; i <= arcSteps; i++)
+        {
+            var a = rad * i / arcSteps;
+            arc.Add(new[] { cx + 25 * Math.Cos(a), cy - 25 * Math.Sin(a) });
+        }
+        if (arc.Count > 1)
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", arc.ToArray(), "#F39C12", 1.5);
+        // Value text
+        var re = Math.Cos(rad);
+        var im = Math.Sin(rad);
+        var label = $"e^(i·{imagAngle}°) = {re:F2} + {im:F2}i";
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", label, 170, 16, "#16A085", 12, "center");
+    }
+
+    // --- Infinity drawing ---
+    private async Task DrawInfinity()
+    {
+        var cx = 170.0;
+        var step = infinityStep;
+
+        if (step == 0)
+        {
+            // Title card
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Are all infinities the same size?", cx, 60, "#3498DB", 14, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Tap Next to find out...", cx, 100, "#8888AA", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "1, 2, 3, 4, 5, 6, 7, 8, ...", cx, 160, "#3498DB", 16, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "How many natural numbers? Infinite.", cx, 200, "#8888AA", 11, "center");
+        }
+        else if (step == 1)
+        {
+            // Evens = Naturals
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "Natural numbers:", cx, 30, "#888", 11, "center");
+            for (int i = 1; i <= 8; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", $"{i}", 20 + i * 36, 55, "#3498DB", 14, "center");
+            // Arrows
+            for (int i = 1; i <= 8; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                    new[] { new[] { 20 + i * 36.0, 65.0 }, new[] { 20 + i * 36.0, 90.0 } }, "rgba(52,152,219,0.4)", 1.5);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "Even numbers:", cx, 105, "#888", 11, "center");
+            for (int i = 1; i <= 8; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", $"{i * 2}", 20 + i * 36, 130, "#E74C3C", 14, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Every natural maps to exactly one even. 1:1 pairing!", cx, 170, "#2ECC71", 11, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Same size infinity! (both are \u2135\u2080)", cx, 200, "#3498DB", 13, "center");
+        }
+        else if (step == 2)
+        {
+            // Rationals = Naturals (Cantor zigzag)
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "Rationals = Naturals (Cantor's zigzag)", cx, 25, "#3498DB", 12, "center");
+            // Draw a grid of fractions
+            var gx = 40.0; var gy = 50.0; var sp = 40.0;
+            string[] nums = { "1/1", "1/2", "1/3", "1/4", "2/1", "2/2", "2/3", "2/4", "3/1", "3/2", "3/3", "3/4", "4/1", "4/2", "4/3", "4/4" };
+            for (int r = 0; r < 4; r++)
+                for (int c = 0; c < 4; c++)
+                    await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                        nums[r * 4 + c], gx + c * sp + 50, gy + r * sp, "#888", 11, "center");
+            // Zigzag path
+            double[][] zigzag = { new[]{90.0,50.0}, new[]{130.0,50.0}, new[]{90.0,90.0}, new[]{90.0,130.0}, new[]{130.0,90.0}, new[]{170.0,50.0}, new[]{210.0,50.0}, new[]{170.0,90.0}, new[]{130.0,130.0}, new[]{90.0,170.0} };
+            for (int i = 0; i < zigzag.Length - 1; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                    new[] { zigzag[i], zigzag[i + 1] }, "rgba(231,76,60,0.6)", 2);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Zigzag lists ALL rationals! Still \u2135\u2080.", cx, 240, "#E74C3C", 11, "center");
+        }
+        else if (step == 3)
+        {
+            // But reals are BIGGER - setup
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "But what about the REAL numbers?", cx, 40, "#3498DB", 14, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Suppose we COULD list all reals between 0 and 1:", cx, 80, "#888", 11, "center");
+            string[] rows = { "1 \u2192 0.5 2 8 4 7 1 ...", "2 \u2192 0.1 4 1 5 9 2 ...", "3 \u2192 0.7 3 2 0 5 8 ...", "4 \u2192 0.9 9 9 1 0 3 ...", "5 \u2192 0.3 1 4 1 5 9 ..." };
+            for (int i = 0; i < 5; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    rows[i], cx, 115 + i * 24, i < 5 ? "#4A5FE0" : "#888", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Can we pair every real with a natural?", cx, 240, "#888", 11, "center");
+        }
+        else if (step == 4)
+        {
+            // Diagonal argument
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Cantor's Diagonal Argument", cx, 25, "#E74C3C", 14, "center");
+            string[] digits = { "0.[5]2 8 4 7 1", "0. 1[4]1 5 9 2", "0. 7 3[2]0 5 8", "0. 9 9 9[1]0 3", "0. 3 1 4 1[5]9" };
+            for (int i = 0; i < 5; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    digits[i], cx, 60 + i * 26, "#4A5FE0", 13, "center");
+            // Highlight diagonal
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Take diagonal: 5, 4, 2, 1, 5", cx, 200, "#E74C3C", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Change each digit: 6, 5, 3, 2, 6", cx, 222, "#2ECC71", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "New number: 0.65326... is NOT on the list!", cx, 248, "#F39C12", 11, "center");
+        }
+        else if (step == 5)
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "The new number differs from:", cx, 30, "#E74C3C", 13, "center");
+            string[] reasons = { "Row 1 in the 1st decimal place", "Row 2 in the 2nd decimal place", "Row 3 in the 3rd decimal place", "Row N in the Nth decimal place", "...so it's not in ANY row!" };
+            for (int i = 0; i < 5; i++)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    reasons[i], cx, 70 + i * 30, i < 4 ? "#4A5FE0" : "#E74C3C", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "No matter how you list the reals,", cx, 200, "#888", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "you ALWAYS miss some. The reals are UNCOUNTABLE.", cx, 225, "#E74C3C", 12, "center");
+        }
+        else if (step == 6)
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "The hierarchy of infinities:", cx, 30, "#3498DB", 14, "center");
+            string[] levels = {
+                "\u2135\u2080 = Naturals = Integers = Rationals",
+                "\u2135\u2081 = Reals = 2^(\u2135\u2080)  (Cantor)",
+                "\u2135\u2082 = Set of all sets of reals = 2^(\u2135\u2081)",
+                "\u2135\u2083 = 2^(\u2135\u2082)",
+                "... it never ends!"
+            };
+            for (int i = 0; i < 5; i++)
+            {
+                var color = i == 0 ? "#2ECC71" : i == 1 ? "#E74C3C" : i < 4 ? "#9B59B6" : "#F39C12";
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    levels[i], cx, 70 + i * 35, color, 12, "center");
+            }
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "There are infinitely many sizes of infinity.", cx, 245, "#3498DB", 11, "center");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "The Continuum Hypothesis", cx, 40, "#9B59B6", 14, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Is there an infinity BETWEEN \u2135\u2080 and \u2135\u2081?", cx, 80, "#888", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "G\u00f6del (1940): You can't DISPROVE it.", cx, 120, "#4A5FE0", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Cohen (1963): You can't PROVE it either.", cx, 150, "#E74C3C", 12, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "It's INDEPENDENT of standard math axioms.", cx, 190, "#F39C12", 13, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Some questions have no answer. And that's a theorem.", cx, 230, "#888", 11, "center");
+        }
+    }
+
+    private async Task InfinityNav(int dir)
+    {
+        infinityStep = Math.Clamp(infinityStep + dir, 0, 7);
+        await DrawExperiment();
+    }
+
+    private string GetInfinityCaption() => infinityStep switch
+    {
+        0 => "How many natural numbers are there?",
+        1 => "Even numbers are infinite too. But are they the SAME infinity?",
+        2 => "Cantor's zigzag proves rationals are countable",
+        3 => "Now try to list all real numbers between 0 and 1...",
+        4 => "The diagonal argument: construct a number NOT on the list",
+        5 => "The constructed number can't be anywhere on the list!",
+        6 => "Infinities form an endless tower of increasing sizes",
+        7 => "Some questions are literally unanswerable",
+        _ => ""
+    };
+
+    // --- Fractal dimension drawing ---
+    private async Task DrawFracDim()
+    {
+        var d = fracDimValue;
+        var cx = 170.0; var cy = 120.0;
+
+        // Draw a number line of dimension values
+        var lineY = 235.0;
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { 30.0, lineY }, new[] { 310.0, lineY } }, "rgba(0,0,0,0.2)", 1.5);
+
+        // Markers
+        double[] markers = { 0, 0.63, 1.0, 1.26, 1.58, 1.89, 2.0, 2.5 };
+        string[] labels = { "0", "Cantor", "Line", "Koch", "Sierp.", "Coast", "Plane", "" };
+        for (int i = 0; i < markers.Length; i++)
+        {
+            var mx = 30 + markers[i] / 2.5 * 280;
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                new[] { new[] { mx, lineY - 4 }, new[] { mx, lineY + 4 } }, "rgba(0,0,0,0.3)", 1);
+            if (labels[i].Length > 0)
+                await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                    labels[i], mx, lineY + 16, "#888", 8, "center");
+        }
+
+        // Current position indicator
+        var curX = 30 + d / 2.5 * 280;
+        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", curX, lineY, 8, "#C0392B", null);
+
+        // Draw the appropriate shape
+        if (d < 0.3)
+        {
+            // Point (D=0)
+            await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", cx, cy, 6, "#C0392B", null);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "A point: dimension 0", cx, cy + 30, "#888", 11, "center");
+        }
+        else if (d < 0.8)
+        {
+            // Cantor set (D≈0.63): draw segments getting smaller
+            await DrawCantorSet(30, 310, cy - 10, cy + 10, 5);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Cantor set: remove middle thirds forever", cx, 30, "#888", 10, "center");
+        }
+        else if (d < 1.15)
+        {
+            // Line (D=1)
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                new[] { new[] { 50.0, cy }, new[] { 290.0, cy } }, "#C0392B", 3);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "A line: dimension 1", cx, cy + 30, "#888", 11, "center");
+        }
+        else if (d < 1.45)
+        {
+            // Koch-like curve (D≈1.26)
+            await DrawKochLine(50, cy + 30, 290, cy + 30, 4);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Koch curve: D = log4/log3 \u2248 1.26", cx, 30, "#888", 10, "center");
+        }
+        else if (d < 1.75)
+        {
+            // Sierpinski-like (D≈1.58)
+            await DrawSierpinskiSmall(cx, cy - 50, 100, 4);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                "Sierpinski triangle: D = log3/log2 \u2248 1.58", cx, 30, "#888", 10, "center");
+        }
+        else if (d < 2.05)
+        {
+            // Approaching plane (D→2): fill with dots
+            var density = (int)((d - 1.75) / 0.3 * 300) + 50;
+            var rng = new Random(42);
+            for (int i = 0; i < density; i++)
+            {
+                var px = 50 + rng.NextDouble() * 240;
+                var py = 40 + rng.NextDouble() * 170;
+                await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", px, py, 2, "rgba(192,57,43,0.5)", null);
+            }
+            if (d >= 1.95)
+            {
+                await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas", 50, 40, 240, 170, "rgba(192,57,43,0.15)", "rgba(192,57,43,0.3)");
+            }
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                d >= 1.95 ? "A filled plane: dimension 2" : $"Space-filling: D \u2248 {d:F2}", cx, 30, "#888", 10, "center");
+        }
+        else
+        {
+            // Beyond 2D (D>2): cubes
+            await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas", 80, 40, 120, 120, "rgba(192,57,43,0.2)", "#C0392B");
+            await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
+                new[] { new[] { 80.0, 40.0 }, new[] { 110.0, 20.0 }, new[] { 230.0, 20.0 }, new[] { 200.0, 40.0 } },
+                "rgba(192,57,43,0.15)", "rgba(192,57,43,0.6)", 1.5);
+            await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
+                new[] { new[] { 200.0, 40.0 }, new[] { 230.0, 20.0 }, new[] { 230.0, 140.0 }, new[] { 200.0, 160.0 } },
+                "rgba(192,57,43,0.1)", "rgba(192,57,43,0.4)", 1.5);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                $"D = {d:F2}: beyond a plane, into volume", cx, 200, "#888", 10, "center");
+        }
+
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"Dimension = {d:F2}", cx, 16, "#C0392B", 13, "center");
+    }
+
+    private async Task DrawCantorSet(double left, double right, double y1, double y2, int depth)
+    {
+        if (depth == 0 || right - left < 2)
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
+                left, y1, right - left, y2 - y1, "rgba(192,57,43,0.6)", null);
+            return;
+        }
+        var third = (right - left) / 3;
+        await DrawCantorSet(left, left + third, y1, y2, depth - 1);
+        await DrawCantorSet(right - third, right, y1, y2, depth - 1);
+    }
+
+    private async Task DrawKochLine(double x1, double y1, double x2, double y2, int depth)
+    {
+        if (depth == 0)
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                new[] { new[] { x1, y1 }, new[] { x2, y2 } }, "#C0392B", 1.5);
+            return;
+        }
+        var dx = x2 - x1; var dy = y2 - y1;
+        var ax = x1 + dx / 3; var ay = y1 + dy / 3;
+        var bx = x1 + 2 * dx / 3; var by = y1 + 2 * dy / 3;
+        var px = (x1 + x2) / 2 - dy * Math.Sqrt(3) / 6;
+        var py = (y1 + y2) / 2 + dx * Math.Sqrt(3) / 6;
+        await DrawKochLine(x1, y1, ax, ay, depth - 1);
+        await DrawKochLine(ax, ay, px, py, depth - 1);
+        await DrawKochLine(px, py, bx, by, depth - 1);
+        await DrawKochLine(bx, by, x2, y2, depth - 1);
+    }
+
+    private async Task DrawSierpinskiSmall(double cx, double cy, double size, int depth)
+    {
+        if (depth == 0)
+        {
+            var h = size * Math.Sqrt(3) / 2;
+            await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
+                new[] { new[] { cx, cy }, new[] { cx - size / 2, cy + h }, new[] { cx + size / 2, cy + h } },
+                "rgba(192,57,43,0.4)", "rgba(192,57,43,0.6)", 1);
+            return;
+        }
+        var half = size / 2;
+        var hh = half * Math.Sqrt(3) / 2;
+        await DrawSierpinskiSmall(cx, cy, half, depth - 1);
+        await DrawSierpinskiSmall(cx - half / 2, cy + hh, half, depth - 1);
+        await DrawSierpinskiSmall(cx + half / 2, cy + hh, half, depth - 1);
+    }
+
+    private string GetFracDimLabel()
+    {
+        var d = fracDimValue;
+        if (d < 0.3) return "D = 0: a point. No length, no area. Just... there.";
+        if (d < 0.8) return "D \u2248 0.63: Cantor set. More than a point, less than a line. Infinitely many pieces, zero total length.";
+        if (d < 1.15) return "D = 1: a line. Has length but no area.";
+        if (d < 1.45) return "D \u2248 1.26: Koch curve. Infinite length crammed into finite space. A line trying to become a plane.";
+        if (d < 1.75) return "D \u2248 1.58: Sierpinski triangle. More than a curve but less than a surface.";
+        if (d < 1.95) return "D \u2248 1.9: almost a plane. Like a coastline -- the more you zoom in, the more detail appears.";
+        if (d < 2.05) return "D = 2: a filled region. Has area.";
+        return "D > 2: beyond flat. A space-filling sponge, crumpled 3D structure.";
+    }
+
+    // --- Contagion automata ---
+    private async Task DrawContagion()
+    {
+        var sz = caGridSize;
+        var canvasW = 310.0;
+        var canvasH = 230.0;
+        var cellW = Math.Min(canvasW / sz, canvasH / sz);
+        var ox = (340 - sz * cellW) / 2;
+        var oy = 28.0;
+
+        // Batch draw using rectangles
+        for (int y = 0; y < sz; y++)
+        {
+            for (int x = 0; x < sz; x++)
+            {
+                var val = caGrid[x, y];
+                if (val == 0)
+                {
+                    await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
+                        ox + x * cellW, oy + y * cellW, cellW - 0.5, cellW - 0.5, "rgba(0,0,0,0.04)", null);
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
+                        ox + x * cellW, oy + y * cellW, cellW - 0.5, cellW - 0.5, GetCaColor(val), null);
+                }
+            }
+        }
+        var alive = 0;
+        for (int y = 0; y < sz; y++)
+            for (int x = 0; x < sz; x++)
+                if (caGrid[x, y] > 0) alive++;
+
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"Gen {caGeneration} | {alive} alive | {GetCaRuleName()}", 170, 16, "#D35400", 10, "center");
+    }
+
+    private string GetCaColor(int val)
+    {
+        if (caRule == 4) return val > 0 ? "#F39C12" : "rgba(0,0,0,0.04)"; // Life: binary
+        var hue = (val * 37) % 360;
+        return $"hsl({hue}, 75%, 50%)";
+    }
+
+    private string GetCaRuleName() => caRule switch
+    {
+        0 => "Modular", 1 => "Prime Spread", 2 => "Collatz", 3 => "Fibonacci",
+        4 => "Game of Life", 5 => "Wave", 6 => "XOR", _ => "?"
+    };
+
+    private string GetCaRuleDescription() => caRule switch
+    {
+        0 => "Sum of neighbors mod 10. Kaleidoscopic patterns.",
+        1 => "Spread only when sum is prime. Selective growth.",
+        2 => "Collatz rule (even: n/2, odd: 3n+1) + spread.",
+        3 => "Sum of neighbors mod 10, Fibonacci-like cascades.",
+        4 => "Conway's Game of Life. Birth=3, Survive=2-3.",
+        5 => "Wave propagation. Values ripple outward and fade.",
+        6 => "XOR of all neighbors. Creates fractal-like patterns.",
+        _ => ""
+    };
+
+    private async Task SetCaRule(int rule)
+    {
+        caRunning = false;
+        caRule = rule;
+        ResetCaGrid();
+        await DrawExperiment();
+    }
+
+    private void ResetCaGrid()
+    {
+        var sz = caGridSize;
+        caGrid = new int[sz, sz];
+        var mid = sz / 2;
+        if (caRule == 4) // Game of Life: glider + block
+        {
+            caGrid[mid, mid] = 1; caGrid[mid + 1, mid] = 1; caGrid[mid - 1, mid] = 1;
+            caGrid[mid - 1, mid - 1] = 1; caGrid[mid, mid - 2] = 1; // glider
+            caGrid[mid + 3, mid + 3] = 1; caGrid[mid + 4, mid + 3] = 1;
+            caGrid[mid + 3, mid + 4] = 1; caGrid[mid + 4, mid + 4] = 1; // block
+        }
+        else
+        {
+            caGrid[mid, mid] = 1;
+        }
+        caGeneration = 0;
+    }
+
+    private async Task ResetCa()
+    {
+        caRunning = false;
+        ResetCaGrid();
+        await DrawExperiment();
+    }
+
+    private async Task StepCa()
+    {
+        var sz = caGridSize;
+        var next = new int[sz, sz];
+        var rng = new Random(caGeneration * 7 + caRule);
+
+        int[] dx4 = { -1, 0, 1, 0 }; int[] dy4 = { 0, -1, 0, 1 };
+        int[] dx8 = { -1, 0, 1, -1, 1, -1, 0, 1 }; int[] dy8 = { -1, -1, -1, 0, 0, 1, 1, 1 };
+        var dxArr = (ca8Neighbor || caRule == 4) ? dx8 : dx4;
+        var dyArr = (ca8Neighbor || caRule == 4) ? dy8 : dy4;
+        var neighbors = dxArr.Length;
+
+        for (int y = 0; y < sz; y++)
+        {
+            for (int x = 0; x < sz; x++)
+            {
+                int sum = 0; int count = 0;
+                for (int d = 0; d < neighbors; d++)
+                {
+                    var nx = (x + dxArr[d] + sz) % sz; // wrap around
+                    var ny = (y + dyArr[d] + sz) % sz;
+                    sum += caGrid[nx, ny];
+                    if (caGrid[nx, ny] > 0) count++;
+                }
+
+                switch (caRule)
+                {
+                    case 0: // Modular
+                        next[x, y] = (caGrid[x, y] + sum) % 10;
+                        break;
+                    case 1: // Prime spread
+                        var s = caGrid[x, y] + sum;
+                        next[x, y] = IsPrimeSmall(s) ? s % 10 : (caGrid[x, y] > 0 ? caGrid[x, y] : 0);
+                        break;
+                    case 2: // Collatz
+                        var v = caGrid[x, y];
+                        if (v > 0) next[x, y] = v % 2 == 0 ? Math.Max(v / 2, 1) : (3 * v + 1) % 20;
+                        else if (count > 0) next[x, y] = sum / Math.Max(count, 1) % 10;
+                        break;
+                    case 3: // Fibonacci
+                        if (count >= 2) next[x, y] = sum % 10;
+                        else if (caGrid[x, y] > 0) next[x, y] = caGrid[x, y];
+                        else if (count == 1) next[x, y] = (sum + rng.Next(1, 4)) % 10;
+                        break;
+                    case 4: // Game of Life
+                        var alive = count;
+                        if (caGrid[x, y] > 0)
+                            next[x, y] = (alive == 2 || alive == 3) ? 1 : 0;
+                        else
+                            next[x, y] = alive == 3 ? 1 : 0;
+                        break;
+                    case 5: // Wave
+                        if (caGrid[x, y] > 0)
+                            next[x, y] = Math.Max(caGrid[x, y] - 1, 0); // fade
+                        else if (count > 0 && sum > 3)
+                            next[x, y] = 9; // propagate
+                        break;
+                    case 6: // XOR
+                        next[x, y] = sum % 2 == 1 ? ((caGrid[x, y] + 1) % 10) : 0;
+                        break;
+                }
+                if (next[x, y] < 0) next[x, y] = 0;
+            }
+        }
+        caGrid = next;
+        caGeneration++;
+        await DrawExperiment();
+    }
+
+    private async Task AutoRunCa()
+    {
+        caRunning = true;
+        StateHasChanged();
+        while (caRunning)
+        {
+            await StepCa();
+            await Task.Delay(1000 / Math.Max(caSpeed, 1));
+        }
+    }
+
+    private void StopCa() { caRunning = false; }
+
+    private async Task OnCaGridSizeChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v) && v >= 11 && v <= 61)
+        {
+            caRunning = false;
+            caGridSize = v | 1; // ensure odd
+            ResetCaGrid();
+            await DrawExperiment();
+        }
+    }
+
+    private void OnCaSpeedChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v)) caSpeed = v;
+    }
+
+    private async Task ToggleCa8()
+    {
+        ca8Neighbor = !ca8Neighbor;
+        await Task.CompletedTask;
+    }
+
+    private static bool IsPrimeSmall(int n)
+    {
+        if (n < 2) return false;
+        for (int i = 2; i * i <= n; i++) if (n % i == 0) return false;
+        return true;
+    }
+
+    // --- Terraform ---
+    private async Task DrawTerraform()
+    {
+        var gridN = terrainDensity;
+        var amp = terrainAmplitude;
+        var rotRad = terrainRotation * Math.PI / 180;
+        var cosR = Math.Cos(rotRad);
+        var sinR = Math.Sin(rotRad);
+
+        // Compute all heights first for color mapping
+        var heights = new double[gridN + 1, gridN + 1];
+        double minH = double.MaxValue, maxH = double.MinValue;
+        for (int gy = 0; gy <= gridN; gy++)
+        {
+            for (int gx = 0; gx <= gridN; gx++)
+            {
+                var fx = (double)gx / gridN * 6 - 3;
+                var fy = (double)gy / gridN * 6 - 3;
+                var h = GetTerrainHeight(fx, fy) * amp;
+                heights[gx, gy] = h;
+                if (h < minH) minH = h;
+                if (h > maxH) maxH = h;
+            }
+        }
+        var hRange = Math.Max(maxH - minH, 0.01);
+
+        // Draw back-to-front
+        for (int gy = gridN - 1; gy >= 0; gy--)
+        {
+            // Draw filled strips between adjacent lines for solid terrain
+            for (int gx = 0; gx < gridN; gx++)
+            {
+                var h00 = heights[gx, gy];
+                var h10 = heights[gx + 1, gy];
+                var h01 = heights[gx, gy + 1];
+                var h11 = heights[gx + 1, gy + 1];
+                var avgH = (h00 + h10 + h01 + h11) / 4;
+                var norm = (avgH - minH) / hRange;
+
+                // Height-based coloring
+                int hue, sat, light;
+                if (norm < 0.2) { hue = 210; sat = 60; light = 35; } // deep blue (low)
+                else if (norm < 0.4) { hue = 140; sat = 55; light = 35; } // green
+                else if (norm < 0.6) { hue = 90; sat = 50; light = 40; } // yellow-green
+                else if (norm < 0.8) { hue = 35; sat = 60; light = 45; } // brown
+                else { hue = 0; sat = 0; light = 85; } // snow white peaks
+
+                var quad = new double[4][];
+                quad[0] = IsoProject(gx, gy, h00, gridN, cosR, sinR);
+                quad[1] = IsoProject(gx + 1, gy, h10, gridN, cosR, sinR);
+                quad[2] = IsoProject(gx + 1, gy + 1, h11, gridN, cosR, sinR);
+                quad[3] = IsoProject(gx, gy + 1, h01, gridN, cosR, sinR);
+
+                await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
+                    quad, $"hsl({hue}, {sat}%, {light}%)", $"hsl({hue}, {sat}%, {Math.Max(light - 10, 10)}%)", 0.5);
+            }
+        }
+
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"f(x,y) = {GetTerrainFormula()}", 170, 16, "#27AE60", 10, "center");
+    }
+
+    private static double[] IsoProject(int gx, int gy, double h, int gridN, double cosR, double sinR)
+    {
+        var fx = (double)gx / gridN - 0.5;
+        var fy = (double)gy / gridN - 0.5;
+        // Rotate
+        var rx = fx * cosR - fy * sinR;
+        var ry = fx * sinR + fy * cosR;
+        // Isometric
+        var sx = 170 + rx * 280;
+        var sy = 145 + ry * 160 - h * 30;
+        return new[] { sx, sy };
+    }
+
+    private double GetTerrainHeight(double x, double y)
+    {
+        return terrainFunc switch
+        {
+            0 => Math.Sin(x) * Math.Cos(y),
+            1 => Math.Sin(Math.Sqrt(x * x + y * y) * 3) / Math.Max(Math.Sqrt(x * x + y * y), 0.3),
+            2 => Math.Exp(-(x * x + y * y) / 2) + 0.5 * Math.Exp(-((x - 1.5) * (x - 1.5) + (y - 1) * (y - 1))),
+            3 => -Math.Abs(Math.Sin(x * 2)) * Math.Cos(y * 0.5),
+            4 => Math.Sin(x * y) * Math.Cos(x - y) + 0.3 * Math.Sin(3 * x) * Math.Sin(3 * y),
+            5 => Math.Exp(-(x * x + y * y) / 1.5) * 2 - 0.5 * Math.Exp(-(x * x + y * y) / 0.3), // volcano
+            6 => Math.Sin(x * 1.5 + y * 0.5) * 0.5 + Math.Sin(x * 0.3 + y * 1.8) * 0.3 + Math.Sin(x * 2.1 - y * 0.7) * 0.2, // dunes
+            7 => FractalNoise(x, y), // fractal
+            _ => 0
+        };
+    }
+
+    private static double FractalNoise(double x, double y)
+    {
+        double val = 0; double amp = 1; double freq = 1;
+        for (int i = 0; i < 5; i++)
+        {
+            val += Math.Sin(x * freq + i * 1.7) * Math.Cos(y * freq + i * 2.3) * amp;
+            freq *= 2; amp *= 0.5;
+        }
+        return val;
+    }
+
+    private string GetTerrainName() => terrainFunc switch
+    {
+        0 => "Rolling Hills", 1 => "Ripple Pool", 2 => "Mountain Peaks", 3 => "Canyon",
+        4 => "Alien World", 5 => "Volcano", 6 => "Sand Dunes", 7 => "Fractal Terrain", _ => ""
+    };
+
+    private string GetTerrainFormula() => terrainFunc switch
+    {
+        0 => "sin(x)cos(y)",
+        1 => "sin(3r)/r",
+        2 => "e^(-r\u00B2/2) + gaussian peaks",
+        3 => "-|sin(2x)|cos(y/2)",
+        4 => "sin(xy)cos(x-y) + harmonics",
+        5 => "2e^(-r\u00B2/1.5) - 0.5e^(-r\u00B2/0.3)",
+        6 => "layered sine waves",
+        7 => "5-octave fractal noise",
+        _ => ""
+    };
+
+    private async Task SetTerrain(int t) { terrainFunc = t; await DrawExperiment(); }
+    private async Task OnTerrainAmpChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { terrainAmp = v; await DrawExperiment(); } }
+    private async Task OnTerrainRotChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { terrainRotation = v; await DrawExperiment(); } }
+    private async Task OnTerrainDensityChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { terrainDensity = v; await DrawExperiment(); } }
+
+    // --- Axiom voting ---
+    private async Task DrawAxioms()
+    {
+        var cx = 170.0; var y = 30.0;
+
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            "Your Mathematical Universe", cx, y, "#8E44AD", 14, "center");
+        y += 30;
+
+        // Show consequences based on active axioms
+        var consequences = new List<(string text, string color, bool alive)>();
+
+        consequences.Add(("Every vector space has a basis", axiomChoice ? "#2ECC71" : "#E74C3C", axiomChoice));
+        consequences.Add(("Banach-Tarski: duplicate a sphere!", axiomChoice ? "#E74C3C" : "#2ECC71", axiomChoice));
+        consequences.Add(("Non-measurable sets exist", axiomChoice ? "#F39C12" : "#2ECC71", axiomChoice));
+
+        consequences.Add(("P or not-P is always true", axiomExcludedMiddle ? "#2ECC71" : "#E74C3C", axiomExcludedMiddle));
+        consequences.Add(("Proof by contradiction works", axiomExcludedMiddle ? "#2ECC71" : "#E74C3C", axiomExcludedMiddle));
+        consequences.Add(("Constructive math only", !axiomExcludedMiddle ? "#2ECC71" : "#888", !axiomExcludedMiddle));
+
+        consequences.Add(("Natural numbers exist", axiomInfinity ? "#2ECC71" : "#E74C3C", axiomInfinity));
+        consequences.Add(("Calculus works", axiomInfinity ? "#2ECC71" : "#E74C3C", axiomInfinity));
+        consequences.Add(("Only finite math allowed", !axiomInfinity ? "#F39C12" : "#888", !axiomInfinity));
+
+        foreach (var (text, color, alive) in consequences)
+        {
+            var icon = alive ? "+" : "-";
+            var alpha = alive ? "1" : "0.4";
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                $"{icon} {text}", 30, y, color, 11, "left");
+            y += 20;
+        }
+
+        // Summary
+        y += 10;
+        var world = GetAxiomWorld();
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            world, cx, y, "#8E44AD", 10, "center");
+    }
+
+    private string GetAxiomWorld()
+    {
+        if (axiomChoice && axiomExcludedMiddle && axiomInfinity) return "Standard ZFC: the default universe of most mathematicians";
+        if (!axiomChoice && axiomExcludedMiddle && axiomInfinity) return "ZF without Choice: no Banach-Tarski, but also no guaranteed bases";
+        if (axiomChoice && !axiomExcludedMiddle && axiomInfinity) return "Constructive + Choice: unusual combo. Proves everything constructively but with selection";
+        if (!axiomChoice && !axiomExcludedMiddle && axiomInfinity) return "Constructive math: only proofs that construct objects. Brouwer's world";
+        if (!axiomInfinity) return "Finitist math: no infinity, no calculus, no real numbers. Only what you can count";
+        return "A custom mathematical universe. Explore the consequences!";
+    }
+
+    private async Task ToggleAxiom(int idx)
+    {
+        if (idx == 0) axiomChoice = !axiomChoice;
+        else if (idx == 1) axiomExcludedMiddle = !axiomExcludedMiddle;
+        else axiomInfinity = !axiomInfinity;
+        await DrawExperiment();
+    }
+
+    // --- Different rules ---
+    private async Task DrawRules()
+    {
+        var cx = 170.0; var y = 25.0;
+
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            "Arithmetic with your rules:", cx, y, "#2C3E50", 13, "center");
+        y += 28;
+
+        // Show what equations look like under the current rules
+        var examples = new List<(string eq, string result, bool valid)>();
+
+        if (ruleCommAdd)
+        {
+            examples.Add(("3 + 5 = 5 + 3 = 8", "Swapping addition order is fine", true));
+        }
+        else
+        {
+            examples.Add(("3 + 5 = 8, but 5 + 3 = ???", "Order matters! Like matrix multiplication", false));
+        }
+
+        if (ruleCommMul)
+        {
+            examples.Add(("4 x 7 = 7 x 4 = 28", "Multiplication commutes", true));
+        }
+        else
+        {
+            examples.Add(("4 x 7 = 28, but 7 x 4 = ???", "This is how matrices and quaternions work!", false));
+        }
+
+        if (ruleZeroExists)
+        {
+            examples.Add(("5 + 0 = 5", "Zero is the additive identity", true));
+        }
+        else
+        {
+            examples.Add(("There is no zero!", "You can never \"have nothing.\" Weird but consistent", false));
+        }
+
+        if (ruleAssoc)
+        {
+            examples.Add(("(2+3)+4 = 2+(3+4) = 9", "Grouping doesn't matter", true));
+        }
+        else
+        {
+            examples.Add(("(2+3)+4 vs 2+(3+4)", "Parentheses MATTER. Like octonions!", false));
+        }
+
+        if (ruleDistrib)
+        {
+            examples.Add(("2(3+4) = 2x3 + 2x4 = 14", "Distribution works", true));
+        }
+        else
+        {
+            examples.Add(("2(3+4) = 14, but 2x3+2x4 = ???", "Multiplication and addition don't interact", false));
+        }
+
+        foreach (var (eq, result, valid) in examples)
+        {
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                eq, cx, y, valid ? "#2ECC71" : "#E74C3C", 11, "center");
+            y += 16;
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+                result, cx, y, "#888", 9, "center");
+            y += 22;
+        }
+
+        // What algebraic structure do we have?
+        y += 5;
+        var structure = GetAlgebraStructure();
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            $"You have: {structure}", cx, y, "#2C3E50", 11, "center");
+    }
+
+    private string GetAlgebraStructure()
+    {
+        if (ruleCommAdd && ruleCommMul && ruleAssoc && ruleZeroExists && ruleDistrib) return "a commutative ring (normal arithmetic!)";
+        if (!ruleCommMul && ruleCommAdd && ruleAssoc && ruleZeroExists && ruleDistrib) return "a non-commutative ring (like matrices or quaternions)";
+        if (!ruleAssoc && ruleCommAdd && ruleCommMul && ruleZeroExists) return "a non-associative algebra (like octonions)";
+        if (!ruleZeroExists) return "a semigroup (no identity element, just raw operation)";
+        if (!ruleDistrib) return "two unrelated operations (addition and multiplication don't talk)";
+        if (!ruleCommAdd) return "a very exotic structure (non-commutative addition is extremely rare)";
+        return "a custom algebraic structure";
+    }
+
+    private async Task ToggleRule(int idx)
+    {
+        if (idx == 0) ruleCommAdd = !ruleCommAdd;
+        else if (idx == 1) ruleCommMul = !ruleCommMul;
+        else if (idx == 2) ruleAssoc = !ruleAssoc;
+        else if (idx == 3) ruleZeroExists = !ruleZeroExists;
+        else ruleDistrib = !ruleDistrib;
+        await DrawExperiment();
+    }
+
+    private async Task SetGravity(int val)
+    {
+        gravitySlider = val;
+        await DrawExperiment();
+    }
+
+    private static string GetExpoComparison(double val)
+    {
+        if (val < 10) return "About the size of a handful of marbles";
+        if (val < 1000) return "Roughly a building's weight in grams";
+        if (val < 1e6) return "Around a city's population";
+        if (val < 1e9) return "Close to Earth's population";
+        if (val < 1e12) return "National debt territory (dollars)";
+        if (val < 1e15) return "More than all the sand grains on a beach";
+        if (val < 1e20) return "Approaching the number of grains of sand on Earth";
+        if (val < 1e25) return "More than all stars in the observable universe";
+        if (val < 1e50) return "More than atoms in the Earth";
+        if (val < 1e80) return "Approaching atoms in the observable universe (~10\u2078\u2070)";
+        return "Beyond comprehension. The universe doesn't have enough atoms.";
+    }
+
+    // --- Input handlers ---
+    private async Task OnPiChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { piSlider = v; await DrawExperiment(); } }
+    private async Task OnGravityChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { gravitySlider = v; await DrawExperiment(); } }
+    private async Task OnDivZeroChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { divZeroSlider = v; await DrawExperiment(); } }
+    private async Task OnDimensionChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { dimensionCount = v; await DrawExperiment(); } }
+    private async Task OnBaseChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { numberBase = v; await DrawExperiment(); } }
+    private async Task OnCurvatureChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { curvatureSlider = v; await DrawExperiment(); } }
+    private async Task OnGrowthChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { growthSlider = v; await DrawExperiment(); } }
+    private async Task OnImagChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { imagAngle = v; await DrawExperiment(); } }
+    private async Task OnFracDimChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { fracDimSlider = v; await DrawExperiment(); } }
+}
+
+<style>
+    .playground-subtitle {
+        color: var(--text-muted); text-align: center; margin: -8px 0 16px; font-size: 0.9rem;
+    }
+
+    .experiment-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .experiment-card {
+        display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+    }
+
+    .exp-icon {
+        width: 48px; height: 48px; border-radius: var(--radius-md);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; font-weight: 700; flex-shrink: 0;
+        font-family: 'Times New Roman', serif;
+    }
+
+    .exp-info { flex: 1; }
+    .exp-info strong { display: block; font-size: 0.95rem; }
+    .exp-info small { color: var(--text-muted); font-size: 0.8rem; }
+
+    .experiment-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+        display: flex; align-items: flex-end; justify-content: center;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .experiment-panel {
+        background: var(--bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+        padding: 20px; animation: slideUp 0.3s ease;
+    }
+
+    .exp-panel-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+
+    .exp-panel-header h2 { margin: 0; font-size: 1.2rem; }
+
+    .close-btn {
+        background: none; border: none; cursor: pointer; color: var(--text-muted);
+        padding: 4px; -webkit-tap-highlight-color: transparent;
+    }
+
+    .exp-description {
+        color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin: 0 0 12px;
+    }
+
+    .exp-controls {
+        margin-top: 12px; padding: 12px; background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+    }
+
+    .exp-controls label {
+        font-weight: 600; font-size: 0.95rem; color: var(--text-primary); display: block;
+    }
+
+    .exp-controls input[type="range"] {
+        width: 100%; margin: 8px 0; accent-color: var(--primary);
+    }
+
+    .exp-controls small {
+        color: var(--text-muted); font-size: 0.8rem; display: block;
+    }
+
+    .preset-row { display: flex; gap: 8px; margin: 8px 0; }
+    .preset-row .btn { flex: 1; }
+
+    .explain-box {
+        margin-top: 10px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);
+    }
+    .explain-box p { margin: 0 0 8px; }
+    .explain-box p:last-child { margin: 0; }
+    .explain-box strong { color: var(--text-primary); }
+
+    .step-buttons { display: flex; gap: 10px; margin: 8px 0; }
+    .step-buttons .btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+    .ca-settings { margin-top: 8px; }
+    .ca-settings label { font-size: 0.85rem; margin-top: 6px; }
+    .ca-settings input[type="range"] { margin: 2px 0 4px; }
+    .ca-toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+    .ca-toggle-row span { font-size: 0.85rem; color: var(--text-primary); }
+
+    .fracdim-examples small { display: block; color: var(--text-secondary); line-height: 1.5; margin-top: 4px; }
+
+    .axiom-toggles { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+    .axiom-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+    .axiom-row span { font-size: 0.9rem; color: var(--text-primary); }
+    .toggle-btn { width: 44px; height: 24px; border-radius: 12px; border: none; background: var(--border); cursor: pointer; position: relative; transition: background 0.25s ease; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+    .toggle-btn.on { background: var(--primary); }
+    .toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.25s ease; }
+    .toggle-btn.on .toggle-knob { transform: translateX(20px); }
+
+    .expo-comparison { margin-top: 6px; }
+    .expo-comparison small { display: block; color: var(--text-muted); }
+    .expo-comparison strong { color: var(--accent); }
+
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>

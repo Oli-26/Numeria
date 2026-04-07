@@ -4,21 +4,74 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>MathVoyager</title>
+    <title>Numeria</title>
     <base href="/" />
     <link rel="stylesheet" href="css/site.css" />
     <link id="theme-css" rel="stylesheet" href="" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="numeria-icon.svg" />
     <link href="MathVoyager.styles.css" rel="stylesheet" />
 </head>
 
 <body>
-    <div id="app">
-        <div style="display:flex;justify-content:center;align-items:center;height:100vh;color:var(--text-muted);">
-            Loading MathVoyager...
+    <div id="splash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;
+        justify-content:center;align-items:center;
+        background:linear-gradient(135deg,#1a1a3e 0%,#2d2b6b 40%,#3b2f80 70%,#4a3a99 100%);
+        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+        transition:opacity 0.5s ease;opacity:1;">
+
+        <!-- Floating math symbols background -->
+        <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:0.07;color:#fff;font-family:Georgia,serif;">
+            <div style="position:absolute;top:8%;left:12%;font-size:2.5rem;animation:floatA 6s ease-in-out infinite;">&pi;</div>
+            <div style="position:absolute;top:15%;right:15%;font-size:2rem;animation:floatB 7s ease-in-out infinite;">&sum;</div>
+            <div style="position:absolute;top:55%;left:8%;font-size:2.2rem;animation:floatB 5s ease-in-out infinite;">&infin;</div>
+            <div style="position:absolute;top:70%;right:10%;font-size:2rem;animation:floatA 8s ease-in-out infinite;">&int;</div>
+            <div style="position:absolute;top:35%;left:80%;font-size:1.8rem;animation:floatA 6.5s ease-in-out infinite;">&Delta;</div>
+            <div style="position:absolute;top:80%;left:45%;font-size:2rem;animation:floatB 7.5s ease-in-out infinite;">&radic;</div>
         </div>
+
+        <!-- Logo -->
+        <div style="animation:splashLogo 0.8s cubic-bezier(0.34,1.56,0.64,1) both;">
+            <img src="numeria-icon.svg" alt="" style="width:100px;height:100px;border-radius:24px;
+                box-shadow:0 8px 40px rgba(126,180,255,0.25),0 0 60px rgba(180,140,255,0.15);" />
+        </div>
+
+        <!-- App name -->
+        <div style="margin-top:24px;font-size:2.8rem;font-weight:800;letter-spacing:-0.5px;
+            background:linear-gradient(90deg,#7eb4ff,#b48cff,#ff8ec6,#7eb4ff);
+            background-size:200% auto;
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            background-clip:text;
+            animation:splashName 0.6s ease 0.3s both,shimmer 2.5s linear 0.9s infinite;">
+            Numeria
+        </div>
+
+        <!-- Tagline -->
+        <div style="margin-top:8px;color:rgba(255,255,255,0.45);font-size:0.9rem;font-weight:500;
+            letter-spacing:1px;animation:splashTag 0.5s ease 0.6s both;">
+            EXPLORE MATHEMATICS
+        </div>
+
+        <!-- Loading indicator -->
+        <div style="margin-top:40px;animation:splashLoader 0.4s ease 0.8s both;">
+            <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);
+                border-top-color:#7eb4ff;border-radius:50%;animation:spin 0.8s linear infinite;">
+            </div>
+        </div>
+
+        <style>
+            @keyframes shimmer { to { background-position: 200% center; } }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            @keyframes splashLogo { from { opacity:0; transform:scale(0.5) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+            @keyframes splashName { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+            @keyframes splashTag { from { opacity:0; } to { opacity:1; } }
+            @keyframes splashLoader { from { opacity:0; } to { opacity:1; } }
+            @keyframes floatA { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-18px) rotate(8deg); } }
+            @keyframes floatB { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(15px) rotate(-6deg); } }
+        </style>
     </div>
+
+    <div id="app"></div>
 
     <div id="blazor-error-ui" style="display:none;">
         An unhandled error has occurred.
@@ -28,6 +81,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="js/mathCanvas.js"></script>
+    <script src="js/sounds.js"></script>
     <script>
         // Theme management
         function applyTheme(themeId) {
@@ -61,8 +115,133 @@
             container.appendChild(toast);
             setTimeout(function() { toast.remove(); }, 3000);
         }
+
+        // Share card renderer
+        function drawShareCard(opts) {
+            var c = document.getElementById('share-canvas');
+            if (!c) return;
+            var ctx = c.getContext('2d');
+            var w = 600, h = 400;
+
+            // Background gradient
+            var grad = ctx.createLinearGradient(0, 0, w, h);
+            grad.addColorStop(0, opts.bg1);
+            grad.addColorStop(1, opts.bg2);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Decorative circles
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = opts.accent;
+            ctx.beginPath(); ctx.arc(w * 0.85, h * 0.15, 120, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(w * 0.1, h * 0.9, 80, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // App name
+            ctx.fillStyle = opts.accent;
+            ctx.font = 'bold 14px system-ui';
+            ctx.fillText('NUMERIA', 30, 36);
+
+            // User name
+            ctx.fillStyle = opts.textColor;
+            ctx.font = 'bold 28px system-ui';
+            ctx.fillText(opts.name, 30, 80);
+
+            // Level badge
+            ctx.font = 'bold 16px system-ui';
+            ctx.fillStyle = opts.accent;
+            ctx.fillText('Level ' + opts.level, 30, 108);
+
+            // Divider line
+            ctx.strokeStyle = opts.accent;
+            ctx.globalAlpha = 0.3;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(30, 125); ctx.lineTo(w - 30, 125); ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // Stats grid
+            var stats = [
+                [opts.xp.toLocaleString(), 'Total XP'],
+                [opts.streak + ' days', 'Streak'],
+                [opts.lessons + '/' + opts.lessonTotal, 'Lessons'],
+                [opts.topics + '/' + opts.topicCount, 'Topics'],
+                [opts.quizzes.toString(), 'Quizzes'],
+                [opts.accuracy + '%', 'Accuracy']
+            ];
+
+            var cols = 3, rows = 2;
+            var cellW = (w - 60) / cols;
+            var cellH = 65;
+            var startY = 145;
+
+            for (var i = 0; i < stats.length; i++) {
+                var col = i % cols;
+                var row = Math.floor(i / cols);
+                var x = 30 + col * cellW;
+                var y = startY + row * cellH;
+
+                // Stat value
+                ctx.fillStyle = opts.textColor;
+                ctx.font = 'bold 22px system-ui';
+                ctx.fillText(stats[i][0], x, y + 25);
+
+                // Stat label
+                ctx.fillStyle = opts.accent;
+                ctx.globalAlpha = 0.7;
+                ctx.font = '12px system-ui';
+                ctx.fillText(stats[i][1], x, y + 42);
+                ctx.globalAlpha = 1;
+            }
+
+            // Achievements count
+            var achY = startY + rows * cellH + 15;
+            ctx.fillStyle = opts.accent;
+            ctx.font = 'bold 14px system-ui';
+            ctx.fillText(opts.achievements + ' achievements unlocked', 30, achY);
+
+            // XP progress bar
+            var barY = achY + 20;
+            var barW = w - 60;
+            ctx.fillStyle = opts.textColor;
+            ctx.globalAlpha = 0.1;
+            ctx.fillRect(30, barY, barW, 8);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = opts.accent;
+            var pct = Math.min(opts.lessons / Math.max(opts.lessonTotal, 1), 1);
+            ctx.fillRect(30, barY, barW * pct, 8);
+
+            // Footer
+            ctx.fillStyle = opts.textColor;
+            ctx.globalAlpha = 0.4;
+            ctx.font = '11px system-ui';
+            ctx.fillText('Longest streak: ' + opts.longestStreak + ' days', 30, h - 20);
+            ctx.textAlign = 'right';
+            ctx.fillText('numeria.app', w - 30, h - 20);
+            ctx.textAlign = 'left';
+            ctx.globalAlpha = 1;
+        }
+
+        async function copyCanvasToClipboard(canvasId) {
+            var c = document.getElementById(canvasId);
+            if (!c) return;
+            var blob = await new Promise(function(resolve) { c.toBlob(resolve, 'image/png'); });
+            if (blob && navigator.clipboard && navigator.clipboard.write) {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            } else {
+                throw new Error('Clipboard API not available');
+            }
+        }
     </script>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        Blazor.start().then(function () {
+            var splash = document.getElementById('splash');
+            if (splash) {
+                splash.style.opacity = '0';
+                setTimeout(function () { splash.remove(); }, 500);
+            }
+        });
+    </script>
 </body>
 
 </html>

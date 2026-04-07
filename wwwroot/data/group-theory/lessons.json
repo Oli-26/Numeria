@@ -92,8 +92,8 @@
         "title": "Cycle Notation",
         "contentHtml": "<p><strong>Cycle notation</strong> is a compact way to write permutations.</p><p>(1 3 2) means: 1\u21923, 3\u21922, 2\u21921. It's a 3-cycle.</p><p>Every permutation decomposes uniquely into disjoint cycles. (1 3)(2 4) means: swap 1\u21943 and swap 2\u21944 simultaneously.</p><p><strong>Transpositions</strong> are 2-cycles like (1 2). Every permutation can be written as a product of transpositions.</p>",
         "mathExpressions": ["(1\\;3\\;2) : 1 \\to 3 \\to 2 \\to 1"],
-        "visualizationType": null,
-        "visualizationConfig": null
+        "visualizationType": "permutation-cycle",
+        "visualizationConfig": {}
       },
       {
         "id": "grp-03-c3",
@@ -142,5 +142,149 @@
     ],
     "quizQuestionIds": ["grp-q16", "grp-q17", "grp-q18", "grp-q19", "grp-q20"],
     "puzzleId": "grp-p01"
+  },
+  {
+    "id": "grp-05",
+    "topicId": "group-theory",
+    "order": 5,
+    "title": "Group Actions",
+    "description": "Groups acting on sets, orbits, and counting with symmetry",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "grp-05-c1",
+        "title": "Groups Acting on Sets",
+        "contentHtml": "<p>A <strong>group action</strong> is a way for a group G to \"move around\" the elements of a set X. Formally, it's a map G \u00d7 X \u2192 X satisfying two rules:</p><p>1. The identity does nothing: e \u2022 x = x<br>2. Actions compose: (gh) \u2022 x = g \u2022 (h \u2022 x)</p><p>Examples are everywhere: rotations act on points of a polygon, S\u2099 acts on {1, 2, ..., n} by permuting elements, and GL\u2099 acts on \u211d\u207f by matrix multiplication.</p><p>Group actions unify seemingly unrelated problems by revealing them as different instances of the same algebraic structure acting on different sets.</p>",
+        "mathExpressions": ["G \\times X \\to X, \\quad e \\cdot x = x, \\quad (gh) \\cdot x = g \\cdot (h \\cdot x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-05-c2",
+        "title": "Orbits and Stabilizers",
+        "contentHtml": "<p>When a group acts on a set, each element x has two important associated structures:</p><p>The <strong>orbit</strong> of x, Orb(x), is the set of all elements that x can be moved to: {g \u2022 x : g \u2208 G}.</p><p>The <strong>stabilizer</strong> of x, Stab(x), is the set of group elements that fix x: {g \u2208 G : g \u2022 x = x}. The stabilizer is always a subgroup of G.</p><p><strong>Orbit-Stabilizer Theorem:</strong> |G| = |Orb(x)| \u00d7 |Stab(x)|. The group's size equals the orbit size times the stabilizer size. This connects the \"geometry\" (orbits) to the \"algebra\" (subgroups).</p>",
+        "mathExpressions": ["|G| = |\\text{Orb}(x)| \\times |\\text{Stab}(x)|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-05-c3",
+        "title": "Burnside's Counting Lemma",
+        "contentHtml": "<p><strong>Burnside's Lemma</strong> (also called the Cauchy-Frobenius lemma) counts distinct objects under symmetry:</p><p>Number of distinct objects = (1/|G|) \u00d7 \u03a3 |Fix(g)|, where Fix(g) is the number of elements fixed by each group element g.</p><p><strong>Classic example:</strong> How many distinct necklaces can you make with 4 beads of 2 colors? Without symmetry: 2\u2074 = 16 colorings. But the rotation group has 4 elements. Burnside says: (1/4)(16 + 2 + 4 + 2) = 6 distinct necklaces.</p><p>This technique is essential in chemistry (counting distinct molecular configurations), combinatorics, and even music theory.</p>",
+        "mathExpressions": ["|X/G| = \\frac{1}{|G|} \\sum_{g \\in G} |\\text{Fix}(g)|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["grp-q35", "grp-q36", "grp-q37", "grp-q38", "grp-q39"],
+    "puzzleId": null
+  },
+  {
+    "id": "grp-06",
+    "topicId": "group-theory",
+    "order": 6,
+    "title": "Sylow Theorems",
+    "description": "The deep structure of finite groups",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "grp-06-c1",
+        "title": "p-Groups and Sylow p-Subgroups",
+        "contentHtml": "<p>A <strong>p-group</strong> is a group whose order is a power of a prime p. For example, \u2124/4\u2124 and \u2124/2\u2124 \u00d7 \u2124/2\u2124 are both 2-groups (order 4 = 2\u00b2).</p><p>Given any finite group G of order n, write n = p\u1d4f \u00d7 m where p does not divide m. A <strong>Sylow p-subgroup</strong> is a subgroup of G having order exactly p\u1d4f \u2014 the maximum possible power of p.</p><p>Sylow subgroups are the \"prime building blocks\" of finite groups. Understanding them is the key to understanding the full group's structure.</p>",
+        "mathExpressions": ["|G| = p^k \\cdot m, \\quad p \\nmid m, \\quad |P| = p^k"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-06-c2",
+        "title": "The Three Sylow Theorems",
+        "contentHtml": "<p>The three Sylow theorems are cornerstones of finite group theory:</p><p><strong>Sylow I (Existence):</strong> For every prime power p\u1d4f dividing |G|, there exists a subgroup of order p\u1d4f. In particular, Sylow p-subgroups always exist.</p><p><strong>Sylow II (Conjugacy):</strong> All Sylow p-subgroups are conjugate to each other. They're all \"the same\" up to relabeling by the group.</p><p><strong>Sylow III (Counting):</strong> The number n\u209a of Sylow p-subgroups satisfies n\u209a \u2261 1 (mod p) and n\u209a divides |G|/p\u1d4f. This severely restricts the possibilities.</p>",
+        "mathExpressions": ["n_p \\equiv 1 \\pmod{p}, \\quad n_p \\mid \\frac{|G|}{p^k}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-06-c3",
+        "title": "Classifying Groups of Small Order",
+        "contentHtml": "<p>The Sylow theorems are a powerful tool for classifying groups. Here's how they work in practice:</p><p><strong>Order 15:</strong> |G| = 3 \u00d7 5. Sylow III gives n\u2083 | 5 and n\u2083 \u2261 1 (mod 3), so n\u2083 = 1. Similarly n\u2085 = 1. Both Sylow subgroups are normal, so G \u2245 \u2124\u2081\u2085. There's only one group of order 15!</p><p><strong>Order 12:</strong> |G| = 2\u00b2 \u00d7 3. More complex: n\u2083 \u2208 {1, 4}. If n\u2083 = 1, the Sylow 3-subgroup is normal. This yields 5 possible groups, including \u2124\u2081\u2082, D\u2086, A\u2084, and others.</p><p>This approach systematically reveals the \"periodic table\" of finite groups.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["grp-q40", "grp-q41", "grp-q42", "grp-q43", "grp-q44"],
+    "puzzleId": null
+  },
+  {
+    "id": "grp-07",
+    "topicId": "group-theory",
+    "order": 7,
+    "title": "Rings & Fields",
+    "description": "Beyond groups: algebraic structures with two operations",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "grp-07-c1",
+        "title": "Rings: Two Operations at Once",
+        "contentHtml": "<p>A <strong>ring</strong> is a set with two operations (addition and multiplication) where:</p><p>1. (R, +) is an abelian group<br>2. Multiplication is associative and distributes over addition<br>3. There's a multiplicative identity 1 (in a ring with unity)</p><p><strong>Examples:</strong> The integers \u2124, polynomial rings \u2124[x], matrices M\u2099(\u211d), and clock arithmetic \u2124/n\u2124 are all rings.</p><p><strong>Non-example nuance:</strong> Matrices are a ring, but multiplication isn't commutative. \u2124 is a ring, but most elements lack multiplicative inverses. These \"failures\" lead to rich theory.</p>",
+        "mathExpressions": ["a(b + c) = ab + ac, \\quad (a + b)c = ac + bc"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-07-c2",
+        "title": "Ideals and Quotient Rings",
+        "contentHtml": "<p>An <strong>ideal</strong> I of a ring R is like a normal subgroup, but for rings: it absorbs multiplication. For any r \u2208 R and a \u2208 I, both ra and ar belong to I.</p><p>The <strong>quotient ring</strong> R/I consists of cosets and inherits a natural ring structure. This is how we \"mod out\" by an ideal.</p><p><strong>Key example:</strong> In \u2124, the even integers 2\u2124 form an ideal. \u2124/2\u2124 = {0, 1} is the ring of integers mod 2 (a field!).</p><p>In \u211d[x], the ideal (x\u00b2 + 1) gives \u211d[x]/(x\u00b2 + 1) \u2245 \u2102 \u2014 the complex numbers arise as a quotient ring! This is a profound connection.</p>",
+        "mathExpressions": ["\\mathbb{R}[x]/(x^2 + 1) \\cong \\mathbb{C}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-07-c3",
+        "title": "Fields and Their Extensions",
+        "contentHtml": "<p>A <strong>field</strong> is a ring where every nonzero element has a multiplicative inverse. Fields are where you can add, subtract, multiply, <em>and</em> divide.</p><p><strong>Examples:</strong> \u211a, \u211d, \u2102, and the finite fields \ud835\udd3d\u209a = \u2124/p\u2124 (for p prime). The rationals are the smallest field containing the integers.</p><p><strong>Finite fields</strong> are remarkable: there is exactly one field of order p\u207f for each prime power, denoted \ud835\udd3d_{p^n} or GF(p\u207f). These are the backbone of coding theory, cryptography (AES uses \ud835\udd3d_{2^8}), and algebraic geometry over finite fields.</p><p><strong>Field extensions:</strong> \u211a \u2282 \u211a(\u221a2) \u2282 \u211d \u2282 \u2102. Each step \"adds\" new elements. Understanding these extensions is the gateway to Galois theory.</p>",
+        "mathExpressions": ["\\mathbb{Q} \\subset \\mathbb{Q}(\\sqrt{2}) \\subset \\mathbb{R} \\subset \\mathbb{C}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["grp-q45", "grp-q46", "grp-q47", "grp-q48", "grp-q49"],
+    "puzzleId": null
+  },
+  {
+    "id": "grp-08",
+    "topicId": "group-theory",
+    "order": 8,
+    "title": "Galois Theory Intro",
+    "description": "Symmetries of equations and the fate of the quintic",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "grp-08-c1",
+        "title": "Field Extensions and Splitting Fields",
+        "contentHtml": "<p>Given a polynomial, its <strong>splitting field</strong> is the smallest field containing all its roots.</p><p>For x\u00b2 - 2 over \u211a, the roots are \u00b1\u221a2, so the splitting field is \u211a(\u221a2). The <strong>degree</strong> of this extension is [\u211a(\u221a2) : \u211a] = 2.</p><p>For x\u00b3 - 2 over \u211a, the splitting field is \u211a(\u00b3\u221a2, \u03c9) where \u03c9 = e^{2\u03c0i/3} is a primitive cube root of unity. This extension has degree 6.</p><p>The <strong>Galois group</strong> of an extension is the group of all field automorphisms that fix the base field. It captures the <em>symmetries of the roots</em>.</p>",
+        "mathExpressions": ["[\\mathbb{Q}(\\sqrt{2}) : \\mathbb{Q}] = 2, \\quad \\text{Gal}(\\mathbb{Q}(\\sqrt{2})/\\mathbb{Q}) \\cong \\mathbb{Z}/2\\mathbb{Z}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-08-c2",
+        "title": "The Fundamental Theorem of Galois Theory",
+        "contentHtml": "<p>The <strong>Fundamental Theorem of Galois Theory</strong> establishes a perfect correspondence between:</p><p>\u2022 Intermediate fields between the base field and the splitting field<br>\u2022 Subgroups of the Galois group</p><p>Bigger subgroups correspond to <em>smaller</em> intermediate fields (the correspondence is order-reversing).</p><p>Normal subgroups correspond to <strong>normal extensions</strong> (Galois extensions). This transforms field-theoretic questions into group-theoretic ones \u2014 and groups are often easier to work with!</p><p>This is one of the most beautiful results in all of mathematics: it bridges algebra (groups) with geometry (field extensions) in a perfect bijection.</p>",
+        "mathExpressions": ["\\{\\text{subgroups of Gal}(E/F)\\} \\longleftrightarrow \\{\\text{intermediate fields } F \\subseteq K \\subseteq E\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "grp-08-c3",
+        "title": "Why There's No Quintic Formula",
+        "contentHtml": "<p>There are formulas for roots of polynomials of degree 2 (quadratic formula), 3 (Cardano's), and 4 (Ferrari's). For centuries, mathematicians sought a degree 5 formula.</p><p><strong>Abel and Galois proved it doesn't exist.</strong> Here's the key insight:</p><p>A polynomial is solvable by radicals iff its Galois group is a <strong>solvable group</strong> (one that can be broken down through abelian quotients). The generic quintic has Galois group S\u2085.</p><p>S\u2085 is NOT solvable because A\u2085 is simple and non-abelian \u2014 it can't be broken into abelian pieces. Therefore, no formula using only +, -, \u00d7, \u00f7, and radicals can solve the general quintic.</p><p>\u00c9variste Galois discovered this at age 20, the night before he died in a duel. His work founded an entire branch of mathematics and remains central to modern algebra.</p>",
+        "mathExpressions": ["S_5 \\supset A_5 \\supset \\{e\\}, \\quad A_5 \\text{ simple } \\Rightarrow S_5 \\text{ not solvable}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["grp-q50", "grp-q51", "grp-q52", "grp-q53", "grp-q54"],
+    "puzzleId": null
   }
 ]

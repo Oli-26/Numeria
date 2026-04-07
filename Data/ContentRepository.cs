@@ -31,8 +31,15 @@ public class ContentRepository : IContentRepository
     {
         if (!_lessons.ContainsKey(topicId))
         {
-            var lessons = await _http.GetFromJsonAsync<List<Lesson>>($"data/{topicId}/lessons.json") ?? new();
-            _lessons[topicId] = lessons.OrderBy(l => l.Order).ToList();
+            try
+            {
+                var lessons = await _http.GetFromJsonAsync<List<Lesson>>($"data/{topicId}/lessons.json") ?? new();
+                _lessons[topicId] = lessons.OrderBy(l => l.Order).ToList();
+            }
+            catch
+            {
+                _lessons[topicId] = new();
+            }
         }
         return _lessons[topicId];
     }
@@ -47,7 +54,14 @@ public class ContentRepository : IContentRepository
     {
         if (!_questions.ContainsKey(topicId))
         {
-            _questions[topicId] = await _http.GetFromJsonAsync<List<Question>>($"data/{topicId}/questions.json") ?? new();
+            try
+            {
+                _questions[topicId] = await _http.GetFromJsonAsync<List<Question>>($"data/{topicId}/questions.json") ?? new();
+            }
+            catch
+            {
+                _questions[topicId] = new();
+            }
         }
         return _questions[topicId];
     }
@@ -56,5 +70,23 @@ public class ContentRepository : IContentRepository
     {
         var all = await GetQuestionsAsync(topicId);
         return all.Where(q => q.LessonId == lessonId).ToList();
+    }
+
+    private readonly Dictionary<string, List<Question>> _masteryQuestions = new();
+
+    public async Task<List<Question>> GetMasteryQuestionsAsync(string topicId)
+    {
+        if (!_masteryQuestions.ContainsKey(topicId))
+        {
+            try
+            {
+                _masteryQuestions[topicId] = await _http.GetFromJsonAsync<List<Question>>($"data/{topicId}/mastery-questions.json") ?? new();
+            }
+            catch
+            {
+                _masteryQuestions[topicId] = new();
+            }
+        }
+        return _masteryQuestions[topicId];
     }
 }

@@ -1,0 +1,361 @@
+@page "/mistakes"
+@page "/mistakes/{ChallengeId}"
+@inject IChallengeRepository ChallengeRepo
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Mistake Museum</h1>
+    </div>
+    <div class="locked-feature card">
+        <div class="locked-icon"><Icon Name="lock" Size="36" /></div>
+        <h2>Locked</h2>
+        <p>Purchase the Mistake Museum from the Shop to unlock.</p>
+        <button class="btn btn-accent btn-lg" @onclick='() => Nav.NavigateTo("/shop")'>
+            <Icon Name="gem" Size="18" /> Go to Shop
+        </button>
+    </div>
+}
+else if (activeChallenge == null)
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Mistake Museum</h1>
+    </div>
+    <p class="mm-subtitle">Famous flawed proofs and sneaky errors. Can you spot where the logic breaks?</p>
+
+    @if (challenges != null)
+    {
+        <div class="mm-list stagger-in">
+            @foreach (var c in challenges)
+            {
+                var completed = completedIds.Contains(c.Id);
+                <div class="card card-clickable mm-card @(completed ? "mm-done" : "")" @onclick="() => StartChallenge(c)">
+                    <div class="mm-card-icon"><Icon Name="search" Size="24" /></div>
+                    <div class="mm-card-info">
+                        <div class="pb-diff">
+                            @for (int i = 0; i < c.Difficulty; i++) { <span class="pb-star"><Icon Name="star-filled" Size="12" Fill="currentColor" /></span> }
+                            @for (int i = c.Difficulty; i < 3; i++) { <span class="pb-star dim"><Icon Name="star-filled" Size="12" Fill="currentColor" /></span> }
+                        </div>
+                        <strong>@c.Title</strong>
+                        <small>@c.Setup</small>
+                    </div>
+                    <div class="mm-card-right">
+                        @if (completed)
+                        {
+                            <span class="pb-check"><Icon Name="check" Size="14" /></span>
+                        }
+                        else
+                        {
+                            <span class="pb-xp">+@c.XpReward XP</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="loading">Loading challenges...</div>
+    }
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" @onclick="BackToList"><Icon Name="arrow-left" Size="18" /></button>
+        <h1>@activeChallenge.Title</h1>
+    </div>
+
+    <div class="mm-setup card">
+        <p>@activeChallenge.Setup</p>
+        @if (activeChallenge.SetupMath != null)
+        {
+            <div class="math-display" id="mistake-setup-math"></div>
+        }
+    </div>
+
+    <p class="mm-instruction">Tap the step that contains the error:</p>
+
+    <div class="mm-steps">
+        @foreach (var step in activeChallenge.Steps)
+        {
+            var stepClass = "";
+            if (submitted)
+            {
+                if (step.Number == activeChallenge.ErrorStep)
+                    stepClass = "mm-error-step";
+                else if (step.Number == selectedStep && selectedStep != activeChallenge.ErrorStep)
+                    stepClass = "mm-wrong-pick";
+                else
+                    stepClass = "mm-ok-step";
+            }
+            else if (step.Number == selectedStep)
+            {
+                stepClass = "mm-selected";
+            }
+
+            <div class="mm-step card @stepClass" @onclick="() => SelectStep(step.Number)">
+                <span class="mm-step-num">@step.Number</span>
+                <div class="mm-step-content">
+                    <span>@step.Text</span>
+                    @if (step.MathExpression != null)
+                    {
+                        <div class="math-display" id="mistake-step-@step.Number" style="margin-top: 6px"></div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!submitted)
+    {
+        <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px"
+                @onclick="Submit" disabled="@(selectedStep == 0)">
+            This Step is Wrong
+        </button>
+    }
+    else
+    {
+        <div class="mm-result card @(isCorrect ? "mm-result-correct" : "mm-result-wrong") count-up">
+            <h2>@(isCorrect ? "You Found It!" : "Not That One")</h2>
+
+            @if (isCorrect)
+            {
+                <div class="xp-earned pulse">
+                    <span class="xp-badge" style="font-size: 1rem; padding: 6px 14px">+@activeChallenge.XpReward XP</span>
+                </div>
+            }
+
+            <div class="mm-error-explain">
+                <h3>The Error (Step @activeChallenge.ErrorStep)</h3>
+                <p>@activeChallenge.ErrorExplanation</p>
+            </div>
+
+            <div class="mm-correct-reason">
+                <h3>The Correct Reasoning</h3>
+                <p>@activeChallenge.CorrectReasoning</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px">
+                @if (!isCorrect)
+                {
+                    <button class="btn btn-primary" style="flex: 1" @onclick="Retry">Try Again</button>
+                }
+                <button class="btn btn-outline" style="flex: 1" @onclick="BackToList">
+                    @(isCorrect ? "More Puzzles" : "Back to List")
+                </button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string? ChallengeId { get; set; }
+
+    private List<MistakeChallenge>? challenges;
+    private MistakeChallenge? activeChallenge;
+    private HashSet<string> completedIds = new();
+    private int selectedStep;
+    private bool submitted;
+    private bool isCorrect;
+    private bool unlocked;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-mistakes");
+            if (!unlocked) { StateHasChanged(); return; }
+
+            challenges = await ChallengeRepo.GetMistakeChallengesAsync();
+            completedIds = profile.ChallengesCompleted.ToHashSet();
+
+            if (ChallengeId != null)
+            {
+                var c = challenges.FirstOrDefault(x => x.Id == ChallengeId);
+                if (c != null) InitChallenge(c);
+            }
+
+            StateHasChanged();
+        }
+
+        if (activeChallenge != null)
+        {
+            if (activeChallenge.SetupMath != null)
+                try { await JS.InvokeVoidAsync("renderMath", "mistake-setup-math", activeChallenge.SetupMath, true); } catch { }
+
+            foreach (var step in activeChallenge.Steps)
+            {
+                if (step.MathExpression != null)
+                    try { await JS.InvokeVoidAsync("renderMath", $"mistake-step-{step.Number}", step.MathExpression, true); } catch { }
+            }
+        }
+    }
+
+    private void StartChallenge(MistakeChallenge c)
+    {
+        InitChallenge(c);
+    }
+
+    private void InitChallenge(MistakeChallenge c)
+    {
+        activeChallenge = c;
+        selectedStep = 0;
+        submitted = false;
+        isCorrect = false;
+    }
+
+    private void SelectStep(int step)
+    {
+        if (!submitted)
+            selectedStep = step;
+    }
+
+    private async Task Submit()
+    {
+        if (selectedStep == 0) return;
+        submitted = true;
+        isCorrect = selectedStep == activeChallenge!.ErrorStep;
+
+        if (isCorrect)
+        {
+            try { await JS.InvokeVoidAsync("Sounds.playCorrect"); } catch { }
+            try { await JS.InvokeVoidAsync("Confetti.launch", 40); } catch { }
+
+            if (!completedIds.Contains(activeChallenge.Id))
+            {
+                completedIds.Add(activeChallenge.Id);
+                await Gamification.AwardXpAsync(activeChallenge.XpReward);
+                var profile = await Progress.GetProfileAsync();
+                if (!profile.ChallengesCompleted.Contains(activeChallenge.Id))
+                {
+                    profile.ChallengesCompleted.Add(activeChallenge.Id);
+                    await Progress.SaveProfileAsync(profile);
+                }
+            }
+        }
+        else
+        {
+            try { await JS.InvokeVoidAsync("Sounds.playWrong"); } catch { }
+        }
+    }
+
+    private void Retry()
+    {
+        if (activeChallenge != null) InitChallenge(activeChallenge);
+    }
+
+    private void BackToList()
+    {
+        activeChallenge = null;
+        submitted = false;
+    }
+}
+
+<style>
+    .locked-feature {
+        text-align: center; padding: 40px 24px;
+    }
+    .locked-feature:hover { transform: none; }
+    .locked-icon { color: var(--text-muted); margin-bottom: 12px; }
+    .locked-feature h2 { margin-bottom: 8px; }
+    .locked-feature p { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
+
+    .mm-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
+
+    .mm-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .mm-card { display: flex; align-items: center; gap: 12px; padding: 14px; }
+    .mm-card:hover { transform: none; }
+    .mm-card.mm-done { border-left: 3px solid var(--success); }
+    .mm-card-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .mm-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .mm-card-info small { color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; }
+    .mm-card-right { flex-shrink: 0; }
+
+    .pb-star { color: var(--accent); font-size: 0.75rem; }
+    .pb-star.dim { opacity: 0.25; }
+    .pb-check { color: var(--success); font-weight: 700; font-size: 1.2rem; }
+    .pb-xp { font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+
+    /* Setup */
+    .mm-setup { padding: 14px; margin-bottom: 12px; }
+    .mm-setup:hover { transform: none; }
+    .mm-setup p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin: 0; }
+
+    .mm-instruction { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
+
+    /* Steps */
+    .mm-steps { display: flex; flex-direction: column; gap: 6px; }
+
+    .mm-step {
+        display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px;
+        cursor: pointer; transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mm-step:hover { transform: none; border-color: var(--primary-light); }
+    .mm-step:active { transform: scale(0.98); }
+
+    .mm-step-num {
+        width: 26px; height: 26px; border-radius: 50%;
+        background: var(--bg-surface); color: var(--text-secondary);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+        transition: all 0.2s ease;
+    }
+
+    .mm-step-content { flex: 1; font-size: 0.9rem; }
+
+    /* Step states */
+    .mm-selected {
+        border-color: var(--primary); background: rgba(74,95,224,0.05);
+        box-shadow: 0 0 0 2px rgba(74,95,224,0.15);
+    }
+    .mm-selected .mm-step-num { background: var(--primary); color: white; }
+
+    .mm-error-step {
+        border-color: var(--error); background: rgba(239,83,80,0.08);
+        animation: shakeWrong 0.4s ease;
+    }
+    .mm-error-step .mm-step-num { background: var(--error); color: white; }
+
+    .mm-wrong-pick {
+        border-color: var(--warning); background: rgba(255,152,0,0.08);
+    }
+    .mm-wrong-pick .mm-step-num { background: var(--warning); color: white; }
+
+    .mm-ok-step { opacity: 0.5; cursor: default; }
+
+    @@keyframes shakeWrong {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+    }
+
+    /* Result */
+    .mm-result { padding: 24px; text-align: center; margin-top: 16px; }
+    .mm-result:hover { transform: none; }
+    .mm-result-correct { border-color: var(--success); }
+    .mm-result-wrong { border-color: var(--error); }
+
+    .mm-error-explain, .mm-correct-reason {
+        text-align: left; margin: 14px 0; padding: 12px;
+        border-radius: var(--radius-sm); font-size: 0.85rem;
+    }
+    .mm-error-explain {
+        background: rgba(239,83,80,0.06); border: 1px solid rgba(239,83,80,0.15);
+    }
+    .mm-correct-reason {
+        background: rgba(76,175,80,0.06); border: 1px solid rgba(76,175,80,0.15);
+    }
+    .mm-error-explain h3, .mm-correct-reason h3 { font-size: 0.9rem; margin-bottom: 6px; }
+    .mm-error-explain p, .mm-correct-reason p { color: var(--text-secondary); line-height: 1.6; margin: 0; }
+</style>

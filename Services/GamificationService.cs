@@ -41,17 +41,14 @@ public class GamificationService : IGamificationService
         var profile = await _progress.GetProfileAsync();
         var oldLevel = GetLevel(profile.TotalXp);
 
-        var multiplier = GetStreakMultiplier(profile.CurrentStreak);
-        var adjusted = (int)Math.Floor(amount * multiplier);
-
-        profile.TotalXp += adjusted;
-        profile.Points += adjusted;
+        profile.TotalXp += amount;
+        profile.Points += amount;
 
         var today = DateTime.Now.ToString("yyyy-MM-dd");
         if (profile.DailyXpLog.ContainsKey(today))
-            profile.DailyXpLog[today] += adjusted;
+            profile.DailyXpLog[today] += amount;
         else
-            profile.DailyXpLog[today] = adjusted;
+            profile.DailyXpLog[today] = amount;
 
         var newLevel = GetLevel(profile.TotalXp);
         if (newLevel > oldLevel)
@@ -66,8 +63,8 @@ public class GamificationService : IGamificationService
 
         return new GamificationEvent
         {
-            XpAwarded = adjusted,
-            PointsAwarded = adjusted,
+            XpAwarded = amount,
+            PointsAwarded = amount,
             LeveledUp = newLevel > oldLevel,
             NewLevel = newLevel,
             NewAchievements = newAchievements

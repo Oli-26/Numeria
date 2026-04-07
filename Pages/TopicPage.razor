@@ -4,13 +4,20 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>&#x2190;</button>
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
 </div>
 
 @if (lessons != null && topic != null)
 {
-    <div class="lessons-list">
+    @if (HasWorkedExamples(TopicId))
+    {
+        <button class="btn btn-outline worked-examples-btn" @onclick='() => Nav.NavigateTo($"/worked-examples/{TopicId}")'>
+            <Icon Name="pencil" Size="16" /> Worked Examples
+        </button>
+    }
+
+    <div class="lessons-list stagger-in">
         @foreach (var lesson in lessons)
         {
             var isCompleted = profile?.LessonsCompleted.Contains(lesson.Id) ?? false;
@@ -21,11 +28,11 @@
                     <div class="lesson-number" style="background: @(isCompleted ? "var(--success)" : isLocked ? "var(--text-muted)" : topic.Color)">
                         @if (isCompleted)
                         {
-                            <span>&#x2713;</span>
+                            <span><Icon Name="check" Size="18" /></span>
                         }
                         else if (isLocked)
                         {
-                            <span>&#x1F512;</span>
+                            <span><Icon Name="lock" Size="18" /></span>
                         }
                         else
                         {
@@ -46,16 +53,67 @@
                     var total = lesson.Concepts.Count;
                     var pct = total > 0 ? (double)conceptsDone / total * 100 : 0;
                     <div class="progress-bar-container" style="margin-top: 8px">
-                        <div class="progress-bar-fill" style="width: @pct.ToString("F0")%; background: linear-gradient(90deg, @topic.Color, @topic.Color)"></div>
+                        <div class="progress-bar-fill animate-in" style="width: @pct.ToString("F0")%; background: linear-gradient(90deg, @topic.Color, @topic.Color)"></div>
                     </div>
                 }
             </div>
         }
     </div>
+
+    @if (profile != null)
+    {
+        var isTopicDone = profile.TopicsCompleted.Contains(TopicId);
+        var masteryTier = profile.TopicMastery.GetValueOrDefault(TopicId, 0);
+
+        <div class="card card-clickable mastery-banner @(isTopicDone ? "" : "mastery-locked-banner")"
+             @onclick='() => Nav.NavigateTo($"/mastery/{TopicId}")'>
+            <div class="mastery-banner-left">
+                <div class="mastery-banner-badge" style="background: @GetMasteryColor(masteryTier)">
+                    <Icon Name="@GetMasteryIcon(masteryTier)" Size="20" />
+                </div>
+                <div>
+                    <strong>Mastery Challenge</strong>
+                    <small>
+                        @if (!isTopicDone)
+                        {
+                            <span>Complete all lessons to unlock</span>
+                        }
+                        else if (masteryTier == 0)
+                        {
+                            <span>Prove your knowledge</span>
+                        }
+                        else if (masteryTier >= 4)
+                        {
+                            <span>Grandmaster <Icon Name="crown" Size="14" /></span>
+                        }
+                        else
+                        {
+                            <span>@GetMasteryName(masteryTier) — next: @GetMasteryName(masteryTier + 1)</span>
+                        }
+                    </small>
+                </div>
+            </div>
+            @if (isTopicDone)
+            {
+                <span style="color: @(topic?.Color ?? "var(--primary)"); font-size: 1.2rem">→</span>
+            }
+            else
+            {
+                <span style="color: var(--text-muted)"><Icon Name="lock" Size="18" /></span>
+            }
+        </div>
+    }
 }
 else
 {
-    <div class="loading">Loading lessons...</div>
+    <div class="skeleton-dashboard">
+        <div class="skeleton-topics">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="skeleton skeleton-card" style="height:70px;margin-bottom:10px"></div>
+            }
+        </div>
+    </div>
 }
 
 @code {
@@ -76,6 +134,8 @@ else
         }
     }
 
+    private static bool HasWorkedExamples(string topicId) => topicId is "calculus" or "linear-algebra" or "probability" or "number-theory";
+
     private bool CanAccessLesson(Lesson lesson)
     {
         if (lesson.Order == 1) return true;
@@ -89,9 +149,16 @@ else
         if (isLocked) return;
         Nav.NavigateTo($"/topic/{TopicId}/lesson/{lesson.Id}");
     }
+
+    private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
+    private string GetMasteryIcon(int tier) => tier switch { 0 => "sword", 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
+    private string GetMasteryColor(int tier) => tier switch { 1 => "#CD7F32", 2 => "#C0C0C0", 3 => "#FFD700", 4 => "#FF6B35", _ => "var(--bg-surface)" };
+
 }
 
 <style>
+    .worked-examples-btn { width: 100%; margin-bottom: 12px; border-style: dashed; }
+
     .lessons-list {
         display: flex;
         flex-direction: column;
@@ -144,5 +211,29 @@ else
 
     .lesson-xp {
         flex-shrink: 0;
+    }
+
+    /* Mastery banner */
+    .mastery-banner {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 16px; margin-top: 20px;
+        background: linear-gradient(135deg, rgba(255,215,0,0.06), rgba(255,107,53,0.06));
+        border: 1px solid rgba(255,215,0,0.2);
+    }
+    .mastery-banner:hover { transform: none; }
+
+    .mastery-locked-banner {
+        opacity: 0.55; background: var(--bg-card);
+        border-color: var(--border);
+    }
+
+    .mastery-banner-left { display: flex; align-items: center; gap: 12px; }
+    .mastery-banner-left strong { display: block; font-size: 0.9rem; }
+    .mastery-banner-left small { color: var(--text-muted); font-size: 0.8rem; }
+
+    .mastery-banner-badge {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
     }
 </style>

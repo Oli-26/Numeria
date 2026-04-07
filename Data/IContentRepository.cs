@@ -10,4 +10,5 @@ public interface IContentRepository
     Task<Lesson?> GetLessonAsync(string topicId, string lessonId);
     Task<List<Question>> GetQuestionsAsync(string topicId);
     Task<List<Question>> GetQuestionsForLessonAsync(string topicId, string lessonId);
+    Task<List<Question>> GetMasteryQuestionsAsync(string topicId);
 }

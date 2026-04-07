@@ -286,5 +286,149 @@
     ],
     "quizQuestionIds": ["topo-q36", "topo-q37", "topo-q38", "topo-q39", "topo-q40"],
     "puzzleId": "topo-p02"
+  },
+  {
+    "id": "topo-09",
+    "topicId": "topology",
+    "order": 9,
+    "title": "Covering Spaces",
+    "description": "Unwinding spaces and deck transformations",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "topo-09-c1",
+        "title": "Covering Maps & Sheets",
+        "contentHtml": "<p>A <strong>covering map</strong> p: E to B is a continuous surjection where every point in B has a neighborhood U such that p^{-1}(U) is a disjoint union of open sets, each mapped homeomorphically onto U by p.</p><p>Think of it as \"stacking copies\" of the base space. The preimage of each point is a discrete set of <strong>sheets</strong>. The number of sheets is the <strong>degree</strong> of the cover.</p><p>Classic example: the map p: R to S^1 given by p(t) = e^{2 pi i t} wraps the real line around the circle infinitely many times. Each point on the circle has infinitely many preimages (one for each integer shift).</p>",
+        "mathExpressions": ["p: \\mathbb{R} \\to S^1, \\quad p(t) = e^{2\\pi i t}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-09-c2",
+        "title": "Universal Cover",
+        "contentHtml": "<p>The <strong>universal cover</strong> of a space X is a covering space that is <strong>simply connected</strong> (every loop can be shrunk to a point).</p><p>It's \"universal\" because it covers every other covering space of X -- it's the largest possible unfolding.</p><p>Examples:</p><p>The universal cover of S^1 is R (the real line, unwound from the circle).</p><p>The universal cover of the torus T^2 is R^2 (the plane, tiled by copies of the fundamental domain).</p><p>The universal cover of the figure-eight is an infinite tree -- reflecting the free group structure of its fundamental group.</p>",
+        "mathExpressions": ["\\widetilde{S^1} = \\mathbb{R}, \\quad \\widetilde{T^2} = \\mathbb{R}^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-09-c3",
+        "title": "Galois Correspondence for Covering Spaces",
+        "contentHtml": "<p>One of the most elegant results in algebraic topology: there is a bijective correspondence between <strong>covering spaces of X</strong> (up to isomorphism) and <strong>subgroups of pi_1(X)</strong> (up to conjugacy).</p><p>The universal cover corresponds to the trivial subgroup {e}. The space X itself (as a cover of itself) corresponds to the full group pi_1(X).</p><p><strong>Deck transformations</strong> are self-homeomorphisms of the covering space that preserve the covering map. For the universal cover, the group of deck transformations is isomorphic to pi_1(X).</p><p>This correspondence turns topological questions about coverings into algebraic questions about subgroups, which are often much easier to answer.</p>",
+        "mathExpressions": ["\\{\\text{covering spaces of } X\\} \\longleftrightarrow \\{\\text{subgroups of } \\pi_1(X)\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topo-q49", "topo-q50", "topo-q51", "topo-q52", "topo-q53"],
+    "puzzleId": null
+  },
+  {
+    "id": "topo-10",
+    "topicId": "topology",
+    "order": 10,
+    "title": "CW Complexes",
+    "description": "Building spaces from cells",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "topo-10-c1",
+        "title": "Cells & Attaching Maps",
+        "contentHtml": "<p>A <strong>CW complex</strong> is a space built by gluing cells of increasing dimension:</p><p><strong>0-cells</strong> are points.<br><strong>1-cells</strong> are line segments (edges), attached at their endpoints to 0-cells.<br><strong>2-cells</strong> are disks, attached along their boundary circles to the 1-skeleton.<br><strong>n-cells</strong> are n-dimensional disks, attached by maps from their boundary sphere.</p><p>The <strong>attaching map</strong> specifies how the boundary of each cell wraps around the lower-dimensional skeleton. Different attaching maps produce topologically different spaces.</p>",
+        "mathExpressions": ["X^n = X^{n-1} \\cup_{\\phi_\\alpha} \\bigsqcup_\\alpha D^n_\\alpha"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-10-c2",
+        "title": "Building Standard Spaces from Cells",
+        "contentHtml": "<p>CW structures reveal the essential shape of familiar spaces:</p><p><strong>Sphere S^2:</strong> One 0-cell (point) and one 2-cell (disk) with boundary collapsed to the point. Minimal: just 2 cells.</p><p><strong>Torus T^2:</strong> One 0-cell, two 1-cells (meridian and longitude), and one 2-cell whose boundary follows the pattern aba^{-1}b^{-1}. This is the famous identification of the square.</p><p><strong>Real projective plane RP^2:</strong> One 0-cell, one 1-cell, and one 2-cell attached by wrapping the boundary around the 1-cell twice. This encodes the non-orientability of RP^2.</p>",
+        "mathExpressions": ["T^2: \\quad \\text{1 vertex, 2 edges, 1 face} \\quad (\\chi = 1 - 2 + 1 = 0)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-10-c3",
+        "title": "Cellular Homology",
+        "contentHtml": "<p><strong>Cellular homology</strong> computes homology groups directly from the CW structure, making calculations much simpler than the general definition.</p><p>The chain group C_n is the free abelian group generated by the n-cells. The boundary maps d_n: C_n to C_{n-1} encode how each n-cell attaches to the (n-1)-cells.</p><p>Then H_n = ker(d_n) / im(d_{n+1}) -- cycles modulo boundaries, computed from the cell structure alone.</p><p>For the torus: C_0 = Z, C_1 = Z^2, C_2 = Z. The boundary maps give H_0 = Z, H_1 = Z^2, H_2 = Z -- one component, two independent loops, one cavity.</p>",
+        "mathExpressions": ["H_n(X) = \\ker(d_n) / \\text{im}(d_{n+1})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topo-q54", "topo-q55", "topo-q56", "topo-q57", "topo-q58"],
+    "puzzleId": null
+  },
+  {
+    "id": "topo-11",
+    "topicId": "topology",
+    "order": 11,
+    "title": "Cohomology",
+    "description": "Dual to homology with a ring structure",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "topo-11-c1",
+        "title": "Cochains, Cocycles & Coboundaries",
+        "contentHtml": "<p><strong>Cohomology</strong> is the algebraic dual of homology. Where homology uses chains (formal sums of cells), cohomology uses <strong>cochains</strong> -- functions that assign values to cells.</p><p>A <strong>cocycle</strong> is a cochain that vanishes on boundaries (it's in the kernel of the coboundary map). A <strong>coboundary</strong> is a cochain that comes from a lower-dimensional cochain (it's in the image of the coboundary map).</p><p>The cohomology group is H^n = cocycles / coboundaries = ker(delta^n) / im(delta^{n-1}).</p><p>For \"nice\" spaces over a field, the cohomology groups have the same rank as the homology groups. But cohomology has extra structure that homology lacks.</p>",
+        "mathExpressions": ["H^n(X; R) = \\ker(\\delta^n) / \\text{im}(\\delta^{n-1})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-11-c2",
+        "title": "Cup Product & Ring Structure",
+        "contentHtml": "<p>The key advantage of cohomology over homology: the <strong>cup product</strong> gives cohomology a <strong>ring structure</strong>.</p><p>The cup product takes an n-cocycle and an m-cocycle and produces an (n+m)-cocycle: if alpha is in H^n and beta is in H^m, then alpha cup beta is in H^{n+m}.</p><p>This extra structure can distinguish spaces that homology alone cannot. For example, the torus T^2 and the wedge S^1 v S^1 v S^2 have identical homology groups, but their cup product structures differ -- so they are not homotopy equivalent.</p><p>The cohomology ring H*(X; R) is a graded-commutative ring, a much richer invariant than the homology groups alone.</p>",
+        "mathExpressions": ["\\smile: H^n(X) \\times H^m(X) \\to H^{n+m}(X)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-11-c3",
+        "title": "De Rham Cohomology",
+        "contentHtml": "<p>On smooth manifolds, there is a beautiful alternative: <strong>de Rham cohomology</strong>, defined using <strong>differential forms</strong>.</p><p>A differential k-form is a smooth assignment of an alternating k-linear function to each tangent space. The exterior derivative d sends k-forms to (k+1)-forms, and satisfies d^2 = 0.</p><p>De Rham cohomology: H^k_{dR}(M) = (closed k-forms) / (exact k-forms).</p><p><strong>De Rham's theorem</strong> says this equals singular cohomology with real coefficients -- analysis and topology give the same answer! A closed form that is not exact detects a \"hole\" in the manifold.</p>",
+        "mathExpressions": ["H^k_{\\text{dR}}(M) = \\frac{\\ker(d: \\Omega^k \\to \\Omega^{k+1})}{\\text{im}(d: \\Omega^{k-1} \\to \\Omega^k)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topo-q59", "topo-q60", "topo-q61", "topo-q62", "topo-q63"],
+    "puzzleId": null
+  },
+  {
+    "id": "topo-12",
+    "topicId": "topology",
+    "order": 12,
+    "title": "Smooth Manifolds",
+    "description": "Charts, tangent spaces, and Stokes' theorem",
+    "xpReward": 220,
+    "concepts": [
+      {
+        "id": "topo-12-c1",
+        "title": "Charts, Atlases & Smooth Structure",
+        "contentHtml": "<p>A <strong>smooth manifold</strong> is a space that locally looks like R^n, with smooth transition maps between local coordinate systems.</p><p>A <strong>chart</strong> (U, phi) is an open set U in the manifold together with a homeomorphism phi: U to an open subset of R^n. An <strong>atlas</strong> is a collection of charts covering the whole manifold.</p><p>The atlas is <strong>smooth</strong> if whenever two charts overlap, the transition map phi_2 composed with phi_1^{-1} is a smooth (infinitely differentiable) function between open subsets of R^n.</p><p>This structure lets us do calculus on curved spaces by working in local coordinates and verifying that our results don't depend on the choice of coordinates.</p>",
+        "mathExpressions": ["\\phi_\\beta \\circ \\phi_\\alpha^{-1}: \\phi_\\alpha(U_\\alpha \\cap U_\\beta) \\to \\phi_\\beta(U_\\alpha \\cap U_\\beta) \\text{ is smooth}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-12-c2",
+        "title": "Tangent Spaces, Vector Fields & Differential Forms",
+        "contentHtml": "<p>The <strong>tangent space</strong> T_p M at a point p on a manifold M is the vector space of \"velocity vectors\" of curves through p. For an n-dimensional manifold, each tangent space is an n-dimensional vector space.</p><p>A <strong>vector field</strong> assigns a tangent vector to each point smoothly -- it's a smooth section of the tangent bundle TM.</p><p><strong>Differential forms</strong> are the dual objects: a k-form assigns a real number to each k-tuple of tangent vectors at each point, varying smoothly. 1-forms eat vectors to produce numbers; 2-forms eat pairs of vectors.</p><p>The <strong>exterior derivative</strong> d takes k-forms to (k+1)-forms and satisfies d^2 = 0, providing the machinery for de Rham cohomology and generalized integration.</p>",
+        "mathExpressions": ["T_p M \\cong \\mathbb{R}^n, \\quad \\omega \\in \\Omega^k(M)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topo-12-c3",
+        "title": "Stokes' Theorem on Manifolds",
+        "contentHtml": "<p>The <strong>generalized Stokes' theorem</strong> is the crown jewel of differential geometry. For a compact oriented manifold M with boundary dM and a differential form omega:</p><p>It says: the integral of a derivative over a region equals the integral of the original form over the boundary.</p><p>This single equation unifies <em>all</em> of classical vector calculus:</p><p>When M is an interval [a,b]: the Fundamental Theorem of Calculus.<br>When M is a region in R^2: Green's theorem.<br>When M is a surface in R^3: the classical Stokes' theorem.<br>When M is a solid region in R^3: the Divergence theorem.</p><p>Different dimensions, different settings, but one universal principle: integration and differentiation are dual operations connected through boundaries.</p>",
+        "mathExpressions": ["\\int_M d\\omega = \\int_{\\partial M} \\omega"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topo-q64", "topo-q65", "topo-q66", "topo-q67", "topo-q68"],
+    "puzzleId": null
   }
 ]

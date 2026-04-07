@@ -1,9 +1,10 @@
 @page "/quiz/{Scope}/{Id}"
 @inject NavigationManager Nav
+@inject IContentRepository Content
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>&#x2190;</button>
-    <h1>@GetTitle()</h1>
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>@title</h1>
 </div>
 
 <QuizComponent TopicId="@GetTopicId()" LessonId="@GetLessonId()" OnComplete="OnComplete" />
@@ -11,6 +12,25 @@
 @code {
     [Parameter] public string Scope { get; set; } = "";
     [Parameter] public string Id { get; set; } = "";
+
+    private string title = "Quiz";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Scope == "topic")
+            {
+                var topic = await Content.GetTopicAsync(Id);
+                title = topic != null ? $"{topic.Name} Quiz" : $"{Id} Quiz";
+            }
+            else if (Scope == "mixed")
+            {
+                title = "Quick Quiz";
+            }
+            StateHasChanged();
+        }
+    }
 
     private string? GetTopicId() => Scope switch
     {
@@ -21,15 +41,13 @@
 
     private string? GetLessonId() => Scope == "lesson" && Id.Contains("/") ? Id.Split("/")[1] : null;
 
-    private string GetTitle() => Scope switch
-    {
-        "mixed" => "Quick Quiz",
-        "topic" => $"{Id} Quiz",
-        _ => "Quiz"
-    };
-
     private void OnComplete(int xpEarned)
     {
-        Nav.NavigateTo("/");
+        if (Scope == "topic")
+            Nav.NavigateTo($"/topic/{Id}");
+        else if (Scope == "lesson" && Id.Contains("/"))
+            Nav.NavigateTo($"/topic/{Id.Split("/")[0]}");
+        else
+            Nav.NavigateTo("/");
     }
 }

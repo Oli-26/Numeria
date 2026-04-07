@@ -7,7 +7,7 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'>\u2190</button>
+    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Review</h1>
 </div>
 
@@ -18,7 +18,7 @@
 else if (state == ReviewState.Empty)
 {
     <div class="empty-state card">
-        <div class="empty-icon">\u2705</div>
+        <div class="empty-icon"><Icon Name="checkmark-circle" Size="32" /></div>
         <h2>All caught up!</h2>
         <p>No cards due for review. Keep learning and questions will appear here based on how well you remember them.</p>
         <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Back to Home</button>
@@ -34,7 +34,7 @@ else if (state == ReviewState.Active)
 
         @if (currentQuestion != null)
         {
-            <div class="card review-card">
+            <div class="card review-card question-enter" @key="currentIndex">
                 <p class="question-prompt">@currentQuestion.Prompt</p>
 
                 @if (currentQuestion.MathExpression != null)
@@ -76,10 +76,10 @@ else if (state == ReviewState.Active)
 }
 else if (state == ReviewState.Complete)
 {
-    <div class="card review-complete">
-        <div class="complete-icon">\uD83C\uDF1F</div>
+    <div class="card review-complete count-up">
+        <div class="complete-icon"><Icon Name="star-filled" Size="32" Fill="currentColor" /></div>
         <h2>Review Complete!</h2>
-        <div class="review-stats-row">
+        <div class="review-stats-row stagger-in">
             <div class="review-stat">
                 <span class="review-stat-val correct-color">@rememberedCount</span>
                 <small>Remembered</small>
@@ -141,11 +141,22 @@ else if (state == ReviewState.Complete)
         var questions = await Content.GetQuestionsAsync(card.TopicId);
         currentQuestion = questions.FirstOrDefault(q => q.Id == card.QuestionId);
         revealed = false;
+
+        // Skip missing questions
+        if (currentQuestion == null)
+        {
+            currentIndex++;
+            if (currentIndex < dueCards.Count)
+                await LoadCurrentQuestion();
+            else
+                state = ReviewState.Complete;
+        }
     }
 
-    private void Reveal()
+    private async Task Reveal()
     {
         revealed = true;
+        try { await JS.InvokeVoidAsync("Sounds.playReveal"); } catch { }
     }
 
     private async Task Rate(bool remembered)
@@ -159,16 +170,19 @@ else if (state == ReviewState.Complete)
             var earned = 10;
             xpEarned += earned;
             await Gamification.AwardXpAsync(earned);
+            try { await JS.InvokeVoidAsync("Sounds.playCorrect"); } catch { }
         }
         else
         {
             forgotCount++;
+            try { await JS.InvokeVoidAsync("Sounds.playWrong"); } catch { }
         }
 
         currentIndex++;
         if (currentIndex >= dueCards.Count)
         {
             state = ReviewState.Complete;
+            try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
         }
         else
         {
@@ -188,6 +202,12 @@ else if (state == ReviewState.Complete)
     .review-answer {
         margin-top: 16px; padding: 14px; background: var(--bg-surface);
         border-radius: var(--radius-sm); border-left: 4px solid var(--primary);
+        animation: revealSlide 0.35s ease;
+    }
+
+    @@keyframes revealSlide {
+        from { opacity: 0; transform: translateY(12px); max-height: 0; }
+        to { opacity: 1; transform: translateY(0); max-height: 200px; }
     }
     .review-answer strong { font-size: 1.1rem; color: var(--primary); }
     .review-answer p { margin: 8px 0 0; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
