@@ -477,14 +477,14 @@ else if (quizState == QuizState.Complete)
         userMatches.Clear();
         matchResults.Clear();
 
-        if (showHintsByDefault && hintsAvailable > 0)
+        var q = questions[currentIndex];
+        if (showHintsByDefault && hintsAvailable > 0 && q.CorrectAnswer != null)
         {
             hintShown = true;
             hintsAvailable--;
             _ = DeductHintAsync();
         }
 
-        var q = questions[currentIndex];
         if (q.Type == QuestionType.ProofOrdering && q.Steps != null)
         {
             orderedSteps = q.Steps.OrderBy(_ => _random.Next()).ToList();
@@ -1035,20 +1035,24 @@ else if (quizState == QuizState.Complete)
 
 
     .hint-btn {
-        display: inline-block;
-        padding: 6px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        min-height: 44px;
         border: 1px dashed var(--accent);
         border-radius: var(--radius-sm);
         background: transparent;
         color: var(--accent);
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-weight: 600;
         cursor: pointer;
         margin-top: 4px;
-        transition: background 0.2s ease;
+        transition: background var(--dur-normal) var(--ease-out);
         -webkit-tap-highlight-color: transparent;
     }
     .hint-btn:hover { background: rgba(240, 160, 48, 0.08); }
+    .hint-btn:active { transform: scale(0.97); }
 
     .hint-reveal {
         margin-top: 6px;

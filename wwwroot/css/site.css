@@ -1,25 +1,32 @@
 :root {
-    --primary: #4A5FE0;
-    --primary-light: #7B8FF0;
-    --primary-dark: #2D3A8C;
-    --accent: #F0A030;
-    --accent-light: #FFD080;
-    --bg-main: #F4F6FC;
+    --primary: #5B6ABF;
+    --primary-light: #8892D0;
+    --primary-dark: #3D4891;
+    --accent: #C4813A;
+    --accent-light: #E0A96C;
+    --bg-main: #F5F3EF;
     --bg-card: #FFFFFF;
-    --bg-surface: #E8EBF7;
-    --text-primary: #1A1A2E;
-    --text-secondary: #4A4A6A;
-    --text-muted: #8888AA;
-    --success: #4CAF50;
-    --error: #EF5350;
-    --warning: #FF9800;
-    --border: #D0D5E8;
-    --shadow: rgba(74, 95, 224, 0.1);
+    --bg-surface: #EBE8E2;
+    --text-primary: #2C2A26;
+    --text-secondary: #5C5850;
+    --text-muted: #908A80;
+    --success: #5A9E5F;
+    --error: #C7564F;
+    --warning: #C4913A;
+    --border: #D8D4CC;
+    --shadow: rgba(44, 42, 38, 0.08);
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
     --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --xp-text: #5a3e00;
+
+    /* Motion system */
+    --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --dur-fast: 150ms;
+    --dur-normal: 250ms;
+    --dur-slow: 400ms;
 }
 
 *, *::before, *::after {
@@ -33,6 +40,7 @@ html, body {
     background: var(--bg-main);
     color: var(--text-primary);
     min-height: 100vh;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -170,11 +178,11 @@ a {
     align-items: center;
     gap: 4px;
     background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    color: var(--xp-text);
+    color: #1a1a2e;
     font-weight: 700;
     font-size: 0.85rem;
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: 4px;
 }
 
 /* Streak */
@@ -228,18 +236,18 @@ a {
     border-radius: var(--radius-sm);
     padding: 12px 16px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    border-left: 4px solid var(--accent);
+    border: 1px solid var(--accent);
     animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
     pointer-events: auto;
     font-weight: 600;
 }
 
 .toast.achievement {
-    border-left-color: var(--primary);
+    border-color: var(--primary);
 }
 
 .toast.level-up {
-    border-left-color: var(--success);
+    border-color: var(--success);
 }
 
 @keyframes toastIn {
@@ -412,7 +420,7 @@ a {
 .chip {
     display: inline-block;
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 600;
     background: var(--bg-surface);
@@ -426,6 +434,28 @@ a {
     align-items: center;
     padding: 40px;
     color: var(--text-muted);
+}
+
+/* Shared empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 24px;
+}
+
+.empty-state .empty-icon {
+    margin-bottom: 12px;
+    color: var(--text-muted);
+}
+
+.empty-state h2 {
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin: 0 auto 20px;
+    max-width: 320px;
+    line-height: 1.6;
 }
 
 /* ── Responsive ── */
@@ -499,10 +529,22 @@ input, select, textarea, button {
 
 input[type="text"],
 input[type="number"],
+input[type="time"],
+select,
 textarea {
     background: var(--bg-surface);
     color: var(--text-primary);
     border-color: var(--border);
+    font-family: var(--font-main);
+}
+
+/* Global input focus ring */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.18);
 }
 
 strong {
@@ -842,6 +884,43 @@ strong {
     transition: 0s;
 }
 
+/* ── Shared tab bar system ── */
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    margin-bottom: 16px;
+}
+
+.tab-bar .tab {
+    flex: 1;
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color var(--dur-normal) var(--ease-out),
+                background var(--dur-normal) var(--ease-out),
+                box-shadow var(--dur-normal) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+}
+
+.tab-bar .tab:active {
+    transform: scale(0.96);
+}
+
+.tab-bar .tab.active {
+    background: var(--bg-card);
+    color: var(--primary);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
 /* ── Smooth tab indicator ── */
 .tab-nav {
     position: relative;
@@ -859,4 +938,125 @@ strong {
 @keyframes toastIn {
     from { opacity: 0; transform: translateX(100%) scale(0.9); }
     to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ── Safe area insets (notch + gesture bar) ── */
+body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    /* bottom padding is handled by .main-content and bottom-nav */
+}
+
+.main-content {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ── Focus-visible accessibility ── */
+:focus {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Buttons get a box-shadow focus ring (nicer on rounded elements) */
+button:focus-visible,
+.btn:focus-visible,
+.option-btn:focus-visible,
+.card-clickable:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.4);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .stagger-in > * {
+        opacity: 1;
+        animation: none;
+    }
+
+    .main-content {
+        animation: none;
+    }
+
+    .progress-bar-fill::after,
+    .skeleton::after {
+        animation: none;
+    }
+}
+
+/* ── Motion var usage — upgrade key transitions ── */
+.card {
+    transition: transform var(--dur-normal) var(--ease-out),
+                box-shadow var(--dur-normal) var(--ease-out);
+}
+
+.btn {
+    transition: transform var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out),
+                background var(--dur-normal) var(--ease-out),
+                filter var(--dur-fast) var(--ease-out);
+}
+
+.btn:not(:active) {
+    transition: transform var(--dur-normal) var(--ease-spring),
+                filter var(--dur-normal) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* ── ARIA label reminder: icon-only buttons ── */
+/* Back buttons in .page-header already have aria from context;
+   toggle buttons get tooltip via title in HTML */
+
+/* ── Tap-target minimum: ensure icon-only controls are ≥44px ── */
+.page-header .back-btn {
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--radius-sm);
+    transition: background var(--dur-fast) var(--ease-out);
+}
+
+.page-header .back-btn:hover {
+    background: var(--bg-surface);
+}
+
+.page-header .back-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.4);
+}
+
+/* ── Concept figures (history topic images) ─────────────────────────── */
+.concept-figure {
+    margin: 16px 0;
+    padding: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-surface);
+}
+
+.concept-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 400px;
+    object-fit: contain;
+    background: #1a1a1a;
+}
+
+.concept-figure figcaption {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
 }

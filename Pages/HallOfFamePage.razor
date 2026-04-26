@@ -6,7 +6,7 @@
 @if (!unlocked)
 {
     <div class="page-header">
-        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>Hall of Fame</h1>
     </div>
     <div class="card" style="text-align: center; padding: 40px 24px">
@@ -20,7 +20,7 @@ else
 {
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Hall of Fame</h1>
 </div>
 
@@ -159,7 +159,7 @@ else
             {
                 var person = m;
                 var isSelected = trumpPick1?.Name == person.Name || trumpPick2?.Name == person.Name;
-                <div class="trump-pick @(isSelected ? "picked" : "")" style="border-left: 3px solid @person.Color"
+                <div class="trump-pick @(isSelected ? "picked" : "")" style="border-color: @person.Color"
                      @onclick="() => PickTrump(person)">
                     <strong>@person.Name</strong>
                     <small>@person.Years</small>

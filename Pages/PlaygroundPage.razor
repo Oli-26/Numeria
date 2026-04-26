@@ -6,7 +6,7 @@
 @if (!unlocked)
 {
     <div class="page-header">
-        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>What If? Playground</h1>
     </div>
     <div class="card" style="text-align: center; padding: 40px 24px">
@@ -20,7 +20,7 @@ else
 {
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>What If? Playground</h1>
 </div>
 
@@ -1692,6 +1692,27 @@ else
         background: var(--bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;
         padding: 20px; animation: slideUp 0.3s ease;
+    }
+
+    @@media (min-width: 768px) {
+        .experiment-overlay {
+            align-items: center;
+        }
+
+        .experiment-panel {
+            border-radius: var(--radius-lg);
+            max-width: 700px;
+            max-height: 85vh;
+            padding: 28px;
+            animation: fadeIn 0.2s ease;
+        }
+    }
+
+    @@media (min-width: 1024px) {
+        .experiment-panel {
+            max-width: 800px;
+            padding: 32px;
+        }
     }
 
     .exp-panel-header {

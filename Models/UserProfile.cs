@@ -49,9 +49,22 @@ public class UserProfile
     // Settings
     public bool ShowHintsByDefault { get; set; }
     public string FontSize { get; set; } = "medium"; // small, medium, large
+    public string CurrentDomain { get; set; } = "math";
 
     // Fortune cookies
     public List<string> ViewedCookieDates { get; set; } = new();
+
+    // Notifications
+    public bool NotificationsEnabled { get; set; }
+    public string DailyReminderTime { get; set; } = "19:00"; // HH:mm
+    public bool StreakReminderEnabled { get; set; } = true;
+    public bool ReviewReminderEnabled { get; set; } = true;
+
+    // TTS (audio mode)
+    public bool TtsEnabled { get; set; } = true;
+    public string TtsVoice { get; set; } = "";   // empty = system default
+    public double TtsRate { get; set; } = 1.0;
+    public bool TtsAutoAdvance { get; set; } = false;
 }
 
 public class CompletionCard

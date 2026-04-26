@@ -7,6 +7,7 @@ public class ContentRepository : IContentRepository
 {
     private readonly HttpClient _http;
     private List<Topic>? _topics;
+    private List<Domain>? _domains;
     private readonly Dictionary<string, List<Lesson>> _lessons = new();
     private readonly Dictionary<string, List<Question>> _questions = new();
 
@@ -19,6 +20,18 @@ public class ContentRepository : IContentRepository
     {
         _topics ??= await _http.GetFromJsonAsync<List<Topic>>("data/topics.json") ?? new();
         return _topics;
+    }
+
+    public async Task<List<Topic>> GetTopicsByDomainAsync(string domainId)
+    {
+        var topics = await GetTopicsAsync();
+        return topics.Where(t => string.Equals(t.Domain, domainId, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    public async Task<List<Domain>> GetDomainsAsync()
+    {
+        _domains ??= await _http.GetFromJsonAsync<List<Domain>>("data/domains.json") ?? new();
+        return _domains;
     }
 
     public async Task<Topic?> GetTopicAsync(string topicId)
@@ -88,5 +101,19 @@ public class ContentRepository : IContentRepository
             }
         }
         return _masteryQuestions[topicId];
+    }
+
+    private List<SynthesisQuiz>? _synthesisQuizzes;
+
+    public async Task<List<SynthesisQuiz>> GetSynthesisQuizzesAsync()
+    {
+        _synthesisQuizzes ??= await _http.GetFromJsonAsync<List<SynthesisQuiz>>("data/synthesis-quizzes.json") ?? new();
+        return _synthesisQuizzes;
+    }
+
+    public async Task<SynthesisQuiz?> GetSynthesisQuizAsync(string id)
+    {
+        var quizzes = await GetSynthesisQuizzesAsync();
+        return quizzes.FirstOrDefault(q => q.Id == id);
     }
 }

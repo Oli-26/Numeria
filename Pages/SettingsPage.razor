@@ -1,12 +1,40 @@
 @page "/settings"
 @inject IProgressService Progress
 @inject IThemeService ThemeService
+@inject IContentRepository Content
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@inject INotificationService NotificationSvc
+@inject ITtsService TtsService
 
-<h1>Settings</h1>
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Settings</h1>
+</div>
 
 <div class="settings-list">
+    @if (domains.Count >= 2)
+    {
+        <div class="card settings-item">
+            <div class="settings-row">
+                <div class="settings-icon"><Icon Name="book" Size="24" /></div>
+                <div class="settings-info">
+                    <h3>Domain</h3>
+                    <p>What you're learning</p>
+                </div>
+            </div>
+            <div class="domain-picker">
+                @foreach (var d in domains)
+                {
+                    <button class="domain-btn @(currentDomain == d.Id ? "active" : "")" @onclick="() => SetDomain(d.Id)">
+                        <strong>@d.Name</strong>
+                        <small>@d.Description</small>
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
     <div class="card settings-item">
         <div class="settings-row">
             <div class="settings-icon"><Icon Name="palette" Size="24" /></div>
@@ -31,7 +59,7 @@
                 <h3>Sound Effects</h3>
                 <p>@(soundEnabled ? "On" : "Off")</p>
             </div>
-            <button class="toggle-btn @(soundEnabled ? "on" : "")" @onclick="ToggleSound">
+            <button class="toggle-btn @(soundEnabled ? "on" : "")" aria-label="@(soundEnabled ? "Disable sound effects" : "Enable sound effects")" @onclick="ToggleSound">
                 <span class="toggle-knob"></span>
             </button>
         </div>
@@ -67,7 +95,7 @@
                 <h3>Show Hints by Default</h3>
                 <p>Auto-reveal hints when available</p>
             </div>
-            <button class="toggle-btn @(showHints ? "on" : "")" @onclick="ToggleShowHints">
+            <button class="toggle-btn @(showHints ? "on" : "")" aria-label="@(showHints ? "Disable auto-hints" : "Enable auto-hints")" @onclick="ToggleShowHints">
                 <span class="toggle-knob"></span>
             </button>
         </div>
@@ -92,6 +120,123 @@
                 <span style="font-size: 1.2rem">A</span> Large
             </button>
         </div>
+    </div>
+
+    <div class="card settings-item">
+        <div class="settings-row">
+            <div class="settings-icon"><Icon Name="clock" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Notifications</h3>
+                <p>@(notificationsEnabled ? "On" : "Off")</p>
+            </div>
+            <button class="toggle-btn @(notificationsEnabled ? "on" : "")" aria-label="@(notificationsEnabled ? "Disable notifications" : "Enable notifications")" @onclick="ToggleNotifications">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+        @if (notificationsEnabled)
+        {
+            <div class="notif-section">
+                <div class="settings-row notif-sub-row">
+                    <div class="settings-info">
+                        <h3>Streak Reminder</h3>
+                        <p>Daily nudge at the time below</p>
+                    </div>
+                    <button class="toggle-btn @(streakReminderEnabled ? "on" : "")" @onclick="ToggleStreakReminder">
+                        <span class="toggle-knob"></span>
+                    </button>
+                </div>
+                <div class="settings-row notif-sub-row">
+                    <div class="settings-info">
+                        <h3>Daily Reminder Time</h3>
+                        <p>When to nudge you each day</p>
+                    </div>
+                    <input type="time" class="time-input" value="@dailyReminderTime"
+                           @onchange="OnReminderTimeChanged" />
+                </div>
+                <div class="settings-row notif-sub-row">
+                    <div class="settings-info">
+                        <h3>Review Reminder</h3>
+                        <p>Alert when review cards are due</p>
+                    </div>
+                    <button class="toggle-btn @(reviewReminderEnabled ? "on" : "")" @onclick="ToggleReviewReminder">
+                        <span class="toggle-knob"></span>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- ── Audio / TTS ─────────────────────────────────────────────────── -->
+    <div class="card settings-item">
+        <div class="settings-row">
+            <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+            </div>
+            <div class="settings-info">
+                <h3>Audio Mode</h3>
+                <p>Read lessons aloud while you study</p>
+            </div>
+            <button class="toggle-btn @(ttsEnabled ? "on" : "")" aria-label="@(ttsEnabled ? "Disable audio mode" : "Enable audio mode")" @onclick="ToggleTts">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+
+        @if (ttsEnabled)
+        {
+            <div class="tts-settings-section">
+                <!-- Speed -->
+                <div class="settings-row tts-sub-row">
+                    <div class="settings-info">
+                        <h3>Default Speed</h3>
+                        <p>@(ttsRate)x</p>
+                    </div>
+                </div>
+                <div class="tts-speed-picker">
+                    @foreach (var sp in new double[] { 0.75, 1.0, 1.25, 1.5 })
+                    {
+                        var speed = sp;
+                        <button class="tts-speed-opt @(ttsRate == speed ? "active" : "")"
+                                @onclick="() => SetTtsRateSetting(speed)">
+                            @(speed)x
+                        </button>
+                    }
+                </div>
+
+                <!-- Voice picker -->
+                @if (ttsVoices.Count > 0)
+                {
+                    <div class="settings-row tts-sub-row" style="margin-top:12px">
+                        <div class="settings-info">
+                            <h3>Voice</h3>
+                            <p>@(string.IsNullOrEmpty(ttsVoice) ? "System default" : ttsVoice)</p>
+                        </div>
+                    </div>
+                    <select class="tts-voice-select" @onchange="OnVoiceChanged">
+                        <option value="">System default</option>
+                        @foreach (var v in ttsVoices)
+                        {
+                            <option value="@v.Name" selected="@(v.Name == ttsVoice)">@v.Name (@v.Lang)</option>
+                        }
+                    </select>
+                }
+
+                <!-- Auto-advance -->
+                <div class="settings-row tts-sub-row" style="margin-top:12px">
+                    <div class="settings-info">
+                        <h3>Auto-advance</h3>
+                        <p>Move to next concept when audio ends</p>
+                    </div>
+                    <button class="toggle-btn @(ttsAutoAdvance ? "on" : "")" @onclick="ToggleTtsAutoAdvance">
+                        <span class="toggle-knob"></span>
+                    </button>
+                </div>
+            </div>
+        }
     </div>
 
     <div class="card settings-item">
@@ -154,7 +299,7 @@
                 <h3>Dev Mode</h3>
                 <p>@(devMode ? "Active — everything unlocked" : "Unlock all features, items, and give max points")</p>
             </div>
-            <button class="toggle-btn @(devMode ? "on" : "")" @onclick="ToggleDevMode">
+            <button class="toggle-btn @(devMode ? "on" : "")" aria-label="@(devMode ? "Disable dev mode" : "Enable dev mode")" @onclick="ToggleDevMode">
                 <span class="toggle-knob"></span>
             </button>
         </div>
@@ -182,6 +327,19 @@
     private bool devMode;
     private bool showHints;
     private string fontSize = "medium";
+    private string currentDomain = "math";
+    private List<Domain> domains = new();
+    private bool notificationsEnabled;
+    private bool streakReminderEnabled = true;
+    private bool reviewReminderEnabled = true;
+    private string dailyReminderTime = "19:00";
+
+    // TTS
+    private bool ttsEnabled = true;
+    private double ttsRate = 1.0;
+    private string ttsVoice = "";
+    private bool ttsAutoAdvance;
+    private List<TtsVoice> ttsVoices = new();
 
     [Inject] private IShopRepository ShopRepo { get; set; } = default!;
 
@@ -196,6 +354,18 @@
             devMode = profile.ShopPurchases.Contains("__dev_mode__");
             showHints = profile.ShowHintsByDefault;
             fontSize = profile.FontSize ?? "medium";
+            currentDomain = profile.CurrentDomain;
+            notificationsEnabled = profile.NotificationsEnabled;
+            streakReminderEnabled = profile.StreakReminderEnabled;
+            reviewReminderEnabled = profile.ReviewReminderEnabled;
+            dailyReminderTime = profile.DailyReminderTime ?? "19:00";
+            ttsEnabled = profile.TtsEnabled;
+            ttsRate = profile.TtsRate > 0 ? profile.TtsRate : 1.0;
+            ttsVoice = profile.TtsVoice ?? "";
+            ttsAutoAdvance = profile.TtsAutoAdvance;
+            domains = await Content.GetDomainsAsync();
+            // Load voices (async — fires after first render is complete)
+            try { ttsVoices = await TtsService.GetVoicesAsync(); } catch { }
             try
             {
                 var muted = await JS.InvokeAsync<string>("localStorage.getItem", "numeria-sound-muted");
@@ -304,8 +474,8 @@
 
     private async Task ResetTheme()
     {
-        await ThemeService.ApplyThemeAsync("default");
-        activeTheme = "default";
+        await ThemeService.ApplyThemeAsync("dark");
+        activeTheme = "dark";
         await JS.InvokeVoidAsync("showToast", "Theme reset to default.", "");
         try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
     }
@@ -313,9 +483,9 @@
     private async Task DoReset()
     {
         await Progress.ResetProgressAsync();
-        await ThemeService.ApplyThemeAsync("default");
+        await ThemeService.ApplyThemeAsync("dark");
         confirmReset = false;
-        activeTheme = "default";
+        activeTheme = "dark";
         await JS.InvokeVoidAsync("showToast", "Progress reset.", "");
     }
 
@@ -327,6 +497,19 @@
         await Progress.SaveProfileAsync(profile);
         await JS.InvokeVoidAsync("showToast", showHints ? "Hints will auto-show" : "Hints hidden by default", "");
         try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task SetDomain(string domainId)
+    {
+        if (currentDomain == domainId) return;
+        currentDomain = domainId;
+        var profile = await Progress.GetProfileAsync();
+        profile.CurrentDomain = domainId;
+        await Progress.SaveProfileAsync(profile);
+        var name = domains.FirstOrDefault(d => d.Id == domainId)?.Name ?? domainId;
+        await JS.InvokeVoidAsync("showToast", $"Switched to {name}", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        Nav.NavigateTo("/", forceLoad: false);
     }
 
     private async Task SetFontSize(string size)
@@ -378,6 +561,119 @@
         {
             await JS.InvokeVoidAsync("showToast", "Import cancelled", "");
         }
+    }
+
+    private async Task ToggleNotifications()
+    {
+        if (!notificationsEnabled)
+        {
+            // Request permission before turning on.
+            var granted = await NotificationSvc.RequestPermissionAsync();
+            if (!granted)
+            {
+                await JS.InvokeVoidAsync("showToast", "Permission denied — check app settings", "");
+                return;
+            }
+            notificationsEnabled = true;
+        }
+        else
+        {
+            notificationsEnabled = false;
+            await NotificationSvc.DisableAllAsync();
+        }
+
+        var profile = await Progress.GetProfileAsync();
+        profile.NotificationsEnabled = notificationsEnabled;
+        await Progress.SaveProfileAsync(profile);
+
+        if (notificationsEnabled)
+        {
+            await NotificationSvc.RefreshSchedulesAsync();
+            await JS.InvokeVoidAsync("showToast", "Notifications enabled", "");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showToast", "Notifications disabled", "");
+        }
+
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task ToggleStreakReminder()
+    {
+        streakReminderEnabled = !streakReminderEnabled;
+        var profile = await Progress.GetProfileAsync();
+        profile.StreakReminderEnabled = streakReminderEnabled;
+        await Progress.SaveProfileAsync(profile);
+        await NotificationSvc.RefreshSchedulesAsync();
+        await JS.InvokeVoidAsync("showToast", streakReminderEnabled ? "Streak reminder on" : "Streak reminder off", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task ToggleReviewReminder()
+    {
+        reviewReminderEnabled = !reviewReminderEnabled;
+        var profile = await Progress.GetProfileAsync();
+        profile.ReviewReminderEnabled = reviewReminderEnabled;
+        await Progress.SaveProfileAsync(profile);
+        await NotificationSvc.RefreshSchedulesAsync();
+        await JS.InvokeVoidAsync("showToast", reviewReminderEnabled ? "Review reminder on" : "Review reminder off", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task OnReminderTimeChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(val)) return;
+        dailyReminderTime = val;
+        var profile = await Progress.GetProfileAsync();
+        profile.DailyReminderTime = dailyReminderTime;
+        await Progress.SaveProfileAsync(profile);
+        await NotificationSvc.RefreshSchedulesAsync();
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task ToggleTts()
+    {
+        ttsEnabled = !ttsEnabled;
+        var profile = await Progress.GetProfileAsync();
+        profile.TtsEnabled = ttsEnabled;
+        await Progress.SaveProfileAsync(profile);
+        await JS.InvokeVoidAsync("showToast", ttsEnabled ? "Audio mode on" : "Audio mode off", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+
+        // Load voices when first enabled
+        if (ttsEnabled && ttsVoices.Count == 0)
+        {
+            try { ttsVoices = await TtsService.GetVoicesAsync(); } catch { }
+        }
+    }
+
+    private async Task SetTtsRateSetting(double rate)
+    {
+        ttsRate = rate;
+        var profile = await Progress.GetProfileAsync();
+        profile.TtsRate = rate;
+        await Progress.SaveProfileAsync(profile);
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+    }
+
+    private async Task OnVoiceChanged(ChangeEventArgs e)
+    {
+        ttsVoice = e.Value?.ToString() ?? "";
+        var profile = await Progress.GetProfileAsync();
+        profile.TtsVoice = ttsVoice;
+        await Progress.SaveProfileAsync(profile);
+    }
+
+    private async Task ToggleTtsAutoAdvance()
+    {
+        ttsAutoAdvance = !ttsAutoAdvance;
+        var profile = await Progress.GetProfileAsync();
+        profile.TtsAutoAdvance = ttsAutoAdvance;
+        await Progress.SaveProfileAsync(profile);
+        await JS.InvokeVoidAsync("showToast", ttsAutoAdvance ? "Auto-advance on" : "Auto-advance off", "");
+        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
     }
 
     private string FormatFontSize(string size) => size switch
@@ -465,6 +761,25 @@
     .confirm-box p { color: var(--error); font-size: 0.9rem; margin: 0 0 10px; font-weight: 500; }
     .confirm-buttons { display: flex; gap: 8px; justify-content: flex-end; }
 
+    /* Domain picker */
+    .domain-picker {
+        display: flex; flex-direction: column; gap: 8px; margin-top: 12px;
+    }
+    .domain-btn {
+        width: 100%; padding: 12px 14px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); background: var(--bg-surface);
+        color: var(--text-primary); font-family: var(--font-main);
+        text-align: left; cursor: pointer; transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        display: flex; flex-direction: column; gap: 2px;
+    }
+    .domain-btn:active { transform: scale(0.98); }
+    .domain-btn.active {
+        border-color: var(--primary); background: rgba(74, 95, 224, 0.08);
+    }
+    .domain-btn strong { font-size: 0.95rem; }
+    .domain-btn small { color: var(--text-muted); font-size: 0.8rem; }
+
     /* Font size picker */
     .font-size-picker {
         display: flex; gap: 8px; margin-top: 12px;
@@ -488,6 +803,22 @@
         display: flex; gap: 8px; margin-top: 12px;
     }
 
+    /* Notification sub-section */
+    .notif-section {
+        margin-top: 12px; border-top: 1px solid var(--border);
+        padding-top: 12px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .notif-sub-row { padding-left: 4px; }
+    .time-input {
+        padding: 6px 10px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.95rem;
+        font-family: var(--font-main); background: var(--bg-surface);
+        color: var(--text-primary); outline: none;
+        transition: border-color 0.2s ease; flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .time-input:focus { border-color: var(--primary); }
+
     /* Dev */
     .dev-item { border-color: rgba(240,160,48,0.2); }
 
@@ -498,4 +829,38 @@
     .about-brand h3 { margin: 0; }
     .about-brand p { margin: 0; color: var(--text-muted); font-size: 0.8rem; }
     .about-desc { color: var(--text-secondary); font-size: 0.85rem; margin: 0; }
+
+    /* TTS settings */
+    .tts-settings-section {
+        margin-top: 12px; border-top: 1px solid var(--border);
+        padding-top: 12px;
+    }
+    .tts-sub-row { padding-left: 4px; }
+    .tts-speed-picker {
+        display: flex; gap: 8px; margin-top: 8px;
+    }
+    .tts-speed-opt {
+        flex: 1; padding: 8px 6px;
+        border: 2px solid var(--border); border-radius: var(--radius-sm);
+        background: var(--bg-surface); color: var(--text-secondary);
+        font-family: var(--font-main); font-size: 0.85rem; font-weight: 600;
+        cursor: pointer; transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .tts-speed-opt:active { transform: scale(0.95); }
+    .tts-speed-opt.active {
+        border-color: var(--primary); background: rgba(74, 95, 224, 0.08);
+        color: var(--primary);
+    }
+    .tts-voice-select {
+        width: 100%; margin-top: 6px;
+        padding: 10px 12px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.9rem;
+        font-family: var(--font-main); background: var(--bg-surface);
+        color: var(--text-primary); outline: none;
+        transition: border-color 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        appearance: none; -webkit-appearance: none;
+    }
+    .tts-voice-select:focus { border-color: var(--primary); }
 </style>

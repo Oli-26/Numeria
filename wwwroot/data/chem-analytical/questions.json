@@ -1,0 +1,473 @@
+[
+  {
+    "id": "chem-anly-q01",
+    "lessonId": "chem-anly-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "A set of measurements consistently reads 5% higher than the true value. This is an example of:",
+    "options": ["Random error", "Systematic error (bias)", "Gross error", "Low precision"],
+    "correctAnswer": "Systematic error (bias)",
+    "explanation": "A consistent offset in one direction is a systematic error (bias) — common causes include faulty calibration, contaminated blank, or incorrect standard. It affects accuracy, not precision. The measurements could be very precise (reproducible) yet still biased. Random errors scatter symmetrically around the mean; gross errors are outliers (blunders). Systematic errors must be identified and eliminated, not averaged away.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q02",
+    "lessonId": "chem-anly-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "The 'standard addition' calibration method is used primarily when:",
+    "options": ["You have very pure standards", "The sample matrix affects the analytical signal", "The analyte is volatile", "You need higher throughput"],
+    "correctAnswer": "The sample matrix affects the analytical signal",
+    "explanation": "Standard addition corrects for matrix effects — when other components in the sample enhance or suppress the analytical signal compared to simple aqueous standards. By adding known amounts of analyte directly to the sample, the calibration curve is built in the real matrix. External calibration fails when the matrix alters signal; internal standards correct for global signal variation (like instrument drift) but not concentration-dependent matrix effects.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q03",
+    "lessonId": "chem-anly-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "The limit of detection (LOD) is defined as the blank signal plus how many standard deviations of the blank?",
+    "options": ["1σ", "2σ", "3σ", "10σ"],
+    "correctAnswer": "3σ",
+    "explanation": "LOD = mean_blank + 3σ_blank, giving 99.7% confidence that a signal above this is real analyte (not noise fluctuation). The LOQ (limit of quantitation) uses 10σ — higher confidence for quantitative work. These 3σ and 10σ thresholds are international convention (IUPAC). In practice, LOD is often estimated from the signal-to-noise ratio of chromatographic baselines.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q04",
+    "lessonId": "chem-anly-01",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "The ability of an analytical method to measure the target analyte without interference from other compounds is called its _______ (or specificity). (one word)",
+    "correctAnswer": "selectivity",
+    "acceptableAnswers": ["selectivity", "Selectivity", "specificity", "Specificity"],
+    "explanation": "Selectivity (or specificity) describes how well a method distinguishes the analyte from potential interferences. A highly selective method gives the same signal for the analyte regardless of what else is in the sample. Poor selectivity leads to false positives. Immunoassay drug tests are fast but less selective than GC-MS confirmation — hence immunoassay 'screens' and MS 'confirms' in forensic and clinical toxicology.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q05",
+    "lessonId": "chem-anly-01",
+    "type": "ConceptMatch",
+    "difficulty": 1,
+    "prompt": "Match each analytical term to its definition:",
+    "pairs": [
+      { "left": "Accuracy", "right": "Closeness of result to the true value" },
+      { "left": "Precision", "right": "Reproducibility of repeated measurements" },
+      { "left": "Sensitivity", "right": "Slope of the calibration curve (Δsignal/Δconcentration)" }
+    ],
+    "correctAnswer": null,
+    "explanation": "These three terms describe different performance aspects. A dart analogy: accuracy = average landing near the bullseye; precision = tight grouping regardless of position. Sensitivity is often confused with LOD: a sensitive method (steep calibration curve) may still have poor LOD if the blank noise is high. A method with high sensitivity and low blank noise achieves a low LOD.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q06",
+    "lessonId": "chem-anly-02",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "At the equivalence point of a strong acid–strong base titration, the pH is:",
+    "options": ["Below 7 (acidic)", "Exactly 7 (neutral)", "Above 7 (basic)", "Equal to the pKa of the acid"],
+    "correctAnswer": "Exactly 7 (neutral)",
+    "explanation": "Strong acid + strong base → salt + water. NaCl is a neutral salt (neither Na⁺ nor Cl⁻ hydrolyses significantly). The equivalence point is pH 7 at 25°C. For weak acid/strong base titrations, the equivalence point is above 7 (conjugate base is basic). For strong acid/weak base, it is below 7 (conjugate acid is acidic). Choosing the right indicator depends on knowing where the equivalence point falls.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q07",
+    "lessonId": "chem-anly-02",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "EDTA is used as the titrant in complexometric titrations to measure:",
+    "options": ["Acid concentration", "Metal ion concentration", "Halide ion concentration", "Dissolved oxygen"],
+    "correctAnswer": "Metal ion concentration",
+    "explanation": "EDTA (ethylenediaminetetraacetic acid) forms stable 1:1 chelate complexes with virtually all metal ions. In a complexometric titration, EDTA titrant binds to the metal in the sample; the endpoint is detected with a metallochromic indicator like Eriochrome Black T (EBT), which changes from red (metal-bound) to blue (free). Classic application: measuring water hardness (total Ca²⁺ + Mg²⁺). EDTA does not titrate H⁺ or simple anions.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q08",
+    "lessonId": "chem-anly-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "At the half-equivalence point of a weak acid titration with NaOH, pH =",
+    "options": ["7", "The pKa of the weak acid", "The pKb of the conjugate base", "14 − pKb"],
+    "correctAnswer": "The pKa of the weak acid",
+    "explanation": "At the half-equivalence point, exactly half the acid has been converted to its conjugate base: [HA] = [A⁻]. Using the Henderson–Hasselbalch equation: pH = pKa + log([A⁻]/[HA]) = pKa + log(1) = pKa. This is the region of maximum buffering capacity. Plotting pH vs volume of titrant and finding the half-equivalence point is a standard way to determine pKa values experimentally.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q09",
+    "lessonId": "chem-anly-02",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "For a 1:1 titration reaction, if C₁V₁ = C₂V₂, and you need 22.50 mL of 0.1000 M NaOH to titrate 25.00 mL of HCl, what is the molarity of the HCl? (in M, 4 decimal places)",
+    "correctAnswer": "0.0900",
+    "acceptableAnswers": ["0.0900", "0.09", "0.090", "9.00e-2", "9.0 × 10⁻²"],
+    "explanation": "C₁V₁ = C₂V₂ → C_HCl = (C_NaOH × V_NaOH) / V_HCl = (0.1000 × 22.50) / 25.00 = 2.250 / 25.00 = 0.0900 M. The volume units cancel as long as they are the same. Always check that the significant figures in your answer match those in the data (4 sig figs here). This calculation is the backbone of all titrimetric quantitation.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q10",
+    "lessonId": "chem-anly-02",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each titration type to its typical reagent and application:",
+    "pairs": [
+      { "left": "Acid–base titration", "right": "NaOH titrant; determines acidity in vinegar" },
+      { "left": "Redox titration", "right": "KMnO₄ titrant; determines Fe²⁺ content" },
+      { "left": "Complexometric titration", "right": "EDTA titrant; determines water hardness" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each titration type exploits a different reaction class. Acid–base: proton transfer (H⁺ + OH⁻ → H₂O). Redox: electron transfer (MnO₄⁻ + Fe²⁺ → Mn²⁺ + Fe³⁺). Complexometric: coordinate bond formation (EDTA⁴⁻ + M²⁺ → [EDTA–M]²⁻). Choosing the right titration depends on the analyte chemistry and available indicators. All share the same basic calculation: moles analyte = moles titrant × stoichiometric factor.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q11",
+    "lessonId": "chem-anly-03",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In chromatography, the stationary phase is:",
+    "options": ["The liquid mobile phase", "The fixed phase that the mobile phase flows through or over", "The analyte mixture", "The detector"],
+    "correctAnswer": "The fixed phase that the mobile phase flows through or over",
+    "explanation": "Chromatographic separation requires two phases: a stationary phase (stays fixed in the column or on the plate) and a mobile phase (moves through/over the stationary phase, carrying the analyte). Separation happens because different components partition between the two phases differently — spending different amounts of time in the stationary phase, thus travelling at different speeds. The stationary phase defines the chemistry of the separation.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q12",
+    "lessonId": "chem-anly-03",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In reverse-phase HPLC, which compounds elute last?",
+    "options": ["The most polar compounds", "The most non-polar compounds", "The smallest compounds", "The most highly charged compounds"],
+    "correctAnswer": "The most non-polar compounds",
+    "explanation": "Reverse-phase HPLC uses a non-polar (hydrophobic) stationary phase (C18 = 18-carbon alkyl chains on silica) and a polar mobile phase (water/organic). Non-polar compounds have stronger affinity for the non-polar stationary phase → retained longer → elute last. Polar compounds prefer the polar mobile phase → elute first. This is the reverse of normal-phase HPLC (polar stationary phase, non-polar mobile phase).",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q13",
+    "lessonId": "chem-anly-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In TLC, a compound with Rf = 0.75 has travelled:",
+    "options": ["75% of the distance from the solvent front to the baseline", "75% of the distance the solvent front has moved", "75 mm up the plate", "75% of the plate height"],
+    "correctAnswer": "75% of the distance the solvent front has moved",
+    "explanation": "Rf = distance travelled by compound / distance travelled by solvent front. Rf = 0.75 means the spot moved 75% as far as the solvent front. Rf values are reproducible under identical conditions (same stationary/mobile phase, temperature) and help tentatively identify compounds by comparison with standards run on the same plate. Rf close to 1: highly non-polar (in reverse-phase TLC) or highly polar (in normal-phase TLC) — spend most time in mobile phase.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q14",
+    "lessonId": "chem-anly-03",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "GC is ideally suited to volatile, thermally stable compounds. For non-volatile or thermally labile compounds (like proteins or drugs), which chromatographic technique is preferred? (acronym)",
+    "correctAnswer": "HPLC",
+    "acceptableAnswers": ["HPLC", "LC", "LC-MS", "UHPLC"],
+    "explanation": "Gas chromatography requires volatilisation of the analyte — typically at temperatures above 100°C. Thermally labile or involatile compounds (sugars, peptides, drugs with multiple polar groups) cannot survive GC conditions without derivatisation. HPLC uses liquid mobile phases at room temperature and can handle virtually any soluble compound. LC-MS/MS is now the method of choice for pharmaceutical and clinical analysis of large, polar, or thermally unstable molecules.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q15",
+    "lessonId": "chem-anly-03",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each chromatographic technique to its separation principle:",
+    "pairs": [
+      { "left": "Size-exclusion chromatography (SEC)", "right": "Separates by molecular size; large molecules elute first" },
+      { "left": "Ion-exchange chromatography (IEC)", "right": "Separates charged species by electrostatic interaction with stationary phase" },
+      { "left": "Reverse-phase HPLC", "right": "Separates by polarity; non-polar compounds retained on C18 column" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each mode exploits a different molecular property. SEC is used for molecular weight determination and buffer exchange (proteins, polymers). IEC is essential for amino acid analysis, nucleotide separation, and ion analysis. Reverse-phase HPLC is the workhorse of pharmaceutical analysis, metabolomics, and environmental monitoring. Choosing the right mode starts with understanding what property best distinguishes your target analyte from interferences.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q16",
+    "lessonId": "chem-anly-04",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In flame atomic absorption spectrometry (FAAS), what provides the element-specific light source?",
+    "options": ["A xenon arc lamp", "A hollow-cathode lamp", "An inductively coupled plasma", "A laser"],
+    "correctAnswer": "A hollow-cathode lamp",
+    "explanation": "Each element requires its own hollow-cathode lamp, filled with an inert gas and a cathode made of the target element. When current is passed, atoms of the target element are sputtered and emit their characteristic spectral lines — the exact wavelengths absorbed by ground-state atoms of the same element in the flame. This elemental specificity makes FAAS highly selective. The xenon lamp is used in UV/Vis spectrophotometers; ICP provides its own emission source.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q17",
+    "lessonId": "chem-anly-04",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In mass spectrometry, what does m/z represent?",
+    "options": ["Molecular weight divided by charge", "Molarity times ionic charge", "Mass times charge", "Molar mass plus charge"],
+    "correctAnswer": "Molecular weight divided by charge",
+    "explanation": "m/z = mass-to-charge ratio. For singly charged ions (z = 1, the most common), m/z equals the mass in daltons. For multiply charged ions (common in ESI-MS of proteins), m/z is smaller — a protein of mass 10,000 Da with +10 charge appears at m/z 1000. This means mass analysers with modest m/z range can still detect very large proteins. The mass spectrum plots ion abundance vs m/z.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q18",
+    "lessonId": "chem-anly-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Electrospray ionisation (ESI) is preferred over electron ionisation (EI) for large biomolecules because:",
+    "options": ["ESI gives richer fragmentation patterns", "ESI is a soft ionisation that preserves intact molecules", "ESI requires less sample", "ESI works only in gas phase"],
+    "correctAnswer": "ESI is a soft ionisation that preserves intact molecules",
+    "explanation": "EI (electron ionisation) imparts 70 eV of energy — far more than needed — causing extensive fragmentation. This is useful for small molecules (fingerprint fragmentation matches library spectra) but destroys large biomolecules. ESI is a soft technique: analyte solution is sprayed through a high-voltage needle, producing multiply charged ions with minimal fragmentation. Intact proteins, DNA, and metabolites can be detected. MALDI is another soft ionisation used for even larger molecules (>100 kDa).",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q19",
+    "lessonId": "chem-anly-04",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "A pH meter uses an ion-selective electrode that measures H⁺ activity via which equation? (two words, physicist's surname + 'equation')",
+    "correctAnswer": "Nernst equation",
+    "acceptableAnswers": ["Nernst equation", "the Nernst equation", "Nernst's equation"],
+    "explanation": "The glass electrode potential varies with H⁺ activity (≈ concentration at low ionic strength) according to the Nernst equation: E = E_ref + (RT/F) × 2.303 × pH, giving ~59.2 mV per pH unit change at 25°C. The meter is calibrated with pH buffer solutions (typically pH 4, 7, and 10) to account for the reference electrode potential and temperature. Ion-selective electrodes for F⁻, Na⁺, K⁺, and others follow the same Nernst-based principle.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q20",
+    "lessonId": "chem-anly-04",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each analytical technique to its primary application:",
+    "pairs": [
+      { "left": "ICP-OES", "right": "Multi-element trace metal analysis in environmental samples" },
+      { "left": "Cyclic voltammetry (CV)", "right": "Measuring redox potentials of electroactive species" },
+      { "left": "FAAS", "right": "Single-element analysis using element-specific lamp" }
+    ],
+    "correctAnswer": null,
+    "explanation": "ICP-OES is high-throughput, simultaneously detecting 30+ elements at ppb levels — ideal for soil, water, and food safety. Cyclic voltammetry scans potential back and forth, revealing oxidation and reduction peaks that characterise an analyte's electrochemistry — used in pharmaceutical development and materials research. FAAS is simpler and cheaper for single elements, ideal for routine Pb, Zn, or Cd determination in a specific matrix.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q21",
+    "lessonId": "chem-anly-05",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "GC-MS is considered the gold standard for confirming illicit drug identity because:",
+    "options": ["It is the fastest technique available", "It provides both separation (GC) and structural identification (MS fragmentation)", "It needs no sample preparation", "It is the cheapest instrument"],
+    "correctAnswer": "It provides both separation (GC) and structural identification (MS fragmentation)",
+    "explanation": "GC separates the mixture; MS fragments and identifies each compound by its unique mass spectrum, matched against NIST or in-house libraries. The combination of retention time AND mass spectrum provides two orthogonal lines of evidence — meeting forensic and legal standards for positive identification. Immunoassay screens are faster but give false positives; GC-MS confirmation is mandatory in forensic toxicology and doping control.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q22",
+    "lessonId": "chem-anly-05",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "LC-MS/MS using Multiple Reaction Monitoring (MRM) is used in clinical chemistry because:",
+    "options": ["It measures only one compound at a time", "It provides ultra-sensitive and selective quantitation of multiple analytes simultaneously", "It does not require a mass spectrometer", "It only works for volatile compounds"],
+    "correctAnswer": "It provides ultra-sensitive and selective quantitation of multiple analytes simultaneously",
+    "explanation": "MRM (also called Selected Reaction Monitoring, SRM) selects a precursor ion (m/z) in the first quadrupole, fragments it in the collision cell, and selects a specific product ion in the third quadrupole. This double mass-selection gives extraordinary specificity — interference is virtually eliminated. Dozens of analytes can be measured in one run (multiplexing). Clinical labs use LC-MS/MS for newborn screening, vitamin D, immunosuppressants, and therapeutic drug monitoring.",
+    "xpReward": 20
+  },
+  {
+    "id": "chem-anly-q23",
+    "lessonId": "chem-anly-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Method validation for a pharmaceutical analytical method must demonstrate which of the following?",
+    "options": ["Only accuracy and precision", "Only LOD and LOQ", "Accuracy, precision, linearity, range, specificity, LOD, LOQ, and robustness", "Just that the method gives results close to the label claim"],
+    "correctAnswer": "Accuracy, precision, linearity, range, specificity, LOD, LOQ, and robustness",
+    "explanation": "ICH Q2(R1) guideline (internationally accepted) requires validation of: accuracy (% recovery), precision (repeatability + intermediate precision), specificity, LOD, LOQ, linearity, range, and robustness (sensitivity to small deliberate variations in method parameters). All must be documented. Regulatory submission of a drug product requires this validation data. A shortcut ('just works near the label value') is not scientifically or legally acceptable.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q24",
+    "lessonId": "chem-anly-05",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "In forensic analysis, the documentation trail that records who had possession of a sample at every step is called the chain of _______ . (one word)",
+    "correctAnswer": "custody",
+    "acceptableAnswers": ["custody", "Custody"],
+    "explanation": "Chain of custody (CoC) is a documented, unbroken record of possession, handling, and transfer of a forensic sample from collection to court presentation. It establishes that the sample analysed is the same one collected from the crime scene, and that no tampering occurred. Without an intact CoC, analytical results — however technically correct — may be inadmissible in court. CoC applies equally in clinical toxicology (workplace drug testing), environmental compliance sampling, and any regulated analysis.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q25",
+    "lessonId": "chem-anly-05",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each real-world analytical problem to the recommended technique:",
+    "pairs": [
+      { "left": "Identify a white powder as cocaine at a crime scene (confirm)", "right": "GC-MS (separation + mass spectral library match)" },
+      { "left": "Measure lead (Pb) in drinking water at ppb levels", "right": "ICP-MS (ultra-trace elemental analysis)" },
+      { "left": "Quantify a drug metabolite in patient plasma at sub-ng/mL levels", "right": "LC-MS/MS (MRM mode, high sensitivity and selectivity)" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Matching technique to problem requires knowing what each method does best. GC-MS for volatile/thermally stable organics with library identification. ICP-MS for elemental analysis at ultra-trace levels — Pb in water at the WHO guideline of 10 μg/L is within ICP-MS range but challenging for FAAS. LC-MS/MS dominates clinical and pharmaceutical bioanalysis because it handles polar, non-volatile compounds (drug metabolites) with exquisite sensitivity. The 'right tool for the job' is the key principle of analytical chemistry.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q26",
+    "lessonId": "chem-anly-06",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Soft ionization (e.g., ESI):",
+    "options": ["Hard fragments the molecule", "Preserves the intact molecule, ideal for proteins and drugs", "Burns the sample", "Requires gold plating"],
+    "correctAnswer": "Preserves the intact molecule, ideal for proteins and drugs",
+    "explanation": "Electrospray ionization (Fenn, Nobel 2002) sprays a solution into a charged mist, gently transferring molecules to gas-phase ions. Critical for analyzing biomolecules that fragment in EI.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q27",
+    "lessonId": "chem-anly-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "An Orbitrap or FT-ICR mass analyzer offers:",
+    "options": ["Lower resolution than quadrupoles", "Very high resolution and ppm-level mass accuracy", "Faster scan than quadrupoles only", "No m/z separation"],
+    "correctAnswer": "Very high resolution and ppm-level mass accuracy",
+    "explanation": "Both methods trap ions and measure orbital frequencies, related to m/z by physical equations. Resolutions of 100,000+ are routine. Critical for resolving isobaric species and confident formula assignment.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q28",
+    "lessonId": "chem-anly-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Tandem mass spectrometry (MS/MS):",
+    "options": ["Just runs MS twice", "Selects a precursor ion, fragments it, measures fragments — provides structural information beyond mass", "Measures atomic mass only", "Replaces NMR"],
+    "correctAnswer": "Selects a precursor ion, fragments it, measures fragments — provides structural information beyond mass",
+    "explanation": "MS/MS is the most powerful identification mode. Fragments often diagnose specific functional groups or sequences. SRM/MRM transitions are the basis of quantitative LC-MS/MS bioanalysis.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q29",
+    "lessonId": "chem-anly-06",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Bottom-up proteomics digests proteins to peptides, separates them by LC, then identifies them by MS/MS.",
+    "correctAnswer": "True",
+    "explanation": "Standard workflow. Trypsin (cleaves at Lys/Arg) generates predictable peptides. MS/MS spectra are matched to predicted in silico fragmentation. Tens of thousands of peptides in a single LC-MS/MS run.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q30",
+    "lessonId": "chem-anly-06",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each ionization method to its main use:",
+    "pairs": [
+      { "left": "EI (electron ionization)", "right": "Volatile small organics with EI library matching" },
+      { "left": "ESI (electrospray)", "right": "Polar, non-volatile drugs and proteins" },
+      { "left": "MALDI", "right": "Peptides, proteins, oligosaccharides" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each method opened up new classes of analyte. ESI and MALDI shared the 2002 Chemistry Nobel for revolutionizing biomolecular MS.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q31",
+    "lessonId": "chem-anly-07",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Why does where an analyte is matter, not just what's present?",
+    "options": ["It doesn't matter", "Spatial localization (organelle, tissue region) often determines biological function", "Only mass matters", "Imaging is more expensive"],
+    "correctAnswer": "Spatial localization (organelle, tissue region) often determines biological function",
+    "explanation": "A drug uniformly distributed has different effects than one concentrated in a tumor. Localized delivery, organelle-specific signaling, and tumor margin chemistry all matter clinically.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q32",
+    "lessonId": "chem-anly-07",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Super-resolution fluorescence microscopy:",
+    "options": ["Doesn't exist", "Uses techniques like STED and STORM to break the diffraction limit (down to ~20 nm)", "Requires X-rays", "Replaces electron microscopy"],
+    "correctAnswer": "Uses techniques like STED and STORM to break the diffraction limit (down to ~20 nm)",
+    "explanation": "Hell, Betzig, Moerner shared the 2014 Chemistry Nobel. By switching fluorophores on and off cleverly, you can localize individual molecules far more precisely than the diffraction limit allows.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q33",
+    "lessonId": "chem-anly-07",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "MALDI imaging of a tissue section produces:",
+    "options": ["A monochrome photo", "A spectrum at every pixel — maps any analyte's spatial distribution without prior labeling", "Only protein measurements", "Only metals"],
+    "correctAnswer": "A spectrum at every pixel — maps any analyte's spatial distribution without prior labeling",
+    "explanation": "Laser raster-scans the tissue; each shot generates a mass spectrum from a small (10-50 µm) spot. Reconstruct images at any m/z value — drugs, lipids, peptides, metabolites — all in one experiment.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q34",
+    "lessonId": "chem-anly-07",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Cryo-electron microscopy (cryo-EM) has reached near-atomic resolution for protein structures, transforming structural biology.",
+    "correctAnswer": "True",
+    "explanation": "The 'resolution revolution' (Henderson, Frank, Dubochet, 2017 Chemistry Nobel). Modern cryo-EM solves structures of complexes too big or unstable for X-ray crystallography. Now routinely sub-3 Å resolution for many targets.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q35",
+    "lessonId": "chem-anly-07",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each analytical imaging technique to its capability:",
+    "pairs": [
+      { "left": "Fluorescence microscopy", "right": "Specific labels, ~250 nm resolution (diffraction-limited)" },
+      { "left": "Super-resolution (STED, STORM)", "right": "Below diffraction limit, ~20 nm" },
+      { "left": "MALDI imaging", "right": "Label-free chemical mapping at 10-50 µm" },
+      { "left": "Cryo-EM", "right": "Near-atomic structural detail of biomolecular complexes" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Different techniques span different scales and contrast mechanisms. Modern biology often uses several in concert to reconstruct complete spatial-chemical pictures.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-anly-q36",
+    "lessonId": "chem-anly-08",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "A glucose meter is essentially:",
+    "options": ["A tiny spectrometer", "An electrochemical biosensor with glucose oxidase on an electrode", "A vial of indicator", "A weighing scale"],
+    "correctAnswer": "An electrochemical biosensor with glucose oxidase on an electrode",
+    "explanation": "GOx oxidizes glucose, generating electrons (or H₂O₂); current is proportional to glucose. Cheap, robust, fast — and the most successful biosensor commercially. Continuous glucose monitors extend this to subcutaneous, real-time monitoring.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q37",
+    "lessonId": "chem-anly-08",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A lateral flow immunoassay (e.g., pregnancy test, COVID rapid test) works by:",
+    "options": ["Heat detection", "Liquid wicking across a strip; analyte captured at a labeled antibody, accumulating a visible line", "Magnetic resonance", "Color of urine"],
+    "correctAnswer": "Liquid wicking across a strip; analyte captured at a labeled antibody, accumulating a visible line",
+    "explanation": "Gold nanoparticle-labeled antibodies and sandwich assay format. Cheap, no instrumentation, fast, robust. Hundreds of millions of these tests deployed during the COVID-19 pandemic.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q38",
+    "lessonId": "chem-anly-08",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Wearable chemical sensors most often analyze:",
+    "options": ["Blood (invasive)", "Sweat or interstitial fluid (non-invasive or minimally invasive)", "Hair", "Bone marrow"],
+    "correctAnswer": "Sweat or interstitial fluid (non-invasive or minimally invasive)",
+    "explanation": "Sweat carries ions, glucose, lactate, cortisol — useful biomarkers without venous draws. Interstitial fluid (continuous glucose monitors) needs a tiny needle but is also far less invasive than blood sampling.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q39",
+    "lessonId": "chem-anly-08",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Lateral flow tests can be made cheaply enough for mass deployment without specialized equipment.",
+    "correctAnswer": "True",
+    "explanation": "Strip + plastic housing + buffer cassette. A few cents per test in bulk. Their robustness, low cost, and lack of equipment requirement made them indispensable during COVID-19 mass screening.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-anly-q40",
+    "lessonId": "chem-anly-08",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each point-of-care/wearable sensor to its mechanism:",
+    "pairs": [
+      { "left": "Glucose meter", "right": "Glucose oxidase + electrochemistry" },
+      { "left": "Lateral flow test", "right": "Capture antibody + labeled antibody on a strip" },
+      { "left": "Continuous glucose monitor", "right": "Subcutaneous enzymatic sensor + wireless" },
+      { "left": "Sweat patch sensor", "right": "Microfluidics + electrochemistry on flexible substrate" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Chemistry has moved from labs to fingertips and onto skin. Bringing analytical chemistry out of the lab is one of the major directions of the field.",
+    "xpReward": 30
+  }
+]

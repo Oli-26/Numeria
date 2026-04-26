@@ -137,11 +137,20 @@ public class ProgressService : IProgressService
         {
             profile.CurrentStreak++;
         }
-        else if (profile.StreakFreezeDays > 0 && profile.CurrentStreak > 0)
+        else if (!string.IsNullOrEmpty(profile.LastActivityDate)
+            && DateTime.TryParse(profile.LastActivityDate, out var lastDate))
         {
-            // Use a streak freeze instead of resetting
-            profile.StreakFreezeDays--;
-            profile.CurrentStreak++;
+            var missedDays = (int)(DateTime.Now.Date - lastDate.Date).TotalDays - 1;
+            if (missedDays > 0 && profile.StreakFreezeDays >= missedDays && profile.CurrentStreak > 0)
+            {
+                // Consume one freeze per missed day
+                profile.StreakFreezeDays -= missedDays;
+                profile.CurrentStreak++;
+            }
+            else
+            {
+                profile.CurrentStreak = 1;
+            }
         }
         else
         {

@@ -22,5 +22,7 @@ builder.Services.AddScoped<IVisualizationService, VisualizationService>();
 builder.Services.AddScoped<ISessionStateService, SessionStateService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ITtsService, TtsService>();
 
 await builder.Build().RunAsync();

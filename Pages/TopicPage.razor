@@ -4,7 +4,7 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
 </div>
 
@@ -65,8 +65,8 @@
         var isTopicDone = profile.TopicsCompleted.Contains(TopicId);
         var masteryTier = profile.TopicMastery.GetValueOrDefault(TopicId, 0);
 
-        <div class="card card-clickable mastery-banner @(isTopicDone ? "" : "mastery-locked-banner")"
-             @onclick='() => Nav.NavigateTo($"/mastery/{TopicId}")'>
+        <div class="card @(isTopicDone ? "card-clickable" : "") mastery-banner @(isTopicDone ? "" : "mastery-locked-banner")"
+             @onclick="() => OpenMastery(isTopicDone)">
             <div class="mastery-banner-left">
                 <div class="mastery-banner-badge" style="background: @GetMasteryColor(masteryTier)">
                     <Icon Name="@GetMasteryIcon(masteryTier)" Size="20" />
@@ -148,6 +148,11 @@ else
     {
         if (isLocked) return;
         Nav.NavigateTo($"/topic/{TopicId}/lesson/{lesson.Id}");
+    }
+
+    private void OpenMastery(bool unlocked)
+    {
+        if (unlocked) Nav.NavigateTo($"/mastery/{TopicId}");
     }
 
     private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };

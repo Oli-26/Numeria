@@ -1,0 +1,293 @@
+[
+  {
+    "id": "chem-comp-q01",
+    "lessonId": "chem-comp-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Why must computational chemistry approximate the Schrödinger equation?",
+    "options": ["Schrödinger equation is wrong", "The exact many-electron wavefunction depends on 3N spatial coordinates — intractable for large N", "Computers can't do calculus", "It is forbidden by symmetry"],
+    "correctAnswer": "The exact many-electron wavefunction depends on 3N spatial coordinates — intractable for large N",
+    "explanation": "Even for benzene (42 electrons), exact wavefunction lives in 126D. We approximate via Hartree-Fock, DFT, or simpler methods, choosing tradeoffs between cost and accuracy.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q02",
+    "lessonId": "chem-comp-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Hartree-Fock approximates the electronic wavefunction as:",
+    "options": ["Plane waves", "A single Slater determinant of one-electron orbitals", "A classical particle distribution", "A quantum field"],
+    "correctAnswer": "A single Slater determinant of one-electron orbitals",
+    "explanation": "Each electron in its own orbital; antisymmetry built in. Mean-field approximation: each electron sees average potential of the others. Captures most chemistry but misses electron correlation — the residual collective effects.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q03",
+    "lessonId": "chem-comp-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Density functional theory (DFT) won the Nobel because:",
+    "options": ["It abolished electrons", "Hohenberg-Kohn proved that the ground-state energy is uniquely determined by the electron density — a function of just 3 variables", "It's a perfect theory", "It replaced experiments"],
+    "correctAnswer": "Hohenberg-Kohn proved that the ground-state energy is uniquely determined by the electron density — a function of just 3 variables",
+    "explanation": "Walter Kohn's 1998 Nobel. DFT scales much better than wavefunction methods, making routine calculations on hundreds of atoms feasible. Now the most used method in computational chemistry.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-comp-q04",
+    "lessonId": "chem-comp-01",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "CCSD(T) is often called the 'gold standard' of quantum chemistry but scales poorly with system size.",
+    "correctAnswer": "True",
+    "explanation": "CCSD(T) (coupled-cluster with singles, doubles, perturbative triples) gives accuracy approaching experimental thermochemistry — but scales as N⁷. Routine for small molecules, infeasible for large ones.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q05",
+    "lessonId": "chem-comp-01",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each method to its character:",
+    "pairs": [
+      { "left": "Hartree-Fock", "right": "Mean-field, ignores correlation" },
+      { "left": "MP2 / CCSD(T)", "right": "Wavefunction-based, accurate, expensive" },
+      { "left": "DFT", "right": "Density-based, scalable workhorse" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each method has its niche. Choosing the right one is half the battle in computational chemistry — depends on system size, target property, and required accuracy.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-comp-q06",
+    "lessonId": "chem-comp-02",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "A force field uses:",
+    "options": ["Quantum equations directly", "Classical functions for bonds, angles, torsions, and non-bonded interactions, with parameters fit to data", "Magnetic fields", "Random numbers"],
+    "correctAnswer": "Classical functions for bonds, angles, torsions, and non-bonded interactions, with parameters fit to data",
+    "explanation": "Force fields trade quantum accuracy for tractability. They handle thousands of atoms but can't break or form bonds. Standard choice for biomolecular MD.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q07",
+    "lessonId": "chem-comp-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "MD simulations use femtosecond time steps because:",
+    "options": ["Computers are slow", "Bond vibrations have femtosecond periods — sampling them requires that resolution", "Of quantum effects", "Of cosmic ray interference"],
+    "correctAnswer": "Bond vibrations have femtosecond periods — sampling them requires that resolution",
+    "explanation": "Highest frequency motion in a molecule (C-H stretches ~3000 cm⁻¹) has ~10 fs period. Time step must be ~1 fs to resolve it. Reaching microseconds takes 10⁹ time steps.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q08",
+    "lessonId": "chem-comp-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What did Karplus, Levitt, and Warshel win the 2013 Nobel for?",
+    "options": ["Force-field parameterization", "Multi-scale models that combine QM (active site) with classical mechanics (bulk system)", "Inventing molecular dynamics", "Discovering proteins"],
+    "correctAnswer": "Multi-scale models that combine QM (active site) with classical mechanics (bulk system)",
+    "explanation": "QM/MM methods. The reactive part of an enzyme is treated quantum-mechanically; the rest classically. Lets you study reactions in real biomolecular environments without quantum cost for the whole system.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q09",
+    "lessonId": "chem-comp-02",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Monte Carlo methods give the same kinetics as molecular dynamics.",
+    "correctAnswer": "False",
+    "explanation": "MC samples equilibrium configurations stochastically — gives thermodynamics but no real-time kinetics. MD integrates physical dynamics. Both useful, different purposes.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q10",
+    "lessonId": "chem-comp-02",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match the method to its strength:",
+    "pairs": [
+      { "left": "Molecular dynamics", "right": "Real-time dynamics, kinetics, time-resolved properties" },
+      { "left": "Monte Carlo", "right": "Equilibrium sampling, thermodynamics" },
+      { "left": "QM/MM", "right": "Reactions in extended environments (enzymes, surfaces)" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Different methods for different questions. The toolkit of computational chemistry has expanded dramatically in scope and accuracy in the past two decades.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-comp-q11",
+    "lessonId": "chem-comp-03",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "On a potential energy surface, a transition state is:",
+    "options": ["A local minimum", "A saddle point — minimum in all directions except one (the reaction coordinate)", "A maximum", "A flat region"],
+    "correctAnswer": "A saddle point — minimum in all directions except one (the reaction coordinate)",
+    "explanation": "Reactants and products are minima; the TS is the saddle that connects them. Locating TSes accurately is one of the major uses of computational quantum chemistry.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q12",
+    "lessonId": "chem-comp-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Eyring's transition-state theory connects:",
+    "options": ["Wavefunction symmetry to spectroscopy", "TS energy and frequencies to rate constants", "Pressure to volume", "Polymer length to viscosity"],
+    "correctAnswer": "TS energy and frequencies to rate constants",
+    "explanation": "k = (k_B T / h) e^(-ΔG‡/RT). With computed TS thermochemistry you can predict rate constants. Often within an order of magnitude — useful for mechanistic comparisons.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q13",
+    "lessonId": "chem-comp-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Free energy perturbation (FEP) is used to compute:",
+    "options": ["Color of molecules", "Relative free energies — e.g. binding affinity differences between two ligands", "Boiling points only", "Magnetic moments"],
+    "correctAnswer": "Relative free energies — e.g. binding affinity differences between two ligands",
+    "explanation": "FEP gradually transforms one ligand into another in MD, computing the work along the way. Predictive accuracy of ~1 kcal/mol for relative binding free energies is now achievable for many systems.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q14",
+    "lessonId": "chem-comp-03",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Methods like nudged elastic band (NEB) find minimum energy paths through transition states between known reactants and products.",
+    "correctAnswer": "True",
+    "explanation": "NEB optimizes a chain of replicas connecting reactants to products, with springs maintaining their order. The relaxed chain hugs the minimum energy path; the highest-energy replica converges to the TS.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q15",
+    "lessonId": "chem-comp-03",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match the method to its main use:",
+    "pairs": [
+      { "left": "TS optimization", "right": "Find saddle points, compute activation energies" },
+      { "left": "Free energy perturbation", "right": "Relative binding affinities (drug discovery)" },
+      { "left": "Nudged elastic band", "right": "Find minimum-energy reaction path" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Different mechanistic questions call for different machinery. Modern packages (Gaussian, ORCA, GROMACS, Amber) provide all of these.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-comp-q16",
+    "lessonId": "chem-comp-04",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "The Materials Project provides:",
+    "options": ["Free synthesis labs", "DFT-computed properties of hundreds of thousands of inorganic crystals, freely searchable", "Manufacturing licenses", "Patents"],
+    "correctAnswer": "DFT-computed properties of hundreds of thousands of inorganic crystals, freely searchable",
+    "explanation": "Materials genome philosophy. Compute once, use many times. New battery cathodes, photovoltaics, and catalysts have been suggested by mining these databases.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q17",
+    "lessonId": "chem-comp-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A volcano plot in catalysis correlates:",
+    "options": ["Volcano height to magma flow", "Catalytic activity with a binding-energy descriptor — best catalysts at the peak", "Catalyst color with reaction rate", "Pressure with temperature"],
+    "correctAnswer": "Catalytic activity with a binding-energy descriptor — best catalysts at the peak",
+    "explanation": "Sabatier principle: too weak binding → no activation; too strong → poisoning. Best catalysts sit at the peak of the volcano. Computational screening targets the peak before synthesis.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q18",
+    "lessonId": "chem-comp-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In drug discovery pipelines, virtual screening:",
+    "options": ["Generates new diseases", "Filters very large libraries computationally to identify promising candidates for synthesis and testing", "Prevents diseases", "Replaces clinical trials"],
+    "correctAnswer": "Filters very large libraries computationally to identify promising candidates for synthesis and testing",
+    "explanation": "Pharmaceutical libraries can have billions of molecules. Docking, ML scoring, and physics-based methods reduce this to dozens or hundreds for further evaluation. Saves enormous experimental cost.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q19",
+    "lessonId": "chem-comp-04",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "AI-driven drug discovery has produced candidates that have entered clinical trials.",
+    "correctAnswer": "True",
+    "explanation": "Companies like Insilico Medicine, BenevolentAI, and Exscientia have advanced AI-discovered candidates into Phase I/II trials. Whether AI will outperform traditional methods on overall success rate is still being established.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q20",
+    "lessonId": "chem-comp-04",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each computational application to its impact:",
+    "pairs": [
+      { "left": "DFT catalyst screening", "right": "Earth-abundant alternatives to platinum identified" },
+      { "left": "Materials genome databases", "right": "New battery cathodes proposed in silico" },
+      { "left": "QSAR / virtual screening", "right": "Drug candidates prioritized before synthesis" }
+    ],
+    "correctAnswer": null,
+    "explanation": "Computational chemistry is no longer just a verification tool — it routinely drives discovery, with experimental validation following the predictions.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-comp-q21",
+    "lessonId": "chem-comp-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Neural network potentials (NNPs) deliver:",
+    "options": ["Higher accuracy than full configuration interaction", "Force-field cost with near-DFT accuracy, after sufficient training", "Magnetic resonance signals", "Optical spectra"],
+    "correctAnswer": "Force-field cost with near-DFT accuracy, after sufficient training",
+    "explanation": "NNPs trained on QM data can simulate million-atom systems for nanoseconds — impossible with raw DFT. Once trained, evaluation is essentially free. Behler-Parrinello, ANI, MACE are influential examples.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q22",
+    "lessonId": "chem-comp-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Generative models in chemistry:",
+    "options": ["Can only predict existing molecules", "Sample new molecules with target properties from learned distributions", "Don't exist", "Are illegal"],
+    "correctAnswer": "Sample new molecules with target properties from learned distributions",
+    "explanation": "VAEs, GANs, and diffusion models learn distributions over chemical space. Sampling produces candidate molecules. Filtering for synthesizability is the practical challenge.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q23",
+    "lessonId": "chem-comp-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "AlphaFold's central achievement was:",
+    "options": ["Replacing experimental crystallography", "Predicting 3D protein structure from amino acid sequence at near-experimental accuracy", "Curing cancer", "Designing drugs autonomously"],
+    "correctAnswer": "Predicting 3D protein structure from amino acid sequence at near-experimental accuracy",
+    "explanation": "Released in 2020, AlphaFold has predicted structures of nearly every known protein. Has transformed structural biology, drug discovery, and synthetic biology. Hassabis and Jumper shared the 2024 Chemistry Nobel.",
+    "xpReward": 30
+  },
+  {
+    "id": "chem-comp-q24",
+    "lessonId": "chem-comp-05",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Machine learning models in chemistry have replaced first-principles methods entirely.",
+    "correctAnswer": "False",
+    "explanation": "ML methods are trained on first-principles data. They speed up calculations enormously but inherit the accuracy and limitations of the underlying QM. The two are complementary, not competing.",
+    "xpReward": 25
+  },
+  {
+    "id": "chem-comp-q25",
+    "lessonId": "chem-comp-05",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each ML chemistry contribution to its scope:",
+    "pairs": [
+      { "left": "AlphaFold", "right": "Protein structure prediction" },
+      { "left": "Neural network potentials", "right": "Large-scale MD with QM-like accuracy" },
+      { "left": "Generative molecule models", "right": "Inverse design of new molecules" },
+      { "left": "ML retrosynthesis (e.g. AiZynthFinder)", "right": "Synthesis route planning" }
+    ],
+    "correctAnswer": null,
+    "explanation": "ML now appears at every stage of computational chemistry. The integration with physics-based methods is the productive future — neither alone is enough.",
+    "xpReward": 30
+  }
+]

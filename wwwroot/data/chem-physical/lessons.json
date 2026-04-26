@@ -1,0 +1,290 @@
+[
+  {
+    "id": "chem-phys-01",
+    "topicId": "chem-physical",
+    "order": 1,
+    "title": "Thermodynamics: Energy, Enthalpy, and Entropy",
+    "description": "Laws of thermodynamics and the spontaneity of chemical reactions",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "chem-phys-01-c1",
+        "title": "The Laws of Thermodynamics",
+        "contentHtml": "<p>Thermodynamics governs energy flow in chemical systems. The four laws:</p><p><strong>Zeroth law</strong>: if A is in thermal equilibrium with B and B with C, then A is in equilibrium with C — this defines temperature.<br><strong>First law</strong>: energy is conserved: ΔU = q + w (internal energy change = heat absorbed + work done on system).<br><strong>Second law</strong>: the entropy of an isolated system never decreases; for spontaneous processes, ΔS_universe > 0.<br><strong>Third law</strong>: the entropy of a perfect crystal at 0 K is zero — this anchors the absolute entropy scale.</p><p>The first and second laws together determine whether a reaction is spontaneous and how much work can be extracted from it.</p>",
+        "mathExpressions": ["\\Delta U = q + w"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-01-c2",
+        "title": "Enthalpy and Hess's Law",
+        "contentHtml": "<p><strong>Enthalpy</strong> (H) is defined as H = U + PV. At constant pressure (most lab reactions): ΔH = q_p. Exothermic reactions have ΔH < 0; endothermic have ΔH > 0.</p><p><strong>Hess's Law</strong>: enthalpy is a state function — ΔH for a reaction is the same regardless of the path taken. This allows indirect calculation of ΔH using standard enthalpies of formation (ΔH°_f):</p><p>ΔH°_rxn = Σ ΔH°_f (products) − Σ ΔH°_f (reactants)</p><p>Standard enthalpy of formation is the enthalpy change when one mole of compound forms from its elements in their standard states. For elements in standard states, ΔH°_f = 0 by definition.</p>",
+        "mathExpressions": ["\\Delta H^\\circ_{\\text{rxn}} = \\sum \\Delta H^\\circ_f(\\text{products}) - \\sum \\Delta H^\\circ_f(\\text{reactants})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-01-c3",
+        "title": "Entropy and Gibbs Free Energy",
+        "contentHtml": "<p><strong>Entropy</strong> (S) measures dispersal of energy or disorder. Processes that increase molecular freedom — gas expansion, mixing, melting — increase entropy.</p><p><strong>Gibbs free energy</strong> combines enthalpy and entropy into the ultimate spontaneity criterion at constant T and P:</p><p>ΔG = ΔH − TΔS</p><p>A reaction is spontaneous if ΔG < 0. ΔG = 0 at equilibrium. The sign of ΔG depends on both ΔH and ΔS — and their interplay at a given temperature. For example, an endothermic reaction (ΔH > 0) can still be spontaneous at high T if ΔS > 0 (entropy-driven). Ice melting at room temperature is a classic case: ΔH > 0 but TΔS overwhelms it.</p>",
+        "mathExpressions": ["\\Delta G = \\Delta H - T\\Delta S"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q01", "chem-phys-q02", "chem-phys-q03", "chem-phys-q04", "chem-phys-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-02",
+    "topicId": "chem-physical",
+    "order": 2,
+    "title": "Chemical Kinetics",
+    "description": "Rate laws, activation energy, and reaction mechanisms",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "chem-phys-02-c1",
+        "title": "Rate Laws and Rate Constants",
+        "contentHtml": "<p>The <strong>rate</strong> of a reaction is the rate of change of concentration over time. For A + B → products, the rate law is:</p><p>rate = k[A]^m[B]^n</p><p>where k is the <strong>rate constant</strong>, and m, n are the <strong>orders</strong> with respect to each reactant. The overall order is m + n. Crucially, orders must be determined experimentally — they cannot be read from the balanced equation (only for elementary steps).</p><p>Units of k depend on overall order: first order (s⁻¹); second order (L mol⁻¹ s⁻¹).</p><p>For a <strong>first-order</strong> reaction: [A] = [A]₀ e^(−kt). The half-life t₁/₂ = ln2/k is constant — independent of concentration. This is the basis of radioactive decay and some drug elimination kinetics.</p>",
+        "mathExpressions": ["\\text{rate} = k[A]^m[B]^n", "[A] = [A]_0 e^{-kt}", "t_{1/2} = \\frac{\\ln 2}{k}"],
+        "visualizationType": "reaction-rate",
+        "visualizationConfig": {}
+      },
+      {
+        "id": "chem-phys-02-c2",
+        "title": "Activation Energy and the Arrhenius Equation",
+        "contentHtml": "<p>The <strong>Arrhenius equation</strong> describes how rate constant depends on temperature:</p><p>k = A e^(−Ea/RT)</p><p>where A is the pre-exponential factor (collision frequency × steric factor), Ea is the <strong>activation energy</strong> (minimum energy to reach the transition state), R is the gas constant, and T is temperature in kelvin.</p><p>Taking the logarithm: ln k = ln A − Ea/RT. Plotting ln k vs 1/T gives a straight line with slope −Ea/R — the standard way to measure Ea experimentally.</p><p>The rule of thumb 'reaction rate doubles for every 10°C rise' follows from Arrhenius with a typical Ea ~50 kJ/mol. This has huge practical implications: enzymes work at 37°C; autoclaving at 121°C kills bacteria (millions-fold rate increase for protein denaturation).</p>",
+        "mathExpressions": ["k = A\\,e^{-E_a/RT}", "\\ln k = \\ln A - \\frac{E_a}{RT}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-02-c3",
+        "title": "Reaction Mechanisms and the Rate-Determining Step",
+        "contentHtml": "<p>A balanced chemical equation does not reveal the mechanism. Most reactions occur via a sequence of elementary steps. The <strong>rate-determining step</strong> (RDS) is the slowest step — it controls the overall rate, like the bottleneck in a pipeline.</p><p>For a mechanism A ⇌ B (fast equilibrium) then B → C (slow, RDS):<br>rate = k₂[B] = k₂·K[A] → rate ∝ [A]</p><p>The <strong>steady-state approximation</strong>: the concentration of intermediates is assumed constant (rate of formation = rate of consumption). This is the foundation for the Michaelis–Menten rate equation in enzymology.</p><p>Distinguishing between proposed mechanisms requires kinetic experiments (varying concentrations), isotope labelling (tracking which bonds break), and spectroscopic detection of intermediates.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q06", "chem-phys-q07", "chem-phys-q08", "chem-phys-q09", "chem-phys-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-03",
+    "topicId": "chem-physical",
+    "order": 3,
+    "title": "Chemical Equilibrium",
+    "description": "Equilibrium constants, Le Chatelier's principle, and Kp vs Kc",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "chem-phys-03-c1",
+        "title": "The Equilibrium Constant",
+        "contentHtml": "<p>For the reaction aA + bB ⇌ cC + dD, at equilibrium:</p><p>K_c = [C]^c[D]^d / [A]^a[B]^b</p><p>K_c is dimensionless (formally, concentrations divided by the standard concentration 1 M) and depends only on temperature. Pure solids and liquids are excluded (their activities = 1).</p><p>The <strong>reaction quotient Q</strong> has the same form but uses non-equilibrium concentrations. If Q < K: reaction proceeds forward. If Q > K: reaction proceeds backward. If Q = K: system is at equilibrium.</p><p>For gas-phase reactions, K_p uses partial pressures instead of concentrations: K_p = K_c(RT)^Δn, where Δn = (total moles of gaseous products) − (total moles of gaseous reactants).</p>",
+        "mathExpressions": ["K_c = \\frac{[C]^c[D]^d}{[A]^a[B]^b}", "K_p = K_c(RT)^{\\Delta n}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-03-c2",
+        "title": "Le Chatelier's Principle",
+        "contentHtml": "<p><strong>Le Chatelier's principle</strong>: if a system at equilibrium is disturbed, it adjusts to partially counteract the disturbance and reach a new equilibrium.</p><p>Consequences for N₂ + 3H₂ ⇌ 2NH₃ (ΔH = −92 kJ/mol):<br>— Add N₂ or H₂: shifts right (more NH₃)<br>— Increase pressure: shifts toward fewer moles of gas → right (4 mol gas → 2 mol gas)<br>— Increase temperature: shifts toward the endothermic direction → left (less NH₃ at higher T)<br>— Add catalyst: no effect on position — only on how fast equilibrium is reached</p><p>Le Chatelier does not change K — only temperature changes K. Everything else changes Q, which then relaxes to the same K.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-03-c3",
+        "title": "Gibbs Free Energy and Equilibrium",
+        "contentHtml": "<p>The equilibrium constant K and Gibbs free energy are related by:</p><p>ΔG° = −RT ln K</p><p>This is one of the most important equations in chemistry. A large K (products favoured) → ΔG° strongly negative. K = 1 → ΔG° = 0. K < 1 → ΔG° positive (reactants favoured).</p><p>At non-standard conditions: ΔG = ΔG° + RT ln Q. When Q = K, ΔG = 0 — equilibrium. Reactions proceed in the direction that decreases ΔG (i.e., decreases Q toward K if Q < K, or increases Q toward K if Q > K).</p><p>This connects thermodynamics and kinetics: ΔG° tells you the equilibrium position, not the rate. A reaction can be thermodynamically favourable (ΔG° << 0) but kinetically slow (high Ea).</p>",
+        "mathExpressions": ["\\Delta G^\\circ = -RT\\ln K", "\\Delta G = \\Delta G^\\circ + RT\\ln Q"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q11", "chem-phys-q12", "chem-phys-q13", "chem-phys-q14", "chem-phys-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-04",
+    "topicId": "chem-physical",
+    "order": 4,
+    "title": "Quantum Chemistry and Spectroscopy",
+    "description": "Wave-particle duality, atomic orbitals, and how light probes molecular structure",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "chem-phys-04-c1",
+        "title": "Wave-Particle Duality and the Schrödinger Equation",
+        "contentHtml": "<p>In quantum mechanics, particles exhibit wave-like behaviour. De Broglie showed that any particle with momentum p has an associated wavelength: λ = h/p.</p><p>The <strong>Schrödinger equation</strong> gives the wavefunction Ψ, whose square |Ψ|² gives the probability density for finding the particle at a given location. For the hydrogen atom, exact solutions yield the familiar atomic orbitals: 1s, 2s, 2p, 3d, etc.</p><p>Each orbital is characterised by three quantum numbers:<br>— n (principal): energy and size<br>— l (azimuthal): shape (0=s, 1=p, 2=d, 3=f)<br>— m_l (magnetic): orientation</p><p>The <strong>Heisenberg uncertainty principle</strong>: Δx·Δp ≥ ℏ/2. You cannot know both position and momentum precisely — this is fundamental, not a measurement limitation.</p>",
+        "mathExpressions": ["\\lambda = \\frac{h}{p}", "\\hat{H}\\Psi = E\\Psi", "\\Delta x \\cdot \\Delta p \\geq \\frac{\\hbar}{2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-04-c2",
+        "title": "Molecular Orbital Theory",
+        "contentHtml": "<p><strong>Molecular orbital (MO) theory</strong> builds molecular wavefunctions as linear combinations of atomic orbitals (LCAO). When two atomic orbitals combine, they give two MOs: a <strong>bonding</strong> MO (lower energy, electron density between nuclei) and an <strong>antibonding</strong> MO* (higher energy, node between nuclei).</p><p>The <strong>bond order</strong> = (bonding electrons − antibonding electrons) / 2. Bond order > 0: stable molecule. Bond order 0: molecule does not form. O₂ by MO theory has two electrons in degenerate π* orbitals — one each (Hund's rule) — predicting O₂ is <strong>paramagnetic</strong>. This was a triumph of MO theory over Lewis structures.</p><p>MO theory also explains why He₂ does not form (bond order = 0) and why H₂⁺ exists (bond order = 0.5).</p>",
+        "mathExpressions": ["\\text{Bond order} = \\frac{n_{\\text{bonding}} - n_{\\text{antibonding}}}{2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-04-c3",
+        "title": "Spectroscopy: IR, UV/Vis, and NMR",
+        "contentHtml": "<p>Spectroscopy uses light–matter interaction to determine molecular structure and composition.</p><p><strong>Infrared (IR) spectroscopy</strong>: molecules absorb IR radiation at frequencies matching their vibrational modes. Each functional group has characteristic stretching frequencies: O–H ~3200–3600 cm⁻¹; C=O ~1700–1750 cm⁻¹; C≡N ~2200 cm⁻¹. IR identifies functional groups.</p><p><strong>UV/Vis spectroscopy</strong>: electronic transitions; chromophores with π electrons absorb in the UV/Vis range (Beer–Lambert law: A = εcl). Used to quantify concentration and study conjugated systems.</p><p><strong>NMR spectroscopy</strong>: nuclear spin transitions in a magnetic field. Chemical shift, integration, and splitting patterns identify connectivity (covered in Organic Chemistry). ¹³C NMR and 2D NMR (COSY, NOESY) extend structural information.</p>",
+        "mathExpressions": ["A = \\varepsilon c l"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q16", "chem-phys-q17", "chem-phys-q18", "chem-phys-q19", "chem-phys-q20"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-05",
+    "topicId": "chem-physical",
+    "order": 5,
+    "title": "Electrochemistry",
+    "description": "Galvanic cells, standard electrode potentials, and electrolysis",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "chem-phys-05-c1",
+        "title": "Electrochemical Cells",
+        "contentHtml": "<p>An <strong>electrochemical cell</strong> converts chemical energy to electrical energy (galvanic cell) or vice versa (electrolytic cell). The Daniell cell is classic: Zn anode | ZnSO₄(aq) || CuSO₄(aq) | Cu cathode.</p><p>At the <strong>anode</strong> (oxidation): Zn → Zn²⁺ + 2e⁻<br>At the <strong>cathode</strong> (reduction): Cu²⁺ + 2e⁻ → Cu</p><p>The <strong>cell potential</strong>: E°_cell = E°_cathode − E°_anode. For Daniell: +0.34 − (−0.76) = +1.10 V. E°_cell > 0 means the reaction is spontaneous. The salt bridge maintains electrical neutrality by allowing ion flow without mixing the solutions.</p>",
+        "mathExpressions": ["E^\\circ_{\\text{cell}} = E^\\circ_{\\text{cathode}} - E^\\circ_{\\text{anode}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-05-c2",
+        "title": "The Nernst Equation",
+        "contentHtml": "<p>Under non-standard conditions (concentrations ≠ 1 M, temperature ≠ 25°C), the cell potential is given by the <strong>Nernst equation</strong>:</p><p>E = E° − (RT/nF) ln Q</p><p>At 25°C, using log base 10: E = E° − (0.0592/n) log Q</p><p>where n = number of electrons transferred, F = Faraday constant (96,485 C/mol), Q = reaction quotient.</p><p>Applications:<br>— pH meters exploit the Nernst equation: the H⁺ activity determines the glass electrode potential<br>— Concentration cells have no net chemical reaction (same half-cells) but different concentrations → non-zero EMF<br>— The relationship ΔG = −nFE links thermodynamics and electrochemistry</p>",
+        "mathExpressions": ["E = E^\\circ - \\frac{RT}{nF}\\ln Q", "\\Delta G = -nFE"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-05-c3",
+        "title": "Electrolysis and Faraday's Laws",
+        "contentHtml": "<p><strong>Electrolysis</strong> uses an external voltage to drive a non-spontaneous reaction. Applications: electroplating (Cu, Ni, Ag onto metals), Hall–Héroult process (aluminium from Al₂O₃), chlor-alkali process (Cl₂ and NaOH from NaCl(aq)).</p><p><strong>Faraday's laws of electrolysis</strong>:<br>1. Mass of substance deposited is proportional to charge passed: m = (M/nF) × Q = (M/nF) × It<br>2. Equal charges deposit equivalent amounts of different substances (equimolar electrons).</p><p>These laws are used to calculate how much product is produced from a given current and time. Electrochemistry also underpins lithium-ion batteries (LiCoO₂ cathode / graphite anode), fuel cells (H₂ + O₂ → H₂O, generating electricity), and corrosion (an unintended galvanic cell).</p>",
+        "mathExpressions": ["m = \\frac{M \\cdot I \\cdot t}{n \\cdot F}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q21", "chem-phys-q22", "chem-phys-q23", "chem-phys-q24", "chem-phys-q25"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-06",
+    "topicId": "chem-physical",
+    "order": 6,
+    "title": "Statistical Thermodynamics",
+    "description": "Bridging molecular states to macroscopic thermodynamics",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "chem-phys-06-c1",
+        "title": "Boltzmann's Bridge",
+        "contentHtml": "<p>Boltzmann's S = k_B ln Ω links thermodynamic entropy to the number of microstates. Statistical thermodynamics derives macroscopic quantities — internal energy, free energy, entropy, heat capacity — from molecular partition functions.</p><p>For a system in thermal equilibrium, the probability of a microstate of energy E is e^(-E/k_B T) / Z, where Z is the <strong>partition function</strong>: Z = Σ e^(-E_i/k_B T).</p><p>From Z you derive everything. ⟨E⟩ = -∂ln Z/∂β; F = -k_B T ln Z; S = -∂F/∂T. The whole macroscopic edifice falls out of the partition function.</p>",
+        "mathExpressions": ["P(E_i) = \\frac{e^{-E_i/k_B T}}{Z},\\ Z = \\sum_i e^{-E_i/k_B T}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-06-c2",
+        "title": "Equipartition & Heat Capacities",
+        "contentHtml": "<p>For classical degrees of freedom, equipartition gives ½ k_B T per quadratic mode. A monoatomic gas has 3 translational modes, hence c_V = 3R/2.</p><p>Diatomic molecules add 2 rotational modes (room temp) → c_V = 5R/2. Vibrational modes only contribute at high T because their quanta ℏω are comparable to or larger than k_B T.</p><p>The freezing-out of vibrational modes at low T (Einstein, Debye) was an early hint of quantization — equipartition fails when quantum gaps matter.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-06-c3",
+        "title": "From States to Free Energies",
+        "contentHtml": "<p>Equilibrium constants come from differences in molecular partition functions. Reaction free energy: ΔG° = -RT ln K, with K calculated from the partition functions of products and reactants.</p><p>This is how computational chemistry predicts equilibria — not by looking up data but by computing molecular partition functions from quantum chemistry.</p><p>Modern free-energy methods extend this to solution and biomolecular systems, where direct partition function evaluation isn't possible.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q26", "chem-phys-q27", "chem-phys-q28", "chem-phys-q29", "chem-phys-q30"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-07",
+    "topicId": "chem-physical",
+    "order": 7,
+    "title": "Photochemistry",
+    "description": "Reactions driven by light",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "chem-phys-07-c1",
+        "title": "The Photoexcited State",
+        "contentHtml": "<p>Absorbing a photon promotes a molecule to an electronic excited state. Excited states have different reactivity than ground states — different orbital occupations, different geometries, often different selectivities.</p><p>Photochemistry is driven by these excited-state reactivities. Same molecule, different chemistry, depending on whether you give it heat (ground-state pathway) or light (excited-state pathway).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-07-c2",
+        "title": "Jablonski Diagrams",
+        "contentHtml": "<p>A <strong>Jablonski diagram</strong> shows the manifold of electronic and vibrational states for a molecule. Absorption (S₀ → S₁), internal conversion, intersystem crossing (S₁ → T₁), fluorescence (S₁ → S₀ + photon), phosphorescence (T₁ → S₀ + photon).</p><p>Each pathway has characteristic timescales: vibrational relaxation ~ps; fluorescence ~ns; phosphorescence ~µs to seconds.</p><p>The diagram organizes all photophysics — and predicts which pathway dominates for any given molecule and condition.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-07-c3",
+        "title": "Modern Photochemistry",
+        "contentHtml": "<p>Visible-light photoredox catalysis (Ru, Ir polypyridyls; organic dyes) drives radical chemistry under mild conditions. Macmillan and others have developed many synthetic photoredox methods over the past 15 years.</p><p>Photodynamic therapy uses light-activated drugs to kill tumors. Solar fuels research aims to use sunlight directly to split water and reduce CO₂. Optogenetics activates specific neurons with light, transforming neuroscience.</p><p>Photochemistry has gone from curiosity to practical tool — and from fluorescence physics to solar-energy conversion.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q31", "chem-phys-q32", "chem-phys-q33", "chem-phys-q34", "chem-phys-q35"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-phys-08",
+    "topicId": "chem-physical",
+    "order": 8,
+    "title": "Surface & Colloid Physical Chemistry",
+    "description": "Where bulk thermodynamics meets the interface",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "chem-phys-08-c1",
+        "title": "Surface Tension",
+        "contentHtml": "<p>At a liquid surface, molecules have fewer neighbors and are pulled inward — creating <strong>surface tension</strong> γ. Water's γ ≈ 72 mN/m (high, due to hydrogen bonding); ethanol ≈ 22 (low, mostly van der Waals).</p><p>Soap molecules (surfactants) reduce surface tension by adsorbing at interfaces with their hydrophilic heads in water and tails in air or oil. That's how detergents work.</p>",
+        "mathExpressions": ["\\gamma = \\frac{F}{L}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-08-c2",
+        "title": "Colloids and Suspensions",
+        "contentHtml": "<p>A <strong>colloid</strong> is a suspension of particles ~1 nm to 1 µm — large enough to scatter light (Tyndall effect) but small enough to stay dispersed.</p><p>Milk (fat in water), mayonnaise (oil-in-water emulsion), fog (water in air), gels — all are colloids. Stability comes from electrostatic repulsion (zeta potential) or steric protection (polymer coats).</p><p>Disrupt the stabilization (add salt, heat, change pH) and the colloid coagulates. Cheese-making is a controlled coagulation of casein micelles in milk.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-phys-08-c3",
+        "title": "Capillarity & Wetting",
+        "contentHtml": "<p><strong>Capillarity</strong>: liquids rise (or fall) in narrow tubes due to balance of surface tension and gravity. The Jurin's law: h = 2γ cos θ / (ρ g r). Water rises in glass capillaries; mercury depresses.</p><p>Capillarity drives sap rise in trees, ink moving along a fiber, wicking in fabrics, and surface-tension micropumps.</p><p>Wetting (covered earlier): contact angle balances γ_sl, γ_sv, γ_lv. Bringing all three concepts together — surface tension, colloids, capillarity — physical chemistry of interfaces shapes everyday phenomena.</p>",
+        "mathExpressions": ["h = \\frac{2\\gamma \\cos\\theta}{\\rho g r}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-phys-q36", "chem-phys-q37", "chem-phys-q38", "chem-phys-q39", "chem-phys-q40"],
+    "puzzleId": null
+  }
+]

@@ -3,6 +3,7 @@
 @inject IProgressService Progress
 @inject IGamificationService Gamification
 @inject ISessionStateService SessionState
+@inject ITtsService Tts
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @implements IDisposable
@@ -57,6 +58,70 @@
                                              VisualizationType="@concept.VisualizationType" />
                     }
 
+                    <!-- TTS control bar (only when TTS is enabled and supported) -->
+                    @if (ttsEnabled && ttsSupported)
+                    {
+                        <div class="tts-bar">
+                            <!-- Play / Pause -->
+                            <button class="tts-btn tts-playpause @(ttsSpeaking && !ttsPaused ? "active" : "")"
+                                    @onclick="TogglePlayPause"
+                                    title="@(ttsSpeaking && !ttsPaused ? "Pause" : "Play")">
+                                @if (ttsSpeaking && !ttsPaused)
+                                {
+                                    <!-- Pause icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <!-- Play icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="5 3 19 12 5 21"/>
+                                    </svg>
+                                }
+                            </button>
+
+                            <!-- Stop -->
+                            <button class="tts-btn" @onclick="StopTts" title="Stop"
+                                    disabled="@(!ttsSpeaking && !ttsPaused)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                            </button>
+
+                            <!-- Skip next concept -->
+                            <button class="tts-btn" @onclick="TtsSkipNext" title="Next concept"
+                                    disabled="@(currentConceptIndex >= lesson.Concepts.Count - 1)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/>
+                                </svg>
+                            </button>
+
+                            <!-- Speed picker -->
+                            <div class="tts-speed-group">
+                                @foreach (var sp in new double[] { 0.75, 1.0, 1.25, 1.5 })
+                                {
+                                    var speed = sp;
+                                    <button class="tts-speed-btn @(ttsRate == speed ? "active" : "")"
+                                            @onclick="() => SetTtsRate(speed)">
+                                        @(speed)x
+                                    </button>
+                                }
+                            </div>
+
+                            <!-- Auto-advance indicator -->
+                            @if (ttsAutoAdvance)
+                            {
+                                <span class="tts-auto-label" title="Auto-advance is on">AUTO</span>
+                            }
+                        </div>
+                    }
+
                     <div class="concept-nav">
                         @if (currentConceptIndex > 0)
                         {
@@ -98,6 +163,18 @@ else
     private int currentConceptIndex;
     private bool showQuiz;
 
+    // ── TTS state ────────────────────────────────────────────────────────────
+    private bool ttsEnabled;
+    private bool ttsSupported;
+    private bool ttsSpeaking;
+    private bool ttsPaused;
+    private double ttsRate = 1.0;
+    private string ttsVoice = "";
+    private bool ttsAutoAdvance;
+
+    private CancellationTokenSource? _ttsCts;
+    private System.Timers.Timer? _ttsStateTimer;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -105,12 +182,30 @@ else
             lesson = await Content.GetLessonAsync(TopicId, LessonId);
             profile = await Progress.GetProfileAsync();
 
+            // Load TTS prefs from profile
+            ttsEnabled = profile.TtsEnabled;
+            ttsRate = profile.TtsRate > 0 ? profile.TtsRate : 1.0;
+            ttsVoice = profile.TtsVoice ?? "";
+            ttsAutoAdvance = profile.TtsAutoAdvance;
+
+            // Check support
+            ttsSupported = await Tts.IsSupportedAsync();
+
             // Restore saved session state
             var session = await SessionState.LoadSessionStateAsync();
             if (session != null && session.ActiveTopicId == TopicId && session.ActiveLessonId == LessonId)
             {
                 currentConceptIndex = Math.Min(session.ConceptIndex, (lesson?.Concepts.Count ?? 1) - 1);
                 showQuiz = session.InQuiz;
+            }
+
+            // Poll TTS speaking state every 500 ms so the UI stays in sync
+            if (ttsEnabled && ttsSupported)
+            {
+                _ttsStateTimer = new System.Timers.Timer(500);
+                _ttsStateTimer.Elapsed += async (_, _) => await RefreshTtsStateAsync();
+                _ttsStateTimer.AutoReset = true;
+                _ttsStateTimer.Start();
             }
 
             StateHasChanged();
@@ -125,6 +220,120 @@ else
             }
         }
     }
+
+    // ── TTS helpers ───────────────────────────────────────────────────────────
+
+    private async Task RefreshTtsStateAsync()
+    {
+        var speaking = await Tts.IsSpeakingAsync();
+        var paused = await Tts.IsPausedAsync();
+
+        var changed = speaking != ttsSpeaking || paused != ttsPaused;
+        ttsSpeaking = speaking;
+        ttsPaused = paused;
+
+        if (changed)
+            await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TogglePlayPause()
+    {
+        if (!ttsEnabled || !ttsSupported || lesson == null) return;
+
+        if (ttsSpeaking && !ttsPaused)
+        {
+            await Tts.PauseAsync();
+            ttsPaused = true;
+            StateHasChanged();
+            return;
+        }
+
+        if (ttsPaused)
+        {
+            await Tts.ResumeAsync();
+            ttsPaused = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Start speaking current concept
+        await StartSpeakingCurrentConceptAsync();
+    }
+
+    private async Task StartSpeakingCurrentConceptAsync()
+    {
+        if (lesson == null || currentConceptIndex >= lesson.Concepts.Count) return;
+
+        // Cancel any previous session
+        _ttsCts?.Cancel();
+        _ttsCts?.Dispose();
+        _ttsCts = new CancellationTokenSource();
+        var token = _ttsCts.Token;
+
+        ttsSpeaking = true;
+        ttsPaused = false;
+        StateHasChanged();
+
+        var concept = lesson.Concepts[currentConceptIndex];
+        await Tts.SpeakConceptAsync(concept, ttsRate, string.IsNullOrEmpty(ttsVoice) ? null : ttsVoice, token);
+
+        if (token.IsCancellationRequested) return;
+
+        ttsSpeaking = false;
+        ttsPaused = false;
+
+        // Auto-advance
+        if (ttsAutoAdvance && currentConceptIndex < lesson.Concepts.Count - 1)
+        {
+            await NextConcept();
+            await InvokeAsync(StateHasChanged);
+            // Brief pause before auto-starting next
+            await Task.Delay(600, token);
+            if (!token.IsCancellationRequested)
+                await StartSpeakingCurrentConceptAsync();
+        }
+        else
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task StopTts()
+    {
+        _ttsCts?.Cancel();
+        await Tts.StopAsync();
+        ttsSpeaking = false;
+        ttsPaused = false;
+        StateHasChanged();
+    }
+
+    private async Task TtsSkipNext()
+    {
+        if (lesson == null || currentConceptIndex >= lesson.Concepts.Count - 1) return;
+        var wasActive = ttsSpeaking;
+        await StopTts();
+        await NextConcept();
+        StateHasChanged();
+        if (wasActive)
+            await StartSpeakingCurrentConceptAsync();
+    }
+
+    private async Task SetTtsRate(double rate)
+    {
+        ttsRate = rate;
+        var p = await Progress.GetProfileAsync();
+        p.TtsRate = rate;
+        await Progress.SaveProfileAsync(p);
+
+        // Restart speech at new rate if currently playing
+        if (ttsSpeaking)
+        {
+            await StopTts();
+            await StartSpeakingCurrentConceptAsync();
+        }
+    }
+
+    // ── Existing navigation (unchanged behaviour) ─────────────────────────────
 
     private async Task SaveState()
     {
@@ -143,6 +352,7 @@ else
 
     private async Task PrevConcept()
     {
+        if (ttsSpeaking) await StopTts();
         if (currentConceptIndex > 0)
             currentConceptIndex--;
         await SaveState();
@@ -152,7 +362,7 @@ else
     private async Task JumpToConcept(int index)
     {
         if (lesson == null || index == currentConceptIndex) return;
-        // Mark current as viewed before jumping
+        if (ttsSpeaking) await StopTts();
         if (currentConceptIndex < lesson.Concepts.Count)
             await Progress.MarkConceptViewedAsync(lesson.Concepts[currentConceptIndex].Id);
         currentConceptIndex = index;
@@ -162,6 +372,7 @@ else
     private async Task StartQuiz()
     {
         if (lesson == null) return;
+        await StopTts();
         if (currentConceptIndex < lesson.Concepts.Count)
         {
             var concept = lesson.Concepts[currentConceptIndex];
@@ -173,6 +384,7 @@ else
 
     private async Task GoBack()
     {
+        await StopTts();
         await SessionState.ClearSessionStateAsync();
         Nav.NavigateTo($"/topic/{TopicId}");
     }
@@ -193,7 +405,6 @@ else
                 if (!profile.TopicsCompleted.Contains(TopicId))
                 {
                     profile.TopicsCompleted.Add(TopicId);
-                    // Award completion card
                     if (!profile.CompletionCards.Any(c => c.TopicId == TopicId))
                     {
                         profile.CompletionCards.Add(new CompletionCard
@@ -214,7 +425,15 @@ else
         Nav.NavigateTo($"/topic/{TopicId}");
     }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+        _ttsStateTimer?.Stop();
+        _ttsStateTimer?.Dispose();
+        _ttsCts?.Cancel();
+        _ttsCts?.Dispose();
+        // Best-effort stop — fire-and-forget
+        _ = Tts.StopAsync();
+    }
 }
 
 <style>
@@ -319,5 +538,107 @@ else
     @@keyframes slideIn {
         from { opacity: 0; transform: translateX(20px); }
         to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── TTS bar ──────────────────────────────────────────────────────────── */
+    .tts-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 16px 0 4px;
+        padding: 10px 12px;
+        background: var(--bg-surface, rgba(255,255,255,0.04));
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm, 10px);
+        flex-wrap: wrap;
+    }
+
+    .tts-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        flex-shrink: 0;
+    }
+
+    .tts-btn:hover:not(:disabled) {
+        background: rgba(74, 95, 224, 0.12);
+        color: var(--primary);
+    }
+
+    .tts-btn:active:not(:disabled) {
+        transform: scale(0.9);
+    }
+
+    .tts-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+    .tts-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .tts-btn.active:hover {
+        background: var(--primary);
+        color: white;
+        opacity: 0.9;
+    }
+
+    .tts-playpause {
+        width: 40px;
+        height: 40px;
+    }
+
+    .tts-speed-group {
+        display: flex;
+        gap: 4px;
+        margin-left: 4px;
+    }
+
+    .tts-speed-btn {
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        font-weight: 600;
+        font-family: var(--font-main);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
+    }
+
+    .tts-speed-btn:active {
+        transform: scale(0.93);
+    }
+
+    .tts-speed-btn.active {
+        border-color: var(--primary);
+        background: rgba(74, 95, 224, 0.12);
+        color: var(--primary);
+    }
+
+    .tts-auto-label {
+        margin-left: auto;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--accent);
+        opacity: 0.8;
+        padding: 2px 6px;
+        border: 1px solid var(--accent);
+        border-radius: 4px;
     }
 </style>

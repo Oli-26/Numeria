@@ -7,14 +7,14 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Leaderboard</h1>
 </div>
 
 @if (!Leaderboard.IsConfigured)
 {
     <div class="demo-banner card">
-        <small>Demo data — connect Dreamlo to see real scores</small>
+        <small>Demo data — connect a leaderboard service to see real scores</small>
     </div>
 }
 
@@ -62,7 +62,9 @@
     else if (entries.Count == 0)
     {
         <div class="empty-state card">
+            <div class="empty-icon"><Icon Name="award" Size="36" /></div>
             <p>No scores yet. Be the first!</p>
+            <button class="btn btn-primary btn-sm" @onclick="SubmitScore" disabled="@(string.IsNullOrWhiteSpace(playerName))">Submit Your Score</button>
         </div>
     }
     else
@@ -190,7 +192,7 @@
         justify-content: space-between;
         padding: 14px 16px;
         margin-bottom: 12px;
-        border-left: 4px solid var(--primary);
+        border-color: var(--primary);
     }
     .your-score-card:hover { transform: none; }
     .your-score-left { display: flex; align-items: center; gap: 12px; }
@@ -232,7 +234,7 @@
 
     .lb-row.lb-you {
         background: rgba(74, 95, 224, 0.08);
-        border-left: 3px solid var(--primary);
+        border-color: var(--primary);
     }
 
     .lb-row.lb-top {
@@ -296,8 +298,9 @@
         display: block;
     }
 
-    .empty-state { text-align: center; padding: 40px; }
-    .empty-state p { color: var(--text-muted); }
+    .empty-state { text-align: center; padding: 40px 24px; }
+    .empty-state .empty-icon { margin-bottom: 12px; color: var(--text-muted); }
+    .empty-state p { color: var(--text-secondary); margin: 0 0 16px; }
 
     .fill-input {
         padding: 10px 14px;

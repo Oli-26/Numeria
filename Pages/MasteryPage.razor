@@ -7,7 +7,7 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to topic" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
     <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">Mastery Challenge</h1>
 </div>
 
@@ -270,6 +270,13 @@ else if (state == MState.Result)
             allMastery = regular.Where(q => q.Difficulty >= 2).ToList();
         }
 
+        // Mastery quiz only supports these question types
+        allMastery = allMastery.Where(q =>
+            q.Type == QuestionType.MultipleChoice ||
+            q.Type == QuestionType.FillIn ||
+            q.Type == QuestionType.TrueOrFalse ||
+            q.Type == QuestionType.VisualIdentify).ToList();
+
         var count = GetTierQuestionCount(targetTier);
         quizQuestions = allMastery.OrderBy(_ => _rng.Next()).Take(count).ToList();
 
@@ -382,25 +389,40 @@ else if (state == MState.Result)
 
     .mastery-tier-display { text-align: center; margin-bottom: 20px; }
     .mastery-current-badge {
-        width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 8px;
+        width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 2rem; color: white;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        font-size: 2.2rem; color: white;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+        position: relative;
     }
-    .mastery-tier-label { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+    .mastery-current-badge::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid currentColor;
+        opacity: 0.25;
+    }
+    .mastery-tier-label { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.02em; }
 
     .mastery-tiers { padding: 16px; }
     .mastery-tiers:hover { transform: none; }
     .mastery-tiers h3 { margin-bottom: 12px; }
 
     .mastery-tier-row {
-        display: flex; align-items: center; gap: 12px; padding: 10px 0;
-        border-bottom: 1px solid var(--border); opacity: 0.5;
-        transition: opacity 0.2s ease;
+        display: flex; align-items: center; gap: 12px; padding: 12px 8px;
+        border-bottom: 1px solid var(--border); opacity: 0.45;
+        transition: opacity 0.2s ease, background 0.2s ease;
+        border-radius: var(--radius-sm);
     }
     .mastery-tier-row:last-child { border-bottom: none; }
     .mastery-tier-row.achieved { opacity: 1; }
-    .mastery-tier-row.current-target { opacity: 1; }
+    .mastery-tier-row.current-target {
+        opacity: 1;
+        background: rgba(91, 106, 191, 0.06);
+        border: 1px solid rgba(91, 106, 191, 0.2);
+        border-radius: var(--radius-sm);
+    }
 
     .tier-badge-sm {
         width: 36px; height: 36px; border-radius: 50%;

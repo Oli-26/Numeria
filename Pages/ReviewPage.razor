@@ -7,7 +7,7 @@
 @inject NavigationManager Nav
 
 <div class="page-header">
-    <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Review</h1>
 </div>
 
@@ -201,7 +201,7 @@ else if (state == ReviewState.Complete)
 
     .review-answer {
         margin-top: 16px; padding: 14px; background: var(--bg-surface);
-        border-radius: var(--radius-sm); border-left: 4px solid var(--primary);
+        border-radius: var(--radius-sm); border-color: var(--primary);
         animation: revealSlide 0.35s ease;
     }
 
@@ -220,6 +220,7 @@ else if (state == ReviewState.Complete)
         padding: 14px; border-radius: var(--radius-sm); font-weight: 600;
         border: none; cursor: pointer; transition: all 0.15s ease;
         -webkit-tap-highlight-color: transparent;
+        min-height: 56px;
     }
     .review-btn:active { transform: scale(0.97); }
     .review-btn small { font-weight: 400; font-size: 0.75rem; opacity: 0.8; }
@@ -227,8 +228,9 @@ else if (state == ReviewState.Complete)
     .review-btn.remembered { background: rgba(76, 175, 80, 0.12); color: var(--success); }
 
     .empty-state { text-align: center; padding: 40px 24px; }
-    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty-state p { color: var(--text-secondary); margin: 8px 0 20px; line-height: 1.6; }
+    .empty-icon { color: var(--success); margin-bottom: 12px; }
+    .empty-state h2 { margin-bottom: 8px; }
+    .empty-state p { color: var(--text-secondary); margin: 8px 0 20px; line-height: 1.6; max-width: 320px; display: block; margin-left: auto; margin-right: auto; }
 
     .review-complete { text-align: center; padding: 32px 24px; }
     .complete-icon { font-size: 3rem; margin-bottom: 8px; }

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "chem-comp-01",
+    "topicId": "chem-computational",
+    "order": 1,
+    "title": "From Hartree-Fock to DFT",
+    "description": "Approximating the many-electron Schrödinger equation",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "chem-comp-01-c1",
+        "title": "The Many-Electron Problem",
+        "contentHtml": "<p>The Schrödinger equation for a molecule with N electrons is a partial differential equation in 3N spatial variables. Even for benzene (42 electrons), the wavefunction lives in 126-dimensional space — utterly intractable directly.</p><p>Computational chemistry approximates the wavefunction (or related quantities) tractably. Different methods make different approximations and trade off accuracy against cost.</p><p>The art is in choosing — and inventing — approximations that capture the chemistry of interest without bankrupting the supercomputer.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-01-c2",
+        "title": "Hartree-Fock",
+        "contentHtml": "<p><strong>Hartree-Fock (HF)</strong> approximates the wavefunction as a single Slater determinant — each electron in its own orbital, with antisymmetry built in. Each electron sees an average potential from the others (the 'mean field').</p><p>HF gets you ~99% of the total energy and most of the chemistry — but the missing ~1% (correlation energy) is precisely where bond breaking, dispersion, and many subtle phenomena live.</p><p>Modern post-HF methods (MP2, CCSD(T), full CI) systematically add correlation. CCSD(T) is the 'gold standard' but scales as N⁷ — fast becomes infeasible for large molecules.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-01-c3",
+        "title": "Density Functional Theory",
+        "contentHtml": "<p>Hohenberg-Kohn (1964): the ground-state energy is uniquely determined by the electron density ρ(r) — a function of just 3 variables, regardless of N.</p><p>Kohn-Sham DFT replaces interacting electrons with non-interacting ones moving in an effective potential that gives the same density. Practical, scalable, and (with the right exchange-correlation functional) often accurate.</p><p>Walter Kohn's 1998 Nobel was for DFT. It's now the workhorse of computational chemistry — millions of papers use it. New functionals continue to improve accuracy.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-comp-q01", "chem-comp-q02", "chem-comp-q03", "chem-comp-q04", "chem-comp-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-comp-02",
+    "topicId": "chem-computational",
+    "order": 2,
+    "title": "Molecular Mechanics & Dynamics",
+    "description": "When quantum mechanics is too expensive",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "chem-comp-02-c1",
+        "title": "Force Fields",
+        "contentHtml": "<p>For molecules with thousands of atoms (proteins, materials), quantum methods are too expensive. <strong>Force fields</strong> use simple classical functions for bond stretches, angle bends, torsions, and non-bonded interactions (van der Waals, electrostatics).</p><p>Parameters are fit to QM calculations and experiment. Common biomolecular force fields: AMBER, CHARMM, GROMOS. Common general-purpose: OPLS, MMFF.</p><p>Force fields can't break bonds. They're a coarse-grained but practical tool for sampling conformational space.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-02-c2",
+        "title": "Molecular Dynamics",
+        "contentHtml": "<p><strong>Molecular dynamics (MD)</strong> integrates Newton's equations forward in time using force-field forces. Time steps are femtoseconds (forced by the fastest motion — bond vibration); simulations now reach microseconds for proteins.</p><p>Classical MD has illuminated protein folding, membrane assembly, drug-receptor binding, and material deformation.</p><p>The 2013 Nobel went to Karplus, Levitt, and Warshel for multiscale models that combine QM (active site) with MM (bulk solvent and protein) — bridging quantum and classical computational chemistry.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-02-c3",
+        "title": "Monte Carlo Methods",
+        "contentHtml": "<p>Instead of integrating dynamics, Monte Carlo methods sample configurations directly using random moves accepted or rejected by the Metropolis criterion.</p><p>Useful for equilibrium sampling — phase diagrams, free energies, polymer conformations. Doesn't give kinetics, but gets thermodynamics for far less compute than MD when ergodic sampling matters.</p><p>Variants like replica exchange and umbrella sampling tackle systems with rough free-energy landscapes (proteins, glasses).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-comp-q06", "chem-comp-q07", "chem-comp-q08", "chem-comp-q09", "chem-comp-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-comp-03",
+    "topicId": "chem-computational",
+    "order": 3,
+    "title": "Reaction Mechanism & Transition States",
+    "description": "Computing the mountain pass between reactants and products",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "chem-comp-03-c1",
+        "title": "Potential Energy Surfaces",
+        "contentHtml": "<p>A <strong>potential energy surface (PES)</strong> is the energy as a function of nuclear coordinates. Reactants and products are local minima; the path between them crosses a saddle point — the <strong>transition state</strong>.</p><p>The activation energy E_a is the energy difference between reactant and transition state. Eyring's transition-state theory gives rate constants from quantum-chemical TS energies and frequencies.</p><p>Locating transition states is a major use of computational chemistry — they're hard to study experimentally, but mechanistic insight depends on them.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-03-c2",
+        "title": "Free Energy Calculations",
+        "contentHtml": "<p>Reaction barriers in solution include solvent reorganization. <strong>Free energy</strong> calculations (umbrella sampling, metadynamics, free-energy perturbation) compute ΔG along a reaction coordinate.</p><p>Drug binding affinity is a free-energy problem: ΔG_bind = G_complex - G_protein - G_ligand. Computational predictions now rival experiment for some classes of binders.</p><p>Free-energy perturbation transforms one ligand into another by gradual interpolation — letting you compute relative binding affinities before synthesizing molecules.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-03-c3",
+        "title": "Reaction Path Methods",
+        "contentHtml": "<p>For complex multi-step reactions, methods like <strong>nudged elastic band (NEB)</strong> find the minimum energy path connecting reactants to products through one or more transition states.</p><p>For exotic reactions — surface catalysis, enzymatic mechanisms, materials transformations — these methods provide mechanism that would be hard or impossible to determine experimentally.</p><p>Combined with high-throughput computing, they enable in silico catalyst screening: predict which materials work before synthesizing any.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-comp-q11", "chem-comp-q12", "chem-comp-q13", "chem-comp-q14", "chem-comp-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-comp-04",
+    "topicId": "chem-computational",
+    "order": 4,
+    "title": "Materials & High-Throughput",
+    "description": "Computing chemistry for the periodic table",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "chem-comp-04-c1",
+        "title": "Materials Genome",
+        "contentHtml": "<p>The Materials Genome Initiative (MGI, 2011) and projects like the Materials Project (Berkeley) compute properties for hundreds of thousands of inorganic crystals — band gaps, elastic constants, formation energies — and put them online.</p><p>Researchers can search for materials with desired properties before doing any experiment. New battery materials, photovoltaics, and catalysts have come from these databases.</p><p>The combination of DFT + automation + open data has transformed materials discovery from serendipity to screening.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-04-c2",
+        "title": "Catalyst Design",
+        "contentHtml": "<p>Heterogeneous catalysis is dominated by transition-metal surfaces. DFT can predict adsorption energies, reaction pathways, and the rate-limiting step.</p><p><strong>Volcano plots</strong> correlate catalytic activity with binding-energy descriptors. Best catalysts sit at the peak — not too strong, not too weak.</p><p>Computational design has identified Earth-abundant alternatives to platinum for hydrogen evolution, and new alloys for CO₂ reduction. The gap between prediction and lab synthesis still exists, but it's closing.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-04-c3",
+        "title": "Drug Discovery Pipelines",
+        "contentHtml": "<p>Computational chemistry is woven through every stage of drug discovery. Virtual screening filters millions of candidate molecules to hundreds; docking and free-energy methods rank them; QSAR models predict ADMET properties.</p><p>Modern pipelines couple machine learning to physics-based methods — generative models propose new molecules, and physics-based scoring filters them. Schrödinger Inc., Atomwise, and Insitro are among many companies operating at this intersection.</p><p>The first FDA-approved drugs from AI-driven pipelines began clinical trials in the 2020s — the field is maturing rapidly.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-comp-q16", "chem-comp-q17", "chem-comp-q18", "chem-comp-q19", "chem-comp-q20"],
+    "puzzleId": null
+  },
+  {
+    "id": "chem-comp-05",
+    "topicId": "chem-computational",
+    "order": 5,
+    "title": "Machine Learning in Chemistry",
+    "description": "Where ML is changing the field",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "chem-comp-05-c1",
+        "title": "Neural Network Potentials",
+        "contentHtml": "<p><strong>Neural network potentials</strong> (NNPs) are trained on QM data to predict energies and forces at near-DFT accuracy but at force-field cost. Behler-Parrinello, ANI, MACE, and others have shown that NNPs can simulate million-atom systems for nanoseconds.</p><p>Once trained, an NNP is essentially free to evaluate. Training costs are large but amortize across many uses. This is one of the biggest practical changes in computational chemistry of the past decade.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-05-c2",
+        "title": "Generative Models",
+        "contentHtml": "<p>Generative models (VAEs, GANs, diffusion) are now used to invent new molecules with target properties. Train on a chemical database; sample new molecules; filter for synthetic accessibility.</p><p>Same pattern works for proteins, polymers, and crystal structures. The challenge: ensuring outputs are chemically reasonable and synthesizable, not just statistically similar to training data.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "chem-comp-05-c3",
+        "title": "AlphaFold & Protein Structure",
+        "contentHtml": "<p>The most dramatic ML success in chemistry: AlphaFold (DeepMind, 2020) predicting protein 3D structure from amino acid sequence with experimental-level accuracy.</p><p>Structures of essentially every known protein are now in the AlphaFold database. Drug discovery, biology research, and synthetic biology all gained a transformative tool overnight.</p><p>Followups (RoseTTAFold, ESMFold, AlphaFold 3 for complexes) extend the approach to interactions and to harder cases. Computational structural biology is in a Cambrian explosion.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["chem-comp-q21", "chem-comp-q22", "chem-comp-q23", "chem-comp-q24", "chem-comp-q25"],
+    "puzzleId": null
+  }
+]

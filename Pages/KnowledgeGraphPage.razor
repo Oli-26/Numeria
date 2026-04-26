@@ -1,0 +1,402 @@
+@page "/graph"
+@inject IProgressService Progress
+@inject IContentRepository Content
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject HttpClient Http
+@implements IAsyncDisposable
+
+<div class="graph-page">
+    <div class="graph-header">
+        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Knowledge Graph</h1>
+        <div class="graph-controls">
+            <select class="domain-filter" @onchange="OnDomainChanged" value="@selectedDomain">
+                <option value="all">All Domains</option>
+                <option value="math">Mathematics</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="biology">Biology</option>
+                <option value="geology">Geology</option>
+                <option value="history">History</option>
+                <option value="linguistics">Linguistics</option>
+                <option value="philosophy">Philosophy</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="graph-container" id="graph-container">
+        <canvas id="topic-graph-canvas"></canvas>
+
+        @if (!graphReady)
+        {
+            <div class="graph-loading">
+                <div class="spinner"></div>
+                <p>Building graph…</p>
+            </div>
+        }
+
+        @if (selectedNodeId != null)
+        {
+            <div class="node-tooltip card" @onclick="NavigateToSelected">
+                <div class="tooltip-color-bar" style="background: @GetNodeColor(selectedNodeId)"></div>
+                <div class="tooltip-body">
+                    <strong>@GetNodeName(selectedNodeId)</strong>
+                    <small>@GetNodeDomain(selectedNodeId)</small>
+                    @if (completedTopics.Contains(selectedNodeId))
+                    {
+                        <span class="tooltip-badge completed"><Icon Name="checkmark-circle" Size="12" /> Completed</span>
+                    }
+                    else
+                    {
+                        <span class="tooltip-badge">Tap to study →</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="graph-legend">
+        @foreach (var domain in domainColors.Keys)
+        {
+            <div class="legend-item">
+                <span class="legend-dot" style="background: @domainColors[domain]"></span>
+                <span class="legend-label">@domain</span>
+            </div>
+        }
+        <div class="legend-item legend-key">
+            <span class="legend-line prereq"></span><span class="legend-label">prereq</span>
+        </div>
+        <div class="legend-item legend-key">
+            <span class="legend-line related"></span><span class="legend-label">related</span>
+        </div>
+        <div class="legend-item legend-key">
+            <span class="legend-node filled"></span><span class="legend-label">done</span>
+        </div>
+        <div class="legend-item legend-key">
+            <span class="legend-node hollow"></span><span class="legend-label">not done</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool graphReady;
+    private string selectedDomain = "all";
+    private string? selectedNodeId;
+
+    private List<Topic>? allTopics;
+    private HashSet<string> completedTopics = new();
+
+    private DotNetObjectReference<KnowledgeGraphPage>? selfRef;
+
+    // Domain → representative colour for legend
+    private static readonly Dictionary<string, string> domainColors = new()
+    {
+        { "math",        "#4A90D9" },
+        { "physics",     "#2196F3" },
+        { "chemistry",   "#FFA726" },
+        { "biology",     "#66BB6A" },
+        { "geology",     "#8D6E63" },
+        { "history",     "#BCAAA4" },
+        { "linguistics", "#00BCD4" },
+        { "philosophy",  "#5C6BC0" }
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        // Collect all topics
+        allTopics = await Content.GetTopicsAsync();
+
+        // Completed = topics whose progress >= 100
+        foreach (var t in allTopics)
+        {
+            var pct = await Progress.GetTopicProgressAsync(t.Id);
+            if (pct >= 100) completedTopics.Add(t.Id);
+        }
+
+        // Set initial domain filter to profile's current domain
+        selectedDomain = "all";
+
+        selfRef = DotNetObjectReference.Create(this);
+
+        // Load graph JSON
+        var graphJson = await FetchGraphJson();
+
+        // Build colour map from topics
+        var colorMap = new Dictionary<string, string>();
+        foreach (var t in allTopics)
+        {
+            colorMap[t.Id] = t.Color;
+        }
+        var colorMapJson = System.Text.Json.JsonSerializer.Serialize(colorMap);
+
+        var completedArray = completedTopics.ToList();
+
+        await JS.InvokeVoidAsync(
+            "TopicGraph.init",
+            "topic-graph-canvas",
+            graphJson,
+            completedArray,
+            selfRef
+        );
+
+        await JS.InvokeVoidAsync("TopicGraph.setColors", colorMapJson);
+
+        graphReady = true;
+        StateHasChanged();
+    }
+
+    private async Task<string> FetchGraphJson()
+    {
+        try
+        {
+            return await Http.GetStringAsync("data/topic-graph.json");
+        }
+        catch
+        {
+            return "{}";
+        }
+    }
+
+    [JSInvokable]
+    public void OnNodeTapped(string nodeId)
+    {
+        selectedNodeId = nodeId;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void NavigateToSelected()
+    {
+        if (selectedNodeId != null)
+            Nav.NavigateTo($"/topic/{selectedNodeId}");
+    }
+
+    private async Task OnDomainChanged(ChangeEventArgs e)
+    {
+        selectedDomain = e.Value?.ToString() ?? "all";
+        selectedNodeId = null;
+        await JS.InvokeVoidAsync("TopicGraph.filterDomain", selectedDomain);
+    }
+
+    private string GetNodeColor(string id)
+    {
+        var topic = allTopics?.FirstOrDefault(t => t.Id == id);
+        return topic?.Color ?? "#888";
+    }
+
+    private string GetNodeName(string id)
+    {
+        var topic = allTopics?.FirstOrDefault(t => t.Id == id);
+        return topic?.Name ?? id;
+    }
+
+    private string GetNodeDomain(string id)
+    {
+        var topic = allTopics?.FirstOrDefault(t => t.Id == id);
+        if (topic == null) return "";
+        return char.ToUpper(topic.Domain[0]) + topic.Domain[1..];
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("TopicGraph.destroy");
+        selfRef?.Dispose();
+    }
+}
+
+<style>
+    .graph-page {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .graph-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+        z-index: 10;
+    }
+
+    .graph-header h1 {
+        flex: 1;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .graph-controls {
+        flex-shrink: 0;
+    }
+
+    .domain-filter {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        appearance: auto;
+    }
+
+    .graph-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    #topic-graph-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        cursor: grab;
+    }
+
+    #topic-graph-canvas:active {
+        cursor: grabbing;
+    }
+
+    .graph-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: var(--bg-base);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+
+    .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Node tooltip */
+    .node-tooltip {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: stretch;
+        overflow: hidden;
+        padding: 0;
+        cursor: pointer;
+        min-width: 180px;
+        max-width: 260px;
+        animation: fadeSlideUp 0.15s ease;
+        z-index: 20;
+    }
+
+    @@keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .tooltip-color-bar {
+        width: 5px;
+        flex-shrink: 0;
+    }
+
+    .tooltip-body {
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .tooltip-body strong { font-size: 0.9rem; }
+    .tooltip-body small { color: var(--text-muted); font-size: 0.75rem; }
+
+    .tooltip-badge {
+        font-size: 0.75rem;
+        color: var(--primary);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    .tooltip-badge.completed {
+        color: var(--success);
+    }
+
+    /* Legend */
+    .graph-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        padding: 8px 16px;
+        background: var(--bg-surface);
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .legend-label {
+        text-transform: capitalize;
+    }
+
+    .legend-line {
+        display: inline-block;
+        width: 20px;
+        height: 2px;
+        border-radius: 1px;
+    }
+
+    .legend-line.prereq { background: rgba(100,150,255,0.7); }
+    .legend-line.related { background: rgba(180,180,180,0.5); border-top: 1px dashed rgba(180,180,180,0.5); height: 0; }
+
+    .legend-node {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid var(--text-muted);
+        flex-shrink: 0;
+    }
+
+    .legend-node.filled { background: var(--text-muted); }
+    .legend-node.hollow { background: transparent; }
+
+    @@media (min-width: 768px) {
+        .graph-header h1 { font-size: 1.3rem; }
+        .domain-filter { font-size: 0.85rem; }
+    }
+</style>

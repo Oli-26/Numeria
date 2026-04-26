@@ -1,4 +1,6 @@
 @inject IVisualizationService Viz
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <div class="canvas-container">
     <canvas id="@CanvasId"></canvas>
@@ -160,8 +162,54 @@
         await DrawVisualization();
     }
 
+    // Interactive visualization types (JS-driven, own animation loop)
+    private static readonly HashSet<string> InteractiveTypes = new()
+    {
+        "projectile-launcher",
+        "lens-ray-tracer",
+        "particle-in-box",
+        "maxwell-demon",
+        "atomic-orbitals",
+        "periodic-trends",
+        "cell-anatomy",
+        "punnett-square",
+        "genetic-drift",
+        "predator-prey",
+        "action-potential",
+        "fourier-builder",
+        "chaos-game-sierpinski",
+        "clt-dice",
+        "bfs-dfs",
+        "time-dilation",
+        "length-contraction",
+        "em-wave",
+        "hr-diagram",
+        "reynolds-flow",
+        "carnot-cycle",
+        "sn1-sn2",
+        "michaelis-menten",
+        "reaction-rate",
+        "central-dogma",
+        "antibody-binding",
+        "french-flag",
+        "tectonic-boundaries",
+        "eruption-styles",
+        "truth-tables"
+    };
+
     private async Task DrawVisualization()
     {
+        if (InteractiveTypes.Contains(VisualizationType))
+        {
+            // JS owns the animation; just hand it the canvas + config
+            try
+            {
+                await JS.InvokeVoidAsync("MathCanvas.startInteractive", CanvasId, VisualizationType, (object?)null);
+            }
+            catch { /* ignore — page may have unmounted */ }
+            return;
+        }
+
         await Viz.ClearCanvasAsync(CanvasId);
 
         switch (VisualizationType)
@@ -1593,6 +1641,11 @@
     {
         eulerV = v; eulerE = e; eulerF = f;
         await Redraw();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("MathCanvas.dispose", CanvasId); } catch { }
     }
 }
 

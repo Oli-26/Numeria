@@ -7,7 +7,13 @@
 @inject IJSRuntime JS
 
 <div class="shop-header">
-    <h1>Shop</h1>
+    <div class="shop-title-wrap">
+        <h1>Shop</h1>
+        @if (profile != null)
+        {
+            <span class="domain-badge">@CapitalizeDomain(profile.CurrentDomain)</span>
+        }
+    </div>
     @if (profile != null)
     {
         <div class="balance-card">
@@ -20,7 +26,7 @@
 @if (profile != null)
 {
     <div class="tab-bar">
-        @foreach (var cat in categories)
+        @foreach (var cat in visibleCategories)
         {
             <button class="tab @(activeCategory == cat ? "active" : "")" @onclick="() => SwitchCategory(cat)">
                 <Icon Name="@GetCategoryIcon(cat)" Size="16" /> @GetCategoryName(cat)
@@ -29,7 +35,7 @@
     </div>
 
     <div class="shop-grid stagger-in tab-content" @key="activeCategory">
-        @foreach (var item in items.Where(i => i.Category == activeCategory))
+        @foreach (var item in domainItems.Where(i => i.Category == activeCategory))
         {
             var owned = profile.ShopPurchases.Contains(item.Id);
             var active = IsActive(item);
@@ -124,7 +130,9 @@ else
 
     private UserProfile? profile;
     private List<ShopItem> items = new();
+    private List<ShopItem> domainItems = new();
     private List<string> categories = new();
+    private List<string> visibleCategories = new();
     private string activeCategory = "theme";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -133,13 +141,30 @@ else
         {
             profile = await Progress.GetProfileAsync();
             items = await ShopRepo.GetShopItemsAsync();
-            categories = items.Select(i => i.Category).Distinct().ToList();
-            if (!string.IsNullOrEmpty(InitialTab) && categories.Contains(InitialTab))
+            RefreshDomainFilter();
+            if (!string.IsNullOrEmpty(InitialTab) && visibleCategories.Contains(InitialTab))
                 activeCategory = InitialTab;
-            else if (categories.Count > 0)
-                activeCategory = categories[0];
+            else if (visibleCategories.Count > 0)
+                activeCategory = visibleCategories[0];
             StateHasChanged();
         }
+    }
+
+    private void RefreshDomainFilter()
+    {
+        var domain = profile?.CurrentDomain ?? "math";
+        domainItems = items
+            .Where(i => i.Domain == null || i.Domain == domain)
+            .ToList();
+        // Preserve category ordering: theme, avatar, title, powerup, feature
+        var allCategories = new[] { "theme", "avatar", "title", "powerup", "feature" };
+        categories = items.Select(i => i.Category).Distinct().ToList();
+        visibleCategories = allCategories
+            .Where(c => domainItems.Any(i => i.Category == c))
+            .ToList();
+        // Clamp active category to a visible one
+        if (!visibleCategories.Contains(activeCategory) && visibleCategories.Count > 0)
+            activeCategory = visibleCategories[0];
     }
 
     private async Task SwitchCategory(string cat)
@@ -222,15 +247,7 @@ else
 
     private int GetFreezeCount()
     {
-        if (profile == null) return 0;
-        var total = 0;
-        foreach (var purchase in profile.ShopPurchases)
-        {
-            var item = items.FirstOrDefault(i => i.Id == purchase);
-            if (item?.UnlockData.ContainsKey("freezeDays") == true && int.TryParse(item.UnlockData["freezeDays"], out var d))
-                total += d;
-        }
-        return total;
+        return profile?.StreakFreezeDays ?? 0;
     }
 
     private async Task BuyItem(ShopItem item)
@@ -290,6 +307,9 @@ else
         try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
         StateHasChanged();
     }
+
+    private static string CapitalizeDomain(string domain) =>
+        string.IsNullOrEmpty(domain) ? "" : char.ToUpper(domain[0]) + domain[1..];
 }
 
 <style>
@@ -297,6 +317,17 @@ else
         display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
     }
     .shop-header h1 { margin: 0; }
+
+    .shop-title-wrap {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .domain-badge {
+        font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em;
+        padding: 3px 10px; border-radius: 20px;
+        background: rgba(74, 95, 224, 0.12);
+        color: var(--primary);
+        border: 1px solid rgba(74, 95, 224, 0.25);
+    }
 
     .balance-card {
         display: flex; align-items: center; gap: 6px;

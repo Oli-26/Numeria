@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace MathVoyager.Services;
 
@@ -8,14 +7,10 @@ public class LeaderboardService : ILeaderboardService
 {
     private readonly HttpClient _http;
 
-    // Dreamlo codes -- replace with your own from https://dreamlo.com
-    // Private code: for adding scores (keep secret in a real app, but fine for sideloaded)
-    // Public code: for reading scores
-    private const string PrivateCode = "U6eHU52II0y0CFKhdItvoQiD8z82QmUkuJXqiw2oK6HQ";
-    private const string PublicCode = "69d3eb8f8f40bc2f600e8597";
-    private const string BaseUrl = "http://dreamlo.com/lb";
+    // Replace with your Firebase Realtime Database URL
+    private const string FirebaseUrl = "https://numerialeaderboard-default-rtdb.firebaseio.com";
 
-    public bool IsConfigured => PrivateCode != "REPLACE_WITH_YOUR_PRIVATE_CODE";
+    public bool IsConfigured => FirebaseUrl != "REPLACE_WITH_YOUR_FIREBASE_URL";
 
     public LeaderboardService(HttpClient http)
     {
@@ -28,12 +23,24 @@ public class LeaderboardService : ILeaderboardService
 
         try
         {
-            // Sanitize name: dreamlo uses name as key, no slashes or special chars
-            var safeName = name.Replace("/", "").Replace("\\", "").Replace(" ", "_").Trim();
-            if (string.IsNullOrEmpty(safeName)) safeName = "Anonymous";
+            var safeName = SanitizeName(name);
 
-            var url = $"{BaseUrl}/{PrivateCode}/add/{safeName}/{score}/{level}/{Uri.EscapeDataString(extra)}";
-            var response = await _http.GetAsync(url);
+            // Check existing score — only update if new score is higher
+            var existing = await GetPlayerScoreAsync(name);
+            if (existing != null && score <= existing.Score)
+                return true;
+
+            var entry = new LeaderboardEntry
+            {
+                Name = safeName,
+                Score = score,
+                Seconds = level,
+                Text = extra,
+                Date = DateTime.Now.ToString("yyyy-MM-dd")
+            };
+
+            var url = $"{FirebaseUrl}/leaderboard/{safeName}.json";
+            var response = await _http.PutAsJsonAsync(url, entry);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -48,9 +55,9 @@ public class LeaderboardService : ILeaderboardService
 
         try
         {
-            var url = $"{BaseUrl}/{PublicCode}/json";
+            var url = $"{FirebaseUrl}/leaderboard.json?orderBy=\"score\"&limitToLast={count}";
             var json = await _http.GetStringAsync(url);
-            return ParseLeaderboard(json);
+            return ParseEntries(json);
         }
         catch
         {
@@ -64,11 +71,15 @@ public class LeaderboardService : ILeaderboardService
 
         try
         {
-            var safeName = name.Replace("/", "").Replace("\\", "").Replace(" ", "_").Trim();
-            var url = $"{BaseUrl}/{PublicCode}/json?name={safeName}";
+            var safeName = SanitizeName(name);
+            var url = $"{FirebaseUrl}/leaderboard/{safeName}.json";
             var json = await _http.GetStringAsync(url);
-            var entries = ParseLeaderboard(json);
-            return entries.FirstOrDefault();
+            if (json == "null") return null;
+
+            return JsonSerializer.Deserialize<LeaderboardEntry>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
         }
         catch
         {
@@ -76,32 +87,31 @@ public class LeaderboardService : ILeaderboardService
         }
     }
 
-    private static List<LeaderboardEntry> ParseLeaderboard(string json)
+    private static string SanitizeName(string name)
+    {
+        // Firebase keys cannot contain . $ # [ ] /
+        var safe = name.Replace(".", "").Replace("$", "").Replace("#", "")
+                       .Replace("[", "").Replace("]", "").Replace("/", "")
+                       .Replace("\\", "").Replace(" ", "_").Trim();
+        return string.IsNullOrEmpty(safe) ? "Anonymous" : safe;
+    }
+
+    private static List<LeaderboardEntry> ParseEntries(string json)
     {
         try
         {
-            var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
+            if (json == "null") return new();
 
-            if (!root.TryGetProperty("dreamlo", out var dreamlo))
-                return new();
-            if (!dreamlo.TryGetProperty("leaderboard", out var lb))
-                return new();
-
-            var entries = new List<LeaderboardEntry>();
-
-            // Can be an array or single object
-            if (lb.ValueKind == JsonValueKind.Array)
+            var dict = JsonSerializer.Deserialize<Dictionary<string, LeaderboardEntry>>(json, new JsonSerializerOptions
             {
-                foreach (var item in lb.EnumerateArray())
-                    entries.Add(ParseEntry(item));
-            }
-            else if (lb.ValueKind == JsonValueKind.Object)
-            {
-                entries.Add(ParseEntry(lb));
-            }
+                PropertyNameCaseInsensitive = true
+            });
 
-            return entries.OrderByDescending(e => e.Score).ToList();
+            if (dict == null) return new();
+
+            return dict.Values
+                .OrderByDescending(e => e.Score)
+                .ToList();
         }
         catch
         {
@@ -109,26 +119,6 @@ public class LeaderboardService : ILeaderboardService
         }
     }
 
-    private static int ParseInt(JsonElement el)
-    {
-        if (el.ValueKind == JsonValueKind.Number) return el.GetInt32();
-        if (el.ValueKind == JsonValueKind.String && int.TryParse(el.GetString(), out var v)) return v;
-        return 0;
-    }
-
-    private static LeaderboardEntry ParseEntry(JsonElement el)
-    {
-        return new LeaderboardEntry
-        {
-            Name = el.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "",
-            Score = el.TryGetProperty("score", out var s) ? ParseInt(s) : 0,
-            Seconds = el.TryGetProperty("seconds", out var sec) ? ParseInt(sec) : 0,
-            Text = el.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "",
-            Date = el.TryGetProperty("date", out var d) ? d.GetString() ?? "" : ""
-        };
-    }
-
-    /// Demo data shown when Dreamlo isn't configured yet
     private static List<LeaderboardEntry> GetDemoData()
     {
         return new List<LeaderboardEntry>

@@ -50,6 +50,12 @@ public class GamificationService : IGamificationService
         else
             profile.DailyXpLog[today] = amount;
 
+        // Prune entries older than 90 days
+        var cutoff = DateTime.Now.AddDays(-90).ToString("yyyy-MM-dd");
+        var staleKeys = profile.DailyXpLog.Keys.Where(k => string.Compare(k, cutoff, StringComparison.Ordinal) < 0).ToList();
+        foreach (var key in staleKeys)
+            profile.DailyXpLog.Remove(key);
+
         var newLevel = GetLevel(profile.TotalXp);
         if (newLevel > oldLevel)
         {
@@ -116,7 +122,7 @@ public class GamificationService : IGamificationService
             "longest-streak" => profile.LongestStreak >= (c.Days ?? 0),
             "topic-completed" => profile.TopicsCompleted.Contains(c.TopicId ?? ""),
             "total-xp" => profile.TotalXp >= (c.Threshold ?? 0),
-            "shop-purchases" => profile.ShopPurchases.Count >= (c.Count ?? 0),
+            "shop-purchases" => profile.ShopPurchases.Count(p => p != "theme-dark") >= (c.Count ?? 0),
             _ => false
         };
     }

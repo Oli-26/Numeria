@@ -1,0 +1,792 @@
+@page "/synthesis"
+@page "/synthesis/{QuizId}"
+@inject IContentRepository Content
+@inject IGamificationService Gamification
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (activeQuiz == null)
+{
+    <!-- Quiz list view -->
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Synthesis Quizzes</h1>
+    </div>
+
+    <div class="synthesis-intro card">
+        <div class="synthesis-intro-icon">
+            <Icon Name="zap" Size="28" />
+        </div>
+        <div>
+            <strong>Cross-Domain Challenges</strong>
+            <p>Questions that require knowledge from multiple fields working together. 1.5× XP bonus on completion.</p>
+        </div>
+    </div>
+
+    @if (quizzes == null)
+    {
+        <div class="skeleton-list">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="skeleton skeleton-card" style="height: 88px; border-radius: 12px; margin-bottom: 10px;"></div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="synthesis-list stagger-in">
+            @foreach (var quiz in quizzes)
+            {
+                var q = quiz;
+                <div class="synthesis-card card card-clickable" style="--quiz-theme: @q.Theme" @onclick="() => StartQuiz(q.Id)">
+                    <div class="synthesis-card-accent"></div>
+                    <div class="synthesis-card-icon">
+                        <Icon Name="zap" Size="22" />
+                    </div>
+                    <div class="synthesis-card-body">
+                        <strong class="synthesis-card-title">@q.Title</strong>
+                        <p class="synthesis-card-desc">@q.Description</p>
+                        <div class="synthesis-domains">
+                            @foreach (var domain in q.Domains)
+                            {
+                                <span class="domain-chip">@DomainLabel(domain)</span>
+                            }
+                            <span class="synthesis-qcount">@q.Questions.Count questions</span>
+                        </div>
+                    </div>
+                    <div class="synthesis-card-arrow">→</div>
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <!-- Quiz taking view -->
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to list" @onclick="BackToList"><Icon Name="arrow-left" Size="18" /></button>
+        <h1>@activeQuiz.Title</h1>
+    </div>
+
+    @if (quizState == QuizState.InProgress)
+    {
+        <div class="quiz-container">
+            <div class="quiz-header">
+                <span class="quiz-progress">Question @(currentIndex + 1) / @activeQuiz.Questions.Count</span>
+                <div class="quiz-score">
+                    <span class="correct-count">@correctCount correct</span>
+                    <span class="wrong-count">@wrongCount wrong</span>
+                </div>
+            </div>
+
+            <div class="progress-bar-container" style="margin-bottom: 16px">
+                <div class="progress-bar-fill" style="width: @(((double)currentIndex / activeQuiz.Questions.Count * 100).ToString("F0"))%; background: @activeQuiz.Theme"></div>
+            </div>
+
+            @{
+                var q = activeQuiz.Questions[currentIndex];
+            }
+
+            <div class="question-section question-enter" @key="currentIndex">
+                <p class="question-prompt">@q.Prompt</p>
+            </div>
+
+            @if (q.Type == QuestionType.MultipleChoice)
+            {
+                <div class="options-grid">
+                    @if (q.Options != null)
+                    {
+                        @foreach (var option in q.Options)
+                        {
+                            var opt = option;
+                            var optClass = GetOptionClass(opt);
+                            <button class="option-btn @optClass"
+                                    @onclick="() => SelectOption(opt)"
+                                    disabled="@answerSubmitted">
+                                @opt
+                            </button>
+                        }
+                    }
+                </div>
+            }
+            else if (q.Type == QuestionType.FillIn)
+            {
+                <div class="fill-in-section">
+                    <input type="text" class="fill-input" @bind="fillInAnswer" @bind:event="oninput"
+                           placeholder="Type your answer..." disabled="@answerSubmitted"
+                           @onkeydown="HandleFillInKeydown" />
+                    @if (!answerSubmitted)
+                    {
+                        <button class="btn btn-primary" @onclick="SubmitFillIn"
+                                disabled="@string.IsNullOrWhiteSpace(fillInAnswer)">Submit</button>
+                    }
+                </div>
+            }
+            else if (q.Type == QuestionType.TrueOrFalse)
+            {
+                <div class="tf-section">
+                    <div class="tf-buttons">
+                        <button class="tf-btn true-btn @(answerSubmitted && q.CorrectAnswer == "True" ? "correct" : answerSubmitted && q.CorrectAnswer != "True" ? "incorrect" : "")"
+                                @onclick='() => SelectOption("True")'
+                                disabled="@answerSubmitted">
+                            <Icon Name="check" Size="18" /> True
+                        </button>
+                        <button class="tf-btn false-btn @(answerSubmitted && q.CorrectAnswer == "False" ? "correct" : answerSubmitted && q.CorrectAnswer != "False" ? "incorrect" : "")"
+                                @onclick='() => SelectOption("False")'
+                                disabled="@answerSubmitted">
+                            <Icon Name="x-mark" Size="18" /> False
+                        </button>
+                    </div>
+                </div>
+            }
+            else if (q.Type == QuestionType.ConceptMatch)
+            {
+                <div class="matching-section">
+                    <p class="matching-hint">
+                        @if (selectedLeft == null)
+                        {
+                            <span>Tap an item on the left to start matching</span>
+                        }
+                        else
+                        {
+                            <span>Now tap the matching item for <strong>@selectedLeft</strong></span>
+                        }
+                    </p>
+                    @if (q.Pairs != null)
+                    {
+                        <div class="match-pairs-list">
+                            @foreach (var pair in q.Pairs)
+                            {
+                                var left = pair.Left;
+                                var isLeftSelected = selectedLeft == left;
+                                var hasMatch = userMatches.ContainsKey(left);
+                                var matchedRight = hasMatch ? userMatches[left] : null;
+                                var leftClass = isLeftSelected ? "active" : hasMatch ? "matched" : "";
+                                var resultClass = answerSubmitted && matchResults.ContainsKey(left)
+                                    ? (matchResults[left] ? "correct" : "incorrect") : "";
+
+                                <div class="match-row @resultClass">
+                                    <button class="match-item left @leftClass"
+                                            @onclick="() => SelectLeft(left)"
+                                            disabled="@answerSubmitted">
+                                        @left
+                                    </button>
+                                    <span class="match-arrow @(hasMatch ? "connected" : "")">
+                                        @(hasMatch ? "↔" : "•••")
+                                    </span>
+                                    @if (hasMatch)
+                                    {
+                                        <span class="match-item right matched" @onclick="() => ClearMatch(left)">@matchedRight</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="match-item right empty">?</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        @if (!answerSubmitted)
+                        {
+                            <div class="match-options">
+                                <p class="matching-label">Available answers:</p>
+                                <div class="match-options-grid">
+                                    @foreach (var right in shuffledRights)
+                                    {
+                                        var r = right;
+                                        var isUsed = userMatches.ContainsValue(r);
+                                        <button class="match-option-btn @(isUsed ? "used" : "") @(selectedLeft != null && !isUsed ? "available" : "")"
+                                                @onclick="() => SelectRight(r)"
+                                                disabled="@(answerSubmitted || selectedLeft == null || isUsed)">
+                                            @r
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (!answerSubmitted && q.Pairs != null && userMatches.Count == q.Pairs.Count)
+                        {
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 12px" @onclick="SubmitMatching">Check Matches</button>
+                        }
+                    }
+                </div>
+            }
+
+            @if (answerSubmitted)
+            {
+                <div class="feedback @(lastCorrect ? "feedback-correct anim-correct" : "feedback-incorrect anim-incorrect")">
+                    <span class="feedback-icon">@if (lastCorrect) { <Icon Name="check" Size="18" /> } else { <Icon Name="x-mark" Size="18" /> }</span>
+                    <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
+                    @if (!lastCorrect && q.CorrectAnswer != null)
+                    {
+                        <span class="correct-answer">Answer: @q.CorrectAnswer</span>
+                    }
+                </div>
+                @if (q.Explanation != null)
+                {
+                    <div class="explanation">@q.Explanation</div>
+                }
+                <button class="btn btn-primary" style="width: 100%; margin-top: 8px" @onclick="NextQuestion">
+                    @(currentIndex < activeQuiz.Questions.Count - 1 ? "Next Question" : "See Results")
+                </button>
+            }
+        </div>
+    }
+    else if (quizState == QuizState.Complete)
+    {
+        <div class="quiz-results card count-up">
+            <h2>Quiz Complete!</h2>
+            <div class="synthesis-badge" style="color: @activeQuiz.Theme; border-color: @activeQuiz.Theme">
+                @activeQuiz.Title
+            </div>
+
+            <div class="results-stats stagger-in">
+                <div class="stat-card correct-stat count-up">
+                    <span class="stat-number">@correctCount</span>
+                    <span class="stat-label">Correct</span>
+                </div>
+                <div class="stat-card wrong-stat count-up">
+                    <span class="stat-number">@wrongCount</span>
+                    <span class="stat-label">Wrong</span>
+                </div>
+                <div class="stat-card score-stat count-up">
+                    <span class="stat-number">@(activeQuiz.Questions.Count > 0 ? correctCount * 100 / activeQuiz.Questions.Count : 0)%</span>
+                    <span class="stat-label">Score</span>
+                </div>
+            </div>
+
+            <div class="xp-earned pulse">
+                <span class="xp-badge" style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
+                <small class="synthesis-bonus-note">Includes 1.5× synthesis bonus</small>
+            </div>
+
+            @if (gamificationEvent?.LeveledUp == true)
+            {
+                <div class="level-up-banner level-up-burst">
+                    Level Up! You're now Level @gamificationEvent.NewLevel
+                </div>
+            }
+
+            @if (gamificationEvent?.NewAchievements.Count > 0)
+            {
+                <div class="new-achievements">
+                    @foreach (var a in gamificationEvent.NewAchievements)
+                    {
+                        <div class="achievement-unlock achievement-pop">@a.Name — @a.Description</div>
+                    }
+                </div>
+            }
+
+            <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px" @onclick="BackToList">
+                Back to Synthesis Quizzes
+            </button>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string? QuizId { get; set; }
+
+    private enum QuizState { InProgress, Complete }
+    private QuizState quizState = QuizState.InProgress;
+
+    private List<SynthesisQuiz>? quizzes;
+    private SynthesisQuiz? activeQuiz;
+
+    private int currentIndex;
+    private int correctCount;
+    private int wrongCount;
+    private bool answerSubmitted;
+    private bool lastCorrect;
+    private string fillInAnswer = "";
+    private int totalXpEarned;
+    private GamificationEvent? gamificationEvent;
+
+    // Matching state
+    private string? selectedLeft;
+    private Dictionary<string, string> userMatches = new();
+    private Dictionary<string, bool> matchResults = new();
+    private List<string> shuffledRights = new();
+
+    private List<(Question q, string userAnswer, bool isCorrect, int xp)> results = new();
+
+    private static readonly Random _random = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        quizzes = await Content.GetSynthesisQuizzesAsync();
+
+        if (!string.IsNullOrEmpty(QuizId))
+        {
+            activeQuiz = quizzes.FirstOrDefault(q => q.Id == QuizId);
+            if (activeQuiz != null)
+            {
+                ResetQuizState();
+            }
+        }
+        else
+        {
+            activeQuiz = null;
+        }
+    }
+
+    private void ResetQuizState()
+    {
+        currentIndex = 0;
+        correctCount = 0;
+        wrongCount = 0;
+        answerSubmitted = false;
+        lastCorrect = false;
+        fillInAnswer = "";
+        totalXpEarned = 0;
+        gamificationEvent = null;
+        results = new();
+        quizState = QuizState.InProgress;
+        InitQuestion();
+    }
+
+    private void InitQuestion()
+    {
+        answerSubmitted = false;
+        fillInAnswer = "";
+        selectedLeft = null;
+        userMatches.Clear();
+        matchResults.Clear();
+
+        if (activeQuiz == null || currentIndex >= activeQuiz.Questions.Count) return;
+        var q = activeQuiz.Questions[currentIndex];
+        if (q.Type == QuestionType.ConceptMatch && q.Pairs != null)
+        {
+            shuffledRights = q.Pairs.Select(p => p.Right).OrderBy(_ => _random.Next()).ToList();
+        }
+    }
+
+    private void StartQuiz(string quizId)
+    {
+        Nav.NavigateTo($"/synthesis/{quizId}");
+    }
+
+    private void BackToList()
+    {
+        Nav.NavigateTo("/synthesis");
+    }
+
+    private async Task SelectOption(string option)
+    {
+        if (answerSubmitted || activeQuiz == null) return;
+        var q = activeQuiz.Questions[currentIndex];
+        bool correct = option == q.CorrectAnswer;
+        int xp = correct ? q.XpReward : 0;
+        results.Add((q, option, correct, xp));
+        lastCorrect = correct;
+        answerSubmitted = true;
+        if (correct) correctCount++;
+        else wrongCount++;
+        await Progress.RecordQuestionAnsweredAsync(null, correct);
+        try { await JS.InvokeVoidAsync(correct ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+    }
+
+    private async Task SubmitFillIn()
+    {
+        if (answerSubmitted || string.IsNullOrWhiteSpace(fillInAnswer) || activeQuiz == null) return;
+        var q = activeQuiz.Questions[currentIndex];
+        var answer = fillInAnswer.Trim();
+        bool correct = IsAcceptableAnswer(q, answer);
+        int xp = correct ? q.XpReward : 0;
+        results.Add((q, answer, correct, xp));
+        lastCorrect = correct;
+        answerSubmitted = true;
+        if (correct) correctCount++;
+        else wrongCount++;
+        await Progress.RecordQuestionAnsweredAsync(null, correct);
+        try { await JS.InvokeVoidAsync(correct ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+    }
+
+    private bool IsAcceptableAnswer(Question q, string answer)
+    {
+        var normalized = answer.Trim().ToLowerInvariant();
+        if (q.AcceptableAnswers != null && q.AcceptableAnswers.Any(a => a.Trim().ToLowerInvariant() == normalized))
+            return true;
+        return q.CorrectAnswer != null && q.CorrectAnswer.Trim().ToLowerInvariant() == normalized;
+    }
+
+    private async Task HandleFillInKeydown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SubmitFillIn();
+    }
+
+    private async Task SubmitMatching()
+    {
+        if (activeQuiz == null) return;
+        var q = activeQuiz.Questions[currentIndex];
+        int correctMatches = 0;
+        matchResults.Clear();
+        if (q.Pairs != null)
+        {
+            foreach (var pair in q.Pairs)
+            {
+                var isCorrect = userMatches.ContainsKey(pair.Left) && userMatches[pair.Left] == pair.Right;
+                matchResults[pair.Left] = isCorrect;
+                if (isCorrect) correctMatches++;
+            }
+        }
+        bool allCorrect = correctMatches == (q.Pairs?.Count ?? 0);
+        int xp = allCorrect ? q.XpReward : 0;
+        results.Add((q, string.Join(", ", userMatches.Select(kv => $"{kv.Key}={kv.Value}")), allCorrect, xp));
+        lastCorrect = allCorrect;
+        answerSubmitted = true;
+        if (allCorrect) correctCount++;
+        else wrongCount++;
+        await Progress.RecordQuestionAnsweredAsync(null, allCorrect);
+        try { await JS.InvokeVoidAsync(allCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+    }
+
+    private void SelectLeft(string left)
+    {
+        if (answerSubmitted) return;
+        selectedLeft = selectedLeft == left ? null : left;
+    }
+
+    private void SelectRight(string right)
+    {
+        if (answerSubmitted || selectedLeft == null) return;
+        var existingKey = userMatches.FirstOrDefault(kv => kv.Value == right).Key;
+        if (existingKey != null) userMatches.Remove(existingKey);
+        userMatches[selectedLeft] = right;
+        selectedLeft = null;
+    }
+
+    private void ClearMatch(string left)
+    {
+        if (answerSubmitted) return;
+        userMatches.Remove(left);
+    }
+
+    private async Task NextQuestion()
+    {
+        if (activeQuiz == null) return;
+        currentIndex++;
+        if (currentIndex >= activeQuiz.Questions.Count)
+        {
+            await FinishQuiz();
+        }
+        else
+        {
+            InitQuestion();
+        }
+    }
+
+    private async Task FinishQuiz()
+    {
+        if (activeQuiz == null) return;
+
+        // Sum base XP from correct answers, then apply 1.5× synthesis bonus
+        int baseXp = results.Where(r => r.isCorrect).Sum(r => r.xp);
+        totalXpEarned = (int)(baseXp * 1.5);
+
+        gamificationEvent = await Gamification.AwardXpAsync(totalXpEarned);
+
+        var score = activeQuiz.Questions.Count > 0 ? correctCount * 100 / activeQuiz.Questions.Count : 0;
+        await Progress.RecordQuizResultAsync(activeQuiz.Id, null, score, correctCount, activeQuiz.Questions.Count, totalXpEarned);
+
+        quizState = QuizState.Complete;
+        try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
+        try { await JS.InvokeVoidAsync("XpFloat.show", totalXpEarned, null, null); } catch { }
+        if (gamificationEvent.LeveledUp)
+            try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+        if (score >= 80)
+            try { await JS.InvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40); } catch { }
+    }
+
+    private string GetOptionClass(string option)
+    {
+        if (!answerSubmitted || activeQuiz == null) return "";
+        var q = activeQuiz.Questions[currentIndex];
+        if (option == q.CorrectAnswer) return "correct";
+        if (results.LastOrDefault().userAnswer == option && !lastCorrect) return "incorrect";
+        return "";
+    }
+
+    private static string DomainLabel(string domainId) => domainId switch
+    {
+        "math" => "Math",
+        "physics" => "Physics",
+        "chemistry" => "Chemistry",
+        "biology" => "Biology",
+        "geology" => "Geology",
+        "history" => "History",
+        "linguistics" => "Linguistics",
+        "philosophy" => "Philosophy",
+        _ => domainId
+    };
+}
+
+<style>
+    .synthesis-intro {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, rgba(74,95,224,0.06), rgba(180,140,255,0.06));
+        border: 1px solid rgba(74,95,224,0.18);
+    }
+
+    .synthesis-intro-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(74,95,224,0.12);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .synthesis-intro strong {
+        display: block;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .synthesis-intro p {
+        margin: 0;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    .synthesis-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .synthesis-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        position: relative;
+        overflow: hidden;
+        border-left: 3px solid var(--quiz-theme, var(--primary));
+    }
+
+    .synthesis-card-accent {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, color-mix(in srgb, var(--quiz-theme) 8%, transparent), transparent 60%);
+        pointer-events: none;
+    }
+
+    .synthesis-card-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        background: color-mix(in srgb, var(--quiz-theme) 14%, transparent);
+        color: var(--quiz-theme, var(--primary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .synthesis-card-body {
+        flex: 1;
+        min-width: 0;
+        position: relative;
+    }
+
+    .synthesis-card-title {
+        display: block;
+        font-size: 0.95rem;
+        margin-bottom: 3px;
+    }
+
+    .synthesis-card-desc {
+        margin: 0 0 8px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .synthesis-domains {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .domain-chip {
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--quiz-theme) 12%, transparent);
+        color: var(--quiz-theme, var(--primary));
+        font-size: 0.72rem;
+        font-weight: 600;
+        border: 1px solid color-mix(in srgb, var(--quiz-theme) 25%, transparent);
+    }
+
+    .synthesis-qcount {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-left: 2px;
+    }
+
+    .synthesis-card-arrow {
+        color: var(--quiz-theme, var(--primary));
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    /* Quiz taking */
+    .quiz-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .quiz-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .quiz-score {
+        display: flex;
+        gap: 12px;
+        font-weight: 600;
+    }
+
+    .correct-count { color: var(--success); }
+    .wrong-count { color: var(--error); }
+
+    .question-section { margin-bottom: 16px; }
+
+    .fill-in-section {
+        display: flex;
+        gap: 10px;
+    }
+
+    .fill-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 1rem;
+        font-family: var(--font-main);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+    .fill-input:focus { border-color: var(--primary); }
+
+    .tf-section { margin-top: 8px; }
+    .tf-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tf-btn {
+        padding: 20px; border: 3px solid var(--border); border-radius: var(--radius-md);
+        font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+        background: var(--bg-card); color: var(--text-primary);
+        -webkit-tap-highlight-color: transparent;
+    }
+    .tf-btn:active:not(:disabled) { transform: scale(0.96); }
+    .true-btn { border-color: rgba(76, 175, 80, 0.3); }
+    .true-btn:hover:not(:disabled) { background: rgba(76,175,80,0.08); border-color: var(--success); }
+    .false-btn { border-color: rgba(239, 83, 80, 0.3); }
+    .false-btn:hover:not(:disabled) { background: rgba(239,83,80,0.08); border-color: var(--error); }
+    .tf-btn.correct { background: rgba(76,175,80,0.15); border-color: var(--success); color: var(--success); }
+    .tf-btn.incorrect { background: rgba(239,83,80,0.15); border-color: var(--error); color: var(--error); }
+
+    /* Matching (reuse styles from QuizComponent) */
+    .matching-section { display: flex; flex-direction: column; gap: 12px; }
+    .matching-hint {
+        color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 8px;
+        background: var(--bg-surface); border-radius: var(--radius-sm); margin: 0;
+    }
+    .matching-hint strong { color: var(--primary); }
+    .matching-label { color: var(--text-muted); font-size: 0.85rem; margin: 0 0 6px; }
+    .match-pairs-list { display: flex; flex-direction: column; gap: 8px; }
+    .match-row {
+        display: flex; align-items: center; gap: 8px; padding: 4px;
+        border-radius: var(--radius-sm);
+    }
+    .match-row.correct { background: rgba(76,175,80,0.08); }
+    .match-row.incorrect { background: rgba(239,83,80,0.08); }
+    .match-item {
+        flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
+        font-size: 0.9rem; text-align: center; border: 2px solid var(--border);
+        background: var(--bg-card); transition: all 0.2s ease;
+    }
+    .match-item.left { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .match-item.left.active { border-color: var(--primary); background: rgba(74,95,224,0.08); box-shadow: 0 0 0 2px rgba(74,95,224,0.2); }
+    .match-item.left.matched { border-color: var(--primary-light); color: var(--primary); }
+    .match-item.right.matched { border-color: var(--primary-light); background: rgba(74,95,224,0.05); cursor: pointer; }
+    .match-item.right.empty { border-style: dashed; color: var(--text-muted); background: var(--bg-surface); }
+    .match-arrow { color: var(--text-muted); font-size: 0.85rem; flex-shrink: 0; width: 28px; text-align: center; }
+    .match-arrow.connected { color: var(--primary); font-size: 1.1rem; }
+    .match-options { border-top: 1px solid var(--border); padding-top: 12px; }
+    .match-options-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .match-option-btn {
+        padding: 8px 14px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+        background: var(--bg-card); color: var(--text-primary); font-size: 0.9rem;
+        cursor: pointer; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .match-option-btn.available { border-color: var(--primary-light); background: rgba(74,95,224,0.05); }
+    .match-option-btn.used { opacity: 0.4; text-decoration: line-through; cursor: default; }
+
+    /* Results */
+    .quiz-results {
+        text-align: center;
+        padding: 24px;
+    }
+    .synthesis-badge {
+        display: inline-block;
+        margin: 10px auto;
+        padding: 4px 14px;
+        border: 2px solid;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .results-stats {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 20px 0;
+    }
+    .stat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 20px;
+        border-radius: var(--radius-md);
+        min-width: 80px;
+    }
+    .correct-stat { background: rgba(76,175,80,0.1); color: var(--success); }
+    .wrong-stat { background: rgba(239,83,80,0.1); color: var(--error); }
+    .score-stat { background: rgba(74,95,224,0.1); color: var(--primary); }
+    .stat-number { font-size: 1.5rem; font-weight: 700; }
+    .stat-label { font-size: 0.8rem; opacity: 0.8; }
+    .xp-earned { margin: 16px 0; }
+    .synthesis-bonus-note { display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+    .level-up-banner {
+        background: linear-gradient(135deg, var(--success), #2E7D32);
+        color: white; padding: 12px; border-radius: var(--radius-sm);
+        font-weight: 600; margin: 12px 0;
+    }
+    .new-achievements { margin: 12px 0; }
+    .achievement-unlock {
+        background: rgba(74,95,224,0.08); padding: 10px; border-radius: var(--radius-sm);
+        margin: 6px 0; font-weight: 500; color: var(--primary);
+    }
+</style>
