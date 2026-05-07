@@ -1,7 +1,6 @@
 @page "/settings"
 @inject IProgressService Progress
 @inject IThemeService ThemeService
-@inject IContentRepository Content
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject INotificationService NotificationSvc
@@ -13,28 +12,6 @@
 </div>
 
 <div class="settings-list">
-    @if (domains.Count >= 2)
-    {
-        <div class="card settings-item">
-            <div class="settings-row">
-                <div class="settings-icon"><Icon Name="book" Size="24" /></div>
-                <div class="settings-info">
-                    <h3>Domain</h3>
-                    <p>What you're learning</p>
-                </div>
-            </div>
-            <div class="domain-picker">
-                @foreach (var d in domains)
-                {
-                    <button class="domain-btn @(currentDomain == d.Id ? "active" : "")" @onclick="() => SetDomain(d.Id)">
-                        <strong>@d.Name</strong>
-                        <small>@d.Description</small>
-                    </button>
-                }
-            </div>
-        </div>
-    }
-
     <div class="card settings-item">
         <div class="settings-row">
             <div class="settings-icon"><Icon Name="palette" Size="24" /></div>
@@ -44,7 +21,7 @@
             </div>
             <button class="btn btn-sm btn-outline" @onclick='() => Nav.NavigateTo("/shop")'>Browse</button>
         </div>
-        @if (activeTheme != "default")
+        @if (activeTheme != "dark")
         {
             <button class="btn btn-sm btn-outline reset-theme-btn" @onclick="ResetTheme">
                 Reset to Default
@@ -305,11 +282,55 @@
         </div>
     </div>
 
+    @if (devMode)
+    {
+        <div class="card settings-item dev-item">
+            <div class="settings-row" @onclick="ToggleErrorLog" style="cursor: pointer">
+                <div class="settings-icon"><Icon Name="search" Size="24" Stroke="var(--error)" /></div>
+                <div class="settings-info">
+                    <h3>Error Log</h3>
+                    <p>@errorLog.Count captured @(errorLog.Count == 1 ? "entry" : "entries") · tap to @(showErrorLog ? "hide" : "view")</p>
+                </div>
+                <span class="settings-chevron">@(showErrorLog ? "▾" : "▸")</span>
+            </div>
+            @if (showErrorLog)
+            {
+                <div class="error-log-actions">
+                    <button class="btn btn-sm btn-outline" @onclick="RefreshErrorLog">Refresh</button>
+                    <button class="btn btn-sm btn-danger" @onclick="ClearErrorLog" disabled="@(errorLog.Count == 0)">Clear</button>
+                </div>
+                @if (errorLog.Count == 0)
+                {
+                    <p class="error-log-empty">No errors recorded.</p>
+                }
+                else
+                {
+                    <div class="error-log-list">
+                        @foreach (var entry in errorLog.AsEnumerable().Reverse())
+                        {
+                            <details class="error-log-entry">
+                                <summary>
+                                    <span class="error-log-source">@entry.Source</span>
+                                    <span class="error-log-time">@FormatTime(entry.T)</span>
+                                    <span class="error-log-msg">@entry.Message</span>
+                                </summary>
+                                @if (!string.IsNullOrEmpty(entry.Stack))
+                                {
+                                    <pre class="error-log-stack">@entry.Stack</pre>
+                                }
+                            </details>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    }
+
     <div class="card settings-item about-card">
         <div class="about-brand">
-            <img src="numeria-icon.svg" alt="Numeria" class="about-icon" />
+            <img src="phine-icon.svg" alt="Phine" class="about-icon" />
             <div>
-                <h3>Numeria</h3>
+                <h3>Phine</h3>
                 <p>v1.0</p>
             </div>
         </div>
@@ -318,17 +339,17 @@
 </div>
 
 @code {
-    private string activeTheme = "default";
+    private string activeTheme = "dark";
     private bool confirmReset;
     private bool soundEnabled = true;
     private string currentName = "";
     private string newName = "";
     private bool editingName;
     private bool devMode;
+    private bool showErrorLog;
+    private List<ErrorLogEntry> errorLog = new();
     private bool showHints;
     private string fontSize = "medium";
-    private string currentDomain = "math";
-    private List<Domain> domains = new();
     private bool notificationsEnabled;
     private bool streakReminderEnabled = true;
     private bool reviewReminderEnabled = true;
@@ -354,7 +375,6 @@
             devMode = profile.ShopPurchases.Contains("__dev_mode__");
             showHints = profile.ShowHintsByDefault;
             fontSize = profile.FontSize ?? "medium";
-            currentDomain = profile.CurrentDomain;
             notificationsEnabled = profile.NotificationsEnabled;
             streakReminderEnabled = profile.StreakReminderEnabled;
             reviewReminderEnabled = profile.ReviewReminderEnabled;
@@ -363,15 +383,16 @@
             ttsRate = profile.TtsRate > 0 ? profile.TtsRate : 1.0;
             ttsVoice = profile.TtsVoice ?? "";
             ttsAutoAdvance = profile.TtsAutoAdvance;
-            domains = await Content.GetDomainsAsync();
             // Load voices (async — fires after first render is complete)
-            try { ttsVoices = await TtsService.GetVoicesAsync(); } catch { }
+            try { ttsVoices = await TtsService.GetVoicesAsync(); }
+            catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.GetVoices", ex); }
             try
             {
                 var muted = await JS.InvokeAsync<string>("localStorage.getItem", "numeria-sound-muted");
                 soundEnabled = muted != "true";
             }
-            catch { }
+            catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.readMuted", ex); }
+            if (devMode) await RefreshErrorLog();
             StateHasChanged();
         }
     }
@@ -400,7 +421,7 @@
 
             await Progress.SaveProfileAsync(profile);
             await JS.InvokeVoidAsync("showToast", "Dev mode ON — everything unlocked!", "");
-            try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
         }
         else
         {
@@ -408,6 +429,44 @@
             await Progress.SaveProfileAsync(profile);
             await JS.InvokeVoidAsync("showToast", "Dev mode OFF", "");
         }
+    }
+
+    private async Task ToggleErrorLog()
+    {
+        showErrorLog = !showErrorLog;
+        if (showErrorLog) await RefreshErrorLog();
+    }
+
+    private async Task RefreshErrorLog()
+    {
+        try
+        {
+            errorLog = await JS.InvokeAsync<List<ErrorLogEntry>>("PhineErrorLog.get") ?? new();
+        }
+        catch
+        {
+            errorLog = new();
+        }
+    }
+
+    private async Task ClearErrorLog()
+    {
+        await JS.TryInvokeVoidAsync("PhineErrorLog.clear");
+        errorLog = new();
+    }
+
+    private static string FormatTime(long unixMs)
+    {
+        var dt = DateTimeOffset.FromUnixTimeMilliseconds(unixMs).LocalDateTime;
+        return dt.ToString("HH:mm:ss MMM d");
+    }
+
+    public class ErrorLogEntry
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("t")] public long T { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("source")] public string Source { get; set; } = "";
+        [System.Text.Json.Serialization.JsonPropertyName("message")] public string Message { get; set; } = "";
+        [System.Text.Json.Serialization.JsonPropertyName("stack")] public string Stack { get; set; } = "";
     }
 
     private async Task ToggleSound()
@@ -418,9 +477,9 @@
             await JS.InvokeVoidAsync("localStorage.setItem", "numeria-sound-muted", soundEnabled ? "false" : "true");
             await JS.InvokeVoidAsync("eval", $"window.Sounds._muted = {(soundEnabled ? "false" : "true")}");
             if (soundEnabled)
-                try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+                await JS.TryInvokeVoidAsync("Sounds.playClick");
         }
-        catch { }
+        catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.toggleSound", ex); }
     }
 
     private async Task SaveName()
@@ -432,7 +491,7 @@
         currentName = profile.DisplayName;
         editingName = false;
         await JS.InvokeVoidAsync("showToast", "Name updated!", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private void CancelNameEdit()
@@ -450,7 +509,7 @@
     private async Task ExportStats()
     {
         var profile = await Progress.GetProfileAsync();
-        var text = $"Numeria Stats\n" +
+        var text = $"Phine Stats\n" +
                    $"Name: {profile.DisplayName}\n" +
                    $"Total XP: {profile.TotalXp}\n" +
                    $"Level: {Gamification.GetLevel(profile.TotalXp)}\n" +
@@ -477,7 +536,7 @@
         await ThemeService.ApplyThemeAsync("dark");
         activeTheme = "dark";
         await JS.InvokeVoidAsync("showToast", "Theme reset to default.", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task DoReset()
@@ -496,20 +555,7 @@
         profile.ShowHintsByDefault = showHints;
         await Progress.SaveProfileAsync(profile);
         await JS.InvokeVoidAsync("showToast", showHints ? "Hints will auto-show" : "Hints hidden by default", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
-    }
-
-    private async Task SetDomain(string domainId)
-    {
-        if (currentDomain == domainId) return;
-        currentDomain = domainId;
-        var profile = await Progress.GetProfileAsync();
-        profile.CurrentDomain = domainId;
-        await Progress.SaveProfileAsync(profile);
-        var name = domains.FirstOrDefault(d => d.Id == domainId)?.Name ?? domainId;
-        await JS.InvokeVoidAsync("showToast", $"Switched to {name}", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
-        Nav.NavigateTo("/", forceLoad: false);
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task SetFontSize(string size)
@@ -519,7 +565,7 @@
         profile.FontSize = size;
         await Progress.SaveProfileAsync(profile);
         await JS.InvokeVoidAsync("applyFontSize", size);
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task ExportData()
@@ -529,9 +575,9 @@
             var json = await JS.InvokeAsync<string?>("exportProfileData");
             if (json != null)
             {
-                var filename = $"numeria-backup-{DateTime.Now:yyyy-MM-dd}.json";
+                var filename = $"phine-backup-{DateTime.Now:yyyy-MM-dd}.json";
                 await JS.InvokeVoidAsync("downloadFile", filename, json);
-                await JS.InvokeVoidAsync("showToast", "Backup downloaded!", "");
+                await JS.InvokeVoidAsync("showToast", "Backup ready — pick where to save", "");
             }
         }
         catch
@@ -596,7 +642,7 @@
             await JS.InvokeVoidAsync("showToast", "Notifications disabled", "");
         }
 
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task ToggleStreakReminder()
@@ -607,7 +653,7 @@
         await Progress.SaveProfileAsync(profile);
         await NotificationSvc.RefreshSchedulesAsync();
         await JS.InvokeVoidAsync("showToast", streakReminderEnabled ? "Streak reminder on" : "Streak reminder off", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task ToggleReviewReminder()
@@ -618,7 +664,7 @@
         await Progress.SaveProfileAsync(profile);
         await NotificationSvc.RefreshSchedulesAsync();
         await JS.InvokeVoidAsync("showToast", reviewReminderEnabled ? "Review reminder on" : "Review reminder off", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task OnReminderTimeChanged(ChangeEventArgs e)
@@ -630,7 +676,7 @@
         profile.DailyReminderTime = dailyReminderTime;
         await Progress.SaveProfileAsync(profile);
         await NotificationSvc.RefreshSchedulesAsync();
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task ToggleTts()
@@ -640,12 +686,13 @@
         profile.TtsEnabled = ttsEnabled;
         await Progress.SaveProfileAsync(profile);
         await JS.InvokeVoidAsync("showToast", ttsEnabled ? "Audio mode on" : "Audio mode off", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
 
         // Load voices when first enabled
         if (ttsEnabled && ttsVoices.Count == 0)
         {
-            try { ttsVoices = await TtsService.GetVoicesAsync(); } catch { }
+            try { ttsVoices = await TtsService.GetVoicesAsync(); }
+            catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.GetVoices", ex); }
         }
     }
 
@@ -655,7 +702,7 @@
         var profile = await Progress.GetProfileAsync();
         profile.TtsRate = rate;
         await Progress.SaveProfileAsync(profile);
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private async Task OnVoiceChanged(ChangeEventArgs e)
@@ -673,7 +720,7 @@
         profile.TtsAutoAdvance = ttsAutoAdvance;
         await Progress.SaveProfileAsync(profile);
         await JS.InvokeVoidAsync("showToast", ttsAutoAdvance ? "Auto-advance on" : "Auto-advance off", "");
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private string FormatFontSize(string size) => size switch
@@ -761,28 +808,13 @@
     .confirm-box p { color: var(--error); font-size: 0.9rem; margin: 0 0 10px; font-weight: 500; }
     .confirm-buttons { display: flex; gap: 8px; justify-content: flex-end; }
 
-    /* Domain picker */
-    .domain-picker {
-        display: flex; flex-direction: column; gap: 8px; margin-top: 12px;
-    }
-    .domain-btn {
-        width: 100%; padding: 12px 14px; border: 2px solid var(--border);
-        border-radius: var(--radius-sm); background: var(--bg-surface);
-        color: var(--text-primary); font-family: var(--font-main);
-        text-align: left; cursor: pointer; transition: all 0.2s ease;
-        -webkit-tap-highlight-color: transparent;
-        display: flex; flex-direction: column; gap: 2px;
-    }
-    .domain-btn:active { transform: scale(0.98); }
-    .domain-btn.active {
-        border-color: var(--primary); background: rgba(74, 95, 224, 0.08);
-    }
-    .domain-btn strong { font-size: 0.95rem; }
-    .domain-btn small { color: var(--text-muted); font-size: 0.8rem; }
-
     /* Font size picker */
     .font-size-picker {
         display: flex; gap: 8px; margin-top: 12px;
+    }
+    @@media (max-width: 480px) {
+        .font-size-picker { flex-direction: column; }
+        .font-btn { min-height: 44px; }
     }
     .font-btn {
         flex: 1; padding: 10px 8px; border: 2px solid var(--border);
@@ -863,4 +895,89 @@
         appearance: none; -webkit-appearance: none;
     }
     .tts-voice-select:focus { border-color: var(--primary); }
+
+    .settings-chevron {
+        color: var(--text-muted);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .error-log-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .error-log-empty {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin: 12px 0 0;
+    }
+
+    .error-log-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 12px;
+        max-height: 360px;
+        overflow-y: auto;
+    }
+
+    .error-log-entry {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    .error-log-entry summary {
+        cursor: pointer;
+        list-style: none;
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        gap: 8px;
+        align-items: baseline;
+    }
+
+    .error-log-entry summary::-webkit-details-marker { display: none; }
+
+    .error-log-source {
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .error-log-time {
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .error-log-msg {
+        color: var(--text-primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .error-log-entry[open] .error-log-msg {
+        white-space: normal;
+    }
+
+    .error-log-stack {
+        margin: 8px 0 0;
+        padding: 8px;
+        background: var(--bg-card);
+        border-radius: var(--radius-sm);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 200px;
+        overflow-y: auto;
+    }
 </style>

@@ -372,13 +372,13 @@ else
             await JS.InvokeVoidAsync("AnimCounter.run", "cnt-questions", profile.TotalQuestionsAnswered, 700, "", "");
             await JS.InvokeVoidAsync("AnimCounter.run", "cnt-acc", overallAccuracy, 600, "", "%");
         }
-        catch { }
+        catch (Exception ex) { await JS.LogErrorAsync("ProfilePage.AnimCounter", ex); }
     }
 
     private async Task SetTab(string tab)
     {
         activeTab = tab;
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };

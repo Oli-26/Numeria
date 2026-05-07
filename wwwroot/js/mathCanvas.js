@@ -6,16 +6,34 @@ window.MathCanvas = {
         var canvas = document.getElementById(canvasId);
         if (!canvas) return;
 
+        // Logical drawing space stays (width × height) — all existing draw code
+        // still uses these as coordinates. The bitmap is sized from the canvas's
+        // actual CSS box at devicePixelRatio (with mild supersampling), and the
+        // 2D context is transformed so logical → physical pixels stays crisp.
+        canvas.style.aspectRatio = width + ' / ' + height;
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        canvas.style.maxWidth = Math.round(width * 1.8) + 'px';
+        canvas.style.display = 'block';
+        canvas.style.margin = '0 auto';
+
+        var rect = canvas.getBoundingClientRect();
+        var cssW = rect.width || width;
+        var cssH = cssW * (height / width);
+
         var dpr = window.devicePixelRatio || 1;
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
+        var ss = Math.max(dpr, 2); // supersample at least 2x even on low-DPR desktops
+        var bw = Math.max(1, Math.round(cssW * ss));
+        var bh = Math.max(1, Math.round(cssH * ss));
+        canvas.width = bw;
+        canvas.height = bh;
 
         var ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
+        ctx.setTransform(bw / width, 0, 0, bh / height, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
-        this.canvases[canvasId] = { canvas: canvas, ctx: ctx, width: width, height: height, dpr: dpr };
+        this.canvases[canvasId] = { canvas: canvas, ctx: ctx, width: width, height: height, dpr: ss, cssW: cssW, cssH: cssH };
         return true;
     },
 
@@ -35,8 +53,8 @@ window.MathCanvas = {
         var scaleY = config.scaleY || 40;
 
         // Grid lines
-        ctx.strokeStyle = 'rgba(74, 95, 224, 0.08)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(74, 95, 224, 0.10)';
+        ctx.lineWidth = 1.2;
         for (var x = cx % scaleX; x < c.width; x += scaleX) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke();
         }
@@ -45,25 +63,25 @@ window.MathCanvas = {
         }
 
         // Axes
-        ctx.strokeStyle = 'rgba(26, 26, 46, 0.3)';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(26, 26, 46, 0.4)';
+        ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(c.width, cy); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, c.height); ctx.stroke();
 
         // Labels
-        ctx.fillStyle = 'rgba(26, 26, 46, 0.5)';
-        ctx.font = '11px system-ui';
+        ctx.fillStyle = 'rgba(26, 26, 46, 0.6)';
+        ctx.font = '600 13px system-ui';
         ctx.textAlign = 'center';
         var range = Math.floor(c.width / 2 / scaleX);
         for (var i = -range; i <= range; i++) {
             if (i === 0) continue;
-            ctx.fillText(i, cx + i * scaleX, cy + 16);
+            ctx.fillText(i, cx + i * scaleX, cy + 18);
         }
         var rangeY = Math.floor(c.height / 2 / scaleY);
         ctx.textAlign = 'right';
         for (var j = -rangeY; j <= rangeY; j++) {
             if (j === 0) continue;
-            ctx.fillText(-j, cx - 6, cy + j * scaleY + 4);
+            ctx.fillText(-j, cx - 8, cy + j * scaleY + 5);
         }
     },
 
@@ -116,9 +134,9 @@ window.MathCanvas = {
 
         // Label
         if (label) {
-            ctx.font = 'bold 13px system-ui';
+            ctx.font = 'bold 14px system-ui';
             ctx.textAlign = 'center';
-            ctx.fillText(label, endX + 15 * Math.cos(angle + 0.5), endY + 15 * Math.sin(angle + 0.5));
+            ctx.fillText(label, endX + 16 * Math.cos(angle + 0.5), endY + 16 * Math.sin(angle + 0.5));
         }
     },
 
@@ -133,9 +151,9 @@ window.MathCanvas = {
         ctx.fill();
 
         if (label) {
-            ctx.font = '12px system-ui';
+            ctx.font = '600 13px system-ui';
             ctx.textAlign = 'center';
-            ctx.fillText(label, x, y - 10);
+            ctx.fillText(label, x, y - 11);
         }
     },
 
@@ -160,7 +178,7 @@ window.MathCanvas = {
         if (!c) return;
         var ctx = c.ctx;
         ctx.fillStyle = color || '#1A1A2E';
-        ctx.font = (fontSize || 14) + 'px system-ui';
+        ctx.font = '500 ' + (fontSize || 14) + 'px system-ui';
         ctx.textAlign = align || 'center';
         ctx.fillText(text, x, y);
     },
@@ -180,6 +198,222 @@ window.MathCanvas = {
 
         if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
         if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth || 2; ctx.stroke(); }
+    },
+
+    drawGlowPath: function (canvasId, points, color, lineWidth, glowRadius, glowAlpha) {
+        var c = this.canvases[canvasId];
+        if (!c || !points || points.length < 2) return;
+        var ctx = c.ctx;
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        var passes = [
+            { w: (lineWidth || 2) + (glowRadius || 8) * 1.4, a: (glowAlpha || 0.18) },
+            { w: (lineWidth || 2) + (glowRadius || 8) * 0.8, a: (glowAlpha || 0.18) * 1.6 },
+            { w: (lineWidth || 2) + (glowRadius || 8) * 0.3, a: (glowAlpha || 0.18) * 2.4 },
+            { w: lineWidth || 2, a: 1 }
+        ];
+        for (var p = 0; p < passes.length; p++) {
+            ctx.globalAlpha = Math.min(passes[p].a, 1);
+            ctx.strokeStyle = color || '#4A5FE0';
+            ctx.lineWidth = passes[p].w;
+            ctx.beginPath();
+            var first = true;
+            for (var i = 0; i < points.length; i++) {
+                var px = points[i][0], py = points[i][1];
+                if (isNaN(py) || !isFinite(py)) { first = true; continue; }
+                if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
+            }
+            ctx.stroke();
+        }
+        ctx.restore();
+    },
+
+    drawGlowShape: function (canvasId, points, fillColor, strokeColor, lineWidth, glowRadius, glowAlpha) {
+        var c = this.canvases[canvasId];
+        if (!c || !points || points.length < 2) return;
+        var ctx = c.ctx;
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        if (fillColor) {
+            ctx.fillStyle = fillColor;
+            ctx.beginPath();
+            ctx.moveTo(points[0][0], points[0][1]);
+            for (var i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+            ctx.closePath();
+            ctx.fill();
+        }
+        if (strokeColor) {
+            var passes = [
+                { w: (lineWidth || 2) + (glowRadius || 8) * 1.4, a: (glowAlpha || 0.18) },
+                { w: (lineWidth || 2) + (glowRadius || 8) * 0.7, a: (glowAlpha || 0.18) * 1.6 },
+                { w: lineWidth || 2, a: 1 }
+            ];
+            for (var p = 0; p < passes.length; p++) {
+                ctx.globalAlpha = Math.min(passes[p].a, 1);
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = passes[p].w;
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                for (var k = 1; k < points.length; k++) ctx.lineTo(points[k][0], points[k][1]);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    },
+
+    drawRadialGlow: function (canvasId, x, y, innerR, outerR, color, alpha) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        ctx.save();
+        var g = ctx.createRadialGradient(x, y, Math.max(innerR, 0), x, y, Math.max(outerR, innerR + 1));
+        g.addColorStop(0, color);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = alpha == null ? 1 : alpha;
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, outerR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    },
+
+    drawGradientFill: function (canvasId, points, x0, y0, x1, y1, stops) {
+        var c = this.canvases[canvasId];
+        if (!c || !points || points.length < 3) return;
+        var ctx = c.ctx;
+        ctx.save();
+        var g = ctx.createLinearGradient(x0, y0, x1, y1);
+        for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (var k = 1; k < points.length; k++) ctx.lineTo(points[k][0], points[k][1]);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    },
+
+    drawGlowPoint: function (canvasId, x, y, radius, color, glowColor, glowRadius) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        ctx.save();
+        var gr = glowRadius || radius * 3;
+        var g = ctx.createRadialGradient(x, y, 0, x, y, gr);
+        g.addColorStop(0, glowColor || color);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, gr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.beginPath();
+        ctx.arc(x - radius * 0.3, y - radius * 0.3, radius * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    },
+
+    drawRoundRect: function (canvasId, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        var rad = Math.min(r || 4, w / 2, h / 2);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x + rad, y);
+        ctx.lineTo(x + w - rad, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+        ctx.lineTo(x + w, y + h - rad);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+        ctx.lineTo(x + rad, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+        ctx.lineTo(x, y + rad);
+        ctx.quadraticCurveTo(x, y, x + rad, y);
+        ctx.closePath();
+        if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
+        if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
+        ctx.restore();
+    },
+
+    drawCanvasBackground: function (canvasId, stops) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        ctx.save();
+        var g = ctx.createLinearGradient(0, 0, 0, c.height);
+        for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.restore();
+    },
+
+    drawStarfield: function (canvasId, count, seed) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        ctx.save();
+        var s = seed || 42;
+        function rnd() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }
+        for (var i = 0; i < count; i++) {
+            var x = rnd() * c.width;
+            var y = rnd() * c.height * 0.85;
+            var r = rnd() * 1.2 + 0.2;
+            var a = rnd() * 0.6 + 0.2;
+            ctx.fillStyle = 'rgba(255,255,255,' + a.toFixed(2) + ')';
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    },
+
+    drawDashedPath: function (canvasId, points, color, lineWidth, dashOn, dashOff) {
+        var c = this.canvases[canvasId];
+        if (!c || !points || points.length < 2) return;
+        var ctx = c.ctx;
+        ctx.save();
+        ctx.setLineDash([dashOn || 4, dashOff || 4]);
+        ctx.strokeStyle = color || '#888';
+        ctx.lineWidth = lineWidth || 1;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (var i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+        ctx.stroke();
+        ctx.restore();
+    },
+
+    drawArc: function (canvasId, cx, cy, r, startAngle, endAngle, color, lineWidth) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        ctx.save();
+        ctx.strokeStyle = color || '#888';
+        ctx.lineWidth = lineWidth || 1;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.stroke();
+        ctx.restore();
+    },
+
+    drawCircleFill: function (canvasId, cx, cy, r, fillColor, strokeColor, lineWidth) {
+        var c = this.canvases[canvasId];
+        if (!c) return;
+        var ctx = c.ctx;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
+        if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
+        ctx.restore();
     },
 
     // Animate a value change (generic)

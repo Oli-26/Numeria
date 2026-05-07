@@ -410,28 +410,56 @@ else
     private async Task DrawPi()
     {
         var cx = 170.0; var cy = 130.0; var r = 80.0;
-        // Draw "circle" with custom pi
-        var points = new double[65][];
-        for (int i = 0; i <= 64; i++)
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(20,24,60,0.05)" }, new object[] { 1.0, "rgba(74,95,224,0.12)" } });
+
+        await JS.InvokeVoidAsync("MathCanvas.drawRadialGlow", "playground-canvas",
+            cx, cy, 0, r * 1.6, "rgba(74,95,224,0.35)", 0.9);
+
+        var ghost = new double[49][];
+        for (int i = 0; i <= 48; i++)
         {
-            var t = 2 * piValue * i / 64;
-            // Use superellipse: |x/a|^n + |y/b|^n = 1 where n varies with pi
-            var n = piValue / Math.PI * 2; // n=2 at real pi (circle), n→∞ at pi=large (square)
-            var angle = 2 * Math.PI * i / 64;
+            var a = 2 * Math.PI * i / 48;
+            ghost[i] = new[] { cx + r * Math.Cos(a), cy + r * Math.Sin(a) };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas", ghost, "rgba(180,200,255,0.45)", 1.2, 5, 4);
+
+        var points = new double[97][];
+        var n = piValue / Math.PI * 2;
+        for (int i = 0; i <= 96; i++)
+        {
+            var angle = 2 * Math.PI * i / 96;
             var cosA = Math.Cos(angle);
             var sinA = Math.Sin(angle);
             var rr = r / Math.Pow(Math.Pow(Math.Abs(cosA), n) + Math.Pow(Math.Abs(sinA), n), 1.0 / n);
             points[i] = new[] { cx + rr * cosA, cy + rr * sinA };
         }
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", points, "#4A5FE0", 2.5);
-        // Diameter line
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx - r, cy }, new[] { cx + r, cy } }, "rgba(74,95,224,0.3)", 1.5);
-        // Labels
+
+        await JS.InvokeVoidAsync("MathCanvas.drawGradientFill", "playground-canvas",
+            points, cx, cy - r, cx, cy + r,
+            new object[] {
+                new object[] { 0.0, "rgba(120,140,255,0.55)" },
+                new object[] { 0.5, "rgba(74,95,224,0.32)" },
+                new object[] { 1.0, "rgba(40,55,140,0.18)" }
+            });
+
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", points, "#A8B8FF", 2.5, 10, 0.22);
+
+        var traceFrac = ((DateTime.UtcNow.Millisecond / 1000.0) + piValue * 0.1) % 1.0;
+        var traceLen = (int)(points.Length * 0.18);
+        var traceStart = (int)(points.Length * traceFrac);
+        var trace = new List<double[]>();
+        for (int i = 0; i < traceLen; i++) trace.Add(points[(traceStart + i) % points.Length]);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", trace.ToArray(), "#FFFFFF", 2.0, 8, 0.4);
+
+        var diaPts = new[] { new[] { cx - r, cy }, new[] { cx + r, cy } };
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas", diaPts, "rgba(255,255,255,0.35)", 1.2, 4, 3);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas", cx, cy, 3.5, "#FFFFFF", "rgba(255,255,255,0.8)", 12);
+
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"π = {piValue:F2}", 170, 20, "#4A5FE0", 14, "center");
+            $"π = {piValue:F2}", 170, 22, "#E0E8FF", 15, "center");
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"C = π × d = {piValue * 2 * r:F0}", 170, 245, "#8888AA", 11, "center");
+            $"C = π × d = {piValue * 2 * r:F0}", 170, 246, "rgba(220,228,255,0.7)", 11, "center");
     }
 
     private async Task DrawGravity()
@@ -440,59 +468,78 @@ else
         var g = gravityValue;
         var yMax = v0 * v0 / (2 * g);
         var tMax = 2 * v0 / g;
-
-        // Fixed scale so you can SEE the difference between planets
-        var refHeight = 200.0; // max canvas height for trajectory
-        var refYMax = v0 * v0 / (2 * 1.0); // max possible height (g=0.1)
-        var scaleY = refHeight / Math.Max(refYMax * 0.12, 1); // scale to show Earth well
-
-        // Ground line
+        var refHeight = 200.0;
+        var refYMax = v0 * v0 / (2 * 1.0);
+        var scaleY = refHeight / Math.Max(refYMax * 0.12, 1);
         var groundY = 240.0;
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { 20.0, groundY }, new[] { 320.0, groundY } }, "rgba(0,0,0,0.2)", 1);
 
-        // Draw ghost trajectories for reference planets
-        var refs = new[] { (1.6, "Moon", "rgba(200,200,200,0.4)"), (9.8, "Earth", "rgba(100,100,100,0.3)"), (24.8, "Jupiter", "rgba(150,150,150,0.3)") };
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] {
+                new object[] { 0.0, "rgba(8,15,40,0.85)" },
+                new object[] { 0.6, "rgba(30,40,80,0.6)" },
+                new object[] { 1.0, "rgba(60,80,120,0.35)" }
+            });
+        await JS.InvokeVoidAsync("MathCanvas.drawStarfield", "playground-canvas", 60, (int)(g * 13));
+
+        await JS.InvokeVoidAsync("MathCanvas.drawGradientFill", "playground-canvas",
+            new[] { new[] { 0.0, groundY }, new[] { 340.0, groundY }, new[] { 340.0, 260.0 }, new[] { 0.0, 260.0 } },
+            0, groundY, 0, 260,
+            new object[] {
+                new object[] { 0.0, "rgba(80,60,40,0.85)" },
+                new object[] { 1.0, "rgba(40,28,18,0.95)" }
+            });
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+            new[] { new[] { 0.0, groundY }, new[] { 340.0, groundY } }, "rgba(180,140,100,0.6)", 1.2, 4, 0.2);
+
+        var refs = new[] { (1.6, "Moon", "rgba(180,200,220,0.45)"), (9.8, "Earth", "rgba(140,180,220,0.4)"), (24.8, "Jupiter", "rgba(220,180,140,0.4)") };
         foreach (var (refG, name, color) in refs)
         {
-            if (Math.Abs(refG - g) < 0.5) continue; // skip if close to current
+            if (Math.Abs(refG - g) < 0.5) continue;
             var refPeak = v0 * v0 / (2 * refG);
             var h = Math.Min(refPeak * scaleY, refHeight);
-            // Simple arc
             var arc = new double[20][];
             for (int i = 0; i < 20; i++)
             {
                 var t = (double)i / 19;
                 arc[i] = new[] { 40 + t * 260, groundY - h * 4 * t * (1 - t) };
             }
-            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", arc, color, 1.5);
+            await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas", arc, color, 1.2, 4, 3);
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                name, 170, groundY - h + 2, color.Replace("0.3", "0.5").Replace("0.4", "0.6"), 9, "center");
+                name, 170, groundY - h + 2, color, 9, "center");
         }
 
-        // Draw current trajectory (bright)
         var curPeak = Math.Min(yMax * scaleY, refHeight);
-        var pts = new double[40][];
-        for (int i = 0; i < 40; i++)
+        var pts = new double[60][];
+        for (int i = 0; i < 60; i++)
         {
-            var t = (double)i / 39;
+            var t = (double)i / 59;
             pts[i] = new[] { 40 + t * 260, groundY - curPeak * 4 * t * (1 - t) };
         }
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#2ECC71", 3);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", pts, "#7FFFA8", 2.5, 8, 0.3);
 
-        // Ball at peak
-        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", 170, groundY - curPeak, 8, "#E74C3C", null);
+        var trailCount = 20;
+        for (int i = 0; i < trailCount; i++)
+        {
+            var t = (double)i / (trailCount - 1);
+            var f = i * 1.0 / (trailCount - 1);
+            var alpha = 0.15 + f * 0.6;
+            var rad = 1.5 + f * 2.5;
+            await JS.InvokeVoidAsync("MathCanvas.drawCircleFill", "playground-canvas",
+                40 + t * 260, groundY - curPeak * 4 * t * (1 - t),
+                rad, $"rgba(127,255,168,{alpha:F2})", null, 0);
+        }
 
-        // Height markers
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { 15.0, groundY }, new[] { 15.0, groundY - curPeak } }, "rgba(46,204,113,0.4)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas",
+            170, groundY - curPeak, 7, "#FF7766", "rgba(255,140,120,0.85)", 18);
+
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas",
+            new[] { new[] { 15.0, groundY }, new[] { 15.0, groundY - curPeak } }, "rgba(127,255,168,0.55)", 1, 3, 3);
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"{yMax:F1}m", 15, groundY - curPeak / 2, "#2ECC71", 10, "center");
+            $"{yMax:F1}m", 15, groundY - curPeak / 2, "#A8FFC8", 10, "center");
 
-        // Labels
         var planetName = g < 2 ? "Moon-like" : g < 5 ? "Mars-like" : g < 12 ? "Earth-like" : g < 20 ? "Heavy" : "Crushing";
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"g = {g:F1} m/s² ({planetName})  |  Peak: {yMax:F1}m  |  Time: {tMax:F1}s", 170, 16, "#2ECC71", 11, "center");
+            $"g = {g:F1} m/s² ({planetName})  |  Peak: {yMax:F1}m  |  Time: {tMax:F1}s", 170, 18, "#A8FFC8", 11, "center");
     }
 
     private async Task DrawDivZero()
@@ -500,29 +547,28 @@ else
         var cx = 170.0; var cy = 130.0;
         var curY = 1.0 / divZeroX;
 
-        // Dynamic zoom: scale adjusts to keep the current point visible
-        var yRange = Math.Max(curY * 1.5, 5); // always show at least 5, but zoom to fit
+        var yRange = Math.Max(curY * 1.5, 5);
         var xRange = Math.Max(divZeroX * 3, 0.5);
         var scaleX = 140.0 / xRange;
         var scaleY = 110.0 / yRange;
 
-        // Axes
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { 20.0, cy }, new[] { 320.0, cy } }, "rgba(0,0,0,0.15)", 1);
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx, 10.0 }, new[] { cx, 250.0 } }, "rgba(0,0,0,0.15)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(35,5,15,0.6)" }, new object[] { 1.0, "rgba(15,5,35,0.5)" } });
 
-        // Y-axis labels
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { 20.0, cy }, new[] { 320.0, cy } }, "rgba(220,200,255,0.25)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+            new[] { new[] { cx, 10.0 }, new[] { cx, 250.0 } }, "rgba(220,200,255,0.25)", 1);
+
         for (int i = 1; i <= 4; i++)
         {
             var labelVal = yRange * i / 4;
             var labelY = cy - (labelVal / yRange) * 110;
             if (labelY > 15)
                 await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                    labelVal >= 1000 ? $"{labelVal:E0}" : $"{labelVal:F0}", cx - 8, labelY + 3, "rgba(0,0,0,0.25)", 8, "right");
+                    labelVal >= 1000 ? $"{labelVal:E0}" : $"{labelVal:F0}", cx - 8, labelY + 3, "rgba(220,200,255,0.4)", 8, "right");
         }
 
-        // Draw 1/x curve -- positive side
         var pos = new List<double[]>();
         var step = xRange / 200;
         for (double x = step; x <= xRange * 2; x += step)
@@ -532,9 +578,8 @@ else
             if (py > 10 && py < 250) pos.Add(new[] { cx + x * scaleX, py });
         }
         if (pos.Count > 1)
-            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pos.ToArray(), "#4A5FE0", 2);
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", pos.ToArray(), "#7FA8FF", 2.2, 8, 0.25);
 
-        // Negative side
         var neg = new List<double[]>();
         for (double x = -xRange * 2; x <= -step; x += step)
         {
@@ -543,30 +588,29 @@ else
             if (py > 10 && py < 250) neg.Add(new[] { cx + x * scaleX, py });
         }
         if (neg.Count > 1)
-            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", neg.ToArray(), "#E74C3C", 2);
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", neg.ToArray(), "#FF7090", 2.2, 8, 0.25);
 
-        // Vertical asymptote hint
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx, 10.0 }, new[] { cx, 250.0 } }, "rgba(231,76,60,0.2)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas",
+            new[] { new[] { cx, 10.0 }, new[] { cx, 250.0 } }, "rgba(255,120,140,0.4)", 1.2, 4, 4);
 
-        // Current point with crosshair
         var ptX = cx + divZeroX * scaleX;
         var ptY = cy - Math.Min(curY, yRange) * scaleY;
         ptY = Math.Max(ptY, 15);
-        // Dashed crosshair lines
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { ptX, cy }, new[] { ptX, ptY } }, "rgba(243,156,18,0.4)", 1);
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx, ptY }, new[] { ptX, ptY } }, "rgba(243,156,18,0.4)", 1);
-        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", ptX, ptY, 7, "#F39C12", null);
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas",
+            new[] { new[] { ptX, cy }, new[] { ptX, ptY } }, "rgba(255,200,80,0.55)", 1.2, 3, 3);
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas",
+            new[] { new[] { cx, ptY }, new[] { ptX, ptY } }, "rgba(255,200,80,0.55)", 1.2, 3, 3);
 
-        // Header
+        var pulse = 1 + Math.Sin(DateTime.UtcNow.Millisecond / 1000.0 * Math.PI * 2) * 0.3;
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas",
+            ptX, ptY, 5, "#FFD050", "rgba(255,200,80,0.9)", 16 * pulse);
+
         var xStr = divZeroX < 0.001 ? divZeroX.ToString("E2") : divZeroX.ToString("F4");
         var yStr = curY > 1e6 ? curY.ToString("E2") : curY.ToString("N0");
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"1 / {xStr} = {yStr}", 170, 16, "#F39C12", 13, "center");
+            $"1 / {xStr} = {yStr}", 170, 16, "#FFD080", 13, "center");
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            "Infinity isn't a number — it's a direction", 170, 252, "#8888AA", 9, "center");
+            "Infinity isn't a number — it's a direction", 170, 252, "rgba(220,200,255,0.65)", 9, "center");
     }
 
     private async Task DrawDimension()
@@ -657,56 +701,89 @@ else
 
     private async Task DrawEuclid()
     {
-        var cx = 170.0; var cy = 130.0;
-        var k = curvatureValue; // -1 to 1
-        if (Math.Abs(k) < 0.05)
+        var cx = 170.0; var cy = 135.0;
+        var k = curvatureValue;
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(8,28,30,0.6)" }, new object[] { 1.0, "rgba(20,55,55,0.2)" } });
+        await JS.InvokeVoidAsync("MathCanvas.drawRadialGlow", "playground-canvas",
+            cx, cy, 0, 160, "rgba(26,188,156,0.22)", 1);
+
+        var rGrid = 110.0;
+        var rows = 9; var cols = 17;
+        var nodes = new double[rows, cols, 2];
+        for (int r = 0; r < rows; r++)
         {
-            // Flat: parallel lines
-            for (int i = -2; i <= 2; i++)
+            for (int c = 0; c < cols; c++)
             {
-                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-                    new[] { new[] { 20.0, cy + i * 30 }, new[] { 320.0, cy + i * 30 } }, "#1ABC9C", 2);
-            }
-            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Euclidean: parallel lines never meet", 170, 20, "#1ABC9C", 12, "center");
-        }
-        else if (k > 0)
-        {
-            // Spherical: lines converge
-            var r = 120.0 / k;
-            for (int i = -2; i <= 2; i++)
-            {
-                var pts = new double[33][];
-                for (int j = 0; j <= 32; j++)
+                var u = -1.0 + 2.0 * c / (cols - 1);
+                var v = -1.0 + 2.0 * r / (rows - 1);
+                double x, y, depth;
+                if (Math.Abs(k) < 0.05)
                 {
-                    var t = -1.0 + 2.0 * j / 32;
-                    var xp = cx + t * 150;
-                    var yp = cy + i * 30 - k * t * t * 80;
-                    pts[j] = new[] { xp, yp };
+                    x = u * rGrid * 1.3;
+                    y = v * rGrid * 0.6;
+                    depth = 0.5;
                 }
-                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#1ABC9C", 2);
-            }
-            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                $"Spherical (K={k:F2}): lines converge and meet!", 170, 20, "#1ABC9C", 11, "center");
-        }
-        else
-        {
-            // Hyperbolic: lines diverge
-            for (int i = -2; i <= 2; i++)
-            {
-                var pts = new double[33][];
-                for (int j = 0; j <= 32; j++)
+                else if (k > 0)
                 {
-                    var t = -1.0 + 2.0 * j / 32;
-                    var xp = cx + t * 150;
-                    var yp = cy + i * 30 + Math.Abs(k) * t * t * 80;
-                    pts[j] = new[] { xp, yp };
+                    var theta = u * Math.PI * 0.45 * (0.4 + k * 0.6);
+                    var phi = v * Math.PI * 0.4 * (0.4 + k * 0.6);
+                    var sx = Math.Cos(phi) * Math.Sin(theta);
+                    var sy = Math.Sin(phi);
+                    var sz = Math.Cos(phi) * Math.Cos(theta);
+                    x = sx * rGrid * 1.2;
+                    y = sy * rGrid * 0.65 - (1 - sz) * 12;
+                    depth = (sz + 1) / 2;
                 }
-                await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#1ABC9C", 2);
+                else
+                {
+                    var kk = Math.Abs(k);
+                    var stretch = 1 + kk * (u * u + v * v) * 0.6;
+                    x = u * rGrid * 1.3 / stretch;
+                    y = v * rGrid * 0.6 / stretch + (u * u + v * v) * 12 * kk;
+                    depth = 1 - (u * u + v * v) * 0.4;
+                }
+                nodes[r, c, 0] = cx + x;
+                nodes[r, c, 1] = cy + y;
             }
-            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                $"Hyperbolic (K={k:F2}): lines spread apart!", 170, 20, "#1ABC9C", 11, "center");
         }
+
+        for (int r = 0; r < rows; r++)
+        {
+            var pts = new double[cols][];
+            for (int c = 0; c < cols; c++) pts[c] = new[] { nodes[r, c, 0], nodes[r, c, 1] };
+            var t = (double)r / (rows - 1);
+            var alpha = 0.4 + Math.Abs(t - 0.5) * 0.5;
+            var hue = 165 + (r % 2) * 8;
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+                pts, $"hsla({hue}, 70%, 65%, {alpha:F2})", 1.6, 4, 0.18);
+        }
+        for (int c = 0; c < cols; c++)
+        {
+            var pts = new double[rows][];
+            for (int r = 0; r < rows; r++) pts[r] = new[] { nodes[r, c, 0], nodes[r, c, 1] };
+            var alpha = 0.25 + (c % 2 == 0 ? 0.15 : 0);
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                pts, $"rgba(140,220,200,{alpha:F2})", 1);
+        }
+
+        var midRow = rows / 2;
+        var hl1 = midRow - 2; var hl2 = midRow + 2;
+        var pl1 = new double[cols][]; var pl2 = new double[cols][];
+        for (int c = 0; c < cols; c++)
+        {
+            pl1[c] = new[] { nodes[hl1, c, 0], nodes[hl1, c, 1] };
+            pl2[c] = new[] { nodes[hl2, c, 0], nodes[hl2, c, 1] };
+        }
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", pl1, "#FFD27D", 2.2, 6, 0.35);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", pl2, "#FFD27D", 2.2, 6, 0.35);
+
+        string title;
+        if (Math.Abs(k) < 0.05) title = "Euclidean: parallel lines never meet";
+        else if (k > 0) title = $"Spherical (K={k:F2}): geodesics converge!";
+        else title = $"Hyperbolic (K={k:F2}): geodesics spread apart!";
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
+            title, 170, 20, "#A8FFE0", 11, "center");
     }
 
     private async Task DrawExpo()
@@ -717,24 +794,21 @@ else
         values[0] = 1;
         for (int i = 1; i < steps; i++) values[i] = values[i - 1] * r;
 
-        // Always linear scale -- let the curve rocket off the top
-        // Clamp the visible Y range to show the dramatic takeoff
         var groundY = 235.0;
         var topY = 25.0;
         var chartH = groundY - topY;
-
-        // Find the step where the value first exceeds the visible area
-        // Show the first ~80% of the chart as "linear growth that looks flat"
-        // then the last part shoots up dramatically
-        var maxVisible = values[steps - 1];
-        var midIdx = steps - 1;
-
-        // Use the value at 70% of the way through as the "visible max"
-        // This makes early steps look flat and the end shoots up
         var visibleMax = Math.Max(values[(int)(steps * 0.65)], 2);
 
-        // Draw the "expected" linear growth for comparison (dashed)
-        var linearEnd = 1 + (r - 1) * (steps - 1); // linear growth same rate
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(40,20,8,0.6)" }, new object[] { 1.0, "rgba(70,40,15,0.2)" } });
+
+        for (int i = 1; i <= 5; i++)
+        {
+            var y = groundY - chartH * i / 5;
+            await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas",
+                new[] { new[] { 30.0, y }, new[] { 310.0, y } }, "rgba(255,180,120,0.15)", 1, 3, 3);
+        }
+
         var linPts = new double[steps][];
         for (int i = 0; i < steps; i++)
         {
@@ -743,11 +817,10 @@ else
             var y = groundY - (linVal / visibleMax) * chartH;
             linPts[i] = new[] { x, Math.Max(y, topY - 5) };
         }
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", linPts, "rgba(150,150,150,0.3)", 1.5);
+        await JS.InvokeVoidAsync("MathCanvas.drawDashedPath", "playground-canvas", linPts, "rgba(200,200,220,0.4)", 1.2, 4, 4);
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            "linear", 310, linPts[steps - 1][1] - 4, "rgba(150,150,150,0.5)", 8, "right");
+            "linear", 310, linPts[steps - 1][1] - 4, "rgba(200,200,220,0.55)", 8, "right");
 
-        // Draw exponential curve
         var pts = new double[steps][];
         var wentOffScreen = false;
         for (int i = 0; i < steps; i++)
@@ -757,72 +830,117 @@ else
             if (y < topY - 5) { y = topY - 5; wentOffScreen = true; }
             pts[i] = new[] { x, y };
         }
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", pts, "#E67E22", 2.5);
 
-        // Starting point
-        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", 30, pts[0][1], 5, "#E67E22", null);
+        var fillPoly = new List<double[]>();
+        foreach (var p in pts) fillPoly.Add(p);
+        fillPoly.Add(new[] { pts[steps - 1][0], groundY });
+        fillPoly.Add(new[] { pts[0][0], groundY });
+        await JS.InvokeVoidAsync("MathCanvas.drawGradientFill", "playground-canvas",
+            fillPoly.ToArray(), 0, topY, 0, groundY,
+            new object[] {
+                new object[] { 0.0, "rgba(255,180,80,0.6)" },
+                new object[] { 0.6, "rgba(230,126,34,0.32)" },
+                new object[] { 1.0, "rgba(180,80,20,0.05)" }
+            });
 
-        // Ground line
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { 30.0, groundY }, new[] { 310.0, groundY } }, "rgba(0,0,0,0.15)", 1);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", pts, "#FFB060", 2.5, 10, 0.3);
 
-        // "Off the chart!" indicator
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+            new[] { new[] { 30.0, groundY }, new[] { 310.0, groundY } }, "rgba(255,200,160,0.5)", 1.2, 3, 0.2);
+
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas", 30, pts[0][1], 5, "#FFD080", "rgba(255,200,140,0.9)", 14);
+
         if (wentOffScreen)
         {
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "OFF THE CHART!", 260, topY + 12, "rgba(231,76,60,0.7)", 10, "center");
+                "OFF THE CHART!", 260, topY + 12, "rgba(255,120,90,0.85)", 10, "center");
         }
 
-        // Header with value
         var finalStr = values[steps - 1] > 1e15 ? values[steps - 1].ToString("E1") : values[steps - 1].ToString("N0");
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"{r:F2}x per step. After 30: {finalStr}", 170, 14, "#E67E22", 11, "center");
+            $"{r:F2}x per step. After 30: {finalStr}", 170, 14, "#FFD0A0", 11, "center");
     }
 
     private async Task DrawImaginary()
     {
         var cx = 170.0; var cy = 130.0; var r = 90.0;
-        // Unit circle
-        var circle = new double[33][];
-        for (int i = 0; i <= 32; i++)
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(8,30,28,0.6)" }, new object[] { 1.0, "rgba(20,60,55,0.25)" } });
+
+        await JS.InvokeVoidAsync("MathCanvas.drawRadialGlow", "playground-canvas",
+            cx, cy, 0, r * 1.4, "rgba(22,160,133,0.25)", 1);
+
+        for (int k = 1; k <= 4; k++)
         {
-            var a = 2 * Math.PI * i / 32;
+            var rr = r * k / 4.0;
+            await JS.InvokeVoidAsync("MathCanvas.drawArc", "playground-canvas",
+                cx, cy, rr, 0, Math.PI * 2, "rgba(120,220,200,0.18)", 1);
+        }
+        for (int k = 0; k < 12; k++)
+        {
+            var a = Math.PI * k / 6;
+            var x1 = cx + 6 * Math.Cos(a); var y1 = cy + 6 * Math.Sin(a);
+            var x2 = cx + r * 1.05 * Math.Cos(a); var y2 = cy + r * 1.05 * Math.Sin(a);
+            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
+                new[] { new[] { x1, y1 }, new[] { x2, y2 } }, "rgba(120,220,200,0.12)", 1);
+        }
+
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+            new[] { new[] { cx - r - 24, cy }, new[] { cx + r + 24, cy } }, "rgba(120,220,200,0.55)", 1.5, 4, 0.25);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+            new[] { new[] { cx, cy - r - 24 }, new[] { cx, cy + r + 24 } }, "rgba(120,220,200,0.55)", 1.5, 4, 0.25);
+
+        var circle = new double[65][];
+        for (int i = 0; i <= 64; i++)
+        {
+            var a = 2 * Math.PI * i / 64;
             circle[i] = new[] { cx + r * Math.Cos(a), cy - r * Math.Sin(a) };
         }
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", circle, "rgba(22,160,133,0.2)", 1.5);
-        // Axes
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx - r - 20, cy }, new[] { cx + r + 20, cy } }, "rgba(0,0,0,0.15)", 1);
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx, cy - r - 20 }, new[] { cx, cy + r + 20 } }, "rgba(0,0,0,0.15)", 1);
-        // Labels
-        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "1", cx + r + 8, cy + 4, "#888", 10, "left");
-        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "i", cx + 4, cy - r - 8, "#888", 10, "left");
-        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "-1", cx - r - 14, cy + 4, "#888", 10, "right");
-        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "-i", cx + 4, cy + r + 14, "#888", 10, "left");
-        // Current point
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", circle, "rgba(160,255,230,0.7)", 1.5, 6, 0.18);
+
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "1", cx + r + 10, cy + 4, "rgba(200,255,235,0.7)", 11, "left");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "i", cx + 6, cy - r - 8, "rgba(200,255,235,0.7)", 11, "left");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "-1", cx - r - 14, cy + 4, "rgba(200,255,235,0.7)", 11, "right");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "-i", cx + 6, cy + r + 14, "rgba(200,255,235,0.7)", 11, "left");
+
         var rad = imagAngle * Math.PI / 180;
+        var trailSteps = 18;
+        var trailSpan = Math.Min(imagAngle, 60) * Math.PI / 180;
+        for (int i = 0; i < trailSteps; i++)
+        {
+            var f = (double)i / (trailSteps - 1);
+            var ta = rad - trailSpan * (1 - f);
+            var tx = cx + r * Math.Cos(ta);
+            var ty = cy - r * Math.Sin(ta);
+            var hue = ((ta * 180 / Math.PI) % 360 + 360) % 360;
+            var rad6 = 1.5 + f * 4;
+            var alpha = 0.08 + f * 0.5;
+            await JS.InvokeVoidAsync("MathCanvas.drawCircleFill", "playground-canvas",
+                tx, ty, rad6, $"hsla({hue:F0}, 75%, 65%, {alpha:F2})", null, 0);
+        }
+
         var px = cx + r * Math.Cos(rad);
         var py = cy - r * Math.Sin(rad);
-        // Line from origin
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { cx, cy }, new[] { px, py } }, "#16A085", 2);
-        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", px, py, 7, "#16A085", null);
-        // Arc
+        var pHue = ((imagAngle % 360) + 360) % 360;
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+            new[] { new[] { cx, cy }, new[] { px, py } }, $"hsl({pHue}, 80%, 65%)", 2.0, 8, 0.3);
+
         var arc = new List<double[]>();
-        var arcSteps = Math.Max(1, imagAngle / 5);
+        var arcSteps = Math.Max(1, imagAngle / 3);
         for (int i = 0; i <= arcSteps; i++)
         {
             var a = rad * i / arcSteps;
-            arc.Add(new[] { cx + 25 * Math.Cos(a), cy - 25 * Math.Sin(a) });
+            arc.Add(new[] { cx + 28 * Math.Cos(a), cy - 28 * Math.Sin(a) });
         }
         if (arc.Count > 1)
-            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas", arc.ToArray(), "#F39C12", 1.5);
-        // Value text
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas", arc.ToArray(), "#FFD27D", 1.5, 5, 0.3);
+
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas", px, py, 5.5, $"hsl({pHue}, 85%, 70%)", $"hsla({pHue}, 90%, 70%, 0.9)", 18);
+
         var re = Math.Cos(rad);
         var im = Math.Sin(rad);
         var label = $"e^(i·{imagAngle}°) = {re:F2} + {im:F2}i";
-        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", label, 170, 16, "#16A085", 12, "center");
+        await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", label, 170, 18, "#A8FFE0", 12, "center");
     }
 
     // --- Infinity drawing ---
@@ -896,20 +1014,32 @@ else
         }
         else if (step == 4)
         {
-            // Diagonal argument
+            await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+                new object[] { new object[] { 0.0, "rgba(20,10,30,0.5)" }, new object[] { 1.0, "rgba(40,15,30,0.2)" } });
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Cantor's Diagonal Argument", cx, 25, "#E74C3C", 14, "center");
-            string[] digits = { "0.[5]2 8 4 7 1", "0. 1[4]1 5 9 2", "0. 7 3[2]0 5 8", "0. 9 9 9[1]0 3", "0. 3 1 4 1[5]9" };
+                "Cantor's Diagonal Argument", cx, 25, "#FF8090", 14, "center");
+            string[] digits = { "0. 5 2 8 4 7 1", "0. 1 4 1 5 9 2", "0. 7 3 2 0 5 8", "0. 9 9 9 1 0 3", "0. 3 1 4 1 5 9" };
             for (int i = 0; i < 5; i++)
+            {
+                var rowAlpha = 0.7 + i * 0.05;
                 await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                    digits[i], cx, 60 + i * 26, "#4A5FE0", 13, "center");
-            // Highlight diagonal
+                    digits[i], cx, 60 + i * 26, $"rgba(140,170,255,{rowAlpha:F2})", 13, "center");
+            }
+            var charW = 14.0;
+            for (int i = 0; i < 5; i++)
+            {
+                var hx = cx - 2 * charW + i * charW - 4;
+                var hy = 60 + i * 26 - 12;
+                await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+                    hx, hy, 18, 20, 4,
+                    "rgba(255,160,90,0.32)", "rgba(255,200,140,0.7)", 1.2);
+            }
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Take diagonal: 5, 4, 2, 1, 5", cx, 200, "#E74C3C", 12, "center");
+                "Take diagonal: 5, 4, 2, 1, 5", cx, 200, "#FFB070", 12, "center");
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Change each digit: 6, 5, 3, 2, 6", cx, 222, "#2ECC71", 12, "center");
+                "Change each digit: 6, 5, 3, 2, 6", cx, 222, "#80FFA0", 12, "center");
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "New number: 0.65326... is NOT on the list!", cx, 248, "#F39C12", 11, "center");
+                "New number: 0.65326... is NOT on the list!", cx, 248, "#FFD080", 11, "center");
         }
         else if (step == 5)
         {
@@ -985,119 +1115,129 @@ else
     {
         var d = fracDimValue;
         var cx = 170.0; var cy = 120.0;
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(40,10,8,0.5)" }, new object[] { 1.0, "rgba(80,20,15,0.15)" } });
+        await JS.InvokeVoidAsync("MathCanvas.drawRadialGlow", "playground-canvas",
+            cx, cy, 0, 150, "rgba(255,120,90,0.18)", 1);
 
-        // Draw a number line of dimension values
         var lineY = 235.0;
-        await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-            new[] { new[] { 30.0, lineY }, new[] { 310.0, lineY } }, "rgba(0,0,0,0.2)", 1.5);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+            new[] { new[] { 30.0, lineY }, new[] { 310.0, lineY } }, "rgba(255,180,160,0.45)", 1.5, 4, 0.2);
 
-        // Markers
         double[] markers = { 0, 0.63, 1.0, 1.26, 1.58, 1.89, 2.0, 2.5 };
         string[] labels = { "0", "Cantor", "Line", "Koch", "Sierp.", "Coast", "Plane", "" };
         for (int i = 0; i < markers.Length; i++)
         {
             var mx = 30 + markers[i] / 2.5 * 280;
             await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-                new[] { new[] { mx, lineY - 4 }, new[] { mx, lineY + 4 } }, "rgba(0,0,0,0.3)", 1);
+                new[] { new[] { mx, lineY - 4 }, new[] { mx, lineY + 4 } }, "rgba(255,200,180,0.45)", 1);
             if (labels[i].Length > 0)
                 await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                    labels[i], mx, lineY + 16, "#888", 8, "center");
+                    labels[i], mx, lineY + 16, "rgba(255,210,190,0.65)", 8, "center");
         }
 
-        // Current position indicator
         var curX = 30 + d / 2.5 * 280;
-        await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", curX, lineY, 8, "#C0392B", null);
+        await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas",
+            curX, lineY, 5, "#FF8060", "rgba(255,140,100,0.85)", 16);
 
-        // Draw the appropriate shape
         if (d < 0.3)
         {
-            // Point (D=0)
-            await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", cx, cy, 6, "#C0392B", null);
-            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "A point: dimension 0", cx, cy + 30, "#888", 11, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPoint", "playground-canvas", cx, cy, 5, "#FF7050", "rgba(255,150,100,0.9)", 22);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "A point: dimension 0", cx, cy + 36, "rgba(255,210,190,0.75)", 11, "center");
         }
         else if (d < 0.8)
         {
-            // Cantor set (D≈0.63): draw segments getting smaller
-            await DrawCantorSet(30, 310, cy - 10, cy + 10, 5);
+            await DrawCantorSet(30, 310, cy - 10, cy + 10, 5, 0);
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Cantor set: remove middle thirds forever", cx, 30, "#888", 10, "center");
+                "Cantor set: remove middle thirds forever", cx, 30, "rgba(255,210,190,0.8)", 10, "center");
         }
         else if (d < 1.15)
         {
-            // Line (D=1)
-            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-                new[] { new[] { 50.0, cy }, new[] { 290.0, cy } }, "#C0392B", 3);
-            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "A line: dimension 1", cx, cy + 30, "#888", 11, "center");
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+                new[] { new[] { 50.0, cy }, new[] { 290.0, cy } }, "#FFA080", 3, 8, 0.3);
+            await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas", "A line: dimension 1", cx, cy + 30, "rgba(255,210,190,0.75)", 11, "center");
         }
         else if (d < 1.45)
         {
-            // Koch-like curve (D≈1.26)
-            await DrawKochLine(50, cy + 30, 290, cy + 30, 4);
+            await DrawKochSnowflake(cx, cy, 90, 4);
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Koch curve: D = log4/log3 \u2248 1.26", cx, 30, "#888", 10, "center");
+                "Koch snowflake: D = log4/log3 \u2248 1.26", cx, 30, "rgba(255,210,190,0.8)", 10, "center");
         }
         else if (d < 1.75)
         {
             // Sierpinski-like (D≈1.58)
-            await DrawSierpinskiSmall(cx, cy - 50, 100, 4);
+            await DrawSierpinskiSmall(cx, cy - 60, 130, 5, 0);
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                "Sierpinski triangle: D = log3/log2 \u2248 1.58", cx, 30, "#888", 10, "center");
+                "Sierpinski triangle: D = log3/log2 \u2248 1.58", cx, 30, "rgba(255,210,190,0.8)", 10, "center");
         }
         else if (d < 2.05)
         {
             // Approaching plane (D→2): fill with dots
-            var density = (int)((d - 1.75) / 0.3 * 300) + 50;
+            var density = (int)((d - 1.75) / 0.3 * 280) + 50;
             var rng = new Random(42);
             for (int i = 0; i < density; i++)
             {
                 var px = 50 + rng.NextDouble() * 240;
-                var py = 40 + rng.NextDouble() * 170;
-                await JS.InvokeVoidAsync("MathCanvas.drawPoint", "playground-canvas", px, py, 2, "rgba(192,57,43,0.5)", null);
+                var py = 45 + rng.NextDouble() * 160;
+                var hue = 5 + rng.NextDouble() * 25;
+                var alpha = 0.3 + rng.NextDouble() * 0.4;
+                await JS.InvokeVoidAsync("MathCanvas.drawCircleFill", "playground-canvas",
+                    px, py, 1.6, $"hsla({hue:F0}, 75%, 60%, {alpha:F2})", null, 0);
             }
             if (d >= 1.95)
             {
-                await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas", 50, 40, 240, 170, "rgba(192,57,43,0.15)", "rgba(192,57,43,0.3)");
+                await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+                    50, 45, 240, 160, 8, "rgba(255,120,90,0.18)", "rgba(255,160,120,0.55)", 1.5);
             }
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                d >= 1.95 ? "A filled plane: dimension 2" : $"Space-filling: D \u2248 {d:F2}", cx, 30, "#888", 10, "center");
+                d >= 1.95 ? "A filled plane: dimension 2" : $"Space-filling: D \u2248 {d:F2}", cx, 30, "rgba(255,210,190,0.8)", 10, "center");
         }
         else
         {
-            // Beyond 2D (D>2): cubes
-            await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas", 80, 40, 120, 120, "rgba(192,57,43,0.2)", "#C0392B");
+            var front = new[] { new[] { 80.0, 60.0 }, new[] { 200.0, 60.0 }, new[] { 200.0, 180.0 }, new[] { 80.0, 180.0 } };
+            var top = new[] { new[] { 80.0, 60.0 }, new[] { 110.0, 30.0 }, new[] { 230.0, 30.0 }, new[] { 200.0, 60.0 } };
+            var side = new[] { new[] { 200.0, 60.0 }, new[] { 230.0, 30.0 }, new[] { 230.0, 150.0 }, new[] { 200.0, 180.0 } };
             await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
-                new[] { new[] { 80.0, 40.0 }, new[] { 110.0, 20.0 }, new[] { 230.0, 20.0 }, new[] { 200.0, 40.0 } },
-                "rgba(192,57,43,0.15)", "rgba(192,57,43,0.6)", 1.5);
+                top, "rgba(255,170,130,0.45)", "rgba(255,200,170,0.7)", 1.5);
             await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
-                new[] { new[] { 200.0, 40.0 }, new[] { 230.0, 20.0 }, new[] { 230.0, 140.0 }, new[] { 200.0, 160.0 } },
-                "rgba(192,57,43,0.1)", "rgba(192,57,43,0.4)", 1.5);
+                side, "rgba(200,80,60,0.35)", "rgba(255,170,140,0.6)", 1.5);
+            await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
+                front, "rgba(220,100,80,0.45)", "rgba(255,180,150,0.8)", 1.8);
             await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-                $"D = {d:F2}: beyond a plane, into volume", cx, 200, "#888", 10, "center");
+                $"D = {d:F2}: beyond a plane, into volume", cx, 205, "rgba(255,210,190,0.85)", 10, "center");
         }
 
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"Dimension = {d:F2}", cx, 16, "#C0392B", 13, "center");
+            $"Dimension = {d:F2}", cx, 16, "#FFB090", 13, "center");
     }
 
-    private async Task DrawCantorSet(double left, double right, double y1, double y2, int depth)
+    private async Task DrawCantorSet(double left, double right, double y1, double y2, int depth, int level)
     {
         if (depth == 0 || right - left < 2)
         {
-            await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
-                left, y1, right - left, y2 - y1, "rgba(192,57,43,0.6)", null);
+            var alpha = 0.55 + level * 0.08;
+            var hue = 10 + level * 6;
+            await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+                left, y1, right - left, y2 - y1, 1.5,
+                $"hsla({hue}, 80%, 60%, {Math.Min(alpha, 0.95):F2})", null, 0);
             return;
         }
         var third = (right - left) / 3;
-        await DrawCantorSet(left, left + third, y1, y2, depth - 1);
-        await DrawCantorSet(right - third, right, y1, y2, depth - 1);
+        await DrawCantorSet(left, left + third, y1, y2, depth - 1, level + 1);
+        await DrawCantorSet(right - third, right, y1, y2, depth - 1, level + 1);
     }
 
-    private async Task DrawKochLine(double x1, double y1, double x2, double y2, int depth)
+    private async Task DrawKochLine(double x1, double y1, double x2, double y2, int depth, int level, int maxLevel)
     {
         if (depth == 0)
         {
-            await JS.InvokeVoidAsync("MathCanvas.drawFunction", "playground-canvas",
-                new[] { new[] { x1, y1 }, new[] { x2, y2 } }, "#C0392B", 1.5);
+            var t = maxLevel == 0 ? 0 : (double)level / maxLevel;
+            var hue = 20 - t * 15;
+            var sat = 80 + t * 10;
+            var light = 70 - t * 20;
+            await JS.InvokeVoidAsync("MathCanvas.drawGlowPath", "playground-canvas",
+                new[] { new[] { x1, y1 }, new[] { x2, y2 } },
+                $"hsl({hue:F0}, {sat:F0}%, {light:F0}%)", 1.4, 3, 0.25);
             return;
         }
         var dx = x2 - x1; var dy = y2 - y1;
@@ -1105,27 +1245,41 @@ else
         var bx = x1 + 2 * dx / 3; var by = y1 + 2 * dy / 3;
         var px = (x1 + x2) / 2 - dy * Math.Sqrt(3) / 6;
         var py = (y1 + y2) / 2 + dx * Math.Sqrt(3) / 6;
-        await DrawKochLine(x1, y1, ax, ay, depth - 1);
-        await DrawKochLine(ax, ay, px, py, depth - 1);
-        await DrawKochLine(px, py, bx, by, depth - 1);
-        await DrawKochLine(bx, by, x2, y2, depth - 1);
+        await DrawKochLine(x1, y1, ax, ay, depth - 1, level + 1, maxLevel);
+        await DrawKochLine(ax, ay, px, py, depth - 1, level + 1, maxLevel);
+        await DrawKochLine(px, py, bx, by, depth - 1, level + 1, maxLevel);
+        await DrawKochLine(bx, by, x2, y2, depth - 1, level + 1, maxLevel);
     }
 
-    private async Task DrawSierpinskiSmall(double cx, double cy, double size, int depth)
+    private async Task DrawKochSnowflake(double cx, double cy, double size, int depth)
+    {
+        var h = size * Math.Sqrt(3) / 2;
+        var p1 = new[] { cx, cy - h * 2 / 3 };
+        var p2 = new[] { cx + size / 2, cy + h / 3 };
+        var p3 = new[] { cx - size / 2, cy + h / 3 };
+        await DrawKochLine(p1[0], p1[1], p2[0], p2[1], depth, 0, depth);
+        await DrawKochLine(p2[0], p2[1], p3[0], p3[1], depth, 0, depth);
+        await DrawKochLine(p3[0], p3[1], p1[0], p1[1], depth, 0, depth);
+    }
+
+    private async Task DrawSierpinskiSmall(double cx, double cy, double size, int depth, int level)
     {
         if (depth == 0)
         {
             var h = size * Math.Sqrt(3) / 2;
+            var hue = 5 + level * 8;
+            var alpha = 0.45 + level * 0.05;
             await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
                 new[] { new[] { cx, cy }, new[] { cx - size / 2, cy + h }, new[] { cx + size / 2, cy + h } },
-                "rgba(192,57,43,0.4)", "rgba(192,57,43,0.6)", 1);
+                $"hsla({hue}, 80%, 60%, {Math.Min(alpha, 0.95):F2})",
+                $"hsla({hue}, 85%, 75%, 0.85)", 1);
             return;
         }
         var half = size / 2;
         var hh = half * Math.Sqrt(3) / 2;
-        await DrawSierpinskiSmall(cx, cy, half, depth - 1);
-        await DrawSierpinskiSmall(cx - half / 2, cy + hh, half, depth - 1);
-        await DrawSierpinskiSmall(cx + half / 2, cy + hh, half, depth - 1);
+        await DrawSierpinskiSmall(cx, cy, half, depth - 1, level + 1);
+        await DrawSierpinskiSmall(cx - half / 2, cy + hh, half, depth - 1, level + 1);
+        await DrawSierpinskiSmall(cx + half / 2, cy + hh, half, depth - 1, level + 1);
     }
 
     private string GetFracDimLabel()
@@ -1151,7 +1305,14 @@ else
         var ox = (340 - sz * cellW) / 2;
         var oy = 28.0;
 
-        // Batch draw using rectangles
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] { new object[] { 0.0, "rgba(20,12,30,0.7)" }, new object[] { 1.0, "rgba(40,20,50,0.4)" } });
+
+        await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+            ox - 4, oy - 4, sz * cellW + 8, sz * cellW + 8, 6,
+            "rgba(0,0,0,0.35)", "rgba(255,180,100,0.35)", 1.2);
+
+        var rad = Math.Max(cellW * 0.18, 1);
         for (int y = 0; y < sz; y++)
         {
             for (int x = 0; x < sz; x++)
@@ -1159,13 +1320,23 @@ else
                 var val = caGrid[x, y];
                 if (val == 0)
                 {
-                    await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
-                        ox + x * cellW, oy + y * cellW, cellW - 0.5, cellW - 0.5, "rgba(0,0,0,0.04)", null);
+                    await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+                        ox + x * cellW + 0.5, oy + y * cellW + 0.5, cellW - 1, cellW - 1, rad,
+                        "rgba(255,255,255,0.025)", null, 0);
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("MathCanvas.drawRect", "playground-canvas",
-                        ox + x * cellW, oy + y * cellW, cellW - 0.5, cellW - 0.5, GetCaColor(val), null);
+                    var color = GetCaColor(val);
+                    await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+                        ox + x * cellW + 0.5, oy + y * cellW + 0.5, cellW - 1, cellW - 1, rad,
+                        color, null, 0);
+                    if (cellW >= 6)
+                    {
+                        await JS.InvokeVoidAsync("MathCanvas.drawRoundRect", "playground-canvas",
+                            ox + x * cellW + cellW * 0.18, oy + y * cellW + cellW * 0.15,
+                            cellW * 0.45, cellW * 0.3, rad * 0.6,
+                            "rgba(255,255,255,0.22)", null, 0);
+                    }
                 }
             }
         }
@@ -1175,7 +1346,7 @@ else
                 if (caGrid[x, y] > 0) alive++;
 
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"Gen {caGeneration} | {alive} alive | {GetCaRuleName()}", 170, 16, "#D35400", 10, "center");
+            $"Gen {caGeneration} | {alive} alive | {GetCaRuleName()}", 170, 16, "#FFB070", 10, "center");
     }
 
     private string GetCaColor(int val)
@@ -1357,7 +1528,13 @@ else
         var cosR = Math.Cos(rotRad);
         var sinR = Math.Sin(rotRad);
 
-        // Compute all heights first for color mapping
+        await JS.InvokeVoidAsync("MathCanvas.drawCanvasBackground", "playground-canvas",
+            new object[] {
+                new object[] { 0.0, "rgba(80,120,180,0.5)" },
+                new object[] { 0.55, "rgba(180,140,100,0.25)" },
+                new object[] { 1.0, "rgba(40,30,20,0.5)" }
+            });
+
         var heights = new double[gridN + 1, gridN + 1];
         double minH = double.MaxValue, maxH = double.MinValue;
         for (int gy = 0; gy <= gridN; gy++)
@@ -1374,10 +1551,8 @@ else
         }
         var hRange = Math.Max(maxH - minH, 0.01);
 
-        // Draw back-to-front
         for (int gy = gridN - 1; gy >= 0; gy--)
         {
-            // Draw filled strips between adjacent lines for solid terrain
             for (int gx = 0; gx < gridN; gx++)
             {
                 var h00 = heights[gx, gy];
@@ -1387,13 +1562,24 @@ else
                 var avgH = (h00 + h10 + h01 + h11) / 4;
                 var norm = (avgH - minH) / hRange;
 
-                // Height-based coloring
+                var slopeX = (h10 + h11) / 2 - (h00 + h01) / 2;
+                var slopeY = (h01 + h11) / 2 - (h00 + h10) / 2;
+                var nrm = Math.Sqrt(slopeX * slopeX + slopeY * slopeY + 1);
+                var nx = -slopeX / nrm;
+                var ny = -slopeY / nrm;
+                var nz = 1 / nrm;
+                var lx = -0.4; var ly = -0.6; var lz = 0.7;
+                var dot = Math.Max(0.25, nx * lx + ny * ly + nz * lz);
+
                 int hue, sat, light;
-                if (norm < 0.2) { hue = 210; sat = 60; light = 35; } // deep blue (low)
-                else if (norm < 0.4) { hue = 140; sat = 55; light = 35; } // green
-                else if (norm < 0.6) { hue = 90; sat = 50; light = 40; } // yellow-green
-                else if (norm < 0.8) { hue = 35; sat = 60; light = 45; } // brown
-                else { hue = 0; sat = 0; light = 85; } // snow white peaks
+                if (norm < 0.2) { hue = 210; sat = 65; light = 32; }
+                else if (norm < 0.4) { hue = 140; sat = 55; light = 35; }
+                else if (norm < 0.6) { hue = 90; sat = 50; light = 42; }
+                else if (norm < 0.8) { hue = 30; sat = 55; light = 45; }
+                else { hue = 30; sat = 12; light = 82; }
+                var litLight = (int)(light * dot * 1.4);
+                if (litLight > 90) litLight = 90;
+                if (litLight < 8) litLight = 8;
 
                 var quad = new double[4][];
                 quad[0] = IsoProject(gx, gy, h00, gridN, cosR, sinR);
@@ -1402,12 +1588,13 @@ else
                 quad[3] = IsoProject(gx, gy + 1, h01, gridN, cosR, sinR);
 
                 await JS.InvokeVoidAsync("MathCanvas.drawShape", "playground-canvas",
-                    quad, $"hsl({hue}, {sat}%, {light}%)", $"hsl({hue}, {sat}%, {Math.Max(light - 10, 10)}%)", 0.5);
+                    quad, $"hsl({hue}, {sat}%, {litLight}%)",
+                    $"hsla({hue}, {sat}%, {Math.Max(litLight - 12, 5)}%, 0.55)", 0.4);
             }
         }
 
         await JS.InvokeVoidAsync("MathCanvas.drawText", "playground-canvas",
-            $"f(x,y) = {GetTerrainFormula()}", 170, 16, "#27AE60", 10, "center");
+            $"f(x,y) = {GetTerrainFormula()}", 170, 16, "#A8FFD8", 10, "center");
     }
 
     private static double[] IsoProject(int gx, int gy, double h, int gridN, double cosR, double sinR)

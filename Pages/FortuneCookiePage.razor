@@ -119,7 +119,7 @@ else
     private async Task RevealCookie()
     {
         revealed = true;
-        try { await JS.InvokeVoidAsync("Sounds.playReveal"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playReveal");
 
         var profile = await Progress.GetProfileAsync();
         if (!profile.ViewedCookieDates.Contains(today))

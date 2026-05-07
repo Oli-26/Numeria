@@ -4,7 +4,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Numeria</title>
+    <meta name="theme-color" content="#0a0e2a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Phine" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <title>Phine</title>
     <base href="/" />
     <link rel="stylesheet" href="css/site.css" />
     <link id="theme-css" rel="stylesheet" href="css/themes/dark.css" />
@@ -12,7 +18,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet" />
-    <link rel="icon" type="image/svg+xml" href="numeria-icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="phine-icon.svg" />
+    <style>#blazor-error-ui { display: none !important; }</style>
+    <script src="js/errorLog.js"></script>
 </head>
 
 <body>
@@ -53,7 +61,7 @@
                 background:linear-gradient(135deg,#4a5fe0,#b48cff,#ff8ec6,#4a5fe0);
                 background-size:300% 300%;animation:borderGlow 3s ease infinite;opacity:0.7;filter:blur(2px);">
             </div>
-            <img src="numeria-icon.svg" alt="" style="position:relative;width:100px;height:100px;border-radius:24px;
+            <img src="phine-icon.svg" alt="" style="position:relative;width:100px;height:100px;border-radius:24px;
                 box-shadow:0 12px 48px rgba(74,95,224,0.3);" />
         </div>
 
@@ -64,7 +72,7 @@
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
             background-clip:text;
             animation:splashName 0.6s ease 0.3s both,shimmer 2.5s linear 0.9s infinite;">
-            NUMERIA
+            PHINE
         </div>
 
         <!-- Tagline -->
@@ -130,10 +138,70 @@
 
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="js/mathCanvas.js"></script>
+    <script src="js/drawPad.js"></script>
     <script src="js/sounds.js"></script>
+    <script src="js/haptics.js"></script>
+    <script src="js/navTransition.js"></script>
     <script src="js/topicGraph.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/share.js"></script>
     <script src="js/tts.js"></script>
+    <script>
+        // Capacitor native polish — runs once if Capacitor is present.
+        (function () {
+            if (!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) return;
+
+            // Status bar — light icons over the navy app background.
+            try {
+                var sb = window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
+                if (sb) {
+                    sb.setStyle && sb.setStyle({ style: 'DARK' }).catch(function () { });
+                    sb.setBackgroundColor && sb.setBackgroundColor({ color: '#0a0e2a' }).catch(function () { });
+                    sb.setOverlaysWebView && sb.setOverlaysWebView({ overlay: false }).catch(function () { });
+                }
+            } catch (e) { }
+
+            // Hardware back — pop history; minimize on root.
+            try {
+                var app = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+                if (app && app.addListener) {
+                    app.addListener('backButton', function () {
+                        var atRoot = window.location.pathname === '/' || window.location.pathname === '';
+                        if (!atRoot && window.history.length > 1) {
+                            window.history.back();
+                        } else if (app.minimizeApp) {
+                            app.minimizeApp();
+                        } else if (app.exitApp) {
+                            app.exitApp();
+                        }
+                    });
+                }
+            } catch (e) { }
+
+            // phine:// deep links — fired by long-press shortcuts and external
+            // intents. Translate phine://review -> /review, stash for cold-start
+            // consumption, dispatch event for warm taps.
+            function _handlePhineUrl(url) {
+                if (!url) return;
+                var m = /^phine:\/\/([^?#]*)/i.exec(url);
+                if (!m) return;
+                var route = '/' + (m[1] || '').replace(/^\/+/, '');
+                try { sessionStorage.setItem('phine_pending_deeplink', route); } catch (e) { }
+                try { window.dispatchEvent(new CustomEvent('phine:deeplink', { detail: route })); } catch (e) { }
+            }
+            try {
+                var app2 = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+                if (app2) {
+                    if (app2.addListener) {
+                        app2.addListener('appUrlOpen', function (data) { _handlePhineUrl(data && data.url); });
+                    }
+                    if (app2.getLaunchUrl) {
+                        app2.getLaunchUrl().then(function (res) { if (res && res.url) _handlePhineUrl(res.url); }).catch(function () { });
+                    }
+                }
+            } catch (e) { }
+        })();
+    </script>
     <script>
         // Theme management
         function applyTheme(themeId) {
@@ -153,12 +221,43 @@
             }
         }
 
-        // Apply saved font size immediately
+        // Domain hue
+        function applyDomain(domainId) {
+            if (domainId) {
+                document.documentElement.setAttribute('data-domain', domainId);
+            } else {
+                document.documentElement.removeAttribute('data-domain');
+            }
+        }
+
+        // Card frame skin
+        function applyFrame(frameId) {
+            if (frameId) {
+                document.documentElement.setAttribute('data-frame', frameId);
+            } else {
+                document.documentElement.removeAttribute('data-frame');
+            }
+        }
+
+        // Streak flame skin
+        function applyFlame(flameId) {
+            if (flameId) {
+                document.documentElement.setAttribute('data-flame', flameId);
+            } else {
+                document.documentElement.removeAttribute('data-flame');
+            }
+        }
+
+        // Apply saved theme + font size + domain + cosmetics immediately
         (function() {
             try {
                 var profile = JSON.parse(localStorage.getItem('mathvoyager_profile'));
-                if (profile && profile.fontSize) {
-                    applyFontSize(profile.fontSize);
+                if (profile) {
+                    if (profile.selectedTheme) applyTheme(profile.selectedTheme);
+                    if (profile.fontSize) applyFontSize(profile.fontSize);
+                    if (profile.currentDomain) applyDomain(profile.currentDomain);
+                    if (profile.selectedFrame) applyFrame(profile.selectedFrame);
+                    if (profile.selectedFlame) applyFlame(profile.selectedFlame);
                 }
             } catch(e) {}
         })();
@@ -181,8 +280,33 @@
             }
         }
 
-        // File download helper
-        function downloadFile(filename, content) {
+        // File download helper. On Capacitor (Android), <a download> is blocked
+        // by the WebView, so write to Cache via Filesystem then open the share
+        // sheet so the user can save to Drive/Downloads/email.
+        async function downloadFile(filename, content) {
+            var isNative = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+            if (isNative) {
+                var fs = window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+                var share = window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+                if (fs && share) {
+                    var written = await fs.writeFile({
+                        path: filename,
+                        data: content,
+                        directory: 'CACHE',
+                        encoding: 'utf8'
+                    });
+                    try {
+                        await share.share({
+                            title: 'Phine backup',
+                            url: written.uri,
+                            dialogTitle: 'Save backup'
+                        });
+                    } catch (e) {
+                        // User cancelled share sheet — not an error.
+                    }
+                    return;
+                }
+            }
             var blob = new Blob([content], { type: 'application/json' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
@@ -259,7 +383,7 @@
             // App name
             ctx.fillStyle = opts.accent;
             ctx.font = 'bold 14px system-ui';
-            ctx.fillText('NUMERIA', 30, 36);
+            ctx.fillText('PHINE', 30, 36);
 
             // User name
             ctx.fillStyle = opts.textColor;
@@ -335,7 +459,7 @@
             ctx.font = '11px system-ui';
             ctx.fillText('Longest streak: ' + opts.longestStreak + ' days', 30, h - 20);
             ctx.textAlign = 'right';
-            ctx.fillText('numeria.app', w - 30, h - 20);
+            ctx.fillText('phine.app', w - 30, h - 20);
             ctx.textAlign = 'left';
             ctx.globalAlpha = 1;
         }

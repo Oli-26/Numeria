@@ -6,6 +6,8 @@ public class UserProfile
     public string SelectedAvatar { get; set; } = "default";
     public string SelectedTitle { get; set; } = "";
     public string SelectedTheme { get; set; } = "dark";
+    public string SelectedFrame { get; set; } = "";
+    public string SelectedFlame { get; set; } = "";
     public int TotalXp { get; set; }
     public int Points { get; set; }
     public int CurrentStreak { get; set; }
@@ -29,6 +31,10 @@ public class UserProfile
     public int XpBoostsActive { get; set; }
     public int XpBoostMultiplier { get; set; } = 1;
     public int StreakFreezeDays { get; set; }
+    public int SkipTokens { get; set; }
+    public int FiftyFiftyTokens { get; set; }
+    public int SecondChanceTokens { get; set; }
+    public int PhiMagnetActive { get; set; }
     public List<string> SuggestedTopicIds { get; set; } = new();
     public List<string> ChallengesCompleted { get; set; } = new();
 
@@ -45,6 +51,11 @@ public class UserProfile
     // Mastery
     public Dictionary<string, int> TopicMastery { get; set; } = new();
     // 0 = not started, 1 = Apprentice, 2 = Adept, 3 = Master, 4 = Grandmaster
+
+    // Roguelike runs — set of topic IDs where a Run boss has been defeated at least once
+    public List<string> RunSeals { get; set; } = new();
+    public int RunsAttempted { get; set; }
+    public int RunsWon { get; set; }
 
     // Settings
     public bool ShowHintsByDefault { get; set; }

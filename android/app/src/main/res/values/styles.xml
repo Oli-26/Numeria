@@ -16,7 +16,15 @@
     </style>
 
 
+    <!-- Android 12+ system splash. windowSplashScreenBackground = backdrop,
+         windowSplashScreenAnimatedIcon = centered launcher mark,
+         postSplashScreenTheme = theme handed to the activity afterward.
+         android:background is kept as a fallback for older devices that still
+         resolve Theme.SplashScreen the legacy way. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/colorPrimaryDark</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <item name="android:background">@drawable/splash</item>
     </style>
 </resources>

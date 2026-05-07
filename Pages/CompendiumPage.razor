@@ -94,11 +94,7 @@ else
         // Render KaTeX for expanded constant
         if (selectedConstant?.Formula != null)
         {
-            try
-            {
-                await JS.InvokeVoidAsync("renderMath", $"formula-{selectedConstant.Symbol.GetHashCode()}", selectedConstant.Formula, true);
-            }
-            catch { }
+            await JS.TryInvokeVoidAsync("renderMath", $"formula-{selectedConstant.Symbol.GetHashCode()}", selectedConstant.Formula, true);
         }
     }
 

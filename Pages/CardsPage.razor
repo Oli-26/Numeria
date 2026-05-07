@@ -36,9 +36,18 @@
                 else
                 {
                     <div class="card-front">
-                        <div class="card-art">
-                            @((MarkupString)GetCardSvg(topic.Id, topic.Color, earned))
-                        </div>
+                        @if (HasCustomArt(topic.Id))
+                        {
+                            <div class="card-art">
+                                @((MarkupString)GetCardSvg(topic.Id, topic.Color, earned))
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="card-art card-art-generic" style="background: linear-gradient(135deg, @(earned ? topic.Color : "#888"), @(earned ? topic.Color : "#888")99); opacity: @(earned ? "1" : "0.25"); color: #fff;">
+                                <TopicIcon TopicId="@topic.Id" Size="64" />
+                            </div>
+                        }
                         <div class="card-title">@topic.Name</div>
                         @if (!earned)
                         {
@@ -75,6 +84,16 @@ else
         flippedCard = flippedCard == topicId ? null : topicId;
     }
 
+    private static readonly HashSet<string> _customArtTopics = new()
+    {
+        "calculus", "linear-algebra", "topology", "number-theory", "probability",
+        "group-theory", "graph-theory", "differential-geometry", "set-theory",
+        "fractals", "fourier-analysis", "complex-analysis", "philosophy-of-math",
+        "combinatorics", "differential-equations", "computation"
+    };
+
+    private static bool HasCustomArt(string topicId) => _customArtTopics.Contains(topicId);
+
     private string GetCardSvg(string topicId, string color, bool earned)
     {
         var opacity = earned ? "1" : "0.2";
@@ -86,7 +105,6 @@ else
                 <rect width='160' height='120' rx='8' fill='url(#gc)' opacity='{opacity}'/>
                 <text x='80' y='55' text-anchor='middle' font-size='42' font-family='Georgia,serif' fill='#fff' opacity='0.9'>∫</text>
                 <path d='M30 85 Q55 50 80 75 Q105 100 130 65' stroke='#fff' stroke-width='2' fill='none' opacity='0.5'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>CALCULUS</text>
             </svg>",
 
             "linear-algebra" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -97,7 +115,6 @@ else
                 <line x1='50' y1='55' x2='110' y2='55' stroke='#fff' stroke-width='1' opacity='0.3'/>
                 <circle cx='65' cy='40' r='4' fill='#fff' opacity='0.8'/><circle cx='95' cy='40' r='4' fill='#fff' opacity='0.5'/>
                 <circle cx='65' cy='70' r='4' fill='#fff' opacity='0.5'/><circle cx='95' cy='70' r='4' fill='#fff' opacity='0.8'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>LINEAR ALGEBRA</text>
             </svg>",
 
             "topology" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -105,7 +122,6 @@ else
                 <rect width='160' height='120' rx='8' fill='url(#gt)' opacity='{opacity}'/>
                 <ellipse cx='80' cy='52' rx='38' ry='24' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
                 <ellipse cx='80' cy='52' rx='12' ry='24' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.4'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>TOPOLOGY</text>
             </svg>",
 
             "number-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -117,7 +133,6 @@ else
                 <text x='105' y='65' font-size='20' font-family='Georgia,serif' fill='#fff' opacity='0.5'>7</text>
                 <text x='55' y='80' font-size='18' font-family='Georgia,serif' fill='#fff' opacity='0.4'>11</text>
                 <text x='90' y='82' font-size='16' font-family='Georgia,serif' fill='#fff' opacity='0.35'>13</text>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>NUMBER THEORY</text>
             </svg>",
 
             "probability" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -128,7 +143,6 @@ else
                 <circle cx='80' cy='47' r='3' fill='#fff' opacity='0.8'/>
                 <circle cx='70' cy='55' r='3' fill='#fff' opacity='0.8'/><circle cx='90' cy='55' r='3' fill='#fff' opacity='0.8'/>
                 <path d='M30 80 Q50 40 80 60 Q110 80 130 50' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.35'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>PROBABILITY</text>
             </svg>",
 
             "group-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -137,7 +151,6 @@ else
                 <polygon points='80,20 115,45 105,80 55,80 45,45' stroke='#fff' stroke-width='2' fill='none' opacity='0.7'/>
                 <polygon points='80,30 107,50 99,75 61,75 53,50' stroke='#fff' stroke-width='1' fill='none' opacity='0.3' stroke-dasharray='4,3'/>
                 <circle cx='80' cy='52' r='3' fill='#fff' opacity='0.6'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>GROUP THEORY</text>
             </svg>",
 
             "graph-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -151,7 +164,6 @@ else
                 <circle cx='50' cy='35' r='6' fill='#fff' opacity='0.8'/><circle cx='110' cy='35' r='6' fill='#fff' opacity='0.8'/>
                 <circle cx='80' cy='72' r='6' fill='#fff' opacity='0.8'/><circle cx='40' cy='72' r='6' fill='#fff' opacity='0.6'/>
                 <circle cx='120' cy='72' r='6' fill='#fff' opacity='0.6'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>GRAPH THEORY</text>
             </svg>",
 
             "differential-geometry" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -160,7 +172,6 @@ else
                 <path d='M30 65 C50 25, 70 25, 80 50 C90 75, 110 75, 130 35' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
                 <path d='M75 50 L85 42' stroke='#fff' stroke-width='1.5' opacity='0.5' marker-end='url(#arw)'/>
                 <circle cx='80' cy='50' r='2.5' fill='#fff' opacity='0.7'/>
-                <text x='80' y='108' text-anchor='middle' font-size='9' fill='#fff' opacity='0.7'>DIFFERENTIAL GEOMETRY</text>
             </svg>",
 
             "set-theory" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -171,7 +182,6 @@ else
                 <text x='58' y='42' font-size='10' fill='#fff' opacity='0.5'>A</text>
                 <text x='98' y='42' font-size='10' fill='#fff' opacity='0.5'>B</text>
                 <text x='77' y='55' font-size='14' font-family='Georgia,serif' fill='#fff' opacity='0.8'>∩</text>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>SET THEORY</text>
             </svg>",
 
             "fractals" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -182,7 +192,6 @@ else
                 <polygon points='60,49 70,33 80,49' stroke='#fff' stroke-width='1' fill='none' opacity='0.5'/>
                 <polygon points='80,49 90,33 100,49' stroke='#fff' stroke-width='1' fill='none' opacity='0.5'/>
                 <polygon points='70,80 80,64 90,80' stroke='#fff' stroke-width='1' fill='none' opacity='0.5'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>FRACTALS</text>
             </svg>",
 
             "fourier-analysis" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -190,7 +199,6 @@ else
                 <rect width='160' height='120' rx='8' fill='url(#gfa)' opacity='{opacity}'/>
                 <path d='M20 50 Q35 20 50 50 Q65 80 80 50 Q95 20 110 50 Q125 80 140 50' stroke='#fff' stroke-width='2.5' fill='none' opacity='0.8'/>
                 <path d='M20 50 Q50 35 80 50 Q110 65 140 50' stroke='#fff' stroke-width='1' fill='none' opacity='0.3' stroke-dasharray='4,3'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>FOURIER ANALYSIS</text>
             </svg>",
 
             "complex-analysis" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -203,7 +211,6 @@ else
                 <circle cx='80' cy='55' r='22' stroke='#fff' stroke-width='2' fill='none' opacity='0.5'/>
                 <path d='M58 55 A22 22 0 0 1 102 55' stroke='#fff' stroke-width='2' fill='none' opacity='0.8' stroke-dasharray='3,2'/>
                 <circle cx='95' cy='40' r='3' fill='#fff' opacity='0.8'/>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>COMPLEX ANALYSIS</text>
             </svg>",
 
             "philosophy-of-math" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -214,7 +221,6 @@ else
                 <text x='105' y='45' font-size='12' fill='#fff' opacity='0.2' font-family='Georgia,serif'>∴</text>
                 <text x='45' y='78' font-size='10' fill='#fff' opacity='0.15' font-family='Georgia,serif'>∃</text>
                 <text x='110' y='75' font-size='11' fill='#fff' opacity='0.15' font-family='Georgia,serif'>∀</text>
-                <text x='80' y='108' text-anchor='middle' font-size='9' fill='#fff' opacity='0.7'>PHILOSOPHY OF MATH</text>
             </svg>",
 
             "combinatorics" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -232,7 +238,6 @@ else
                 <text x='60' y='57' text-anchor='middle' font-size='11' fill='#fff' opacity='0.7' font-weight='bold'>3</text>
                 <text x='82' y='57' text-anchor='middle' font-size='11' fill='#fff' opacity='0.7' font-weight='bold'>3</text>
                 <text x='71' y='79' text-anchor='middle' font-size='11' fill='#fff' opacity='0.6' font-weight='bold'>6</text>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>COMBINATORICS</text>
             </svg>",
 
             "differential-equations" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -242,7 +247,6 @@ else
                 <path d='M25 50 Q50 20 80 50 Q110 80 140 50' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.3' stroke-dasharray='4,3'/>
                 <circle cx='55' cy='30' r='3' fill='#fff' opacity='0.6'/>
                 <circle cx='115' cy='30' r='3' fill='#fff' opacity='0.6'/>
-                <text x='80' y='108' text-anchor='middle' font-size='9' fill='#fff' opacity='0.7'>DIFFERENTIAL EQUATIONS</text>
             </svg>",
 
             "computation" => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
@@ -263,13 +267,11 @@ else
                 <path d='M90 55 L105 55' stroke='#fff' stroke-width='1.5' fill='none' opacity='0.6' marker-end='url(#arw)'/>
                 <text x='62' y='50' font-size='7' font-family='monospace' fill='#fff' opacity='0.4'>0,1</text>
                 <text x='97' y='50' font-size='7' font-family='monospace' fill='#fff' opacity='0.4'>0,1</text>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>COMPUTATION</text>
             </svg>",
 
             _ => $@"<svg viewBox='0 0 160 120' xmlns='http://www.w3.org/2000/svg'>
                 <rect width='160' height='120' rx='8' fill='{bg}' opacity='{opacity}'/>
                 <text x='80' y='55' text-anchor='middle' font-size='32' font-family='Georgia,serif' fill='#fff' opacity='0.8'>∑</text>
-                <text x='80' y='108' text-anchor='middle' font-size='10' fill='#fff' opacity='0.7'>MATHEMATICS</text>
             </svg>"
         };
     }
@@ -328,6 +330,11 @@ else
 
     .card-art { width: 100%; height: 100%; }
     .card-art svg { width: 100%; height: 100%; display: block; }
+
+    .card-art-generic {
+        display: flex; align-items: center; justify-content: center;
+    }
+    .card-art-generic .topic-icon { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)); }
 
     .card-title {
         position: absolute; bottom: 0; left: 0; right: 0;

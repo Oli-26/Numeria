@@ -9,7 +9,10 @@ public enum QuestionType
     ProofOrdering,
     VisualPuzzle,
     TrueOrFalse,
-    FindTheError
+    FindTheError,
+    MultipleSelect,
+    NumericInput,
+    Categorize
 }
 
 public enum DifficultyLevel

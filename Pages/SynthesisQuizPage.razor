@@ -5,6 +5,7 @@
 @inject IProgressService Progress
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@using MathVoyager.Models
 
 @if (activeQuiz == null)
 {
@@ -39,10 +40,12 @@
             @foreach (var quiz in quizzes)
             {
                 var q = quiz;
-                <div class="synthesis-card card card-clickable" style="--quiz-theme: @q.Theme" @onclick="() => StartQuiz(q.Id)">
+                var missing = MissingTopics(q);
+                var locked = missing.Count > 0;
+                <div class="synthesis-card card @(locked ? "card-locked" : "card-clickable")" style="--quiz-theme: @q.Theme" @onclick="() => OnQuizCardClick(q)">
                     <div class="synthesis-card-accent"></div>
                     <div class="synthesis-card-icon">
-                        <Icon Name="zap" Size="22" />
+                        <Icon Name="@(locked ? "lock" : "zap")" Size="22" />
                     </div>
                     <div class="synthesis-card-body">
                         <strong class="synthesis-card-title">@q.Title</strong>
@@ -54,8 +57,16 @@
                             }
                             <span class="synthesis-qcount">@q.Questions.Count questions</span>
                         </div>
+                        @if (locked)
+                        {
+                            var done = q.RequiredTopicIds.Count - missing.Count;
+                            <div class="synthesis-lock">
+                                <Icon Name="lock" Size="13" />
+                                <span>Topics @done / @q.RequiredTopicIds.Count completed. Finish: @string.Join(", ", missing.Select(TopicName))</span>
+                            </div>
+                        }
                     </div>
-                    <div class="synthesis-card-arrow">→</div>
+                    <div class="synthesis-card-arrow">@(locked ? "🔒" : "→")</div>
                 </div>
             }
         </div>
@@ -294,6 +305,8 @@ else
 
     private List<SynthesisQuiz>? quizzes;
     private SynthesisQuiz? activeQuiz;
+    private HashSet<string> completedTopicIds = new();
+    private Dictionary<string, string> topicNames = new();
 
     private int currentIndex;
     private int correctCount;
@@ -317,12 +330,19 @@ else
     protected override async Task OnParametersSetAsync()
     {
         quizzes = await Content.GetSynthesisQuizzesAsync();
+        await BuildTopicGatingAsync();
 
         if (!string.IsNullOrEmpty(QuizId))
         {
             activeQuiz = quizzes.FirstOrDefault(q => q.Id == QuizId);
             if (activeQuiz != null)
             {
+                if (MissingTopics(activeQuiz).Count > 0)
+                {
+                    activeQuiz = null;
+                    Nav.NavigateTo("/synthesis", replace: true);
+                    return;
+                }
                 ResetQuizState();
             }
         }
@@ -330,6 +350,36 @@ else
         {
             activeQuiz = null;
         }
+    }
+
+    private async Task BuildTopicGatingAsync()
+    {
+        if (quizzes == null) return;
+        var allTopics = await Content.GetTopicsAsync();
+        topicNames = allTopics.ToDictionary(t => t.Id, t => t.Name);
+
+        var profile = await Progress.GetProfileAsync();
+        var completedLessons = new HashSet<string>(profile.LessonsCompleted);
+        var required = quizzes.SelectMany(q => q.RequiredTopicIds).Distinct().ToList();
+
+        completedTopicIds.Clear();
+        foreach (var tid in required)
+        {
+            var lessons = await Content.GetLessonsAsync(tid);
+            if (lessons.Count > 0 && lessons.All(l => completedLessons.Contains(l.Id)))
+                completedTopicIds.Add(tid);
+        }
+    }
+
+    private List<string> MissingTopics(SynthesisQuiz q) =>
+        q.RequiredTopicIds.Where(t => !completedTopicIds.Contains(t)).ToList();
+
+    private string TopicName(string id) => topicNames.TryGetValue(id, out var n) ? n : id;
+
+    private void OnQuizCardClick(SynthesisQuiz q)
+    {
+        if (MissingTopics(q).Count > 0) return;
+        StartQuiz(q.Id);
     }
 
     private void ResetQuizState()
@@ -385,7 +435,7 @@ else
         if (correct) correctCount++;
         else wrongCount++;
         await Progress.RecordQuestionAnsweredAsync(null, correct);
-        try { await JS.InvokeVoidAsync(correct ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+        await JS.TryInvokeVoidAsync(correct ? "Sounds.playCorrect" : "Sounds.playWrong");
     }
 
     private async Task SubmitFillIn()
@@ -401,7 +451,7 @@ else
         if (correct) correctCount++;
         else wrongCount++;
         await Progress.RecordQuestionAnsweredAsync(null, correct);
-        try { await JS.InvokeVoidAsync(correct ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+        await JS.TryInvokeVoidAsync(correct ? "Sounds.playCorrect" : "Sounds.playWrong");
     }
 
     private bool IsAcceptableAnswer(Question q, string answer)
@@ -440,7 +490,7 @@ else
         if (allCorrect) correctCount++;
         else wrongCount++;
         await Progress.RecordQuestionAnsweredAsync(null, allCorrect);
-        try { await JS.InvokeVoidAsync(allCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+        await JS.TryInvokeVoidAsync(allCorrect ? "Sounds.playCorrect" : "Sounds.playWrong");
     }
 
     private void SelectLeft(string left)
@@ -486,18 +536,28 @@ else
         int baseXp = results.Where(r => r.isCorrect).Sum(r => r.xp);
         totalXpEarned = (int)(baseXp * 1.5);
 
+        var profile = await Progress.GetProfileAsync();
+        if (profile.XpBoostsActive > 0 && profile.XpBoostMultiplier > 1)
+        {
+            totalXpEarned *= profile.XpBoostMultiplier;
+            profile.XpBoostsActive--;
+            if (profile.XpBoostsActive <= 0)
+                profile.XpBoostMultiplier = 1;
+            await Progress.SaveProfileAsync(profile);
+        }
+
         gamificationEvent = await Gamification.AwardXpAsync(totalXpEarned);
 
         var score = activeQuiz.Questions.Count > 0 ? correctCount * 100 / activeQuiz.Questions.Count : 0;
         await Progress.RecordQuizResultAsync(activeQuiz.Id, null, score, correctCount, activeQuiz.Questions.Count, totalXpEarned);
 
         quizState = QuizState.Complete;
-        try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
-        try { await JS.InvokeVoidAsync("XpFloat.show", totalXpEarned, null, null); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playComplete");
+        await JS.TryInvokeVoidAsync("XpFloat.show", totalXpEarned, null, null);
         if (gamificationEvent.LeveledUp)
-            try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
         if (score >= 80)
-            try { await JS.InvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40); } catch { }
+            await JS.TryInvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40);
     }
 
     private string GetOptionClass(string option)
@@ -519,6 +579,7 @@ else
         "history" => "History",
         "linguistics" => "Linguistics",
         "philosophy" => "Philosophy",
+        "misc" => "Esoterica",
         _ => domainId
     };
 }
@@ -647,6 +708,35 @@ else
         flex-shrink: 0;
         position: relative;
     }
+
+    .synthesis-card.card-locked {
+        cursor: not-allowed;
+        opacity: 0.72;
+        filter: saturate(0.6);
+    }
+    .synthesis-card.card-locked .synthesis-card-icon {
+        background: rgba(120,120,120,0.15);
+        color: var(--text-muted);
+    }
+    .synthesis-card.card-locked .synthesis-card-arrow {
+        color: var(--text-muted);
+    }
+    .synthesis-lock {
+        margin-top: 8px;
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: var(--text-muted);
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: var(--bg-surface);
+        border: 1px dashed var(--border);
+    }
+    .synthesis-lock svg { flex-shrink: 0; margin-top: 1px; }
+    .synthesis-lock span { flex: 1; min-width: 0; word-break: break-word; }
 
     /* Quiz taking */
     .quiz-container {

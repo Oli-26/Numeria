@@ -1,4 +1,4 @@
-# Numeria
+# Phine
 
 A mathematics learning app built with Blazor WebAssembly and Capacitor for Android. Learn topics from calculus to topology through interactive lessons, quizzes, and challenges.
 

@@ -26,17 +26,17 @@
 </div>
 
 <div class="share-actions">
-    <button class="btn btn-primary btn-lg" style="flex: 1" @onclick="CopyToClipboard">
-        <Icon Name="phi" Size="16" /> Copy Image
+    <button class="btn btn-primary btn-lg" style="flex: 1" @onclick="ShareCard">
+        <Icon Name="phi" Size="16" /> Share Image
     </button>
     <button class="btn btn-outline btn-lg" @onclick="CopyText">
         <Icon Name="scroll" Size="16" /> Copy Text
     </button>
 </div>
 
-@if (copied)
+@if (toast != null)
 {
-    <div class="copied-toast">Copied!</div>
+    <div class="copied-toast">@toast</div>
 }
 
 @code {
@@ -45,7 +45,7 @@
     private int topicCount;
     private int lessonTotal;
     private string cardStyle = "gradient";
-    private bool copied;
+    private string? toast;
     private bool canvasReady;
 
     private record CardStyle(string Id, string Name, string Preview, string Bg1, string Bg2, string TextColor, string AccentColor);
@@ -112,39 +112,54 @@
         });
     }
 
-    private async Task CopyToClipboard()
+    private async Task ShareCard()
     {
+        // PhineShare.shareCanvas tries Web Share API (native sheet on Android),
+        // then clipboard image, then signals 'unsupported' so we can fall back
+        // to text. Returns: 'shared' | 'copied' | 'cancelled' | 'unsupported'.
         try
         {
-            await JS.InvokeVoidAsync("copyCanvasToClipboard", "share-canvas");
-            copied = true;
-            StateHasChanged();
-            await Task.Delay(2000);
-            copied = false;
+            var result = await JS.InvokeAsync<string>("PhineShare.shareCanvas", "share-canvas",
+                "My Phine progress",
+                profile == null ? "" : $"Level {level} • {profile.TotalXp} XP • {profile.CurrentStreak}-day streak");
+            switch (result)
+            {
+                case "shared":   await ShowToast("Shared"); break;
+                case "copied":   await ShowToast("Image copied"); break;
+                case "cancelled": break;
+                default:         await CopyText(); break;
+            }
         }
-        catch
+        catch (Exception ex)
         {
+            await JS.LogErrorAsync("SharePage.share", ex);
             await CopyText();
         }
+    }
+
+    private async Task ShowToast(string message)
+    {
+        toast = message;
+        StateHasChanged();
+        await Task.Delay(2000);
+        toast = null;
+        StateHasChanged();
     }
 
     private async Task CopyText()
     {
         if (profile == null) return;
-        var text = $"Numeria Stats | {profile.DisplayName}\n" +
+        var text = $"Phine Stats | {profile.DisplayName}\n" +
                    $"Level {level} | {profile.TotalXp} XP\n" +
                    $"{profile.LessonsCompleted.Count}/{lessonTotal} lessons | {profile.TopicsCompleted.Count}/{topicCount} topics\n" +
                    $"{profile.CurrentStreak}-day streak | {(profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0)}% accuracy\n" +
-                   $"numeria.app";
+                   $"phine.app";
         try
         {
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
-            copied = true;
-            StateHasChanged();
-            await Task.Delay(2000);
-            copied = false;
+            await ShowToast("Text copied");
         }
-        catch { }
+        catch (Exception ex) { await JS.LogErrorAsync("SharePage.copy", ex); }
     }
 }
 

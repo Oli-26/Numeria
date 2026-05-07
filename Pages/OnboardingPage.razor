@@ -9,7 +9,7 @@
     {
         <div class="ob-step ob-fade-in">
             <div class="ob-icon"><Icon Name="rocket" Size="40" /></div>
-            <h1>Welcome to Numeria!</h1>
+            <h1>Welcome to Phine!</h1>
             <p class="ob-tagline">Your personal journey through the world of mathematics. Learn concepts, solve problems, and level up your skills.</p>
             <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep2">Get Started</button>
         </div>
@@ -40,7 +40,7 @@
                         <div class="ob-topic-card @(isSelected ? "selected" : "")"
                              style="border-color: @(isSelected ? topic.Color : "transparent")"
                              @onclick="() => SelectTopic(topic.Id)">
-                            <span class="ob-topic-icon" style="color: @topic.Color">@topic.Icon</span>
+                            <span class="ob-topic-icon" style="color: @topic.Color"><TopicIcon TopicId="@topic.Id" Size="32" /></span>
                             <strong>@topic.Name</strong>
                             <small>@topic.Difficulty</small>
                         </div>
@@ -87,21 +87,21 @@
 
     private async Task GoToStep2()
     {
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
         step = 2;
     }
 
     private async Task GoToStep3()
     {
         if (string.IsNullOrWhiteSpace(userName)) return;
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
         step = 3;
     }
 
     private async Task GoToStep4()
     {
         if (selectedTopicId == null) return;
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
         step = 4;
     }
 
@@ -120,9 +120,17 @@
         var profile = await Progress.GetProfileAsync();
         profile.DisplayName = userName.Trim();
         if (selectedTopicId != null)
+        {
             profile.SuggestedTopicIds = new List<string> { selectedTopicId };
+            var picked = topics?.FirstOrDefault(t => t.Id == selectedTopicId);
+            if (picked != null && !string.IsNullOrEmpty(picked.Domain))
+            {
+                profile.CurrentDomain = picked.Domain;
+                await JS.TryInvokeVoidAsync("applyDomain", picked.Domain);
+            }
+        }
         await Progress.SaveProfileAsync(profile);
-        try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
         Nav.NavigateTo("/");
     }
 }
@@ -224,7 +232,10 @@
     }
 
     .ob-topic-icon {
-        font-size: 1.8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
     }
 
     .ob-topic-card strong {

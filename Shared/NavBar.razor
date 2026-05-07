@@ -6,8 +6,8 @@
 
 <nav class="bottom-nav">
     <div class="nav-brand" @onclick='() => Navigate("/")'>
-        <span class="nav-brand-icon">N</span>
-        <span class="nav-brand-name">Numeria</span>
+        <span class="nav-brand-icon">Φ</span>
+        <span class="nav-brand-name">Phine</span>
         @if (level > 0)
         {
             <div class="nav-level-badge">
@@ -21,6 +21,10 @@
     <a class="nav-item @(IsActive("/") ? "active" : "")" href="/" @onclick:preventDefault @onclick='() => Navigate("/")'>
         <span class="nav-icon"><Icon Name="home" Size="22" /></span>
         <span class="nav-label">Home</span>
+    </a>
+    <a class="nav-item @(IsActive("/domains") ? "active" : "")" href="/domains" @onclick:preventDefault @onclick='() => Navigate("/domains")'>
+        <span class="nav-icon"><Icon Name="book" Size="22" /></span>
+        <span class="nav-label">Domains</span>
     </a>
     <a class="nav-item @(IsActive("/profile") ? "active" : "")" href="/profile" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
         <span class="nav-icon"><Icon Name="user" Size="22" /></span>
@@ -71,9 +75,16 @@
 
     private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        currentUri = Nav.ToBaseRelativePath(Nav.Uri);
-        await LoadStats();
-        await InvokeAsync(StateHasChanged);
+        try
+        {
+            currentUri = Nav.ToBaseRelativePath(Nav.Uri);
+            await LoadStats();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"NavBar OnLocationChanged: {ex}");
+        }
     }
 
     public void Dispose()
@@ -90,7 +101,8 @@
 
     private async Task Navigate(string path)
     {
-        try { await JS.InvokeVoidAsync("Sounds.playNav"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playNav");
+        await JS.TryInvokeVoidAsync("Haptics.select");
         Nav.NavigateTo(path);
     }
 }
@@ -105,7 +117,7 @@
         justify-content: space-around;
         background: var(--bg-card);
         border-top: 1px solid var(--border);
-        padding: 8px 0;
+        padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
         z-index: 100;
         box-shadow: 0 -2px 10px var(--shadow);
     }
@@ -114,10 +126,13 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         text-decoration: none;
         color: var(--text-muted);
-        font-size: 0.75rem;
-        padding: 4px 12px;
+        font-size: 0.7rem;
+        padding: 8px 6px;
+        min-width: 44px;
+        min-height: 44px;
         border-radius: 8px;
         transition: color 0.25s ease, transform 0.15s ease;
         -webkit-tap-highlight-color: transparent;
@@ -135,19 +150,19 @@
     .nav-item.active::before {
         content: '';
         position: absolute;
-        top: -8px;
+        top: -6px;
         left: 50%;
         transform: translateX(-50%);
-        width: 20px;
-        height: 3px;
+        width: 30px;
+        height: 4px;
         background: var(--primary);
-        border-radius: 0 0 3px 3px;
+        border-radius: 0 0 4px 4px;
         animation: navIndicator 0.3s ease;
     }
 
     @@keyframes navIndicator {
         from { width: 0; opacity: 0; }
-        to { width: 20px; opacity: 1; }
+        to { width: 30px; opacity: 1; }
     }
 
     .nav-icon {

@@ -42,6 +42,53 @@ public class QuizEngine : IQuizEngine
         return allQuestions.OrderBy(_ => _random.Next()).Take(count).ToList();
     }
 
+    public async Task<List<Question>> GenerateLearnedQuizAsync(
+        IEnumerable<string>? completedLessonIds,
+        IEnumerable<string>? completedTopicIds,
+        IEnumerable<string>? engagedTopicIds,
+        int count = 5)
+    {
+        var lessonSet = completedLessonIds?.ToHashSet() ?? new HashSet<string>();
+        var topicSet = completedTopicIds?.ToHashSet() ?? new HashSet<string>();
+        var engagedSet = engagedTopicIds?.ToHashSet() ?? new HashSet<string>();
+
+        var topics = await _contentRepo.GetTopicsAsync();
+        var pool = new List<Question>();
+        var seen = new HashSet<string>();
+
+        void Add(IEnumerable<Question> qs)
+        {
+            foreach (var q in qs)
+                if (seen.Add(q.Id)) pool.Add(q);
+        }
+
+        // Tier 1: questions belonging to lessons the user finished
+        if (lessonSet.Count > 0)
+        {
+            foreach (var topic in topics)
+            {
+                var qs = await _contentRepo.GetQuestionsAsync(topic.Id);
+                Add(qs.Where(q => lessonSet.Contains(q.LessonId)));
+            }
+        }
+
+        // Tier 2: any question from a fully-completed topic
+        if (pool.Count < count && topicSet.Count > 0)
+        {
+            foreach (var topic in topics.Where(t => topicSet.Contains(t.Id)))
+                Add(await _contentRepo.GetQuestionsAsync(topic.Id));
+        }
+
+        // Tier 3: topics the user has at least answered something in
+        if (pool.Count < count && engagedSet.Count > 0)
+        {
+            foreach (var topic in topics.Where(t => engagedSet.Contains(t.Id)))
+                Add(await _contentRepo.GetQuestionsAsync(topic.Id));
+        }
+
+        return pool.OrderBy(_ => _random.Next()).Take(count).ToList();
+    }
+
     public QuizResult ValidateAnswer(Question question, string userAnswer)
     {
         bool correct;
@@ -49,6 +96,18 @@ public class QuizEngine : IQuizEngine
         if (question.Type == QuestionType.FillIn)
         {
             correct = IsFillInCorrect(question, userAnswer);
+        }
+        else if (question.Type == QuestionType.NumericInput)
+        {
+            correct = IsNumericCorrect(question, userAnswer);
+        }
+        else if (question.Type == QuestionType.MultipleSelect)
+        {
+            correct = IsMultipleSelectCorrect(question, userAnswer);
+        }
+        else if (question.Type == QuestionType.Categorize)
+        {
+            correct = IsCategorizeCorrect(question, userAnswer);
         }
         else
         {
@@ -83,22 +142,14 @@ public class QuizEngine : IQuizEngine
                 return true;
         }
 
-        // Try numeric comparison (handles "16" vs "16.0" vs "16.00")
-        if (TryParseNumeric(userAnswer, out double userVal))
+        // Numeric / fraction cross-compare: parse each side as either a plain
+        // number or a fraction/percentage, then compare doubles. Handles
+        // "16" vs "16.00", "1/6" vs "0.167", "1/4" vs "25%".
+        if (TryParseAsValue(userAnswer, out double userVal))
         {
             foreach (var answer in acceptable)
             {
-                if (TryParseNumeric(answer, out double ansVal) && Math.Abs(userVal - ansVal) < 0.001)
-                    return true;
-            }
-        }
-
-        // Try fraction evaluation (handles "1/6" vs "0.167")
-        if (TryEvalFraction(userAnswer, out double userFrac))
-        {
-            foreach (var answer in acceptable)
-            {
-                if (TryEvalFraction(answer, out double ansFrac) && Math.Abs(userFrac - ansFrac) < 0.01)
+                if (TryParseAsValue(answer, out double ansVal) && Math.Abs(userVal - ansVal) < 0.01)
                     return true;
             }
         }
@@ -111,6 +162,44 @@ public class QuizEngine : IQuizEngine
         }
 
         return false;
+    }
+
+    private bool IsNumericCorrect(Question q, string userAnswer)
+    {
+        if (!TryParseNumeric(userAnswer, out double userVal)) return false;
+        if (!TryParseNumeric(q.CorrectAnswer ?? "", out double targetVal)) return false;
+        var tol = q.Tolerance ?? Math.Max(Math.Abs(targetVal) * 0.01, 1e-6);
+        return Math.Abs(userVal - targetVal) <= tol;
+    }
+
+    private bool IsMultipleSelectCorrect(Question q, string userAnswer)
+    {
+        // userAnswer is a "|"-joined set of selected option strings.
+        var selected = (userAnswer ?? "").Split('|', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim()).Where(s => s.Length > 0).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var correct = (q.AcceptableAnswers ?? new List<string>())
+            .Select(s => s.Trim()).Where(s => s.Length > 0).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return selected.SetEquals(correct);
+    }
+
+    private bool IsCategorizeCorrect(Question q, string userAnswer)
+    {
+        // userAnswer is "item=>bucket;item=>bucket;..." — must equal q.CategoryItems exactly.
+        if (q.CategoryItems == null) return false;
+        var pairs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var part in (userAnswer ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var idx = part.IndexOf("=>");
+            if (idx < 0) return false;
+            pairs[part[..idx].Trim()] = part[(idx + 2)..].Trim();
+        }
+        if (pairs.Count != q.CategoryItems.Count) return false;
+        foreach (var kv in q.CategoryItems)
+        {
+            if (!pairs.TryGetValue(kv.Key, out var b) || !string.Equals(b, kv.Value, StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+        return true;
     }
 
     /// <summary>
@@ -290,6 +379,13 @@ public class QuizEngine : IQuizEngine
             else break;
         }
         return s;
+    }
+
+    private static bool TryParseAsValue(string s, out double val)
+    {
+        if (TryParseNumeric(s, out val)) return true;
+        if (TryEvalFraction(s, out val)) return true;
+        return false;
     }
 
     private static bool TryParseNumeric(string s, out double val)

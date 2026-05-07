@@ -227,7 +227,7 @@ else
 
         if (activeChallenge?.GoalMath != null && !submitted)
         {
-            try { await JS.InvokeVoidAsync("renderMath", "proof-goal-math", activeChallenge.GoalMath, true); } catch { }
+            await JS.TryInvokeVoidAsync("renderMath", "proof-goal-math", activeChallenge.GoalMath, true);
         }
     }
 
@@ -283,8 +283,8 @@ else
 
         if (isCorrect)
         {
-            try { await JS.InvokeVoidAsync("Sounds.playCorrect"); } catch { }
-            try { await JS.InvokeVoidAsync("Confetti.launch", 50); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playCorrect");
+            await JS.TryInvokeVoidAsync("Confetti.launch", 50);
 
             if (!completedIds.Contains(activeChallenge.Id))
             {
@@ -300,7 +300,7 @@ else
         }
         else
         {
-            try { await JS.InvokeVoidAsync("Sounds.playWrong"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playWrong");
         }
     }
 

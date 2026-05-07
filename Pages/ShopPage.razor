@@ -110,6 +110,46 @@
                         <span class="inv-count">@GetFreezeCount()</span>
                     </div>
                 </div>
+                <div class="card inventory-card">
+                    <div class="inv-icon-wrap"><Icon Name="arrow-right" Size="22" /></div>
+                    <div class="inv-info">
+                        <strong>Skip Tokens</strong>
+                        <small>Skip questions, no penalty</small>
+                    </div>
+                    <div class="inv-count-wrap">
+                        <span class="inv-count">@profile.SkipTokens</span>
+                    </div>
+                </div>
+                <div class="card inventory-card">
+                    <div class="inv-icon-wrap"><Icon Name="target" Size="22" /></div>
+                    <div class="inv-info">
+                        <strong>50/50</strong>
+                        <small>Eliminate 2 wrong options</small>
+                    </div>
+                    <div class="inv-count-wrap">
+                        <span class="inv-count">@profile.FiftyFiftyTokens</span>
+                    </div>
+                </div>
+                <div class="card inventory-card">
+                    <div class="inv-icon-wrap"><Icon Name="rotate" Size="22" /></div>
+                    <div class="inv-info">
+                        <strong>Second Chances</strong>
+                        <small>Retry after a wrong answer</small>
+                    </div>
+                    <div class="inv-count-wrap">
+                        <span class="inv-count">@profile.SecondChanceTokens</span>
+                    </div>
+                </div>
+                <div class="card inventory-card">
+                    <div class="inv-icon-wrap"><Icon Name="phi" Size="22" /></div>
+                    <div class="inv-info">
+                        <strong>Phi Magnet</strong>
+                        <small>+50% φ quizzes remaining</small>
+                    </div>
+                    <div class="inv-count-wrap">
+                        <span class="inv-count">@profile.PhiMagnetActive</span>
+                    </div>
+                </div>
             </div>
         </div>
     }
@@ -156,8 +196,8 @@ else
         domainItems = items
             .Where(i => i.Domain == null || i.Domain == domain)
             .ToList();
-        // Preserve category ordering: theme, avatar, title, powerup, feature
-        var allCategories = new[] { "theme", "avatar", "title", "powerup", "feature" };
+        // Preserve category ordering
+        var allCategories = new[] { "theme", "frame", "flame", "avatar", "title", "powerup", "feature" };
         categories = items.Select(i => i.Category).Distinct().ToList();
         visibleCategories = allCategories
             .Where(c => domainItems.Any(i => i.Category == c))
@@ -170,12 +210,14 @@ else
     private async Task SwitchCategory(string cat)
     {
         activeCategory = cat;
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
 
     private string GetCategoryName(string cat) => cat switch
     {
         "theme" => "Themes",
+        "frame" => "Frames",
+        "flame" => "Flames",
         "avatar" => "Avatars",
         "title" => "Titles",
         "powerup" => "Power-ups",
@@ -186,6 +228,8 @@ else
     private string GetCategoryIcon(string cat) => cat switch
     {
         "theme" => "palette",
+        "frame" => "medal",
+        "flame" => "fire",
         "avatar" => "user-grad",
         "title" => "scroll",
         "powerup" => "bolt",
@@ -198,6 +242,10 @@ else
         if (item.UnlockData.ContainsKey("hints")) return "lightbulb";
         if (item.UnlockData.ContainsKey("boostMultiplier")) return "rocket";
         if (item.UnlockData.ContainsKey("freezeDays")) return "shield";
+        if (item.UnlockData.ContainsKey("skipTokens")) return "arrow-right";
+        if (item.UnlockData.ContainsKey("fiftyFifty")) return "target";
+        if (item.UnlockData.ContainsKey("secondChance")) return "rotate";
+        if (item.UnlockData.ContainsKey("phiMagnet")) return "phi";
         if (item.UnlockData.ContainsKey("feature")) return item.Id switch
         {
             "unlock-proofs" => "puzzle",
@@ -212,8 +260,14 @@ else
                 "theme-chalkboard" => "chalkboard",
                 "theme-neon" => "neon",
                 "theme-blueprint" => "blueprint",
+                "theme-parchment" => "scroll",
+                "theme-terminal" => "neon",
+                "theme-solarized" => "moon",
+                "theme-aurora" => "neon",
                 _ => "palette"
             },
+            "frame" => "medal",
+            "flame" => "fire",
             "avatar" => "user-grad",
             "title" => "medal",
             _ => "star"
@@ -226,6 +280,8 @@ else
         return item.Category switch
         {
             "theme" => profile.SelectedTheme == item.Id.Replace("theme-", ""),
+            "frame" => item.UnlockData.ContainsKey("frame") && profile.SelectedFrame == item.UnlockData["frame"],
+            "flame" => item.UnlockData.ContainsKey("flame") && profile.SelectedFlame == item.UnlockData["flame"],
             "avatar" => profile.SelectedAvatar == item.Id,
             "title" => item.UnlockData.ContainsKey("title") && profile.SelectedTitle == item.UnlockData["title"],
             _ => false
@@ -270,10 +326,19 @@ else
                 profile.StreakFreezeDays += days;
             }
 
+            if (item.UnlockData.ContainsKey("skipTokens") && int.TryParse(item.UnlockData["skipTokens"], out var skips))
+                profile.SkipTokens += skips;
+            if (item.UnlockData.ContainsKey("fiftyFifty") && int.TryParse(item.UnlockData["fiftyFifty"], out var ffs))
+                profile.FiftyFiftyTokens += ffs;
+            if (item.UnlockData.ContainsKey("secondChance") && int.TryParse(item.UnlockData["secondChance"], out var scs))
+                profile.SecondChanceTokens += scs;
+            if (item.UnlockData.ContainsKey("phiMagnet") && int.TryParse(item.UnlockData["phiMagnet"], out var pms))
+                profile.PhiMagnetActive += pms;
+
             await Progress.SaveProfileAsync(profile);
             await JS.InvokeVoidAsync("showToast", $"Purchased {item.Name}!", "");
-            try { await JS.InvokeVoidAsync("Sounds.playPurchase"); } catch { }
-            try { await JS.InvokeVoidAsync("Confetti.launch", 30); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playPurchase");
+            await JS.TryInvokeVoidAsync("Confetti.launch", 30);
 
             if (item.Category != "powerup")
                 await ActivateItem(item);
@@ -292,6 +357,22 @@ else
                 var themeId = item.Id.Replace("theme-", "");
                 await ThemeService.ApplyThemeAsync(themeId);
                 break;
+            case "frame":
+                if (item.UnlockData.ContainsKey("frame"))
+                {
+                    profile.SelectedFrame = item.UnlockData["frame"];
+                    await Progress.SaveProfileAsync(profile);
+                    await JS.TryInvokeVoidAsync("applyFrame", profile.SelectedFrame);
+                }
+                break;
+            case "flame":
+                if (item.UnlockData.ContainsKey("flame"))
+                {
+                    profile.SelectedFlame = item.UnlockData["flame"];
+                    await Progress.SaveProfileAsync(profile);
+                    await JS.TryInvokeVoidAsync("applyFlame", profile.SelectedFlame);
+                }
+                break;
             case "avatar":
                 profile.SelectedAvatar = item.Id;
                 await Progress.SaveProfileAsync(profile);
@@ -304,7 +385,7 @@ else
                 }
                 break;
         }
-        try { await JS.InvokeVoidAsync("Sounds.playClick"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
         StateHasChanged();
     }
 

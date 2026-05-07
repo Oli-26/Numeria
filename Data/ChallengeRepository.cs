@@ -8,6 +8,7 @@ public class ChallengeRepository : IChallengeRepository
     private readonly HttpClient _http;
     private List<ProofChallenge>? _proofs;
     private List<MistakeChallenge>? _mistakes;
+    private readonly Dictionary<string, List<TopicChallenge>> _topicChallenges = new();
 
     public ChallengeRepository(HttpClient http)
     {
@@ -24,5 +25,21 @@ public class ChallengeRepository : IChallengeRepository
     {
         _mistakes ??= await _http.GetFromJsonAsync<List<MistakeChallenge>>("data/mistake-challenges.json") ?? new();
         return _mistakes;
+    }
+
+    public async Task<List<TopicChallenge>> GetTopicChallengesAsync(string topicId)
+    {
+        if (!_topicChallenges.ContainsKey(topicId))
+        {
+            try
+            {
+                _topicChallenges[topicId] = await _http.GetFromJsonAsync<List<TopicChallenge>>($"data/{topicId}/challenges.json") ?? new();
+            }
+            catch
+            {
+                _topicChallenges[topicId] = new();
+            }
+        }
+        return _topicChallenges[topicId];
     }
 }

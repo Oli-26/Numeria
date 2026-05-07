@@ -2,13 +2,46 @@
 @inject IContentRepository Content
 @inject IProgressService Progress
 @inject NavigationManager Nav
+@inject HttpClient Http
+@inject IJSRuntime JS
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
 </div>
 
-@if (lessons != null && topic != null)
+@if (topic != null && IsTopicLocked())
+{
+    <div class="topic-locked-card card">
+        <div class="topic-locked-icon"><Icon Name="lock" Size="40" /></div>
+        <h2>Locked</h2>
+        <p class="topic-locked-msg">
+            This is a <strong>Tier @topic.Tier</strong> topic. Complete the prerequisites below to unlock it.
+        </p>
+        <div class="topic-locked-prereqs">
+            @foreach (var p in MissingPrereqs())
+            {
+                var pTopic = allTopics?.FirstOrDefault(t => t.Id == p);
+                if (pTopic == null) continue;
+                <button class="card card-clickable prereq-card" @onclick='() => Nav.NavigateTo($"/topic/{p}")'>
+                    <Icon Name="@pTopic.Icon" Size="20" />
+                    <div class="prereq-info">
+                        <strong>@pTopic.Name</strong>
+                        <small>@(IsTopicCompleted(p) ? "✓ Done" : "Incomplete")</small>
+                    </div>
+                </button>
+            }
+            @{
+                var metPrereqs = AllPrereqs().Where(IsTopicCompleted).ToList();
+            }
+            @if (metPrereqs.Any())
+            {
+                <small class="prereq-met-note">@metPrereqs.Count of @AllPrereqs().Count prerequisites complete.</small>
+            }
+        </div>
+    </div>
+}
+else if (lessons != null && topic != null)
 {
     @if (HasWorkedExamples(TopicId))
     {
@@ -17,48 +50,85 @@
         </button>
     }
 
-    <div class="lessons-list stagger-in">
-        @foreach (var lesson in lessons)
+    @if (HasChallenges(TopicId))
+    {
+        <button class="btn btn-outline challenges-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/challenges")'>
+            <Icon Name="sword" Size="16" /> Challenges
+        </button>
+    }
+
+    <button class="btn btn-outline run-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/run")'>
+        <Icon Name="crown" Size="16" /> Topic Run
+        @if (profile?.RunSeals.Contains(TopicId) == true)
         {
-            var isCompleted = profile?.LessonsCompleted.Contains(lesson.Id) ?? false;
-            var isLocked = !CanAccessLesson(lesson);
-            <div class="card @(isLocked ? "locked" : "card-clickable") lesson-card"
-                 @onclick="() => OpenLesson(lesson, isLocked)">
-                <div class="lesson-header">
-                    <div class="lesson-number" style="background: @(isCompleted ? "var(--success)" : isLocked ? "var(--text-muted)" : topic.Color)">
-                        @if (isCompleted)
-                        {
-                            <span><Icon Name="check" Size="18" /></span>
-                        }
-                        else if (isLocked)
-                        {
-                            <span><Icon Name="lock" Size="18" /></span>
-                        }
-                        else
-                        {
-                            <span>@lesson.Order</span>
-                        }
-                    </div>
-                    <div class="lesson-info">
-                        <h3>@lesson.Title</h3>
-                        <p>@lesson.Description</p>
-                    </div>
-                    <div class="lesson-xp">
-                        <span class="xp-badge">+@lesson.XpReward XP</span>
-                    </div>
-                </div>
-                @if (!isLocked)
+            <span class="run-seal-pip" title="Run Seal earned">⊛</span>
+        }
+    </button>
+
+    @foreach (var stage in GroupLessonsByStage(lessons))
+    {
+        var stageDone = stage.Value.Count(l => profile?.LessonsCompleted.Contains(l.Id) ?? false);
+        <div class="lesson-stage-group">
+            <div class="lesson-stage-header">
+                <span class="lesson-stage-dot stage-@stage.Key.ToLower()"></span>
+                <h3>@stage.Key</h3>
+                <small>@stageDone / @stage.Value.Count</small>
+            </div>
+            <div class="lessons-list stagger-in">
+                @foreach (var lesson in stage.Value)
                 {
-                    var conceptsDone = lesson.Concepts.Count(c => profile?.ConceptsViewed.Contains(c.Id) ?? false);
-                    var total = lesson.Concepts.Count;
-                    var pct = total > 0 ? (double)conceptsDone / total * 100 : 0;
-                    <div class="progress-bar-container" style="margin-top: 8px">
-                        <div class="progress-bar-fill animate-in" style="width: @pct.ToString("F0")%; background: linear-gradient(90deg, @topic.Color, @topic.Color)"></div>
+                    var isCompleted = profile?.LessonsCompleted.Contains(lesson.Id) ?? false;
+                    var isStub = lesson.Concepts.Count == 0;
+                    var isLocked = isStub || !CanAccessLesson(lesson);
+                    <div class="card @(isLocked ? "locked" : "card-clickable") @(isStub ? "lesson-stub" : "") lesson-card"
+                         @onclick="() => OpenLesson(lesson, isLocked)">
+                        <div class="lesson-header">
+                            <div class="lesson-number" style="background: @(isCompleted ? "var(--success)" : isLocked ? "var(--text-muted)" : topic.Color)">
+                                @if (isCompleted)
+                                {
+                                    <span><Icon Name="check" Size="18" /></span>
+                                }
+                                else if (isLocked)
+                                {
+                                    <span><Icon Name="lock" Size="18" /></span>
+                                }
+                                else
+                                {
+                                    <span>@lesson.Order</span>
+                                }
+                            </div>
+                            <div class="lesson-info">
+                                <h3>@lesson.Title</h3>
+                                <p>@lesson.Description</p>
+                            </div>
+                            <div class="lesson-xp">
+                                @if (isStub)
+                                {
+                                    <span class="xp-badge stub-badge">Coming soon</span>
+                                }
+                                else
+                                {
+                                    <span class="xp-badge">+@lesson.XpReward XP</span>
+                                }
+                            </div>
+                        </div>
+                        @if (!isLocked)
+                        {
+                            var conceptsDone = lesson.Concepts.Count(c => profile?.ConceptsViewed.Contains(c.Id) ?? false);
+                            var total = lesson.Concepts.Count;
+                            var pct = total > 0 ? (double)conceptsDone / total * 100 : 0;
+                            <div class="lesson-progress-row">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill animate-in" style="width: @pct.ToString("F0")%; background: linear-gradient(90deg, @topic.Color, @topic.Color)"></div>
+                                </div>
+                                <small class="lesson-progress-pct">@pct.ToString("F0")%</small>
+                            </div>
+                        }
                     </div>
                 }
             </div>
-        }
-    </div>
+        </div>
+    }
 
     @if (profile != null)
     {
@@ -95,11 +165,47 @@
             </div>
             @if (isTopicDone)
             {
-                <span style="color: @(topic?.Color ?? "var(--primary)"); font-size: 1.2rem">→</span>
+                <span style="color: @(topic?.Color ?? "var(--primary)"); display: inline-flex; align-items: center;"><Icon Name="chevron-right" Size="18" /></span>
             }
             else
             {
                 <span style="color: var(--text-muted)"><Icon Name="lock" Size="18" /></span>
+            }
+        </div>
+    }
+
+    @if (topicResources != null && topicResources.Any())
+    {
+        <div class="resources-section">
+            <h3 class="resources-header">Further Reading</h3>
+            <p class="resources-subtitle">Books, papers, and lectures for deeper study</p>
+            @foreach (var typeGroup in topicResources.GroupBy(r => r.Type).OrderBy(g => ResourceTypeOrder(g.Key)))
+            {
+                <div class="resource-type-header">
+                    <Icon Name="@ResourceTypeIcon(typeGroup.Key)" Size="14" />
+                    <span>@ResourceTypeLabel(typeGroup.Key)</span>
+                </div>
+                @foreach (var r in typeGroup)
+                {
+                    <div class="card resource-card @(string.IsNullOrEmpty(r.Url) ? "" : "card-clickable")"
+                         @onclick="() => OpenResource(r.Url)">
+                        <div class="resource-title-row">
+                            <strong>@r.Title</strong>
+                            @if (!string.IsNullOrEmpty(r.Url))
+                            {
+                                <Icon Name="search" Size="14" />
+                            }
+                        </div>
+                        <div class="resource-meta">
+                            <span class="resource-authors">@r.Authors</span>
+                            @if (r.Year.HasValue) { <span class="resource-year">· @r.Year</span> }
+                        </div>
+                        @if (!string.IsNullOrEmpty(r.Note))
+                        {
+                            <small class="resource-note">@r.Note</small>
+                        }
+                    </div>
+                }
             }
         </div>
     }
@@ -122,6 +228,17 @@ else
     private Topic? topic;
     private List<Lesson>? lessons;
     private UserProfile? profile;
+    private List<Topic>? allTopics;
+    private TopicGraph? graph;
+    private List<Resource>? topicResources;
+
+    private class TopicGraph
+    {
+        public List<GraphNode> Nodes { get; set; } = new();
+        public List<GraphEdge> Edges { get; set; } = new();
+    }
+    private class GraphNode { public string Id {get;set;}=""; public string Name {get;set;}=""; public string Domain {get;set;}=""; }
+    private class GraphEdge { public string From {get;set;}=""; public string To {get;set;}=""; public string Type {get;set;}=""; public double Strength {get;set;} }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -130,11 +247,102 @@ else
             topic = await Content.GetTopicAsync(TopicId);
             lessons = await Content.GetLessonsAsync(TopicId);
             profile = await Progress.GetProfileAsync();
+            try
+            {
+                allTopics = await Http.GetFromJsonAsync<List<Topic>>("data/topics.json");
+                var rawGraph = await Http.GetFromJsonAsync<System.Text.Json.JsonElement>("data/topic-graph.json");
+                graph = new TopicGraph();
+                foreach (var n in rawGraph.GetProperty("nodes").EnumerateArray())
+                {
+                    graph.Nodes.Add(new GraphNode {
+                        Id = n.GetProperty("id").GetString() ?? "",
+                        Name = n.TryGetProperty("name", out var nn) ? (nn.GetString() ?? "") : "",
+                        Domain = n.TryGetProperty("domain", out var nd) ? (nd.GetString() ?? "") : ""
+                    });
+                }
+                foreach (var e in rawGraph.GetProperty("edges").EnumerateArray())
+                {
+                    graph.Edges.Add(new GraphEdge {
+                        From = e.GetProperty("from").GetString() ?? "",
+                        To = e.GetProperty("to").GetString() ?? "",
+                        Type = e.TryGetProperty("type", out var et) ? (et.GetString() ?? "prereq") : "prereq",
+                        Strength = e.TryGetProperty("strength", out var es) ? es.GetDouble() : 0.0
+                    });
+                }
+            }
+            catch (Exception ex) { await JS.LogErrorAsync("TopicPage.graph", ex); }
+            try
+            {
+                var allResources = await Http.GetFromJsonAsync<List<Resource>>("data/topic-resources.json") ?? new();
+                topicResources = allResources.Where(r => r.TopicIds.Contains(TopicId)).ToList();
+            }
+            catch (Exception ex) { topicResources = new(); await JS.LogErrorAsync("TopicPage.resources", ex); }
             StateHasChanged();
         }
     }
 
+    private void OpenResource(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return;
+        _ = JS.TryInvokeVoidAsync("open", url, "_blank");
+    }
+    private string ResourceTypeLabel(string t) => t switch
+    {
+        "textbook" => "Textbooks",
+        "book" => "Books",
+        "paper" => "Papers",
+        "lecture-notes" => "Lecture Notes",
+        "video" => "Videos & Lectures",
+        "course" => "Courses",
+        "article" => "Articles",
+        _ => "Other"
+    };
+    private string ResourceTypeIcon(string t) => t switch
+    {
+        "textbook" => "book",
+        "book" => "book",
+        "paper" => "scroll",
+        "lecture-notes" => "scroll",
+        "video" => "play",
+        "course" => "user-grad",
+        "article" => "scroll",
+        _ => "book"
+    };
+    private int ResourceTypeOrder(string t) => t switch
+    {
+        "textbook" => 1,
+        "book" => 2,
+        "paper" => 3,
+        "lecture-notes" => 4,
+        "course" => 5,
+        "video" => 6,
+        "article" => 7,
+        _ => 99
+    };
+
+    private List<string> AllPrereqs()
+    {
+        if (graph == null) return new();
+        return graph.Edges
+            .Where(e => e.To == TopicId && e.Type == "prereq")
+            .Select(e => e.From)
+            .ToList();
+    }
+    private bool IsTopicCompleted(string id) => profile?.TopicsCompleted.Contains(id) == true;
+    private List<string> MissingPrereqs() => AllPrereqs().Where(p => !IsTopicCompleted(p)).ToList();
+    private bool IsTopicLocked()
+    {
+        if (topic == null) return false;
+        if (topic.Tier <= 1) return false;
+        return MissingPrereqs().Any();
+    }
+
     private static bool HasWorkedExamples(string topicId) => topicId is "calculus" or "linear-algebra" or "probability" or "number-theory";
+
+    private static bool HasChallenges(string topicId) => topicId is
+        "calculus" or "linear-algebra" or "number-theory" or "probability"
+        or "combinatorics" or "complex-analysis" or "differential-equations"
+        or "group-theory" or "graph-theory";
 
     private bool CanAccessLesson(Lesson lesson)
     {
@@ -155,6 +363,30 @@ else
         if (unlocked) Nav.NavigateTo($"/mastery/{TopicId}");
     }
 
+    private static List<KeyValuePair<string, List<Lesson>>> GroupLessonsByStage(List<Lesson> lessons)
+    {
+        var ordered = lessons.OrderBy(l => l.Order).ToList();
+        var n = ordered.Count;
+        var result = new List<KeyValuePair<string, List<Lesson>>>();
+        if (n == 0) return result;
+
+        if (n <= 3)
+        {
+            result.Add(new("Foundations", ordered));
+            return result;
+        }
+
+        var third = (int)Math.Ceiling(n / 3.0);
+        var foundations = ordered.Take(third).ToList();
+        var core = ordered.Skip(third).Take(third).ToList();
+        var advanced = ordered.Skip(third * 2).ToList();
+
+        if (foundations.Count > 0) result.Add(new("Foundations", foundations));
+        if (core.Count > 0) result.Add(new("Core", core));
+        if (advanced.Count > 0) result.Add(new("Advanced", advanced));
+        return result;
+    }
+
     private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
     private string GetMasteryIcon(int tier) => tier switch { 0 => "sword", 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
     private string GetMasteryColor(int tier) => tier switch { 1 => "#CD7F32", 2 => "#C0C0C0", 3 => "#FFD700", 4 => "#FF6B35", _ => "var(--bg-surface)" };
@@ -163,6 +395,14 @@ else
 
 <style>
     .worked-examples-btn { width: 100%; margin-bottom: 12px; border-style: dashed; }
+    .challenges-btn { width: 100%; margin-bottom: 12px; border-style: dashed; }
+    .run-btn {
+        width: 100%; margin-bottom: 12px;
+        border-style: dashed;
+        background: linear-gradient(135deg, rgba(255,215,0,0.06), rgba(230,57,70,0.06));
+        border-color: rgba(255,165,0,0.4);
+    }
+    .run-seal-pip { margin-left: 6px; color: #FFD700; font-weight: 700; }
 
     .lessons-list {
         display: flex;
@@ -170,14 +410,71 @@ else
         gap: 12px;
     }
 
+    .lesson-stage-group {
+        margin-bottom: 20px;
+    }
+
+    .lesson-stage-group:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .lesson-stage-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 10px;
+        padding: 0 2px;
+    }
+
+    .lesson-stage-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .lesson-stage-header small {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        margin-left: auto;
+    }
+
+    .lesson-stage-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: var(--text-muted);
+    }
+
+    .lesson-stage-dot.stage-foundations { background: #2ECC71; }
+    .lesson-stage-dot.stage-core { background: #F1C40F; }
+    .lesson-stage-dot.stage-advanced { background: #E67E22; }
+
     .lesson-card.locked {
-        opacity: 0.6;
+        opacity: 0.78;
+        filter: saturate(0.4);
         cursor: not-allowed;
     }
 
     .lesson-card.locked:hover {
         transform: none;
         box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .lesson-card.lesson-stub {
+        opacity: 0.75;
+        filter: saturate(0.3);
+        background: color-mix(in srgb, var(--bg-card) 92%, var(--text-muted) 8%);
+        border-style: dashed;
+    }
+
+    .stub-badge {
+        background: var(--text-muted) !important;
+        color: var(--bg-card) !important;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
     .lesson-header {
@@ -218,6 +515,22 @@ else
         flex-shrink: 0;
     }
 
+    .lesson-progress-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .lesson-progress-row .progress-bar-container { flex: 1; }
+    .lesson-progress-pct {
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        min-width: 32px;
+        text-align: right;
+    }
+
     /* Mastery banner */
     .mastery-banner {
         display: flex; align-items: center; justify-content: space-between;
@@ -228,7 +541,8 @@ else
     .mastery-banner:hover { transform: none; }
 
     .mastery-locked-banner {
-        opacity: 0.55; background: var(--bg-card);
+        opacity: 0.78; filter: saturate(0.4);
+        background: var(--bg-card);
         border-color: var(--border);
     }
 
@@ -240,5 +554,74 @@ else
         width: 40px; height: 40px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         font-size: 1.2rem; flex-shrink: 0;
+    }
+
+    /* Topic locked (tier prereq) */
+    .topic-locked-card {
+        text-align: center; padding: 32px 20px; margin-top: 24px;
+    }
+    .topic-locked-icon {
+        color: var(--text-muted); margin-bottom: 12px;
+    }
+    .topic-locked-card h2 {
+        margin: 0 0 8px 0; color: var(--text-primary);
+    }
+    .topic-locked-msg {
+        color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;
+    }
+    .topic-locked-prereqs {
+        display: flex; flex-direction: column; gap: 8px;
+    }
+    .prereq-card {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 14px; text-align: left;
+        background: var(--bg-card); border: 1px solid var(--border);
+        cursor: pointer;
+    }
+    .prereq-info { flex: 1; display: flex; flex-direction: column; }
+    .prereq-info strong { font-size: 0.92rem; }
+    .prereq-info small { color: var(--text-muted); font-size: 0.78rem; }
+    .prereq-met-note {
+        display: block; text-align: center; color: var(--text-muted);
+        font-size: 0.78rem; margin-top: 8px;
+    }
+
+    /* Further Reading */
+    .resources-section { margin-top: 24px; }
+    .resources-header {
+        font-size: 1rem; font-weight: 800; color: var(--text-primary);
+        margin: 0 0 4px 0; padding-top: 8px;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+    }
+    .resources-subtitle {
+        color: var(--text-muted); font-size: 0.82rem;
+        margin: 0 0 12px 0;
+    }
+    .resource-type-header {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 0.72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        color: var(--primary);
+        margin: 12px 0 4px 0;
+    }
+    .resource-card {
+        padding: 10px 14px; margin-bottom: 6px;
+    }
+    .resource-card:hover { transform: none; }
+    .resource-title-row {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 8px; margin-bottom: 2px;
+    }
+    .resource-title-row strong { font-size: 0.92rem; }
+    .resource-meta {
+        color: var(--text-muted); font-size: 0.78rem;
+        margin-bottom: 4px;
+    }
+    .resource-authors { font-style: italic; }
+    .resource-year { margin-left: 4px; }
+    .resource-note {
+        display: block; color: var(--text-secondary, var(--text-primary));
+        font-size: 0.8rem; line-height: 1.4;
     }
 </style>

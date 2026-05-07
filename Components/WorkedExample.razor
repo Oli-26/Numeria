@@ -127,13 +127,13 @@
     {
         if (ProblemMath != null)
         {
-            try { await JS.InvokeVoidAsync("renderMath", "we-problem-math", ProblemMath, true); } catch { }
+            await JS.TryInvokeVoidAsync("renderMath", "we-problem-math", ProblemMath, true);
         }
         for (int i = 0; i <= Math.Min(currentStep, Steps.Count - 1); i++)
         {
             if (Steps[i].Math != null && (i < currentStep || completed))
             {
-                try { await JS.InvokeVoidAsync("renderMath", $"we-step-math-{i}", Steps[i].Math, true); } catch { }
+                await JS.TryInvokeVoidAsync("renderMath", $"we-step-math-{i}", Steps[i].Math, true);
             }
         }
     }

@@ -13,14 +13,10 @@
         <div class="graph-controls">
             <select class="domain-filter" @onchange="OnDomainChanged" value="@selectedDomain">
                 <option value="all">All Domains</option>
-                <option value="math">Mathematics</option>
-                <option value="physics">Physics</option>
-                <option value="chemistry">Chemistry</option>
-                <option value="biology">Biology</option>
-                <option value="geology">Geology</option>
-                <option value="history">History</option>
-                <option value="linguistics">Linguistics</option>
-                <option value="philosophy">Philosophy</option>
+                @foreach (var d in domains)
+                {
+                    <option value="@d.Id">@d.Name</option>
+                }
             </select>
         </div>
     </div>
@@ -57,11 +53,11 @@
     </div>
 
     <div class="graph-legend">
-        @foreach (var domain in domainColors.Keys)
+        @foreach (var d in domains)
         {
             <div class="legend-item">
-                <span class="legend-dot" style="background: @domainColors[domain]"></span>
-                <span class="legend-label">@domain</span>
+                <span class="legend-dot" style="background: @DomainHue(d.Id)"></span>
+                <span class="legend-label">@d.Name</span>
             </div>
         }
         <div class="legend-item legend-key">
@@ -85,29 +81,39 @@
     private string? selectedNodeId;
 
     private List<Topic>? allTopics;
+    private List<Domain> domains = new();
     private HashSet<string> completedTopics = new();
 
     private DotNetObjectReference<KnowledgeGraphPage>? selfRef;
 
-    // Domain → representative colour for legend
-    private static readonly Dictionary<string, string> domainColors = new()
+    // Domain → representative colour, matching DomainsPage
+    private static string DomainHue(string id) => id switch
     {
-        { "math",        "#4A90D9" },
-        { "physics",     "#2196F3" },
-        { "chemistry",   "#FFA726" },
-        { "biology",     "#66BB6A" },
-        { "geology",     "#8D6E63" },
-        { "history",     "#BCAAA4" },
-        { "linguistics", "#00BCD4" },
-        { "philosophy",  "#5C6BC0" }
+        "math" => "#5B6ABF",
+        "philosophy" => "#8E63B5",
+        "physics" => "#4A90D9",
+        "biology" => "#2ECC71",
+        "chemistry" => "#E91E63",
+        "geology" => "#8D6E63",
+        "materials" => "#607D8B",
+        "history" => "#C4813A",
+        "linguistics" => "#FF7043",
+        "cs" => "#26A69A",
+        "misc" => "#5E35B1",
+        "economics" => "#16A085",
+        "politics" => "#3949AB",
+        "media" => "#0277BD",
+        "literature" => "#8E2C40",
+        _ => "#5B6ABF"
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        // Collect all topics
+        // Collect all topics and domains
         allTopics = await Content.GetTopicsAsync();
+        domains = await Content.GetDomainsAsync();
 
         // Completed = topics whose progress >= 100
         foreach (var t in allTopics)

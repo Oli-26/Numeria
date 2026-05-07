@@ -1,5 +1,4 @@
 @page "/formulas"
-@inject IProgressService Progress
 @inject IContentRepository Content
 @inject IJSRuntime JS
 @inject NavigationManager Nav
@@ -10,62 +9,116 @@
     <h1>Formula Codex</h1>
 </div>
 
-@if (formulas != null && profile != null)
+@if (formulas != null && topics != null && domains != null)
 {
     <div class="codex-search">
-        <input type="text" class="codex-search-input" placeholder="Search formulas..."
+        <input type="text" class="codex-search-input" placeholder="Search name, formula, topic, or description…"
                @bind="searchQuery" @bind:event="oninput" />
     </div>
 
     <div class="codex-stats">
-        <small>@unlockedCount / @formulas.Count formulas unlocked</small>
-        <div class="progress-bar-container" style="height: 6px; flex: 1; max-width: 120px">
-            <div class="progress-bar-fill animate-in" style="width: @(formulas.Count > 0 ? (unlockedCount * 100 / formulas.Count) : 0)%"></div>
-        </div>
+        <small>@FilteredFormulas().Count() of @formulas.Count formulas · @CoveredTopics() topics</small>
     </div>
 
-    <!-- Topic filter -->
+    <!-- Domain selector -->
     <div class="codex-filters">
-        <button class="codex-filter @(activeFilter == null ? "active" : "")" @onclick="() => activeFilter = null">All</button>
-        @foreach (var cat in categories)
+        <button class="codex-filter @(activeDomain == null ? "active" : "")" @onclick="() => SelectDomain(null)">All Domains</button>
+        @foreach (var dom in domains.OrderBy(d => d.Name))
         {
-            <button class="codex-filter @(activeFilter == cat ? "active" : "")" @onclick="() => activeFilter = cat">@cat</button>
+            var count = formulas.Count(f => f.Domain == dom.Id);
+            if (count == 0) continue;
+            <button class="codex-filter @(activeDomain == dom.Id ? "active" : "")" @onclick="() => SelectDomain(dom.Id)">
+                @dom.Name <span class="chip-count">@count</span>
+            </button>
         }
     </div>
 
+    @* Topic selector — visible when a domain is selected *@
+    @if (activeDomain != null)
+    {
+        var topicsInDomain = formulas
+            .Where(f => f.Domain == activeDomain)
+            .Select(f => f.TopicId)
+            .Distinct()
+            .Select(tid => topics.FirstOrDefault(t => t.Id == tid))
+            .Where(t => t != null)
+            .OrderBy(t => t!.Name)
+            .ToList();
+        <div class="codex-filters codex-filters-sub">
+            <button class="codex-filter codex-filter-sub @(activeTopic == null ? "active" : "")" @onclick="() => SelectTopic(null)">All Topics</button>
+            @foreach (var t in topicsInDomain)
+            {
+                var c = formulas.Count(f => f.TopicId == t!.Id);
+                <button class="codex-filter codex-filter-sub @(activeTopic == t!.Id ? "active" : "")" @onclick="() => SelectTopic(t.Id)">
+                    @t.Name <span class="chip-count">@c</span>
+                </button>
+            }
+        </div>
+    }
+
     <div class="codex-list">
-        @foreach (var group in FilteredFormulas().GroupBy(f => f.Category).OrderBy(g => g.Key))
+        @{
+            var filtered = FilteredFormulas().ToList();
+            // Hierarchy: when no domain chosen, group by Domain → Topic → Category
+            // When domain chosen but no topic, group by Topic → Category
+            // When topic chosen, group by Category
+        }
+
+        @if (activeDomain == null)
         {
-            <div class="codex-category-header">@group.Key</div>
-            <div class="codex-group stagger-in">
-                @foreach (var formula in group)
+            @foreach (var domGroup in filtered.GroupBy(f => f.Domain).OrderBy(g => DomainName(g.Key)))
+            {
+                <h2 class="codex-domain-header">@DomainName(domGroup.Key) <span class="muted-count">· @domGroup.Count()</span></h2>
+                @foreach (var topicGroup in domGroup.GroupBy(f => f.TopicId).OrderBy(g => TopicName(g.Key)))
                 {
-                    var isUnlocked = IsUnlocked(formula);
-                    <div class="card codex-card @(isUnlocked ? "" : "codex-locked")" @key="formula.Id">
-                        <div class="codex-card-header">
-                            <strong>@formula.Name</strong>
-                            @if (!isUnlocked)
+                    <div class="codex-topic-header">@TopicName(topicGroup.Key)</div>
+                    @foreach (var catGroup in topicGroup.GroupBy(f => f.Category).OrderBy(g => g.Key))
+                    {
+                        <div class="codex-category-header">@catGroup.Key</div>
+                        <div class="codex-group">
+                            @foreach (var f in catGroup)
                             {
-                                <Icon Name="lock" Size="14" />
+                                @RenderCard(f)
                             }
                         </div>
-                        @if (isUnlocked)
+                    }
+                }
+            }
+        }
+        else if (activeTopic == null)
+        {
+            @foreach (var topicGroup in filtered.GroupBy(f => f.TopicId).OrderBy(g => TopicName(g.Key)))
+            {
+                <h2 class="codex-topic-header-large">@TopicName(topicGroup.Key) <span class="muted-count">· @topicGroup.Count()</span></h2>
+                @foreach (var catGroup in topicGroup.GroupBy(f => f.Category).OrderBy(g => g.Key))
+                {
+                    <div class="codex-category-header">@catGroup.Key</div>
+                    <div class="codex-group">
+                        @foreach (var f in catGroup)
                         {
-                            <div class="math-display codex-math" id="codex-@formula.Id"></div>
-                            <small class="codex-desc">@formula.Description</small>
-                        }
-                        else
-                        {
-                            <div class="codex-hidden">Complete more lessons to unlock</div>
+                            @RenderCard(f)
                         }
                     </div>
                 }
-            </div>
+            }
+        }
+        else
+        {
+            @foreach (var catGroup in filtered.GroupBy(f => f.Category).OrderBy(g => g.Key))
+            {
+                <div class="codex-category-header">@catGroup.Key</div>
+                <div class="codex-group">
+                    @foreach (var f in catGroup)
+                    {
+                        @RenderCard(f)
+                    }
+                </div>
+            }
         }
 
-        @if (!FilteredFormulas().Any())
+        @if (!filtered.Any())
         {
-            <div class="codex-empty">No formulas match your search.</div>
+            <div class="codex-empty">No formulas match your filters.</div>
         }
     </div>
 }
@@ -82,11 +135,11 @@ else
 
 @code {
     private List<Formula>? formulas;
-    private UserProfile? profile;
+    private List<Topic>? topics;
+    private List<Domain>? domains;
     private string searchQuery = "";
-    private string? activeFilter;
-    private List<string> categories = new();
-    private int unlockedCount;
+    private string? activeDomain;
+    private string? activeTopic;
 
     private class Formula
     {
@@ -97,36 +150,46 @@ else
         public string Category { get; set; } = "";
         public string Expression { get; set; } = "";
         public string Description { get; set; } = "";
+        public string Domain { get; set; } = "";
     }
+
+    private class Topic { public string Id {get;set;}=""; public string Name {get;set;}=""; public string Domain {get;set;}=""; }
+    private class Domain { public string Id {get;set;}=""; public string Name {get;set;}=""; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             formulas = await Http.GetFromJsonAsync<List<Formula>>("data/formula-codex.json") ?? new();
-            profile = await Progress.GetProfileAsync();
-            categories = formulas.Select(f => f.Category).Distinct().OrderBy(c => c).ToList();
-            unlockedCount = formulas.Count(f => IsUnlocked(f));
+            topics = await Http.GetFromJsonAsync<List<Topic>>("data/topics.json") ?? new();
+            domains = await Http.GetFromJsonAsync<List<Domain>>("data/domains.json") ?? new();
+            // Backfill missing Domain field on formulas using topic lookup
+            var topicDom = topics.ToDictionary(t => t.Id, t => t.Domain);
+            foreach (var f in formulas)
+            {
+                if (string.IsNullOrEmpty(f.Domain) && topicDom.TryGetValue(f.TopicId, out var d))
+                    f.Domain = d;
+            }
             StateHasChanged();
         }
 
-        // Render KaTeX for visible unlocked formulas
-        if (formulas != null && profile != null)
+        if (formulas != null)
         {
-            foreach (var f in FilteredFormulas().Where(IsUnlocked))
+            foreach (var f in FilteredFormulas())
             {
-                try { await JS.InvokeVoidAsync("renderMath", $"codex-{f.Id}", f.Expression, true); } catch { }
+                await JS.TryInvokeVoidAsync("renderMath", $"codex-{f.Id}", f.Expression, true);
             }
         }
     }
 
-    private bool IsUnlocked(Formula f)
+    private void SelectDomain(string? d)
     {
-        if (profile == null) return false;
-        // Dev mode unlocks all
-        if (profile.ShopPurchases.Contains("__dev_mode__")) return true;
-        return profile.LessonsCompleted.Contains(f.LessonId)
-            || profile.TopicsCompleted.Contains(f.TopicId);
+        activeDomain = d;
+        activeTopic = null;
+    }
+    private void SelectTopic(string? t)
+    {
+        activeTopic = t;
     }
 
     private IEnumerable<Formula> FilteredFormulas()
@@ -134,19 +197,38 @@ else
         if (formulas == null) return Enumerable.Empty<Formula>();
         var q = formulas.AsEnumerable();
 
-        if (activeFilter != null)
-            q = q.Where(f => f.Category == activeFilter);
+        if (activeDomain != null)
+            q = q.Where(f => f.Domain == activeDomain);
+
+        if (activeTopic != null)
+            q = q.Where(f => f.TopicId == activeTopic);
 
         if (!string.IsNullOrWhiteSpace(searchQuery))
         {
-            var search = searchQuery.Trim().ToLower();
-            q = q.Where(f => f.Name.ToLower().Contains(search)
-                || f.Description.ToLower().Contains(search)
-                || f.Category.ToLower().Contains(search));
+            var s = searchQuery.Trim().ToLower();
+            q = q.Where(f =>
+                f.Name.ToLower().Contains(s)
+                || f.Description.ToLower().Contains(s)
+                || f.Category.ToLower().Contains(s)
+                || f.Expression.ToLower().Contains(s)
+                || TopicName(f.TopicId).ToLower().Contains(s)
+                || DomainName(f.Domain).ToLower().Contains(s));
         }
 
         return q;
     }
+
+    private int CoveredTopics() => FilteredFormulas().Select(f => f.TopicId).Distinct().Count();
+    private string TopicName(string id) => topics?.FirstOrDefault(t => t.Id == id)?.Name ?? id;
+    private string DomainName(string id) => domains?.FirstOrDefault(d => d.Id == id)?.Name ?? id;
+
+    private RenderFragment RenderCard(Formula f) => @<text>
+        <div class="card codex-card" @key="@f.Id">
+            <div class="codex-card-header"><strong>@f.Name</strong></div>
+            <div class="math-display codex-math" id="codex-@f.Id"></div>
+            <small class="codex-desc">@f.Description</small>
+        </div>
+    </text>;
 }
 
 <style>
@@ -165,32 +247,58 @@ else
     }
     .codex-stats small { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
 
-    /* Filters */
+    /* Filter rows */
     .codex-filters {
-        display: flex; gap: 6px; margin-bottom: 16px;
+        display: flex; gap: 6px; margin-bottom: 8px;
         overflow-x: auto; padding-bottom: 4px;
         -webkit-overflow-scrolling: touch;
     }
+    .codex-filters-sub { margin-bottom: 16px; }
     .codex-filters::-webkit-scrollbar { display: none; }
 
     .codex-filter {
         padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px;
-        background: var(--bg-card); color: var(--text-muted); font-size: 0.75rem;
+        background: var(--bg-card); color: var(--text-muted); font-size: 0.78rem;
         font-weight: 600; cursor: pointer; white-space: nowrap;
         transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
+        display: inline-flex; align-items: center; gap: 6px;
     }
+    .codex-filter-sub { font-size: 0.72rem; padding: 5px 10px; }
     .codex-filter:active { transform: scale(0.95); }
     .codex-filter.active {
         background: var(--primary); color: white; border-color: var(--primary);
     }
+    .chip-count {
+        font-size: 0.7em; opacity: 0.7;
+        background: rgba(255,255,255,0.15);
+        padding: 1px 6px; border-radius: 10px;
+    }
+    .codex-filter:not(.active) .chip-count {
+        background: var(--bg-surface); color: var(--text-muted);
+    }
 
-    /* List */
+    /* Hierarchy headers */
     .codex-list { display: flex; flex-direction: column; gap: 4px; }
 
+    .codex-domain-header {
+        font-size: 1.1rem; font-weight: 800; color: var(--text-primary);
+        padding: 18px 0 6px; margin: 0; border-bottom: 2px solid var(--primary);
+        text-transform: none; letter-spacing: 0;
+    }
+    .codex-topic-header {
+        font-size: 0.92rem; font-weight: 700; color: var(--text-primary);
+        padding: 12px 0 4px; margin: 0;
+    }
+    .codex-topic-header-large {
+        font-size: 1.05rem; font-weight: 800; color: var(--text-primary);
+        padding: 16px 0 6px; margin: 0; border-bottom: 1px solid var(--border);
+    }
+    .muted-count { font-size: 0.7em; font-weight: 500; color: var(--text-muted); }
+
     .codex-category-header {
-        font-size: 0.8rem; font-weight: 700; color: var(--primary);
+        font-size: 0.72rem; font-weight: 700; color: var(--primary);
         text-transform: uppercase; letter-spacing: 0.5px;
-        padding: 12px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+        padding: 8px 0 4px; margin: 4px 0 2px 0;
     }
 
     .codex-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
@@ -211,12 +319,6 @@ else
 
     .codex-desc {
         color: var(--text-muted); font-size: 0.8rem;
-    }
-
-    .codex-locked { opacity: 0.45; }
-    .codex-hidden {
-        font-size: 0.8rem; color: var(--text-muted); font-style: italic;
-        padding: 8px 0;
     }
 
     .codex-empty {

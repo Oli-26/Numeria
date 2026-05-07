@@ -7,12 +7,12 @@
 {
     <div class="page-header">
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Hall of Fame</h1>
+        <h1>Hall of Fame: @DomainLabel</h1>
     </div>
     <div class="card" style="text-align: center; padding: 40px 24px">
         <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
         <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase the "Hall of Fame" from the Shop to unlock.</p>
+        <p style="color: var(--text-secondary)">Purchase "Hall of Fame: @DomainLabel" from the Shop to unlock.</p>
         <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
     </div>
 }
@@ -21,7 +21,7 @@ else
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-    <h1>Hall of Fame</h1>
+    <h1>Hall of Fame: @DomainLabel</h1>
 </div>
 
 <div class="hof-tabs">
@@ -183,8 +183,28 @@ else
 
 @code {
     private bool unlocked;
+    private string currentDomain = "math";
     private string mode = "timeline";
     private string? eraFilter;
+
+    private string DomainLabel => currentDomain switch
+    {
+        "philosophy" => "Philosophers",
+        "physics" => "Physicists",
+        "biology" => "Biologists",
+        "chemistry" => "Chemists",
+        "geology" => "Geologists",
+        "history" => "Historians",
+        "linguistics" => "Linguists",
+        "materials" => "Materials Scientists",
+        "cs" => "Computer Scientists",
+        "misc" => "Esoterica",
+        "politics" => "Political Thinkers",
+        "economics" => "Economists",
+        "media" => "Media Pioneers",
+        "literature" => "Writers",
+        _ => "Mathematicians"
+    };
 
     // Timeline
     private Mathematician? selectedPerson;
@@ -203,7 +223,8 @@ else
         if (firstRender)
         {
             var profile = await Progress.GetProfileAsync();
-            unlocked = profile.ShopPurchases.Contains("unlock-halloffame");
+            currentDomain = string.IsNullOrEmpty(profile.CurrentDomain) ? "math" : profile.CurrentDomain;
+            unlocked = profile.ShopPurchases.Contains($"unlock-halloffame-{currentDomain}");
             StateHasChanged();
         }
     }
@@ -246,7 +267,28 @@ else
     private record Mathematician(string Name, string Years, string Origin, string Era, string Color, string Tagline,
         string Contribution, string WhyAmazing, string? Drama, int Genius, int Impact, int Breadth, int DramaStat);
 
-    private List<Mathematician> mathematicians = new()
+    private List<Mathematician> mathematicians => GetFiguresForDomain(currentDomain);
+
+    private static List<Mathematician> GetFiguresForDomain(string domain) => domain switch
+    {
+        "philosophy" => philosophyFigures,
+        "physics" => physicsFigures,
+        "biology" => biologyFigures,
+        "chemistry" => chemistryFigures,
+        "geology" => geologyFigures,
+        "history" => historyFigures,
+        "linguistics" => linguisticsFigures,
+        "materials" => materialsFigures,
+        "cs" => csFigures,
+        "misc" => miscFigures,
+        "politics" => politicsFigures,
+        "economics" => economicsFigures,
+        "media" => mediaFigures,
+        "literature" => literatureFigures,
+        _ => mathFigures
+    };
+
+    private static readonly List<Mathematician> mathFigures = new()
     {
         new("Euclid", "~300 BC", "Alexandria", "ancient", "#4A90D9",
             "The father of geometry",
@@ -355,6 +397,948 @@ else
             "Contributions to harmonic analysis, PDE, combinatorics, number theory, random matrices. Proved (with Green) that primes contain arbitrarily long arithmetic progressions. Over 350 papers across dozens of fields.",
             "He's arguably the greatest living mathematician, with an extraordinary ability to move between wildly different fields. His blog is a masterclass in mathematical exposition. Youngest ever IMO gold medalist (age 13), Fields Medal at 31.",
             "Scored 760 on the math SAT at age 8. His approach is collaborative and generous -- the opposite of the stereotypical solitary genius. He's described as making everyone around him smarter.", 10, 9, 10, 3)
+    };
+
+    private static readonly List<Mathematician> philosophyFigures = new()
+    {
+        new("Confucius", "551-479 BC", "China", "ancient", "#F39C12",
+            "Sage of social harmony",
+            "Codified an ethics built on <strong>ren</strong> (humaneness), <strong>li</strong> (ritual propriety), and the cultivation of the <em>junzi</em> (exemplary person). His Analects shaped East Asian civic life for 2,500 years.",
+            "He turned ethics into a practical training program rather than abstract theory. Imperial China selected its bureaucracy via exams on his texts for over a millennium -- the longest-running meritocratic system in history.",
+            "Spent 14 years wandering the warring states looking for a ruler willing to apply his ideas. None did. He died believing he had failed; his disciples preserved everything.", 8, 10, 7, 5),
+
+        new("Socrates", "~470-399 BC", "Athens", "ancient", "#4A90D9",
+            "The original gadfly",
+            "Invented the elenchus -- the method of relentless questioning that exposes contradictions in confident beliefs. Wrote nothing; everything we have is via Plato and Xenophon.",
+            "He shifted philosophy's attention from cosmology to ethics and the examined life. Every Socratic seminar, every cross-examination in court, descends from his style.",
+            "Sentenced to death by Athens for \"corrupting the youth\" and impiety. Could have escaped. Drank the hemlock instead, arguing that fleeing would betray the laws he had lived under.", 9, 10, 7, 10),
+
+        new("Plato", "~428-348 BC", "Athens", "ancient", "#E74C3C",
+            "Founder of the Academy",
+            "Wrote the dialogues that define the Western canon: <strong>Republic</strong>, <strong>Phaedo</strong>, <strong>Symposium</strong>, <strong>Timaeus</strong>. Theory of Forms; tripartite soul; the cave allegory.",
+            "Whitehead said all of Western philosophy is \"footnotes to Plato.\" His Academy ran for 900 years -- arguably the first university.",
+            "Tried to install philosopher-kings in Syracuse, twice. Both attempts ended badly; the second nearly cost him his life and his freedom (he was briefly sold as a slave).", 10, 10, 9, 7),
+
+        new("Aristotle", "384-322 BC", "Stagira", "ancient", "#2ECC71",
+            "The first systematic scientist",
+            "Founded formal logic (the syllogism), biology (cataloguing 500+ species), ethics (the Nicomachean Ethics), poetics, politics, metaphysics. Tutored Alexander the Great.",
+            "He was the operating system of Western and Islamic thought for 1,800 years. Aquinas just called him \"The Philosopher.\" His mistakes (geocentrism, four elements) had to be actively dismantled by the Scientific Revolution.",
+            "Fled Athens in 322 BC saying he wouldn't let the city \"sin twice against philosophy\" -- a reference to Socrates. Died in exile shortly after.", 10, 10, 10, 6),
+
+        new("Aquinas", "1225-1274", "Italy", "medieval", "#4A5FE0",
+            "Married Aristotle to faith",
+            "Wrote the <strong>Summa Theologica</strong>, a 3,500-page synthesis of Christian theology and Aristotelian philosophy. Five proofs for God's existence; natural law theory.",
+            "He turned theology into a rigorous philosophical discipline and made Aristotle safe for Christendom. Catholic moral and legal thinking still runs on his framework.",
+            "Late in life he had a mystical experience and stopped writing, calling all his work \"as straw\" compared to what he'd seen. Died months later with the Summa unfinished.", 9, 10, 9, 6),
+
+        new("Descartes", "1596-1650", "France", "enlightenment", "#9B59B6",
+            "I think, therefore I am",
+            "Rebooted philosophy with methodical doubt and the <strong>cogito</strong>. Invented analytic geometry (Cartesian coordinates). Mind-body dualism.",
+            "He restarted Western philosophy from scratch in the 1600s, demanding certainty before assenting to anything. Modern epistemology is one long argument with him.",
+            "Died in Sweden after Queen Christina forced him into 5am philosophy lessons in an unheated castle. He had always slept until noon. The cold killed him within months.", 9, 10, 8, 7),
+
+        new("Hume", "1711-1776", "Scotland", "enlightenment", "#1ABC9C",
+            "The skeptic who broke causation",
+            "Argued that we never observe causation -- only constant conjunction. Demolished the design argument for God. The is/ought distinction. The problem of induction.",
+            "He woke Kant from his \"dogmatic slumber\" and basically invented modern empiricism and naturalism. Most contemporary philosophy of mind, science, and ethics is post-Humean.",
+            "His <strong>Dialogues Concerning Natural Religion</strong> was so devastating to theism he refused to publish in his lifetime. It came out posthumously, after he reportedly died serene without religious consolation.", 10, 10, 8, 7),
+
+        new("Kant", "1724-1804", "Prussia", "enlightenment", "#7B68EE",
+            "Built the modern mind",
+            "Critique of Pure Reason: showed that space, time, and causation are structures the mind imposes on experience, not features we discover. The categorical imperative grounded ethics in pure reason.",
+            "He synthesized rationalism and empiricism into something neither side had imagined, and made the structure of cognition a central philosophical question. Almost every major philosopher since has had to react to him.",
+            "So regular in his daily walks that the people of Konigsberg set their watches by him. He missed it only twice -- once when reading Rousseau, once when the French Revolution news arrived.", 10, 10, 9, 4),
+
+        new("Nietzsche", "1844-1900", "Germany", "modern", "#E67E22",
+            "God is dead",
+            "Diagnosed the collapse of Christian moral certainty in modernity. Will to power; eternal recurrence; the Ubermensch; genealogy of morals.",
+            "He saw nihilism coming a century early and asked what we would create to replace inherited values. Existentialism, postmodernism, and 20th century literature all bear his fingerprints.",
+            "Collapsed in a Turin street in 1889 after embracing a horse being beaten. Spent his last 11 years insane, cared for by his sister, who later distorted his work to flatter the Nazis.", 10, 10, 8, 10),
+
+        new("Wittgenstein", "1889-1951", "Austria", "modern", "#607D8B",
+            "Language games",
+            "Wrote two philosophies. The <strong>Tractatus</strong> (1921) claimed language pictures the world; the <strong>Investigations</strong> (1953) demolished that view, replacing it with meaning-as-use.",
+            "He's the rare philosopher who put forward a complete system, then publicly refuted it himself. Both halves reshaped analytic philosophy.",
+            "Inherited one of Europe's largest fortunes; gave it all away. Worked as a village schoolteacher, hospital porter, and gardener between professorships. Three of his brothers killed themselves.", 10, 9, 8, 10),
+
+        new("de Beauvoir", "1908-1986", "France", "modern", "#E91E63",
+            "The Second Sex",
+            "Founded modern feminist philosophy with <strong>Le Deuxieme Sexe</strong> (1949): \"One is not born, but rather becomes, a woman.\" Major existentialist ethics in <strong>The Ethics of Ambiguity</strong>.",
+            "She turned existentialism's insights about freedom and bad faith into a structural critique of how women are constructed as Other. Foundational to second-wave feminism worldwide.",
+            "Lived in an unconventional 50-year partnership with Sartre while keeping her independence. The Vatican placed The Second Sex on the Index of Forbidden Books.", 9, 10, 8, 7)
+    };
+
+    private static readonly List<Mathematician> physicsFigures = new()
+    {
+        new("Galileo", "1564-1642", "Italy", "enlightenment", "#4A90D9",
+            "Father of observational astronomy",
+            "Pointed a telescope at the sky and found Jupiter's moons, Venus's phases, sunspots, lunar craters. Established that motion is relative and that all objects fall at the same rate.",
+            "He turned physics from Aristotelian philosophy into an experimental science. The mountains on the moon and moons of Jupiter ended the Aristotelian universe overnight.",
+            "Tried by the Inquisition in 1633 for defending heliocentrism. Forced to recant; spent his last 9 years under house arrest. Allegedly muttered \"and yet it moves.\"", 10, 10, 8, 9),
+
+        new("Newton", "1643-1727", "England", "enlightenment", "#4A5FE0",
+            "Decoded gravity and motion",
+            "Three laws of motion plus universal gravitation in the <strong>Principia</strong> (1687). Co-invented calculus. Founded modern optics with prism experiments.",
+            "He unified terrestrial and celestial mechanics into one framework. The Principia is arguably the most important scientific work ever written. Did most of it during plague lockdown at age 23.",
+            "Spent more pages on alchemy and biblical chronology than physics. As Master of the Mint, hunted counterfeiters and personally watched many hang.", 10, 10, 10, 8),
+
+        new("Faraday", "1791-1867", "England", "modern", "#E67E22",
+            "Self-taught field genius",
+            "Discovered electromagnetic induction (the principle behind every generator and transformer), diamagnetism, and the laws of electrolysis. Introduced the concept of fields.",
+            "He had almost no formal mathematical training yet his physical intuition gave us the <strong>field</strong> -- the central object of all modern physics. Maxwell just put his pictures into equations.",
+            "Refused a knighthood and the presidency of the Royal Society. \"I must remain plain Michael Faraday to the last.\"", 10, 10, 8, 5),
+
+        new("Maxwell", "1831-1879", "Scotland", "modern", "#2ECC71",
+            "Unified electricity and magnetism",
+            "Maxwell's equations (1865) compressed all electromagnetism into 4 equations and predicted that light is an electromagnetic wave. Statistical mechanics; first color photograph.",
+            "His unification was the template for everything that followed -- electroweak, GUT, string theory. Einstein kept Maxwell's portrait next to Newton's.",
+            "Died of stomach cancer at 48, the same age and disease as his mother. His final work on the kinetic theory of gases was finished in agony.", 10, 10, 9, 5),
+
+        new("Curie", "1867-1934", "Poland/France", "modern", "#E91E63",
+            "Discovered radioactivity",
+            "Isolated polonium and radium from tons of pitchblende by hand. First person to win two Nobel Prizes (Physics 1903, Chemistry 1911) and still the only one in two sciences.",
+            "She opened the door to nuclear physics. Her notebooks are still so radioactive that they're stored in lead-lined boxes and require protective gear to read.",
+            "Her husband Pierre was killed by a horse-drawn cart in 1906; she took over his Sorbonne chair, the first woman to hold one. Died of aplastic anemia from chronic radiation exposure.", 10, 10, 7, 8),
+
+        new("Einstein", "1879-1955", "Germany", "modern", "#7B68EE",
+            "Bent space and time",
+            "1905: special relativity, photoelectric effect, Brownian motion, E=mc<sup>2</sup> -- four revolutionary papers in one year. 1915: general relativity, treating gravity as the curvature of spacetime.",
+            "General relativity is widely considered the most beautiful physical theory ever -- and it works to absurd precision (GPS would drift kilometers a day without it).",
+            "Refused the presidency of Israel in 1952. His brain was removed without permission during autopsy and kept in jars for decades.", 10, 10, 9, 8),
+
+        new("Bohr", "1885-1962", "Denmark", "modern", "#1ABC9C",
+            "Quantized the atom",
+            "1913 atomic model with discrete electron orbits explained spectral lines. Founded the Copenhagen interpretation of quantum mechanics. Principle of complementarity.",
+            "He defined the philosophical worldview of quantum mechanics and trained an entire generation of physicists at his Copenhagen institute. The Bohr-Einstein debates are required reading.",
+            "Smuggled out of Nazi-occupied Denmark in 1943 in the bomb bay of a Mosquito; nearly suffocated when he didn't hear the order to put on his oxygen mask.", 10, 10, 8, 7),
+
+        new("Schrodinger", "1887-1961", "Austria", "modern", "#9B59B6",
+            "Wave equation, also a cat",
+            "Formulated wave mechanics in 1926; the Schrodinger equation governs how quantum systems evolve. His cat thought experiment dramatized the measurement problem.",
+            "Wave mechanics turned out equivalent to Heisenberg's matrix mechanics but was more intuitive and easier to compute with. <strong>What Is Life?</strong> (1944) inspired Watson and Crick to look for DNA.",
+            "Lived openly with two women simultaneously, both of whom bore his children. Oxford fired him over it in the 1930s; Dublin took him in.", 10, 9, 8, 9),
+
+        new("Heisenberg", "1901-1976", "Germany", "modern", "#E74C3C",
+            "Uncertainty principle",
+            "1925 matrix mechanics; 1927 uncertainty principle, showing position and momentum can't both be known precisely. Nobel at 31.",
+            "Uncertainty wasn't an experimental limit -- it was a fundamental property of nature. That insight remade physics' relationship with reality.",
+            "Headed the Nazi nuclear program. Whether he sandbagged it on purpose or just failed remains historically disputed -- the Farm Hall transcripts of his post-war detention are still parsed today.", 10, 10, 7, 9),
+
+        new("Dirac", "1902-1984", "England", "modern", "#607D8B",
+            "Predicted antimatter",
+            "Combined quantum mechanics and special relativity into the Dirac equation (1928). It implicitly predicted the positron, discovered 4 years later. Founded quantum field theory.",
+            "He pulled antimatter out of the math itself. His standard for theories was beauty: \"It is more important to have beauty in one's equations than to have them fit experiment.\"",
+            "Famously taciturn -- the unit of one word per hour was nicknamed \"the dirac\" by colleagues. Once during a lecture someone said \"I don't understand,\" and he stood silent. \"That was a statement, not a question.\"", 10, 10, 6, 8),
+
+        new("Feynman", "1918-1988", "USA", "modern", "#F39C12",
+            "Path integrals and bongo drums",
+            "Reformulated quantum mechanics with the path integral. Created Feynman diagrams, the standard graphical tool for particle physics. Worked on the Manhattan Project; explained the Challenger O-ring failure on live TV.",
+            "His path integral is now the dominant formulation of QFT. The Feynman Lectures remain the gold standard for teaching physics 60 years later.",
+            "At Los Alamos he cracked safes for fun and pranked security officers. Refused to learn to use a typewriter so he could get away with sending his wife letters Army censors couldn't fully transcribe.", 10, 10, 9, 9)
+    };
+
+    private static readonly List<Mathematician> biologyFigures = new()
+    {
+        new("Aristotle", "384-322 BC", "Stagira", "ancient", "#2ECC71",
+            "Catalogued the living world",
+            "First systematic biologist. Dissected and classified ~500 species, distinguishing vertebrates and invertebrates and getting cetacean mammalhood right 2,000 years before anyone else.",
+            "He invented zoology as a discipline. His <strong>History of Animals</strong> remained the standard reference into the Renaissance.",
+            "Some of his observations (octopus mating arms, cuttlefish behavior) were dismissed as fanciful for centuries before being confirmed by 19th-century marine biology.", 9, 10, 10, 5),
+
+        new("Linnaeus", "1707-1778", "Sweden", "enlightenment", "#4A90D9",
+            "Named all the species",
+            "Invented binomial nomenclature (Genus species) in <strong>Systema Naturae</strong>. Built the hierarchical taxonomy (kingdom -> phylum -> class -> order -> family -> genus -> species) we still use.",
+            "Every species name in biology -- <em>Homo sapiens</em>, <em>Escherichia coli</em>, <em>Tyrannosaurus rex</em> -- follows his system. He named ~7,700 plants and 4,400 animals himself.",
+            "Was so confident in his classifications that he placed himself in the system: <em>Homo sapiens</em>. He literally named our species.", 9, 10, 8, 4),
+
+        new("Darwin", "1809-1882", "England", "modern", "#E67E22",
+            "Discovered natural selection",
+            "On the <strong>Origin of Species</strong> (1859) explained the diversity of life through descent with modification under natural selection. <strong>The Descent of Man</strong> (1871) placed humans in the picture.",
+            "He gave biology a unifying mechanism, replacing 4,000 years of design-based thinking. Nothing in biology makes sense except in light of evolution.",
+            "Sat on his theory for 20 years, terrified of the religious uproar. Finally rushed to publish only when Wallace independently arrived at the same idea.", 10, 10, 9, 7),
+
+        new("Wallace", "1823-1913", "Wales", "modern", "#1ABC9C",
+            "Co-discovered evolution",
+            "Independently formulated natural selection while collecting specimens in the Malay Archipelago. Founded biogeography; the Wallace Line separates Asian and Australian fauna.",
+            "He had the same idea as Darwin from totally different evidence. Without his 1858 letter, Darwin might never have published. He spent his career graciously calling it \"Darwinism.\"",
+            "Lost his fortune in spiritualism, anti-vaccination campaigns, and bad investments. Darwin and others arranged a government pension to keep him out of poverty.", 9, 9, 9, 6),
+
+        new("Mendel", "1822-1884", "Moravia", "modern", "#9B59B6",
+            "Founded genetics with peas",
+            "Crossed 28,000 pea plants over 8 years and discovered the laws of inheritance: discrete factors (genes) segregating independently in predictable ratios.",
+            "He invented genetics single-handedly in a monastery garden. His work was ignored for 35 years until rediscovered in 1900 -- just in time to provide the missing mechanism for Darwinism.",
+            "Became abbot and was buried under reports and tax disputes. After he died, the next abbot burned most of his papers as worthless. We almost lost genetics twice.", 9, 10, 5, 8),
+
+        new("Pasteur", "1822-1895", "France", "modern", "#E74C3C",
+            "Killed the germ theory deniers",
+            "Proved germ theory of disease via the swan-neck flask experiment. Developed pasteurization, vaccines for anthrax and rabies, and the first attenuated vaccine.",
+            "He convinced the medical establishment that invisible microbes cause disease. Hand-washing, sterilization, antibiotics, vaccines -- all downstream from him.",
+            "Tested his rabies vaccine for the first time on a 9-year-old boy who had been bitten by a rabid dog. It worked. He had no medical license.", 10, 10, 8, 7),
+
+        new("McClintock", "1902-1992", "USA", "modern", "#E91E63",
+            "Discovered jumping genes",
+            "Showed in maize that genes can move within the genome (transposons), creating mosaic kernels. First chromosomal map of maize; demonstrated genetic recombination via crossing over.",
+            "Transposons are now known to make up huge fractions of most genomes (45% of the human one). Her work was so far ahead it was largely ignored for 30 years; she got the Nobel in 1983 -- alone.",
+            "Stopped publishing in the 1950s after the field dismissed her ideas. Worked quietly until the rest of biology caught up. She was 81 when she finally won the Nobel.", 10, 9, 6, 8),
+
+        new("Crick", "1916-2004", "England", "modern", "#607D8B",
+            "Co-cracked DNA's structure",
+            "With Watson, deduced the double helix structure of DNA in 1953 from Franklin's X-ray data. Articulated the central dogma (DNA -> RNA -> protein) and helped crack the genetic code.",
+            "DNA's structure made biology mechanistic in a way it had never been. The 1953 paper is one page long and still readable in 10 minutes.",
+            "Spent his later years trying to crack consciousness, working in a neuroscience lab into his 80s. Died correcting proofs on a paper about the claustrum.", 10, 10, 8, 6),
+
+        new("Franklin", "1920-1958", "England", "modern", "#F39C12",
+            "Photo 51 cracked DNA",
+            "X-ray crystallographer whose Photo 51 of B-form DNA showed it was helical. Independent foundational work on the structure of viruses (TMV, polio).",
+            "Watson and Crick saw Photo 51 without her permission and used its measurements to build their model. Her independent calculations had already nailed key parameters.",
+            "Died of ovarian cancer at 37, almost certainly from radiation exposure during her crystallography. Nobels are not awarded posthumously; she was never a candidate.", 10, 9, 7, 9),
+
+        new("Goodall", "1934-", "England", "modern", "#4A5FE0",
+            "Lived among the chimps",
+            "Showed that wild chimpanzees make and use tools, hunt cooperatively, and wage what looks like war -- shattering the criteria meant to separate humans from animals.",
+            "She rewrote our understanding of what it means to be a great ape. Her decision to name her subjects (David Greybeard, Flo) instead of numbering them was scandalous, then standard.",
+            "Had no biology degree when Louis Leakey sent her to Gombe in 1960. Cambridge let her skip undergrad and go straight for a PhD on the basis of her field data.", 9, 10, 7, 7)
+    };
+
+    private static readonly List<Mathematician> chemistryFigures = new()
+    {
+        new("Jabir ibn Hayyan", "~721-815", "Persia", "medieval", "#2ECC71",
+            "Father of chemistry",
+            "Developed systematic experimental procedures: distillation, crystallization, sublimation. Described nitric and sulfuric acids, aqua regia. Wrote on the corpuscular nature of matter.",
+            "He is where chemistry stops being pure mysticism and starts being lab work. The word <strong>alkali</strong> comes from his Arabic; so does much of the experimental vocabulary.",
+            "Some of \"his\" 3,000 attributed works were probably written by later authors using his name -- the Geberian corpus -- making him the most prolific possibly-fictional polymath in history.", 8, 10, 8, 7),
+
+        new("Lavoisier", "1743-1794", "France", "enlightenment", "#4A90D9",
+            "Founded modern chemistry",
+            "Killed phlogiston theory by showing combustion is reaction with oxygen. Stated the conservation of mass. Wrote the first modern chemistry textbook and the first list of elements.",
+            "He gave chemistry its modern foundation: quantitative measurement, the idea of an element, conservation laws. Everything after him is chemistry; everything before is alchemy.",
+            "Guillotined during the Reign of Terror for his role as a tax farmer. Lagrange said: \"It took only a moment to cause this head to fall and a hundred years will not suffice to produce its like.\"", 10, 10, 8, 9),
+
+        new("Dalton", "1766-1844", "England", "modern", "#4A5FE0",
+            "Revived the atom",
+            "Atomic theory (1803): elements are made of identical indivisible atoms; compounds combine in fixed integer ratios. Created the first table of atomic weights.",
+            "He turned the ancient atomic idea into a quantitative scientific theory that explained the laws of definite and multiple proportions. Modern stoichiometry starts here.",
+            "Color blind, which he discovered and described scientifically. He bequeathed his eyes for postmortem study; in 1995 they were found to lack the gene for green photoreceptors.", 9, 10, 7, 5),
+
+        new("Berzelius", "1779-1848", "Sweden", "modern", "#E74C3C",
+            "Gave us the chemical symbols",
+            "Introduced modern chemical notation (H, O, Fe, NaCl). Discovered cerium, selenium, silicon, thorium. Coined the terms <em>catalysis</em>, <em>isomer</em>, <em>polymer</em>, <em>protein</em>.",
+            "Every chemical equation you have ever written uses his system. He determined accurate atomic weights for 45 of the then-known 49 elements -- by hand.",
+            "Refused to accept the structural ideas of organic chemistry because they violated his electrochemical dualism. Slowed acceptance of the modern theory by a generation.", 9, 10, 7, 5),
+
+        new("Mendeleev", "1834-1907", "Russia", "modern", "#E67E22",
+            "Built the periodic table",
+            "Arranged the elements by atomic weight in his 1869 table. Left gaps for undiscovered elements and predicted their properties (eka-silicon = germanium, eka-aluminum = gallium) -- with eerie precision.",
+            "The table was so predictive that it converted skeptics overnight when his missing elements turned up matching his specs. Quantum mechanics later explained <em>why</em> his table works.",
+            "Got his medical certification in marine engineering, was a passionate balloonist, and once made a solo balloon ascent to observe a solar eclipse. Failed to get into the Russian Academy.", 10, 10, 8, 7),
+
+        new("Curie", "1867-1934", "Poland/France", "modern", "#E91E63",
+            "Discovered polonium and radium",
+            "Isolated two new elements from pitchblende and named radioactivity. Won the chemistry Nobel in 1911 for the isolation of pure radium.",
+            "She is the only person to win Nobels in two distinct sciences. Her radium was so pure she could see it glowing on her desk in the dark.",
+            "Refused to patent the radium isolation process so it would benefit science freely. Died nearly broke; her notebooks are still kept in lead boxes.", 10, 10, 7, 8),
+
+        new("Haber", "1868-1934", "Germany", "modern", "#607D8B",
+            "Fixed nitrogen, fed billions, gassed millions",
+            "Haber-Bosch process synthesizes ammonia from atmospheric nitrogen. About half the nitrogen in your body's proteins came through this reaction. Nobel 1918.",
+            "Without Haber-Bosch, current global agriculture is impossible -- it feeds an estimated 4 billion people. The same process also fed WWI munitions production.",
+            "Personally directed the first poison gas attack at Ypres in 1915. His wife Clara, a chemist who opposed the work, killed herself days later. He fled Nazi Germany in 1933 because he was Jewish.", 10, 10, 7, 10),
+
+        new("Hodgkin", "1910-1994", "England", "modern", "#1ABC9C",
+            "Decoded life's molecules with X-rays",
+            "Solved the structures of penicillin, vitamin B12, and insulin via X-ray crystallography -- problems considered impossible. Nobel 1964.",
+            "Insulin took her 35 years; the result enabled rational design of diabetes drugs. She built the techniques modern structural biology rests on.",
+            "Worked with severe rheumatoid arthritis from her 20s, often manipulating crystals with hands that could barely move. Refused to leave Britain during the Cold War despite government suspicion of her left politics.", 10, 10, 8, 7),
+
+        new("Pauling", "1901-1994", "USA", "modern", "#9B59B6",
+            "The two-Nobel maverick",
+            "Founded modern structural chemistry: the nature of the chemical bond, electronegativity scale, alpha-helix and beta-sheet protein structures. Two unshared Nobels: Chemistry 1954, Peace 1962.",
+            "He bridged quantum mechanics and chemistry, then helped pull the world back from atmospheric nuclear testing. Only person ever to win two unshared Nobel Prizes.",
+            "Spent his last decades evangelizing megadose vitamin C. The chemistry community winced; he didn't care.", 10, 10, 9, 8),
+
+        new("Sanger", "1918-2013", "England", "modern", "#F39C12",
+            "Sequenced insulin AND DNA",
+            "Determined the amino acid sequence of insulin (Nobel 1958), then invented the dideoxy method for DNA sequencing (Nobel 1980). The only person to win two chemistry Nobels.",
+            "Sanger sequencing was the workhorse of the Human Genome Project. He gave biology two of its most important tools, separated by 22 years.",
+            "Famously self-effacing; refused a knighthood because he didn't want to be called \"Sir.\" Said of himself: \"I was just a chap who messed about in a lab.\"", 10, 10, 7, 4)
+    };
+
+    private static readonly List<Mathematician> geologyFigures = new()
+    {
+        new("Hutton", "1726-1797", "Scotland", "enlightenment", "#4A90D9",
+            "Father of deep time",
+            "Theory of the Earth (1788) argued that geological processes are slow and uniform, and that the Earth must be unimaginably old -- \"no vestige of a beginning, no prospect of an end.\"",
+            "He gave science the gift of <strong>deep time</strong>, without which Darwin couldn't have worked. Siccar Point, where Hutton recognized the unconformity, is geology's holy site.",
+            "His writing was so dense almost no one read him; we know his ideas mainly through John Playfair's later popularization.", 9, 10, 7, 5),
+
+        new("William Smith", "1769-1839", "England", "enlightenment", "#E67E22",
+            "Mapped Britain's strata",
+            "Produced the first detailed geological map of an entire country (1815) using fossil succession to identify and trace rock layers. Founded biostratigraphy.",
+            "His principle of faunal succession is the basis for all relative dating in geology. Without him, no oil industry, no coal mapping, no stratigraphic column.",
+            "Spent years in debtor's prison while gentlemen geologists plagiarized his maps. Belatedly recognized in his 60s and awarded the first Wollaston Medal.", 9, 9, 6, 8),
+
+        new("Lyell", "1797-1875", "Scotland", "modern", "#2ECC71",
+            "Uniformitarianism",
+            "<strong>Principles of Geology</strong> (1830-33) argued that the present is the key to the past: the same slow processes we see today shaped Earth over vast time.",
+            "Darwin took the Principles on the Beagle and called Lyell the most influential thinker on him. Lyell made deep time mainstream science.",
+            "Resisted Darwin's evolution at first because it implied human descent from apes. Eventually came around in his 60s -- a gracious public reversal.", 10, 10, 8, 5),
+
+        new("Agassiz", "1807-1873", "Switzerland/USA", "modern", "#1ABC9C",
+            "Discovered the Ice Ages",
+            "Recognized that erratic boulders and U-shaped valleys across Europe meant continental glaciers had once covered much of it. Proposed the Ice Age in 1837.",
+            "He made deep climate change a scientific reality. The Pleistocene glaciations are the framework for understanding Quaternary geology and current climate models.",
+            "Brilliant on glaciers, awful on race: vigorously defended polygenism (separate origins for human races) in the US, lending his prestige to scientific racism. A complicated legacy.", 9, 9, 7, 7),
+
+        new("Suess", "1831-1914", "Austria", "modern", "#9B59B6",
+            "Imagined Gondwana",
+            "Wrote <strong>Das Antlitz der Erde</strong> (The Face of the Earth) -- a 4-volume synthesis of all geological knowledge. Coined <em>biosphere</em>; proposed the supercontinent Gondwana.",
+            "Half of the basic terms a geology undergrad learns -- biosphere, hydrosphere, lithosphere -- are his. He was right that southern continents had once been joined; he just had the mechanism wrong.",
+            "Also a Liberal politician in the Austrian parliament for 30 years -- wrote major geology while working full-time on water supply and constitutional law.", 9, 10, 8, 5),
+
+        new("Wegener", "1880-1930", "Germany", "modern", "#4A5FE0",
+            "Continental drift, vindicated",
+            "Proposed in 1912 that continents had drifted apart from a single Pangaea, citing matching coastlines, fossils, and rock formations across oceans.",
+            "Geologists ridiculed him for 50 years because he had no mechanism. Plate tectonics in the 1960s vindicated him completely. He was right about everything except the cause.",
+            "Died on a Greenland ice sheet expedition at 50 trying to resupply a remote camp. His body was found the following spring; the cause of his career was confirmed three decades later.", 10, 10, 6, 9),
+
+        new("Lehmann", "1888-1993", "Denmark", "modern", "#F39C12",
+            "Found Earth's inner core",
+            "From P-wave shadow zones in seismic data, deduced in 1936 that Earth has a solid inner core inside its liquid outer core. Lived to 104 and stayed scientifically active for ~70 years.",
+            "She figured out that the planet has a solid heart from earthquake records. Modern models of Earth's deep interior, magnetic field, and rotation start with her result.",
+            "Worked at Denmark's geodetic institute, often as the only senior woman scientist. Her famous paper is titled simply <strong>P'</strong> -- one character.", 10, 10, 6, 5),
+
+        new("Tuzo Wilson", "1908-1993", "Canada", "modern", "#607D8B",
+            "Plate tectonics framework",
+            "Identified transform faults (1965), proposed mantle plumes to explain Hawaiian volcanism, and named the Wilson cycle of opening and closing ocean basins.",
+            "He was the synthesizer who turned a half-dozen marine geology results into the unified theory of plate tectonics -- the biggest revolution in earth science.",
+            "Came to plate tectonics late, in his late 50s, after rejecting continental drift earlier in his career. A dramatic public conversion.", 10, 10, 8, 6),
+
+        new("Tharp", "1920-2006", "USA", "modern", "#E91E63",
+            "Mapped the seafloor",
+            "Hand-plotted thousands of sonar profiles to produce the first map of the Atlantic seafloor (1957) -- revealing the Mid-Atlantic Ridge and its central rift valley.",
+            "Her rift valley was the visible smoking gun for seafloor spreading and plate tectonics. Initially dismissed as \"girl talk\" by her boss until Jacques Cousteau's footage proved her right.",
+            "Banned from research vessels for years because she was a woman. Compiled all her maps from data others collected at sea. The maps changed Earth science.", 10, 10, 7, 7),
+
+        new("Alvarez", "1911-1988", "USA", "modern", "#E74C3C",
+            "Asteroid killed the dinosaurs",
+            "With his geologist son Walter, found a worldwide iridium spike at the K-Pg boundary (1980), proposed an asteroid impact triggered the mass extinction. Chicxulub crater confirmed it a decade later.",
+            "Settled the longest-running question in paleontology with one elegant geochemical signal. Also won a Physics Nobel for bubble chamber work, and X-rayed the Pyramid of Khafre for hidden chambers.",
+            "His proposal was savaged by paleontologists for years. He died in 1988, six years before the Chicxulub crater was conclusively identified.", 10, 10, 9, 8)
+    };
+
+    private static readonly List<Mathematician> historyFigures = new()
+    {
+        new("Herodotus", "~484-425 BC", "Halicarnassus", "ancient", "#4A90D9",
+            "Father of history",
+            "Wrote <strong>The Histories</strong>, a sprawling account of the Greco-Persian wars including ethnographies of Egypt, Persia, Scythia. Coined the practice of <em>historia</em> -- inquiry.",
+            "He invented narrative history as a literary and investigative form. He travelled, interviewed witnesses, and weighed sources -- two and a half millennia before \"primary sources\" was a phrase.",
+            "Cicero called him father of history; Plutarch called him father of lies. Some of his fantastical stories (giant gold-digging ants) turned out to have real referents (Himalayan marmots).", 9, 10, 9, 7),
+
+        new("Thucydides", "~460-400 BC", "Athens", "ancient", "#E74C3C",
+            "Founder of scientific history",
+            "<strong>The History of the Peloponnesian War</strong>: a tightly argued analysis of power, fear, and self-interest in the war between Athens and Sparta. Refused divine causation.",
+            "He set the standard for cause-driven, evidence-based political history. The Melian Dialogue is still taught in international relations courses 2,400 years later.",
+            "Was an Athenian general, exiled for failing to relieve Amphipolis in 424 BC. Spent his exile interviewing both sides of the war he was writing about.", 10, 10, 7, 6),
+
+        new("Sima Qian", "~145-86 BC", "Han China", "ancient", "#F39C12",
+            "Grand Historian of Han",
+            "<strong>Shiji</strong> (Records of the Grand Historian) covers 2,500 years of Chinese history in 130 chapters, organized into annals, tables, treatises, and biographies -- a structure imitated for 2,000 years.",
+            "He invented the format of dynastic history that every Chinese empire afterward used. The Shiji is still cited as the foundational source for early Chinese history.",
+            "Castrated rather than executed for defending a disgraced general before the emperor. Chose the dishonor so he could finish the Shiji. Wrote a famous letter to a friend explaining why.", 10, 10, 9, 10),
+
+        new("Tacitus", "~56-120", "Rome", "ancient", "#2ECC71",
+            "Sharpest pen in Rome",
+            "Wrote the <strong>Annals</strong> and <strong>Histories</strong> covering the early empire from Tiberius to Domitian. Brutal portraits of imperial corruption; major source on Nero, Boudica, Germanic tribes.",
+            "His epigrams are still quoted (\"they make a desert and call it peace\"). His skepticism of imperial propaganda set the standard for political history.",
+            "Wrote the only contemporary Roman reference to Christ's execution under Pilate. Pretended to be impartial while delivering some of the most savage character assassinations in literature.", 9, 10, 8, 8),
+
+        new("Ibn Khaldun", "1332-1406", "Tunis", "medieval", "#4A5FE0",
+            "Founder of historiography and sociology",
+            "<strong>Muqaddimah</strong> (1377): a theoretical introduction to history that analyzed dynastic cycles via group solidarity (<em>asabiyyah</em>) -- arguably the first work of social science.",
+            "He proposed a cyclical theory of civilization 500 years before Spengler or Toynbee. Modern historians and sociologists still cite the Muqaddimah as foundational.",
+            "Diplomat between rival North African dynasties, repeatedly imprisoned, repeatedly rescued. Met Tamerlane outside besieged Damascus in 1401 and they spent weeks talking history.", 10, 10, 9, 9),
+
+        new("Ranke", "1795-1886", "Germany", "modern", "#9B59B6",
+            "Wie es eigentlich gewesen",
+            "Insisted history should report events \"as they actually were,\" grounded in primary archival sources. Pioneered the seminar-based PhD training of historians.",
+            "He turned history into a research discipline: archives, source criticism, professional training. Most academic historians worldwide are pedagogically descended from his seminars.",
+            "Worked into his 90s, dictating the final volumes of his world history when he was almost blind.", 9, 10, 7, 4),
+
+        new("Marc Bloch", "1886-1944", "France", "modern", "#E67E22",
+            "Annales School pioneer",
+            "Co-founded the Annales journal (1929), shifting history from \"great men and battles\" to long-duration social, economic, and mental structures. Wrote <strong>Feudal Society</strong> and <strong>The Historian's Craft</strong>.",
+            "The Annales remade 20th-century history. Whenever a historian writes about peasant diets, climate, or mentalities instead of generals, they are working in Bloch's tradition.",
+            "Joined the French Resistance in his 50s. Captured by the Gestapo in 1944, tortured, shot. Reportedly told a younger comrade, \"This won't hurt -- believe me\" before the volley.", 10, 10, 9, 10),
+
+        new("Tuchman", "1912-1989", "USA", "modern", "#E91E63",
+            "Storyteller of the Great War",
+            "<strong>The Guns of August</strong> (1962) reconstructed the opening month of WWI as a tragedy of misjudgment. Two Pulitzers; Kennedy reportedly read it during the Cuban Missile Crisis.",
+            "She showed that rigorous narrative history could be a major popular literary form. Her chapter on the Schlieffen Plan is still required reading at war colleges.",
+            "Had no PhD, never held an academic position. The professional history establishment never quite forgave her for being a better writer than they were.", 9, 9, 8, 6),
+
+        new("Hobsbawm", "1917-2012", "Egypt/UK", "modern", "#1ABC9C",
+            "Chronicler of the long 19th century",
+            "Four-volume sweep: <strong>The Age of Revolution / Capital / Empire / Extremes</strong> (1789-1991). Helped create the field of \"history from below.\"",
+            "His tetralogy is the most-read general history of the modern world by any single author. He taught generations of historians to take popular protest seriously.",
+            "Lifelong Communist Party member, including through 1956. Defended the choice frankly in his memoir <strong>Interesting Times</strong>; the establishment never quite forgave him either.", 10, 10, 9, 8),
+
+        new("Davis", "1928-2023", "USA", "modern", "#607D8B",
+            "Microhistory of Martin Guerre",
+            "<strong>The Return of Martin Guerre</strong> (1983) reconstructed the case of a 16th-century French peasant impersonation from court records. Pioneered microhistory and gender history of early modern Europe.",
+            "She showed that you can illuminate huge structures -- gender, religion, identity -- by drilling deep into a single small story. The book remade narrative history.",
+            "Banned from the US in the 1950s for being married to a left-wing activist; built her early career in Canada. Returned to the US later as president of the American Historical Association.", 9, 10, 8, 6)
+    };
+
+    private static readonly List<Mathematician> linguisticsFigures = new()
+    {
+        new("Panini", "~4th BC", "Gandhara", "ancient", "#F39C12",
+            "Wrote Sanskrit's grammar",
+            "<strong>Ashtadhyayi</strong>: ~4,000 ordered rules generating the entire grammar of Sanskrit -- a formal system of meta-rules, recursion, and ordered application.",
+            "He wrote a generative grammar of a natural language 2,400 years before Chomsky. Compiler designers in the 20th century borrowed his rule-ordering ideas (Panini-Backus form).",
+            "His system is so complete that for two millennia Sanskrit grammarians mostly just wrote commentaries on it.", 10, 10, 8, 7),
+
+        new("Sibawayh", "~760-796", "Persia/Basra", "medieval", "#2ECC71",
+            "First grammar of Arabic",
+            "<strong>Al-Kitab</strong>: ~900 pages systematizing Classical Arabic phonology, morphology, and syntax. Defined the technical vocabulary of Arabic linguistics.",
+            "Every Arabic grammar since is a footnote to Al-Kitab. He effectively standardized the language of the Quran for the next 1,200 years of scholarship.",
+            "Died in his 30s, possibly after losing a public grammatical debate at the caliph's court (the so-called \"Question of the Hornet\"). The book lived on; he didn't.", 9, 10, 7, 8),
+
+        new("Jakob Grimm", "1785-1863", "Germany", "modern", "#4A5FE0",
+            "Sound laws and fairy tales",
+            "Formulated Grimm's Law: a systematic set of consonant shifts from Proto-Indo-European to Germanic. Co-edited <strong>Kinder- und Hausmarchen</strong> and the <strong>Deutsches Worterbuch</strong>.",
+            "Sound laws turned historical linguistics into a quasi-science. Reconstruction of Proto-Indo-European, comparative method, even modern phonology -- all rest on his framework.",
+            "He and his brother Wilhelm collected fairy tales partly as a nationalist project to preserve a German folk tradition. Snow White, Rapunzel, and Hansel and Gretel went global because of them.", 10, 10, 9, 6),
+
+        new("Saussure", "1857-1913", "Switzerland", "modern", "#4A90D9",
+            "Founder of structural linguistics",
+            "<strong>Course in General Linguistics</strong> (posthumous, 1916): language as a system of differences with no positive terms; signifier vs. signified; <em>langue</em> vs. <em>parole</em>; synchrony vs. diachrony.",
+            "He defined the conceptual vocabulary of 20th-century linguistics, semiotics, anthropology, and literary theory. Structuralism and post-structuralism both depart from him.",
+            "Never wrote the book. His students reconstructed it from their lecture notes after his death. Decades later, his own notes were found and partly contradicted what they had published.", 10, 10, 8, 7),
+
+        new("Boas", "1858-1942", "Germany/USA", "modern", "#9B59B6",
+            "Documented Indigenous languages",
+            "Founded American descriptive linguistics by recording dozens of Indigenous American languages on their own terms, refusing to force them into Indo-European categories.",
+            "He established the principle that each language must be analyzed in its own structure -- and trained the first generation of US linguists and anthropologists (Sapir, Mead, Hurston, Benedict).",
+            "Used physical anthropology to demolish race-as-biology arguments at the height of scientific racism. The Nazis publicly burned his books.", 9, 10, 9, 7),
+
+        new("Sapir", "1884-1939", "USA", "modern", "#E67E22",
+            "Language shapes thought",
+            "Pioneer of descriptive and historical linguistics of Indigenous American languages. With Whorf, articulated linguistic relativity: the language you speak shapes how you perceive the world.",
+            "The Sapir-Whorf hypothesis still drives experimental psycholinguistics a century later. Modern weak versions have substantial empirical support.",
+            "Polymath: also wrote on personality theory, music, and literary criticism. Died at 55 of a heart attack while at the height of his powers.", 10, 9, 9, 5),
+
+        new("Jakobson", "1896-1982", "Russia/USA", "modern", "#1ABC9C",
+            "Phonology and poetics",
+            "Co-founded the Prague School. Defined distinctive features as the building blocks of phonology. Six functions of language; analyses of poetry as patterned sound.",
+            "Distinctive feature analysis underlies modern phonology. His functional model of communication is still the standard reference.",
+            "Fled Russia for Prague, fled Prague for Scandinavia ahead of the Nazis, fled to America in 1941. Spoke and worked in at least six languages fluently.", 10, 10, 9, 7),
+
+        new("Greenberg", "1915-2001", "USA", "modern", "#607D8B",
+            "Language universals via typology",
+            "Established linguistic typology as a field. His 45 universals of word order (1963) showed that languages cluster into a few coherent types. Mass comparison classifications of African and American languages.",
+            "He turned cross-linguistic generalization into a respectable empirical discipline. WALS, the World Atlas of Language Structures, is built on his foundations.",
+            "His proposed Amerind super-family (a single ancestor for almost all American languages) was rejected by most specialists, but it forced the field to confront methodology head-on.", 9, 10, 8, 7),
+
+        new("Chomsky", "1928-", "USA", "modern", "#E74C3C",
+            "Universal grammar revolution",
+            "<strong>Syntactic Structures</strong> (1957) proposed generative grammar: an innate language faculty produces all and only the grammatical sentences of a language. Hierarchy of formal grammars.",
+            "He triggered the cognitive revolution by arguing that language is a window into innate mental structure. The Chomsky hierarchy is foundational in computer science as well.",
+            "Equally famous as a political dissident. The most-cited living author in the humanities for decades. Has spent 70+ years revising his linguistic theory; critics say it never quite settles.", 10, 10, 9, 9),
+
+        new("Labov", "1927-2024", "USA", "modern", "#E91E63",
+            "Father of sociolinguistics",
+            "Studied how language varies across class, race, and region using rigorous quantitative methods. Department store /r/ study (1966); work on African American English; the principle of debt incurred.",
+            "He showed that linguistic variation is structured, not sloppy, and that vernacular dialects have full grammatical systems. Fundamentally reshaped how courts, schools, and linguists treat non-standard speech.",
+            "Testified in the 1979 Ann Arbor case that Black English was a coherent dialect, not deficient English. The court agreed and required teacher training -- a landmark for educational linguistics.", 9, 10, 8, 6)
+    };
+
+    private static readonly List<Mathematician> materialsFigures = new()
+    {
+        new("Biringuccio", "1480-1539", "Italy", "enlightenment", "#E67E22",
+            "First systematic metallurgist",
+            "<strong>De la Pirotechnia</strong> (1540): the first printed treatise on metallurgy, covering smelting, alloying, casting, and assaying. Documented furnace design and ore reduction in operational detail.",
+            "He turned metallurgy from guild secret into published knowledge. For the next two centuries, every European foundry traced its practice back to his book.",
+            "Cast cannon for the Papal States and ran the Vatican foundry. Wrote that alchemy was bunk and only practical chemistry mattered -- centuries ahead of consensus.", 7, 9, 7, 4),
+
+        new("Agricola", "1494-1555", "Germany", "enlightenment", "#4A5FE0",
+            "Founded mining science",
+            "<strong>De Re Metallica</strong> (1556): 12 books on mining, ore processing, surveying, and ventilation, with 289 woodcut illustrations of machinery. Standard reference for 180 years.",
+            "He fused observation with engineering practice. Herbert Hoover (yes, that Hoover) translated it into English in 1912 -- still the canonical English edition.",
+            null, 8, 9, 8, 3),
+
+        new("Bessemer", "1813-1898", "England", "modern", "#E74C3C",
+            "Made steel cheap",
+            "Bessemer process (1856): blew air through molten pig iron to burn off carbon, dropping steel cost ~85%. Made the railway and skyscraper age possible.",
+            "Before Bessemer, steel was a luxury good. After Bessemer, it was infrastructure. The second industrial revolution runs on his converter.",
+            "Originally rejected by ironmasters because it failed on phosphoric ores. Took years and Sidney Gilchrist Thomas's basic lining fix before it dominated.", 9, 10, 6, 6),
+
+        new("Goodyear", "1800-1860", "USA", "modern", "#2ECC71",
+            "Vulcanized rubber",
+            "1839: discovered that heating natural rubber with sulfur produced a stable, elastic material immune to heat and cold. Patented vulcanization in 1844.",
+            "Without vulcanization there are no tires, no industrial seals, no modern hoses or insulation. He created the entire rubber industry by accident -- the breakthrough came from dropping a sulfur-rubber mix on a hot stove.",
+            "Spent his life in and out of debtors' prison fighting patent infringers. Died $200,000 in debt. The tire company bears his name but he had nothing to do with it -- founded 38 years after his death.", 8, 10, 5, 9),
+
+        new("Carothers", "1896-1937", "USA", "modern", "#9B59B6",
+            "Invented nylon and neoprene",
+            "Led DuPont's polymer research. Synthesized neoprene (1930) and nylon (1935) -- the first wholly synthetic fiber. Established the basic chemistry of step-growth polymerization.",
+            "He created the entire field of synthetic polymers. Nylon stockings sold 64 million pairs in their first year. Neoprene replaced rubber in countless industrial applications.",
+            "Suffered severe depression his entire life despite his successes. Killed himself with cyanide at 41, two years before nylon hit the market.", 10, 10, 7, 9),
+
+        new("Pauling", "1901-1994", "USA", "modern", "#1ABC9C",
+            "Decoded the chemical bond",
+            "<strong>The Nature of the Chemical Bond</strong> (1939): applied quantum mechanics to chemistry, explaining hybridization, resonance, and electronegativity. Two unshared Nobel Prizes (Chemistry 1954, Peace 1962).",
+            "He made structural chemistry quantitative. Every materials scientist's mental model of bonding -- sp3, hybrid orbitals, resonance structures -- comes from him.",
+            "Missed the structure of DNA partly because the State Department denied him a passport over his anti-nuclear activism, blocking him from seeing Franklin's X-ray data. Watson and Crick beat him by months.", 10, 10, 10, 8),
+
+        new("Bardeen", "1908-1991", "USA", "modern", "#7B68EE",
+            "Two Nobels in physics",
+            "Co-invented the transistor (1947) at Bell Labs. Co-developed BCS theory of superconductivity (1957). Only person to win the Nobel Prize in Physics twice.",
+            "The transistor is arguably the most important device of the 20th century. BCS explained superconductivity 46 years after its discovery and underpins modern condensed matter physics.",
+            "Famously soft-spoken; colleagues said he could explain transformative ideas so quietly people missed it. Shockley pushed him out at Bell Labs claiming credit; Bardeen left for Illinois and won his second Nobel there.", 10, 10, 8, 7),
+
+        new("Kwolek", "1923-2014", "USA", "modern", "#E91E63",
+            "Invented Kevlar",
+            "1965 at DuPont: discovered liquid crystalline polymer solutions that spun into fibers stronger than steel by weight. Kevlar -- aramid fiber -- was the result.",
+            "Kevlar saved an estimated 3,000+ police lives in body armor alone. Used in tires, sails, fiber-optic cable, spacecraft, ropes, brakes -- ubiquitous high-strength applications.",
+            "Her boss originally told her not to bother spinning the cloudy solution. She insisted. The first time she tested the fiber, the technician thought his equipment was broken.", 9, 10, 6, 5),
+
+        new("de Gennes", "1932-2007", "France", "modern", "#00BCD4",
+            "Soft matter unifier",
+            "Showed that techniques from one disordered system (magnetism) applied to others (liquid crystals, polymers, colloids). Nobel Prize 1991 for adapting order-disorder methods to soft matter.",
+            "He gave soft matter a unified theoretical language. Liquid crystal displays, polymer rheology, foams, gels -- entire industries rest on the framework he created.",
+            "Called the \"Isaac Newton of our time\" by the Nobel committee, which is overselling, but his synthesis really did unify a fragmented field.", 10, 9, 9, 4),
+
+        new("Geim & Novoselov", "1958- / 1974-", "Russia/UK", "modern", "#F39C12",
+            "Isolated graphene",
+            "2004: peeled single-atom-thick carbon sheets from graphite using Scotch tape. Measured graphene's electronic and mechanical properties. Nobel Prize 2010.",
+            "Graphene is the strongest material ever measured (~200x steel), conducts electricity better than copper, and is one atom thick. The 2D materials field they opened has produced thousands of new compounds.",
+            "Geim also won the Ig Nobel Prize for levitating a frog with magnetism -- the only person to win both a Nobel and an Ig Nobel.", 10, 10, 7, 8)
+    };
+
+    private static readonly List<Mathematician> csFigures = new()
+    {
+        new("Babbage", "1791-1871", "England", "modern", "#4A5FE0",
+            "Designed the first computer",
+            "Designed the Difference Engine (1822) and the Analytical Engine (1837): a programmable mechanical computer with conditional branching, loops, and separate memory and processor. Never fully built in his lifetime.",
+            "He invented general-purpose computing 100 years before Turing. The Analytical Engine's architecture -- store, mill, punched-card programs -- is recognizable as a modern CPU.",
+            "Hated street musicians so much he campaigned to outlaw them and kept logs of every disturbance. Londoners played outside his window to torment him.", 10, 10, 8, 8),
+
+        new("Lovelace", "1815-1852", "England", "modern", "#E91E63",
+            "First programmer",
+            "Wrote the first published algorithm intended for execution on a machine -- Note G in her translation of Menabrea's paper on the Analytical Engine (1843). Computed Bernoulli numbers symbolically.",
+            "She saw, before anyone else, that a computing machine could manipulate any symbol -- not just numbers. Her notes anticipate general-purpose computing and even algorithmic music composition.",
+            "Daughter of Lord Byron. Died of uterine cancer at 36, the same age her father died. Buried beside him at her request.", 9, 9, 7, 8),
+
+        new("Turing", "1912-1954", "England", "modern", "#7B68EE",
+            "Founded computer science",
+            "Turing machine (1936): formal model of computation. Proved the halting problem undecidable. Cracked Enigma at Bletchley. Proposed the Turing test (1950).",
+            "Every computer is a physical instance of his abstract machine. His 1936 paper is to CS what Newton's Principia is to physics.",
+            "Prosecuted for homosexuality in 1952, forced into chemical castration. Died of cyanide poisoning at 41. Royal pardon in 2013; on the 50-pound note since 2021.", 10, 10, 7, 10),
+
+        new("Shannon", "1916-2001", "USA", "modern", "#2ECC71",
+            "Father of information theory",
+            "<strong>A Mathematical Theory of Communication</strong> (1948): defined the bit, channel capacity, and entropy. Master's thesis (1937) showed Boolean algebra could design any digital circuit.",
+            "Every modem, codec, hard drive, and wireless protocol obeys his channel capacity bound. He simultaneously founded information theory AND digital circuit design as a grad student and a Bell Labs employee.",
+            "Built a juggling robot, a flame-throwing trumpet, and a maze-solving mouse called Theseus. Rode a unicycle through Bell Labs hallways while juggling.", 10, 10, 9, 6),
+
+        new("von Neumann", "1903-1957", "Hungary/USA", "modern", "#9B59B6",
+            "Wrote the architecture",
+            "von Neumann architecture (1945): stored-program computer where data and instructions share memory. Founded game theory, contributed to quantum mechanics, hydrogen bomb design, and cellular automata.",
+            "Almost every computer ever built follows his architecture. He casually founded multiple fields while working on the Manhattan Project simultaneously.",
+            "Could compute massive sums in his head and recite books from memory after one reading. Said to have remarked from his deathbed that he had become \"depressed by the prospect of ceasing to think.\"", 10, 10, 10, 7),
+
+        new("Hopper", "1906-1992", "USA", "modern", "#E67E22",
+            "Compiler pioneer",
+            "Wrote the first compiler (A-0, 1952). Led the team that created COBOL (1959), the language that ran most of business computing for decades. Coined \"debugging\" (after a literal moth in a relay).",
+            "She made programming accessible by separating human-readable source code from machine code. Every modern language traces back to that idea. COBOL still runs ~70% of global financial transactions.",
+            "Rear Admiral in the US Navy, retired at 79 -- the oldest active-duty officer at the time. Carried bundles of wire 11.8 inches long to demonstrate \"a nanosecond.\"", 9, 10, 7, 7),
+
+        new("Dijkstra", "1930-2002", "Netherlands", "modern", "#1ABC9C",
+            "Algorithms and discipline",
+            "Shortest path algorithm (1956). Semaphores for concurrency (1965). Structured programming manifesto. \"Goto considered harmful\" (1968).",
+            "His shortest-path algorithm runs on every GPS, every router. His insistence on programming-as-mathematical-discipline shaped how a generation thought about correctness.",
+            "Wrote his EWDs -- numbered handwritten essays -- by fountain pen for 40 years. Famously contrarian; once said BASIC programmers were \"mentally mutilated beyond hope of regeneration.\"", 10, 9, 8, 9),
+
+        new("Knuth", "1938-", "USA", "modern", "#3498DB",
+            "TAOCP and TeX",
+            "<strong>The Art of Computer Programming</strong>: a planned 7-volume bible of algorithms, started 1962, still being written. Created TeX and METAFONT when frustrated with publisher typesetting.",
+            "TAOCP is the deepest treatment of algorithms ever attempted; he pays $2.56 for any error found. TeX is still the standard for mathematical typesetting 40 years later.",
+            "Doesn't use email -- says it's a productivity black hole. Versions TeX with digits of pi (current: 3.141592653) and METAFONT with digits of e.", 10, 10, 9, 5),
+
+        new("Ritchie", "1941-2011", "USA", "modern", "#E74C3C",
+            "Wrote C and Unix",
+            "Created the C programming language (1972). Co-created Unix with Ken Thompson at Bell Labs. Co-authored <strong>The C Programming Language</strong> (\"K&R\", 1978).",
+            "Linux, macOS, iOS, Android, every embedded system -- all descend from Unix and are written largely in C. Almost no other person's work runs on more devices.",
+            "Died the same week as Steve Jobs in 2011 and got a fraction of the attention. Rob Pike eulogized: \"Steve made computers fun. Dennis made them work.\"", 10, 10, 8, 4),
+
+        new("Berners-Lee", "1955-", "England", "modern", "#4A90D9",
+            "Invented the web",
+            "1989-91 at CERN: combined hypertext, TCP/IP, and DNS into the World Wide Web. Wrote the first browser, server, and HTTP spec. Released it royalty-free.",
+            "He invented the most consequential information system since the printing press and gave it away. Estimated personal cost of the open release: tens of billions.",
+            "His original NeXT machine has a sticker reading \"This machine is a server. DO NOT POWER IT DOWN!!\" It now lives in the Science Museum, London.", 9, 10, 8, 5),
+
+        new("Liskov", "1939-", "USA", "modern", "#E91E63",
+            "Built abstraction theory",
+            "Designed CLU (1974), the first language with abstract data types. Liskov substitution principle (1987) -- the L in SOLID. Pioneered Byzantine fault tolerance.",
+            "Every modern OO language inherits CLU's ideas about encapsulation. Her substitution principle defines what subtype polymorphism even means. Turing Award 2008.",
+            "First American woman to earn a PhD in CS (Stanford, 1968). Was told by Princeton in 1961 that they didn't accept women as graduate students.", 10, 9, 8, 6),
+
+        new("Hinton", "1947-", "UK/Canada", "modern", "#607D8B",
+            "Godfather of deep learning",
+            "Backpropagation (with Rumelhart, Williams, 1986). AlexNet (with Krizhevsky, Sutskever, 2012) won ImageNet by a landslide and started the deep learning era. Capsule networks; distillation.",
+            "Modern AI is built on backprop and on the architectures that came out of his Toronto lab. Turing Award 2018; Nobel in Physics 2024.",
+            "Quit Google in 2023 to speak freely about AI risk. Has stood for years (literally -- back issues) and computes on a treadmill desk.", 10, 10, 8, 7)
+    };
+
+    private static readonly List<Mathematician> miscFigures = new()
+    {
+        new("Pythagoras", "~570-495 BC", "Samos/Croton", "ancient", "#F39C12",
+            "Mystic of number",
+            "Founded a secretive religious-mathematical brotherhood. Taught that <em>all is number</em>; numbers had moral and cosmic meaning. Discovered (or his school did) the theorem still bearing his name.",
+            "He fused math, mysticism, and ethics into one program. Numerology, sacred geometry, and the music-of-the-spheres tradition all start here.",
+            "His followers allegedly drowned the man who proved sqrt(2) was irrational, since it broke the doctrine that all is rational number. Whether true or not, the legend stuck.", 9, 10, 7, 10),
+
+        new("Hermes Trismegistus", "Legendary", "Egypt/Greece", "ancient", "#9B59B6",
+            "Thrice-great syncretism",
+            "Mythical author of the <strong>Corpus Hermeticum</strong> and the <strong>Emerald Tablet</strong>. \"As above, so below.\" Foundation of Western alchemy, astrology, and theurgy.",
+            "Treated as a real ancient sage by Renaissance scholars; the Hermetica drove huge intellectual movements (Ficino, Bruno, Newton's alchemy). Casaubon proved in 1614 it was actually 2nd-3rd century.",
+            "Newton spent more time on alchemy and the Hermetica than on physics. The texts everyone studied were a thousand years younger than they thought.", 7, 10, 9, 9),
+
+        new("John Dee", "1527-1609", "England", "enlightenment", "#4A5FE0",
+            "Court magus to Elizabeth I",
+            "Mathematician, astronomer, navigator, and occultist. Coined the phrase \"British Empire.\" Practiced \"Enochian\" angelic conversations with scryer Edward Kelley.",
+            "He was simultaneously one of England's leading scientists and one of its leading magicians -- the boundary didn't exist yet. Owned the largest library in England.",
+            "Kelley reported an angel commanding them to share their wives. Dee complied. The relationship and the angelic project both fell apart shortly after.", 8, 8, 9, 10),
+
+        new("Nostradamus", "1503-1566", "France", "enlightenment", "#E74C3C",
+            "Quatrains of doom",
+            "Published <strong>Les Propheties</strong> (1555): 942 four-line verses in cryptic French/Latin/Provencal. Plague doctor by trade.",
+            "His verses are vague enough to be retrofitted onto almost any major event, which is exactly why he has been continuously \"validated\" for 470 years.",
+            "Catherine de Medici summoned him to court to cast horoscopes for her children. Most of them died young -- which his followers later claimed he had predicted.", 6, 9, 5, 9),
+
+        new("Blavatsky", "1831-1891", "Russia", "modern", "#1ABC9C",
+            "Founded Theosophy",
+            "Co-founded the Theosophical Society (1875). Wrote <strong>Isis Unveiled</strong> and <strong>The Secret Doctrine</strong>: a synthesis of Hinduism, Buddhism, Western esotericism, and evolutionary cosmology.",
+            "Theosophy seeded almost every 20th-century New Age movement: Anthroposophy, the New Thought movement, Krishnamurti, even parts of early Nazi occultism (the misuse came later).",
+            "Caught fabricating \"Mahatma letters\" by the Society for Psychical Research in 1885. Devotees were unmoved; the movement kept growing.", 7, 10, 9, 10),
+
+        new("Crowley", "1875-1947", "England", "modern", "#8E44AD",
+            "Beast 666",
+            "Founded Thelema (1904) after channeling <strong>The Book of the Law</strong> in Cairo. \"Do what thou wilt shall be the whole of the Law.\" Reformed Western ceremonial magick; designed the Thoth Tarot.",
+            "He turned occultism from Victorian parlor mysticism into a self-conscious modernist project. His footprint runs through rock music, chaos magick, and most modern Western esotericism.",
+            "Tabloids called him \"the wickedest man in the world.\" He happily played the role -- climbing K2, doing heroin, shocking everyone he met. Died broke in a Hastings boarding house.", 8, 9, 8, 10),
+
+        new("Charles Fort", "1874-1932", "USA", "modern", "#607D8B",
+            "Catalogued the impossible",
+            "Spent 27 years in libraries collecting reports of anomalous phenomena -- rains of frogs, ball lightning, mysterious disappearances. Published <strong>The Book of the Damned</strong> (1919) and three more.",
+            "He invented \"Forteana\" -- the systematic study of weird data science ignores. Every UFO investigator, cryptozoologist, and X-Files writer descends from him.",
+            "Refused to theorize. His point was that science excludes inconvenient data; he just kept piling it up to embarrass orthodoxy.", 7, 8, 7, 6),
+
+        new("Carl Jung", "1875-1961", "Switzerland", "modern", "#7B68EE",
+            "Synchronicity and archetypes",
+            "Broke with Freud over the unconscious. Proposed the collective unconscious, archetypes, individuation, and synchronicity (acausal meaningful coincidence). The <strong>Red Book</strong> (1914-30): his own confrontation with the unconscious.",
+            "He gave the 20th century a vocabulary -- introvert, extravert, archetype, shadow, complex -- and is the source of most popular psychology that isn't behavioral.",
+            "Spent years in what he called a \"creative illness,\" producing visions and dialogues with internal figures. He believed he was investigating, not breaking down. The Red Book was published in 2009.", 9, 10, 10, 9),
+
+        new("Robert Anton Wilson", "1932-2007", "USA", "modern", "#E67E22",
+            "Reality is what you can get away with",
+            "Co-wrote the <strong>Illuminatus!</strong> trilogy (1975) with Robert Shea. Promoted Discordianism, model agnosticism, and reality tunnels. Forerunner of hyperstition and chaos magic.",
+            "He treated belief systems as user-selectable lenses, not truth claims. That stance shaped cyberpunk, the rave scene, conspiracy culture, and a lot of Silicon Valley's weirder corners.",
+            "Was simultaneously a Discordian Pope, a libertarian, a Crowleyan Thelemite, and a Buddhist sympathizer. Insisted he was joking about all of them, and serious about all of them.", 8, 8, 9, 9),
+
+        new("Terence McKenna", "1946-2000", "USA", "modern", "#2ECC71",
+            "Stoned ape, novelty wave",
+            "Ethnobotanist and psychedelics advocate. Proposed the \"stoned ape\" theory of human evolution. Built the Timewave Zero theory predicting a singularity in late 2012.",
+            "Probably the most influential psychedelics evangelist between Leary and Pollan. His lectures (recorded in the '80s-'90s) are perpetually rediscovered on YouTube.",
+            "Predicted reality would dissolve into novelty on December 21, 2012. Died of brain cancer in 2000, never seeing his deadline missed.", 7, 8, 7, 9)
+    };
+
+    private static readonly List<Mathematician> politicsFigures = new()
+    {
+        new("Sun Tzu", "~544-496 BC", "China", "ancient", "#E74C3C",
+            "Strategy as discipline",
+            "<strong>The Art of War</strong>: 13 chapters on positioning, deception, terrain, and the political economy of war. \"Supreme excellence is breaking the enemy's resistance without fighting.\"",
+            "It is still on the syllabus at every major military academy and most MBA programs 2,500 years later. Reads as if written for any conflict, any era.",
+            "Allegedly demonstrated his methods to King Helu by drilling the king's concubines. When two giggled, he had them executed. The drill went well after that.", 9, 10, 8, 10),
+
+        new("Machiavelli", "1469-1527", "Italy", "enlightenment", "#9B59B6",
+            "Politics without illusions",
+            "<strong>The Prince</strong> (1513): a manual on acquiring and holding power that drops moral pretense. <strong>Discourses on Livy</strong>: republican counterpart, often ignored.",
+            "He severed politics from morality, founding political realism. Every modern theorist of power -- left, right, or other -- argues with him.",
+            "Tortured by the restored Medici regime and exiled to a small farm. Wrote The Prince partly hoping to get back into politics. It didn't work.", 9, 10, 8, 9),
+
+        new("Hobbes", "1588-1679", "England", "enlightenment", "#4A5FE0",
+            "Leviathan and the social contract",
+            "<strong>Leviathan</strong> (1651): humans in the state of nature live a life \"solitary, poor, nasty, brutish, and short\" until they contract to obey an absolute sovereign.",
+            "He invented the modern social contract framework. Even theorists who reject his absolutism (Locke, Rousseau, Rawls) work in the conceptual space he opened.",
+            "Survived the English Civil War, the Restoration, and accusations of atheism into his 90s. Translated Homer in his 80s. \"I am about to take my last voyage,\" he reportedly said on his deathbed.", 10, 10, 8, 6),
+
+        new("Locke", "1632-1704", "England", "enlightenment", "#2ECC71",
+            "Natural rights and consent",
+            "<strong>Two Treatises of Government</strong> (1689): governments derive legitimacy from the consent of the governed, exist to protect life, liberty, and property, and may be overthrown when they fail.",
+            "Direct ancestor of the American Declaration of Independence and modern liberal democracy. Almost every constitutional democracy operates on his framework.",
+            "Fled to Holland in 1683 amid suspicion of involvement in the Rye House Plot to assassinate Charles II. Returned in 1689 with William of Orange.", 9, 10, 8, 6),
+
+        new("Rousseau", "1712-1778", "Geneva/France", "enlightenment", "#1ABC9C",
+            "General will",
+            "<strong>The Social Contract</strong> (1762): \"Man is born free, and everywhere he is in chains.\" Legitimate authority must express the general will. <strong>Emile</strong>: education to preserve natural goodness.",
+            "His thinking fed directly into the French Revolution and modern populism, nationalism, and direct democracy. Both progressive and authoritarian movements claim him.",
+            "Abandoned all five of his children to a foundling home -- a fact that haunted his reputation. Confessed it himself in <strong>Confessions</strong>.", 9, 10, 7, 10),
+
+        new("Tocqueville", "1805-1859", "France", "modern", "#4A90D9",
+            "Diagnosed democracy",
+            "<strong>Democracy in America</strong> (1835/40): based on a 9-month US tour studying prisons, Tocqueville's analysis of associational life, equality, and the \"tyranny of the majority\" remains startlingly current.",
+            "He understood American civic culture better than most Americans. Political scientists still mine the book for hypotheses about civil society and democratic erosion.",
+            "Predicted a future world dominated by the US and Russia in 1835 -- 110 years before the Cold War.", 9, 10, 8, 5),
+
+        new("Marx", "1818-1883", "Germany", "modern", "#E91E63",
+            "Capital and class",
+            "<strong>The Communist Manifesto</strong> (1848) with Engels. <strong>Das Kapital</strong> (1867+): theory of surplus value, commodity fetishism, historical materialism, and capitalism's internal contradictions.",
+            "His analytical framework reshaped economics, sociology, history, and politics. Roughly a third of humanity lived under regimes claiming his name in the 20th century.",
+            "Spent decades in poverty in London, supported largely by Engels (whose family owned factories). Several of his children died of malnutrition.", 10, 10, 10, 9),
+
+        new("Weber", "1864-1920", "Germany", "modern", "#7B68EE",
+            "State and bureaucracy",
+            "Defined the state as the entity holding the monopoly of legitimate violence. <strong>The Protestant Ethic and the Spirit of Capitalism</strong> (1905); typology of authority (traditional, charismatic, legal-rational); iron cage of bureaucracy.",
+            "Founded sociology as a discipline jointly with Durkheim. His categories (charisma, rationalization, bureaucracy, legitimacy) are inescapable in political analysis.",
+            "Suffered a near-total nervous breakdown after his father died following a vicious argument. Stopped working for years. Died of Spanish flu in 1920.", 10, 10, 9, 7),
+
+        new("Schmitt", "1888-1985", "Germany", "modern", "#607D8B",
+            "Sovereign decides the exception",
+            "<strong>Political Theology</strong> (1922): \"Sovereign is he who decides on the exception.\" <strong>The Concept of the Political</strong> (1932): politics is the friend-enemy distinction.",
+            "His diagnosis of liberal proceduralism's blind spots gets cited by both far-right and far-left theorists. Modern debates on emergency powers are post-Schmittian.",
+            "Joined the Nazi Party in 1933, called the \"crown jurist of the Third Reich,\" then sidelined by SS rivals. Never repented. Wrote prolifically until his death at 96.", 10, 9, 8, 10),
+
+        new("Arendt", "1906-1975", "Germany/USA", "modern", "#E67E22",
+            "Banality of evil",
+            "<strong>The Origins of Totalitarianism</strong> (1951): the structural similarity of Nazism and Stalinism. <strong>Eichmann in Jerusalem</strong> (1963): the \"banality of evil.\" <strong>The Human Condition</strong>: labor, work, action.",
+            "Most influential political theorist of the 20th century on totalitarianism, statelessness, and political action. Read in every political science department on earth.",
+            "Eichmann report enraged Jewish readers who felt she let him off too easy. The friendship with Heidegger -- her former lover and Nazi apologist -- was one she defended publicly her entire life.", 10, 10, 9, 9),
+
+        new("Huntington", "1927-2008", "USA", "modern", "#3498DB",
+            "Clash of civilizations",
+            "<strong>The Soldier and the State</strong> (1957). <strong>Political Order in Changing Societies</strong> (1968): institutions matter more than democracy for development. <strong>Clash of Civilizations</strong> (1996).",
+            "Set the agenda for decades of debate on civil-military relations, modernization, and post-Cold War conflict. Loved and loathed in roughly equal measure.",
+            "Clash of Civilizations was widely mocked when published, then quoted everywhere after September 11. He died saying he wished he had been wrong.", 9, 10, 8, 8),
+
+        new("Kissinger", "1923-2023", "Germany/USA", "modern", "#8E44AD",
+            "Realpolitik incarnate",
+            "National Security Advisor and Secretary of State (1969-77). Opening to China, detente with USSR, shuttle diplomacy in the Middle East, Paris peace talks. Nobel Peace Prize 1973 (controversial).",
+            "Restructured Cold War geopolitics. Wrote dozens of books that doubled as policy memos. Consulted by every president from Nixon to Biden.",
+            "Accused of complicity in bombings of Cambodia, the Chilean coup, East Timor, and more. Christopher Hitchens wrote a book demanding he be tried for war crimes. He died at 100, unindicted.", 9, 10, 9, 10)
+    };
+
+    private static readonly List<Mathematician> economicsFigures = new()
+    {
+        new("Adam Smith", "1723-1790", "Scotland", "enlightenment", "#4A90D9",
+            "Founded economics",
+            "<strong>The Wealth of Nations</strong> (1776): division of labor, the invisible hand, free trade, opposition to mercantilism. <strong>The Theory of Moral Sentiments</strong> (1759): sympathy as the basis of ethics.",
+            "He created the discipline. Every later economist either builds on him or argues with him. Less of a free-market ideologue than his admirers claim -- he distrusted merchants.",
+            "Was once kidnapped by gypsies as a small child. His mother got him back. He returned to a quiet life of professoring and customs work.", 10, 10, 9, 6),
+
+        new("Ricardo", "1772-1823", "England", "modern", "#2ECC71",
+            "Comparative advantage",
+            "<strong>Principles of Political Economy and Taxation</strong> (1817): comparative advantage, theory of rent, labor theory of value, iron law of wages.",
+            "Comparative advantage is one of economics' few genuinely counterintuitive results that has held up. International trade theory still starts with him.",
+            "Made a fortune in the bond market betting on Wellington at Waterloo, retired at 42, then bought himself a seat in Parliament. The original quant.", 10, 10, 7, 5),
+
+        new("Mill", "1806-1873", "England", "modern", "#1ABC9C",
+            "Liberalism and utility",
+            "<strong>On Liberty</strong> (1859): the harm principle. <strong>Principles of Political Economy</strong> (1848): the standard textbook for 50 years. <strong>Utilitarianism</strong>; <strong>The Subjection of Women</strong>.",
+            "He synthesized classical liberalism, utilitarianism, and feminism into a single program. The harm principle remains the default liberal position on free expression.",
+            "Educated by his father in a famously brutal program: Greek at 3, Latin at 8, Newton's calculus at 12. Had a nervous breakdown at 20.", 10, 10, 10, 6),
+
+        new("Marx", "1818-1883", "Germany", "modern", "#E91E63",
+            "Critique of capitalism",
+            "<strong>Das Kapital</strong>: labor theory of value, surplus value, falling rate of profit, primitive accumulation, commodity fetishism. Predicted concentration of capital and crises of overproduction.",
+            "Even economists who reject his conclusions take his analysis of capitalism seriously. Kept the discipline honest about distribution and class for 150 years.",
+            "Britain's MI5 file on him noted he was an unkempt man with a fondness for cheap cigars who never washed. Died stateless, a few mourners at his grave.", 10, 10, 9, 8),
+
+        new("Marshall", "1842-1924", "England", "modern", "#7B68EE",
+            "Built the neoclassical synthesis",
+            "<strong>Principles of Economics</strong> (1890): supply-and-demand diagrams, marginal analysis, partial equilibrium, consumer surplus, elasticity. The standard textbook for decades.",
+            "He gave economics its core graphical and conceptual toolkit. The supply/demand cross is his. Trained Keynes, Pigou, and most early 20th-century English economists.",
+            "Published Principles 25 years after he had worked it out, kept revising it for the rest of his life. Eight editions, each rearranged.", 9, 10, 8, 3),
+
+        new("Keynes", "1883-1946", "England", "modern", "#4A5FE0",
+            "Saved capitalism from itself",
+            "<strong>The General Theory of Employment, Interest, and Money</strong> (1936): aggregate demand, liquidity preference, the case for fiscal stimulus during slumps. Architect of Bretton Woods (1944).",
+            "He gave governments a theoretical license to actively manage the economy. Postwar full-employment policy and the welfare state ran on his framework.",
+            "Made and lost a fortune in currency markets in the 1920s, then made another. Married a Russian ballerina. Died of a heart attack at 62, exhausted by Bretton Woods negotiations.", 10, 10, 9, 7),
+
+        new("Hayek", "1899-1992", "Austria", "modern", "#E67E22",
+            "Knowledge and the price system",
+            "<strong>The Use of Knowledge in Society</strong> (1945): prices aggregate dispersed local knowledge no central planner can ever access. <strong>The Road to Serfdom</strong> (1944).",
+            "His epistemic case against central planning is the strongest one ever made and has aged better than most of mid-century economics. Nobel 1974.",
+            "His decade-long debate with Keynes defined macroeconomics. They were friends despite it -- Keynes once let Hayek shelter at King's College during WWII bombing.", 10, 10, 8, 7),
+
+        new("Schumpeter", "1883-1950", "Austria", "modern", "#9B59B6",
+            "Creative destruction",
+            "<strong>Capitalism, Socialism and Democracy</strong> (1942): innovation as the engine of capitalism, entrepreneurs as disruptors, \"creative destruction\" as the essential fact about capitalism.",
+            "Half of contemporary innovation studies, startup culture, and \"disruption\" rhetoric is downstream of him. He argued capitalism would fail not because of poverty but because of success and bureaucratization.",
+            "Reportedly said he had three goals: be the world's greatest economist, the world's greatest horseman, and Vienna's greatest lover. Achieved one, he claimed, but the cavalry had let him down.", 10, 9, 9, 7),
+
+        new("Friedman", "1912-2006", "USA", "modern", "#E74C3C",
+            "Monetarism and markets",
+            "<strong>A Monetary History of the United States</strong> (with Schwartz, 1963): the Great Depression was caused by Fed monetary contraction. Permanent income hypothesis; case for floating exchange rates and school vouchers.",
+            "He revived market economics in the postwar era and rebuilt monetary theory. Almost every central bank operates on a framework he helped shape. Nobel 1976.",
+            "Advised Pinochet's Chile, which haunted his reputation forever after. Defended the consultation as purely technical. \"Free to Choose\" PBS series brought his views to millions.", 10, 10, 8, 8),
+
+        new("Nash", "1928-2015", "USA", "modern", "#7B68EE",
+            "Equilibrium for everyone",
+            "Nash equilibrium (1950, 28-page PhD thesis): in non-cooperative games every finite strategic situation has at least one stable strategy profile. Nobel 1994.",
+            "His equilibrium is the foundational solution concept for almost all of modern game theory and large parts of microeconomics, evolutionary biology, and computer science.",
+            "Suffered severe paranoid schizophrenia from his late 20s; spent decades in and out of hospitals. Slowly recovered from his 50s. Died with his wife in a car crash on the New Jersey Turnpike at 86.", 10, 10, 8, 10),
+
+        new("Kahneman", "1934-2024", "Israel/USA", "modern", "#3498DB",
+            "Behavioral economics",
+            "Prospect theory (with Tversky, 1979): people weight losses about twice as much as gains and treat small probabilities erratically. <strong>Thinking, Fast and Slow</strong> (2011).",
+            "Demolished the rational-actor assumption inside economics from a psych department. Nobel in Economics 2002 -- for a psychologist.",
+            "Tversky died of cancer in 1996. Nobel rules forbid posthumous awards; Kahneman dedicated his prize lecture to him.", 10, 10, 8, 6),
+
+        new("Ostrom", "1933-2012", "USA", "modern", "#00BCD4",
+            "Governing the commons",
+            "<strong>Governing the Commons</strong> (1990): empirical study of how communities sustainably manage shared resources without state ownership or privatization. Eight design principles.",
+            "Refuted Hardin's \"Tragedy of the Commons\" with field evidence from fisheries, irrigation systems, and grazing lands worldwide. First woman to win the Nobel in Economics (2009).",
+            "Spent her career outside the economics mainstream as a political scientist. The Nobel committee surprised the discipline -- many economists hadn't read her work.", 9, 10, 8, 5)
+    };
+
+    private static readonly List<Mathematician> mediaFigures = new()
+    {
+        new("Gutenberg", "~1400-1468", "Germany", "medieval", "#E67E22",
+            "Movable type for Europe",
+            "1440s: developed the screw press, oil-based ink, and the metal hand mold for casting reusable type. Printed the 42-line Bible (~1455), the first major Western book printed with movable type.",
+            "His press triggered the Reformation, the Scientific Revolution, and mass literacy. Probably the single biggest jump in information bandwidth in human history.",
+            "Died poor and largely forgotten after losing his press to his investor Johann Fust in a lawsuit. Fust ran the business; Gutenberg got the credit centuries later.", 9, 10, 7, 7),
+
+        new("Pulitzer", "1847-1911", "Hungary/USA", "modern", "#E91E63",
+            "Invented mass-market journalism",
+            "Bought the failing <strong>New York World</strong> in 1883 and turned it into America's largest paper using sensational stories, color comics, sports sections, and crusading investigations.",
+            "Modern newspaper format -- banner headlines, illustrated reporting, advocacy journalism -- is largely his. The Pulitzer Prizes were his bequest to journalism education.",
+            "Locked in a circulation war with Hearst that produced the term \"yellow journalism.\" Both papers helped push the US into the Spanish-American War.", 8, 10, 7, 8),
+
+        new("Hearst", "1863-1951", "USA", "modern", "#E74C3C",
+            "Built the first media empire",
+            "Inherited the <strong>San Francisco Examiner</strong>, then assembled a chain of 30+ newspapers, magazines, radio stations, and movie studios. Pioneered standardized national content.",
+            "He proved that media could be aggregated into a single bloc of political and cultural power -- the template for every subsequent media conglomerate.",
+            "<strong>Citizen Kane</strong> was a barely-veiled attack on him. Hearst used his papers to crush the film, refusing to advertise it and pressuring theaters not to screen it.", 8, 10, 8, 10),
+
+        new("Lippmann", "1889-1974", "USA", "modern", "#4A5FE0",
+            "Public opinion as engineering",
+            "<strong>Public Opinion</strong> (1922): people respond to mental \"pictures in their heads,\" not to reality directly. <strong>The Phantom Public</strong>: ordinary citizens cannot meaningfully govern themselves on technical matters.",
+            "He invented the modern critique of mass democracy and seeded the idea of \"manufactured consent.\" His framework still drives debates about media literacy and political polarization.",
+            "Friend and adviser to presidents from Wilson to LBJ. Coined the term \"Cold War.\" Broke with LBJ over Vietnam.", 9, 10, 8, 7),
+
+        new("Bernays", "1891-1995", "USA/Austria", "modern", "#9B59B6",
+            "Father of PR",
+            "Freud's nephew. Adapted his uncle's psychology into a theory of public manipulation. <strong>Crystallizing Public Opinion</strong> (1923); <strong>Propaganda</strong> (1928). Got women to smoke (\"torches of freedom\" march, 1929).",
+            "He invented the public relations industry and most of its standard tactics: third-party endorsements, manufactured pseudo-events, association of products with identity.",
+            "His autobiography listed the United Fruit Company campaign that helped justify the 1954 CIA coup in Guatemala as a career highlight. Lived to 103.", 8, 10, 8, 9),
+
+        new("Murrow", "1908-1965", "USA", "modern", "#1ABC9C",
+            "Defined broadcast news",
+            "Reported live from London rooftops during the Blitz (\"This is London...\"). Created <strong>See It Now</strong>; his 1954 broadcast was decisive in collapsing Joseph McCarthy.",
+            "He set the template for serious broadcast journalism and demonstrated that television news could topple a senator. Every standards-and-ethics lecture in journalism school cites him.",
+            "Smoked 60-70 unfiltered Camels a day on camera and off. Died of lung cancer at 57. CBS Radio held a moment of silence; the network had quietly squeezed him out years earlier.", 8, 10, 7, 8),
+
+        new("McLuhan", "1911-1980", "Canada", "modern", "#7B68EE",
+            "The medium is the message",
+            "<strong>The Gutenberg Galaxy</strong> (1962); <strong>Understanding Media</strong> (1964). Argued that the form of a medium reshapes cognition independent of content. Coined \"global village\" and \"hot/cool media.\"",
+            "He predicted networked global media and personalized newsfeeds in the 1960s. Mostly mocked at the time, mostly vindicated by the internet.",
+            "Cameo in <strong>Annie Hall</strong>: Woody Allen pulls him from behind a movie poster to shut up a man pontificating about his theories. \"You know nothing of my work.\"", 9, 10, 9, 9),
+
+        new("Barthes", "1915-1980", "France", "modern", "#F39C12",
+            "Mythologies",
+            "<strong>Mythologies</strong> (1957): semiotic readings of wrestling, soap powder, the new Citroen, steak and chips, as carriers of bourgeois ideology. <strong>Camera Lucida</strong>; \"The Death of the Author.\"",
+            "He gave cultural studies a method: read everyday media as a sign system. Modern criticism of advertising, film, and pop culture descends from his approach.",
+            "Killed by a laundry van outside the College de France in 1980, a month after his mother's death. He had stopped caring about much. Posthumously published a journal of grief.", 9, 9, 9, 8),
+
+        new("Habermas", "1929-", "Germany", "modern", "#3498DB",
+            "Theorist of the public sphere",
+            "<strong>The Structural Transformation of the Public Sphere</strong> (1962): the rise of bourgeois cafe-and-press debate as a model of democratic deliberation, and its degradation by mass media.",
+            "His \"public sphere\" is the conceptual bedrock of modern theories of deliberative democracy and media reform. Cited in every fight about platforms, debate, and disinformation.",
+            "As a child he was a member of the Hitler Youth (compulsory). Grew up to spend 70 years arguing for rational democratic discourse against authoritarianism. Still publishing in his 90s.", 10, 10, 9, 6),
+
+        new("Chomsky", "1928-", "USA", "modern", "#607D8B",
+            "Manufacturing Consent",
+            "<strong>Manufacturing Consent</strong> (with Edward Herman, 1988): a propaganda model showing how ownership, advertising, sourcing, flak, and ideology filter US news media toward elite interests.",
+            "Their model is one of the most empirically tested critical theories of media. His political writing is more cited than his linguistics in many fields.",
+            "Most-cited living author in the humanities for decades. Has spent 60+ years saying the same thing about US foreign policy and being ignored by the very outlets he predicts will ignore him.", 10, 10, 9, 9)
+    };
+
+    private static readonly List<Mathematician> literatureFigures = new()
+    {
+        new("Homer", "~8th BC", "Greece", "ancient", "#F39C12",
+            "Founded the Western canon",
+            "<strong>Iliad</strong> and <strong>Odyssey</strong>: the foundational epics of the Greek world. Wrath of Achilles; the return of Odysseus. Composed orally, written down centuries later.",
+            "Western literature begins with him. Plato wanted him banned from the Republic for being too influential. Joyce, Walcott, Atwood, and most everyone in between rewrote him.",
+            "We don't know if he existed as a single person, was blind, or composed both poems. The \"Homeric Question\" has been a scholarly industry for 250 years.", 10, 10, 8, 7),
+
+        new("Murasaki Shikibu", "~973-1014", "Japan", "medieval", "#E91E63",
+            "First novelist",
+            "<strong>The Tale of Genji</strong> (~1010): 54 chapters, 400+ characters, tracking the romantic and political life of a Heian prince. Often cited as the world's first novel.",
+            "She invented psychological interiority in fiction a thousand years ago, in vernacular Japanese, while women were officially excluded from literary culture.",
+            "Wrote in kana script (the \"women's hand\") because women were not supposed to learn Chinese characters. She had quietly mastered Chinese as a child by listening to her brother's lessons.", 10, 10, 8, 6),
+
+        new("Dante", "1265-1321", "Italy", "medieval", "#E74C3C",
+            "Vision of the afterlife",
+            "<strong>The Divine Comedy</strong>: Inferno, Purgatorio, Paradiso. Hundred cantos in terza rima. Codified Italian as a literary language; mapped Christian cosmology with theological and political precision.",
+            "He gave Italy its language and the Western imagination its picture of hell. Auerbach argued the Comedy invented \"realism\" -- characters that exceed their allegorical function.",
+            "Written in exile after the Black Guelphs took Florence and sentenced him to be burned alive on sight. He died in Ravenna and never went home.", 10, 10, 9, 9),
+
+        new("Cervantes", "1547-1616", "Spain", "enlightenment", "#9B59B6",
+            "Invented the modern novel",
+            "<strong>Don Quixote</strong> (1605/1615): an aging hidalgo deluded by chivalric romances rides out as a knight-errant with his squire Sancho. Both volumes invent self-aware, ironic, character-driven fiction.",
+            "Often called the first modern novel. Borges, Calvino, Nabokov, and Kundera all said the form starts here. Quixote's gap between narrative and reality is a structural template ever since.",
+            "Lost the use of his left hand at the Battle of Lepanto. Spent five years as a slave in Algiers. Wrote Don Quixote in his late 50s while broke.", 10, 10, 8, 9),
+
+        new("Shakespeare", "1564-1616", "England", "enlightenment", "#4A5FE0",
+            "Defined English drama",
+            "39 plays, 154 sonnets. Tragedies (<strong>Hamlet, Lear, Macbeth, Othello</strong>), comedies, histories, romances. Coined or popularized ~1,700 English words and phrases still in use.",
+            "Harold Bloom's claim that Shakespeare \"invented the human\" overstates the case but not by much -- his characters' interiority is the template for psychological realism in drama.",
+            "We know astonishingly little about him. Anti-Stratfordians have spent two centuries trying to assign the plays to Bacon, Marlowe, or the Earl of Oxford. Specialists are unconvinced.", 10, 10, 10, 8),
+
+        new("Austen", "1775-1817", "England", "modern", "#E67E22",
+            "Free indirect discourse",
+            "Six novels, including <strong>Pride and Prejudice</strong>, <strong>Emma</strong>, <strong>Persuasion</strong>. Mastered free indirect style -- narration that slips inside a character's voice without quoting.",
+            "She made the social comedy of manners into psychological fiction with bite. Modern third-person novelistic narration is essentially her toolkit.",
+            "Published anonymously (\"By a Lady\") all her life. Died at 41, probably of Addison's disease. Her authorship was first publicly identified by her brother in a posthumous note.", 10, 10, 7, 5),
+
+        new("Dostoevsky", "1821-1881", "Russia", "modern", "#7B68EE",
+            "Polyphonic novelist",
+            "<strong>Crime and Punishment</strong>, <strong>The Idiot</strong>, <strong>Demons</strong>, <strong>The Brothers Karamazov</strong>. Bakhtin called his novels \"polyphonic\" -- characters whose voices the author cannot dominate.",
+            "Existentialism, modernist psychology, and most theological fiction descend from him. Nietzsche called him \"the only psychologist from whom I had something to learn.\"",
+            "Sentenced to death in 1849 for revolutionary activity. Stood before the firing squad before the tsar's commutation arrived. Spent four years in a Siberian prison camp instead.", 10, 10, 8, 10),
+
+        new("Tolstoy", "1828-1910", "Russia", "modern", "#1ABC9C",
+            "Total realism",
+            "<strong>War and Peace</strong>, <strong>Anna Karenina</strong>: massive scope, dozens of characters with full interior lives, military strategy and dinner-party flirtation in one frame. Late religious essays renounced his own fiction.",
+            "Probably the most ambitious realist novelist who ever lived. Joyce said no novelist before or since handled crowds, families, and battles with such control.",
+            "Renounced his estate, title, and copyrights for his Christian-anarchist faith. Died at 82 in a remote railway station after fleeing his wife and home in the middle of the night.", 10, 10, 9, 10),
+
+        new("Joyce", "1882-1941", "Ireland", "modern", "#4A90D9",
+            "Pushed the novel apart",
+            "<strong>Dubliners</strong>, <strong>Portrait of the Artist as a Young Man</strong>, <strong>Ulysses</strong> (1922), <strong>Finnegans Wake</strong> (1939). Stream-of-consciousness, mythic structure, encyclopedic style.",
+            "Ulysses is the high modernist novel; Finnegans Wake is whatever it is. Both rewrote what fiction could attempt. Critics still mine them a century later.",
+            "Ulysses was banned for obscenity in the US until 1933. The court ruling that lifted the ban (Judge Woolsey's) is itself a landmark First Amendment opinion.", 10, 10, 9, 9),
+
+        new("Woolf", "1882-1941", "England", "modern", "#3498DB",
+            "Inner time",
+            "<strong>Mrs Dalloway</strong> (1925), <strong>To the Lighthouse</strong> (1927), <strong>The Waves</strong> (1931). <strong>A Room of One's Own</strong>: a feminist tract on writing and economic independence.",
+            "Together with Joyce and Proust, she rebuilt the novel around subjective time. Modern interior monologue is largely her achievement.",
+            "Suffered severe depressive episodes her whole life. Filled her pockets with stones and walked into the River Ouse in 1941, fearing another breakdown amid the war.", 10, 10, 8, 9),
+
+        new("Kafka", "1883-1924", "Austria-Hungary", "modern", "#607D8B",
+            "Bureaucratic nightmares",
+            "<strong>The Metamorphosis</strong>, <strong>The Trial</strong>, <strong>The Castle</strong>. Dream-logic narratives of guilt, hierarchy, and impersonal power. Wrote in German from Prague.",
+            "His name became an adjective for a reason. Twentieth-century totalitarian and corporate experience reads as if he forecast it from a desk job at an insurance company.",
+            "Asked his friend Max Brod to burn all his unpublished work. Brod published all of it instead, reasoning that Kafka knew he would.", 10, 10, 8, 10),
+
+        new("Borges", "1899-1986", "Argentina", "modern", "#8E44AD",
+            "Library of Babel",
+            "<strong>Ficciones</strong> (1944), <strong>El Aleph</strong> (1949): short stories that read like philosophical thought experiments -- infinite libraries, forking paths, impossible maps. Helped invent magic realism.",
+            "He taught the late 20th century how to write metafiction. Garcia Marquez, Eco, Calvino, Pavic, and most postmodern fiction descend from his playbook.",
+            "Went blind in his late 50s while director of the National Library of Argentina -- 800,000 books he could no longer read. Memorized Anglo-Saxon poetry by ear instead.", 10, 10, 10, 8)
     };
 }
 

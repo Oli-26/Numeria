@@ -42,7 +42,8 @@ public class NotificationService : INotificationService
                 "Keep your streak alive!",
                 profile.CurrentStreak > 0
                     ? $"You're on a {profile.CurrentStreak}-day streak. Don't break it!"
-                    : "Start a new learning streak today."
+                    : "Start a new learning streak today.",
+                "/"
             );
         }
         catch { /* bridge unavailable or permission denied — fail silently */ }
@@ -72,10 +73,11 @@ public class NotificationService : INotificationService
                 "Review cards due",
                 dueCount == 1
                     ? "You have 1 card waiting for review."
-                    : $"You have {dueCount} cards waiting for review."
+                    : $"You have {dueCount} cards waiting for review.",
+                "/review"
             );
         }
-        catch { /* fail silently */ }
+        catch (Exception ex) { await _js.LogErrorAsync("NotificationService.ScheduleReviewReminder", ex); }
     }
 
     public async Task DisableAllAsync()
@@ -84,7 +86,7 @@ public class NotificationService : INotificationService
         {
             await _js.InvokeVoidAsync("Notifications.cancelAll");
         }
-        catch { }
+        catch (Exception ex) { await _js.LogErrorAsync("NotificationService.cancelAll", ex); }
 
         var profile = await _progress.GetProfileAsync();
         profile.NotificationsEnabled = false;
@@ -117,6 +119,6 @@ public class NotificationService : INotificationService
                 await ScheduleReviewReminderAsync();
             }
         }
-        catch { }
+        catch (Exception ex) { await _js.LogErrorAsync("NotificationService.RefreshSchedules", ex); }
     }
 }

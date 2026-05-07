@@ -22,6 +22,14 @@ public class Question
     public int XpReward { get; set; }
     public string? VisualizationType { get; set; }
     public Dictionary<string, object>? VisualizationConfig { get; set; }
+
+    // NumericInput
+    public double? Tolerance { get; set; }
+    public string? Unit { get; set; }
+
+    // Categorize: ordered list of bucket labels; CategoryItems maps each item -> correct bucket
+    public List<string>? Categories { get; set; }
+    public Dictionary<string, string>? CategoryItems { get; set; }
 }
 
 public class MatchPair

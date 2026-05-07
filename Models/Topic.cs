@@ -10,6 +10,7 @@ public class Topic
     public int LessonCount { get; set; }
     public string Difficulty { get; set; } = "";
     public string Domain { get; set; } = "math";
+    public int Tier { get; set; } = 1;
 }
 
 public class Domain

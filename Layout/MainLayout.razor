@@ -1,11 +1,78 @@
 @inherits LayoutComponentBase
+@implements IAsyncDisposable
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="app-container">
     <main class="main-content">
-        @Body
+        <div class="page-shell" @key="currentUri">
+            @Body
+        </div>
     </main>
     <NavBar />
 </div>
 
 <div id="toast-container"></div>
 <div id="confetti-container"></div>
+
+@code {
+    private string currentUri = "";
+    private DotNetObjectReference<MainLayout>? _selfRef;
+
+    protected override void OnInitialized()
+    {
+        currentUri = Nav.Uri;
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            // Cold-start deep link: a notification tap or shortcut stashes the
+            // target route into sessionStorage before Blazor boots.
+            var route = await JS.InvokeAsync<string?>("Notifications.consumePendingDeepLink");
+            if (!string.IsNullOrWhiteSpace(route)) NavigateIfDifferent(route!);
+
+            // Warm deep link: subscribe to phine:deeplink so notification taps
+            // and shortcut launches that arrive while the app is alive route too.
+            _selfRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("eval", "(function(ref){window.addEventListener('phine:deeplink',function(e){ref.invokeMethodAsync('OnDeepLink',e.detail);});})(arguments[0])", _selfRef);
+        }
+        catch { /* JS bridge unavailable — ignore */ }
+    }
+
+    [JSInvokable]
+    public void OnDeepLink(string? route)
+    {
+        if (string.IsNullOrWhiteSpace(route)) return;
+        InvokeAsync(() =>
+        {
+            NavigateIfDifferent(route!);
+            return Task.CompletedTask;
+        });
+    }
+
+    private void NavigateIfDifferent(string route)
+    {
+        var current = new Uri(Nav.Uri).AbsolutePath;
+        if (!string.Equals(current, route, StringComparison.OrdinalIgnoreCase))
+        {
+            Nav.NavigateTo(route);
+        }
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        currentUri = e.Location;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        _selfRef?.Dispose();
+        await Task.CompletedTask;
+    }
+}

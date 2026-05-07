@@ -254,7 +254,7 @@ else if (state == MState.Result)
         {
             var q = quizQuestions[currentQ];
             if (q.MathExpression != null)
-                try { await JS.InvokeVoidAsync("renderMath", $"mastery-math-{currentQ}", q.MathExpression, true); } catch { }
+                await JS.TryInvokeVoidAsync("renderMath", $"mastery-math-{currentQ}", q.MathExpression, true);
         }
     }
 
@@ -308,7 +308,7 @@ else if (state == MState.Result)
         lastCorrect = answer == q.CorrectAnswer;
         if (lastCorrect) correctCount++;
         answered = true;
-        try { await JS.InvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+        await JS.TryInvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong");
     }
 
     private async Task SubmitFillIn()
@@ -320,7 +320,7 @@ else if (state == MState.Result)
         lastCorrect = result.IsCorrect;
         if (lastCorrect) correctCount++;
         answered = true;
-        try { await JS.InvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+        await JS.TryInvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong");
     }
 
     private async Task HandleKey(KeyboardEventArgs e)
@@ -360,12 +360,12 @@ else if (state == MState.Result)
 
                 await Gamification.AwardXpAsync(xpEarned);
 
-                try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
-                try { await JS.InvokeVoidAsync("Confetti.launch", targetTier * 25); } catch { }
+                await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
+                await JS.TryInvokeVoidAsync("Confetti.launch", targetTier * 25);
             }
             else
             {
-                try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
+                await JS.TryInvokeVoidAsync("Sounds.playComplete");
             }
 
             state = MState.Result;

@@ -148,6 +148,41 @@
         }
     }
 
+    // Auto-pick a calm, natural-sounding English voice when the user has not
+    // chosen one explicitly. Heuristics, in priority order:
+    //   1. Apple female "natural" voices (Samantha, Karen, Moira, etc.)
+    //   2. Microsoft "Natural" voices (Aria, Jenny, Libby, Sonia, Natasha…)
+    //   3. Google premium female voices by their internal IDs
+    //   4. Any voice whose name contains "female"
+    //   5. Network/cloud voice (usually higher quality than embedded)
+    //   6. First English voice available
+    function pickGentleVoice() {
+        if (!synth) return null;
+        var voices = synth.getVoices();
+        if (!voices || voices.length === 0) return null;
+
+        var en = voices.filter(function (v) {
+            return v.lang && v.lang.toLowerCase().indexOf('en') === 0;
+        });
+        if (en.length === 0) en = voices;
+
+        var preferred = [
+            'samantha', 'karen', 'moira', 'tessa', 'fiona', 'allison', 'ava', 'serena', 'susan',
+            'aria', 'jenny', 'libby', 'sonia', 'natasha',
+            'en-gb-x-gbc', 'en-gb-x-gbb', 'en-gb-x-rjs',
+            'en-us-x-iol', 'en-us-x-iom', 'en-us-x-tpc',
+            'female'
+        ];
+        for (var i = 0; i < preferred.length; i++) {
+            var key = preferred[i];
+            var hit = en.find(function (v) { return v.name && v.name.toLowerCase().indexOf(key) !== -1; });
+            if (hit) return hit;
+        }
+        var network = en.find(function (v) { return v.localService === false; });
+        if (network) return network;
+        return en[0];
+    }
+
     // ── Public API ────────────────────────────────────────────────────────────
     window.TTS = {
         supported: _supported,
@@ -185,15 +220,19 @@
 
                 var utterance = new SpeechSynthesisUtterance(text);
                 utterance.rate = typeof opts.rate === 'number' ? opts.rate : 1.0;
+                utterance.pitch = typeof opts.pitch === 'number' ? opts.pitch : 0.95;
                 utterance.lang = opts.lang || 'en-US';
 
-                // Resolve voice by name if given
+                // Resolve voice by name if given, otherwise auto-pick a gentle default
                 if (opts.voice) {
                     var voices = synth.getVoices();
                     var match = voices.find(function (v) {
                         return v.name === opts.voice;
                     });
                     if (match) utterance.voice = match;
+                } else {
+                    var gentle = pickGentleVoice();
+                    if (gentle) utterance.voice = gentle;
                 }
 
                 utterance.onend = function () { _currentUtterance = null; resolve(); };
@@ -224,12 +263,16 @@
 
                 var utterance = new SpeechSynthesisUtterance(text);
                 utterance.rate = typeof opts.rate === 'number' ? opts.rate : 1.0;
+                utterance.pitch = typeof opts.pitch === 'number' ? opts.pitch : 0.95;
                 utterance.lang = opts.lang || 'en-US';
 
                 if (opts.voice) {
                     var voices = synth.getVoices();
                     var match = voices.find(function (v) { return v.name === opts.voice; });
                     if (match) utterance.voice = match;
+                } else {
+                    var gentle = pickGentleVoice();
+                    if (gentle) utterance.voice = gentle;
                 }
 
                 utterance.onend = function () { _currentUtterance = null; resolve(); };

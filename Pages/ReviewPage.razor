@@ -13,12 +13,16 @@
 
 @if (state == ReviewState.Loading)
 {
-    <div class="loading">Loading review cards...</div>
+    <div class="skeleton-list">
+        <div class="skeleton skeleton-card" style="height: 140px; margin-bottom: 12px;"></div>
+        <div class="skeleton skeleton-card" style="height: 56px; margin-bottom: 8px;"></div>
+        <div class="skeleton skeleton-card" style="height: 56px;"></div>
+    </div>
 }
 else if (state == ReviewState.Empty)
 {
     <div class="empty-state card">
-        <div class="empty-icon"><Icon Name="checkmark-circle" Size="32" /></div>
+        <div class="empty-icon"><Icon Name="checkmark-circle" Size="40" /></div>
         <h2>All caught up!</h2>
         <p>No cards due for review. Keep learning and questions will appear here based on how well you remember them.</p>
         <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Back to Home</button>
@@ -42,6 +46,56 @@ else if (state == ReviewState.Active)
                     <div class="math-display" id="review-math"></div>
                 }
 
+                @if (currentQuestion.Type == QuestionType.FindTheError && currentQuestion.Steps != null)
+                {
+                    <div class="review-steps">
+                        @for (int i = 0; i < currentQuestion.Steps.Count; i++)
+                        {
+                            var stepNum = i + 1;
+                            var isError = revealed && currentQuestion.CorrectAnswer == stepNum.ToString();
+                            <div class="review-step @(isError ? "error-found" : "")">
+                                <span class="rstep-num">@stepNum</span>
+                                <span>@currentQuestion.Steps[i]</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (currentQuestion.Type == QuestionType.ProofOrdering && currentQuestion.Steps != null)
+                {
+                    <div class="review-steps">
+                        @for (int i = 0; i < currentQuestion.Steps.Count; i++)
+                        {
+                            <div class="review-step">
+                                <span class="rstep-num">@(i + 1)</span>
+                                <span>@(revealed ? currentQuestion.Steps[i] : "???")</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (currentQuestion.Type == QuestionType.ConceptMatch && currentQuestion.Pairs != null)
+                {
+                    <div class="review-pairs">
+                        @foreach (var pair in currentQuestion.Pairs)
+                        {
+                            <div class="review-pair">
+                                <span class="pair-left">@pair.Left</span>
+                                <span class="pair-arrow">↔</span>
+                                <span class="pair-right @(revealed ? "revealed" : "hidden")">@(revealed ? pair.Right : "???")</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else if ((currentQuestion.Type == QuestionType.MultipleChoice || currentQuestion.Type == QuestionType.VisualIdentify) && currentQuestion.Options != null)
+                {
+                    <div class="review-options">
+                        @foreach (var opt in currentQuestion.Options)
+                        {
+                            var isCorrect = revealed && opt == currentQuestion.CorrectAnswer;
+                            <div class="review-option @(isCorrect ? "correct" : "")">@opt</div>
+                        }
+                    </div>
+                }
+
                 @if (!revealed)
                 {
                     <button class="btn btn-primary" style="width: 100%; margin-top: 16px" @onclick="Reveal">
@@ -50,13 +104,22 @@ else if (state == ReviewState.Active)
                 }
                 else
                 {
-                    <div class="review-answer">
-                        <strong>@(currentQuestion.CorrectAnswer ?? "See explanation")</strong>
-                        @if (currentQuestion.Explanation != null)
-                        {
-                            <p>@currentQuestion.Explanation</p>
-                        }
-                    </div>
+                    @if (HasScalarAnswer(currentQuestion))
+                    {
+                        <div class="review-answer">
+                            <strong>@currentQuestion.CorrectAnswer</strong>
+                            @if (currentQuestion.Explanation != null)
+                            {
+                                <p>@currentQuestion.Explanation</p>
+                            }
+                        </div>
+                    }
+                    else if (currentQuestion.Explanation != null)
+                    {
+                        <div class="review-answer">
+                            <p style="margin: 0">@currentQuestion.Explanation</p>
+                        </div>
+                    }
 
                     <p class="review-rate-prompt">How well did you remember?</p>
                     <div class="review-buttons">
@@ -156,8 +219,15 @@ else if (state == ReviewState.Complete)
     private async Task Reveal()
     {
         revealed = true;
-        try { await JS.InvokeVoidAsync("Sounds.playReveal"); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playReveal");
+        await JS.TryInvokeVoidAsync("Haptics.light");
     }
+
+    private static bool HasScalarAnswer(Question q) =>
+        q.Type != QuestionType.FindTheError
+        && q.Type != QuestionType.ConceptMatch
+        && q.Type != QuestionType.ProofOrdering
+        && !string.IsNullOrEmpty(q.CorrectAnswer);
 
     private async Task Rate(bool remembered)
     {
@@ -170,19 +240,22 @@ else if (state == ReviewState.Complete)
             var earned = 10;
             xpEarned += earned;
             await Gamification.AwardXpAsync(earned);
-            try { await JS.InvokeVoidAsync("Sounds.playCorrect"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playCorrect");
+            await JS.TryInvokeVoidAsync("Haptics.success");
         }
         else
         {
             forgotCount++;
-            try { await JS.InvokeVoidAsync("Sounds.playWrong"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playWrong");
+            await JS.TryInvokeVoidAsync("Haptics.warning");
         }
 
         currentIndex++;
         if (currentIndex >= dueCards.Count)
         {
             state = ReviewState.Complete;
-            try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playComplete");
+            await JS.TryInvokeVoidAsync("Haptics.medium");
         }
         else
         {
@@ -202,7 +275,7 @@ else if (state == ReviewState.Complete)
     .review-answer {
         margin-top: 16px; padding: 14px; background: var(--bg-surface);
         border-radius: var(--radius-sm); border-color: var(--primary);
-        animation: revealSlide 0.35s ease;
+        animation: revealSlide 0.25s ease;
     }
 
     @@keyframes revealSlide {
@@ -240,4 +313,36 @@ else if (state == ReviewState.Complete)
     .correct-color { color: var(--success); }
     .error-color { color: var(--error); }
     .review-stat small { color: var(--text-muted); font-size: 0.8rem; }
+
+    .review-steps { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+    .review-step {
+        display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+        background: var(--bg-card); border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.9rem; color: var(--text-primary);
+    }
+    .review-step.error-found { border-color: var(--error); background: rgba(239, 83, 80, 0.12); }
+    .rstep-num {
+        width: 24px; height: 24px; border-radius: 50%; background: var(--bg-surface);
+        color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    }
+    .review-step.error-found .rstep-num { background: var(--error); color: white; }
+
+    .review-pairs { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+    .review-pair {
+        display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+        padding: 8px 10px; background: var(--bg-card); border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.9rem;
+    }
+    .pair-left, .pair-right { padding: 6px 8px; text-align: center; }
+    .pair-arrow { color: var(--text-muted); }
+    .pair-right.hidden { color: var(--text-muted); font-style: italic; }
+    .pair-right.revealed { color: var(--primary); font-weight: 600; }
+
+    .review-options { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+    .review-option {
+        padding: 10px 12px; background: var(--bg-card); border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 0.9rem; color: var(--text-primary);
+    }
+    .review-option.correct { border-color: var(--success); background: rgba(76, 175, 80, 0.12); color: var(--success); font-weight: 600; }
 </style>

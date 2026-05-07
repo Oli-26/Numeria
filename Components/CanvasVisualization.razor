@@ -1645,7 +1645,7 @@
 
     public async ValueTask DisposeAsync()
     {
-        try { await JS.InvokeVoidAsync("MathCanvas.dispose", CanvasId); } catch { }
+        await JS.TryInvokeVoidAsync("MathCanvas.dispose", CanvasId);
     }
 }
 

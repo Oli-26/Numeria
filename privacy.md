@@ -1,20 +1,20 @@
-# Privacy Policy for Numeria
+# Privacy Policy for Phine
 
 **Effective date:** 2026-04-27
 **Last updated:** 2026-04-27
 
-This Privacy Policy describes how the Numeria mobile application ("Numeria",
+This Privacy Policy describes how the Phine mobile application ("Phine",
 "the app", "we", "us") handles information when you use it.
 
 ## Summary
 
-Numeria is an offline educational app. We do **not** collect, store, transmit,
+Phine is an offline educational app. We do **not** collect, store, transmit,
 or share any personal information. The app does not contain advertising,
 analytics, or third-party tracking SDKs.
 
 ## Information We Collect
 
-**None.** Numeria does not collect personally identifiable information,
+**None.** Phine does not collect personally identifiable information,
 contact details, location data, contacts, photos, microphone audio, camera
 images, or device identifiers.
 
@@ -25,7 +25,7 @@ never leaves your device. We have no access to it.
 
 ## Permissions
 
-Numeria requests only the permissions needed to function:
+Phine requests only the permissions needed to function:
 
 - **Local Notifications** — used to schedule reminders on your device. No
   notification content is sent to or through any server.
@@ -35,7 +35,7 @@ Numeria requests only the permissions needed to function:
 
 ## Children's Privacy
 
-Numeria is suitable for general audiences, including children. We do not
+Phine is suitable for general audiences, including children. We do not
 knowingly collect any information from children or any other users, because
 we do not collect information at all. The app complies with the spirit of
 the Children's Online Privacy Protection Act (COPPA) and the Google Play
@@ -43,7 +43,7 @@ Families policy by collecting no personal data.
 
 ## Third-Party Services
 
-Numeria does not integrate with third-party advertising networks, analytics
+Phine does not integrate with third-party advertising networks, analytics
 providers, social networks, or cloud services that would receive your data.
 
 ## Data Retention and Deletion

@@ -8,7 +8,10 @@
 
 @if (quizState == QuizState.Loading)
 {
-    <div class="loading">Preparing quiz...</div>
+    <div class="loading">
+        <div class="spinner"></div>
+        <span>Preparing quiz...</span>
+    </div>
 }
 else if (quizState == QuizState.Empty)
 {
@@ -18,7 +21,7 @@ else if (quizState == QuizState.Empty)
         <button class="btn btn-primary" @onclick="() => OnComplete.InvokeAsync(0)">Go Back</button>
     </div>
 }
-else if (quizState == QuizState.InProgress)
+else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
 {
     <Notepad />
     <div class="quiz-container">
@@ -49,6 +52,16 @@ else if (quizState == QuizState.InProgress)
             {
                 <button class="hint-btn" @onclick="UseHint"><Icon Name="lightbulb" Size="16" /> Use Hint (@hintsAvailable left)</button>
             }
+            @if (!answerSubmitted && fiftyFiftyTokens > 0 && q.Options != null && q.CorrectAnswer != null
+                 && (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.VisualIdentify)
+                 && eliminatedOptions.Count == 0 && q.Options.Count >= 4)
+            {
+                <button class="hint-btn" @onclick="UseFiftyFifty"><Icon Name="target" Size="16" /> 50/50 (@fiftyFiftyTokens left)</button>
+            }
+            @if (!answerSubmitted && skipTokens > 0)
+            {
+                <button class="hint-btn" @onclick="UseSkip"><Icon Name="arrow-right" Size="16" /> Skip (@skipTokens left)</button>
+            }
             @if (hintShown && q.CorrectAnswer != null)
             {
                 <div class="hint-reveal">Answer: <strong>@q.CorrectAnswer</strong></div>
@@ -63,9 +76,10 @@ else if (quizState == QuizState.InProgress)
                     @foreach (var option in q.Options)
                     {
                         var optionClass = GetOptionClass(option);
-                        <button class="option-btn @optionClass"
+                        var isEliminated = eliminatedOptions.Contains(option);
+                        <button class="option-btn @optionClass @(isEliminated ? "eliminated" : "")"
                                 @onclick="() => SelectOption(option)"
-                                disabled="@answerSubmitted">
+                                disabled="@(answerSubmitted || isEliminated)">
                             @option
                         </button>
                     }
@@ -82,6 +96,102 @@ else if (quizState == QuizState.InProgress)
                 {
                     <button class="btn btn-primary" @onclick="SubmitFillIn"
                             disabled="@string.IsNullOrWhiteSpace(fillInAnswer)">Submit</button>
+                }
+            </div>
+        }
+        else if (q.Type == QuestionType.NumericInput)
+        {
+            <div class="fill-in-section">
+                <input type="text" inputmode="decimal" class="fill-input" @bind="fillInAnswer" @bind:event="oninput"
+                       placeholder="@(q.Unit != null ? $"Number ({q.Unit})" : "Number")"
+                       disabled="@answerSubmitted" @onkeydown="HandleFillInKeydown" />
+                @if (q.Unit != null) { <span class="num-unit">@q.Unit</span> }
+                @if (!answerSubmitted)
+                {
+                    <button class="btn btn-primary" @onclick="SubmitFillIn"
+                            disabled="@string.IsNullOrWhiteSpace(fillInAnswer)">Submit</button>
+                }
+            </div>
+        }
+        else if (q.Type == QuestionType.MultipleSelect)
+        {
+            <div class="ms-section">
+                <p class="ms-hint">Select all that apply:</p>
+                @if (q.Options != null)
+                {
+                    <div class="options-grid">
+                        @foreach (var option in q.Options)
+                        {
+                            var isPicked = msSelected.Contains(option);
+                            var isCorrect = q.AcceptableAnswers?.Contains(option, StringComparer.OrdinalIgnoreCase) == true;
+                            var cls = answerSubmitted
+                                ? (isCorrect ? "correct" : (isPicked ? "incorrect" : ""))
+                                : (isPicked ? "active" : "");
+                            <button class="option-btn ms-option @cls"
+                                    @onclick="() => ToggleMultiSelect(option)"
+                                    disabled="@answerSubmitted">
+                                <span class="ms-checkbox">@(isPicked ? "✓" : "")</span>
+                                @option
+                            </button>
+                        }
+                    </div>
+                }
+                @if (!answerSubmitted)
+                {
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px"
+                            @onclick="SubmitMultiSelect"
+                            disabled="@(msSelected.Count == 0)">Submit</button>
+                }
+            </div>
+        }
+        else if (q.Type == QuestionType.Categorize)
+        {
+            <div class="cat-section">
+                <p class="matching-hint">
+                    @if (catSelectedItem == null)
+                    { <span>Tap an item, then tap a category.</span> }
+                    else
+                    { <span>Now tap a category for <strong>@catSelectedItem</strong></span> }
+                </p>
+
+                @if (q.CategoryItems != null)
+                {
+                    <div class="cat-items-row">
+                        @foreach (var item in catItemsShuffled)
+                        {
+                            var assigned = catAssignments.ContainsKey(item);
+                            var isSel = catSelectedItem == item;
+                            var cls = isSel ? "active" : assigned ? "matched" : "";
+                            var resCls = answerSubmitted && q.CategoryItems.TryGetValue(item, out var truth)
+                                ? (catAssignments.TryGetValue(item, out var got) && got == truth ? "correct" : "incorrect")
+                                : "";
+                            <button class="match-item @cls @resCls"
+                                    @onclick="() => SelectCatItem(item)"
+                                    disabled="@answerSubmitted">
+                                @item
+                                @if (assigned) { <small>→ @catAssignments[item]</small> }
+                            </button>
+                        }
+                    </div>
+                }
+
+                @if (q.Categories != null && !answerSubmitted)
+                {
+                    <div class="cat-buckets">
+                        @foreach (var bucket in q.Categories)
+                        {
+                            <button class="cat-bucket @(catSelectedItem != null ? "available" : "")"
+                                    @onclick="() => AssignCatBucket(bucket)"
+                                    disabled="@(catSelectedItem == null)">
+                                @bucket
+                            </button>
+                        }
+                    </div>
+                }
+
+                @if (!answerSubmitted && q.CategoryItems != null && catAssignments.Count == q.CategoryItems.Count)
+                {
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px" @onclick="SubmitCategorize">Check</button>
                 }
             </div>
         }
@@ -199,7 +309,7 @@ else if (quizState == QuizState.InProgress)
         else if (q.Type == QuestionType.FindTheError)
         {
             <div class="find-error-section">
-                <p class="error-hint">One of these steps contains an error. Tap the wrong step:</p>
+                <p class="error-hint">Find the first mistake — later steps will be wrong too. Tap the step where the error first appears:</p>
                 @if (q.Steps != null)
                 {
                     @for (int i = 0; i < q.Steps.Count; i++)
@@ -243,6 +353,12 @@ else if (quizState == QuizState.InProgress)
             {
                 <button class="btn btn-sm btn-outline review-concept-btn" @onclick="() => ReviewConcept(q.LessonId)">
                     <Icon Name="book" Size="16" /> Review this concept
+                </button>
+            }
+            @if (!lastCorrect && secondChanceTokens > 0)
+            {
+                <button class="btn btn-sm btn-outline" style="width: 100%; margin-top: 8px" @onclick="UseSecondChance">
+                    <Icon Name="rotate" Size="16" /> Second Chance (@secondChanceTokens left)
                 </button>
             }
             <button class="btn btn-primary" style="width: 100%; margin-top: 8px" @onclick="NextQuestion">
@@ -330,11 +446,25 @@ else if (quizState == QuizState.Complete)
     private bool hintShown;
     private bool showHintsByDefault;
 
+    // Powerup state
+    private int skipTokens;
+    private int fiftyFiftyTokens;
+    private int secondChanceTokens;
+    private HashSet<string> eliminatedOptions = new();
+
     // Find the error state
     private int errorSelectedStep = -1;
 
     // Ordering state
     private List<string> orderedSteps = new();
+
+    // MultipleSelect state
+    private HashSet<string> msSelected = new();
+
+    // Categorize state
+    private List<string> catItemsShuffled = new();
+    private Dictionary<string, string> catAssignments = new();
+    private string? catSelectedItem;
 
     private static readonly Random _random = new();
 
@@ -352,9 +482,20 @@ else if (quizState == QuizState.Complete)
                 if (qs.TopicId == TopicId && qs.LessonId == LessonId && qs.QuestionIds.Count > 0)
                 {
                     // Reload the same questions in the same order
-                    var allQuestions = TopicId != null
-                        ? await QuizEngine.GenerateQuizAsync(TopicId, LessonId, 100)
-                        : await QuizEngine.GenerateMixedQuizAsync(count: 100);
+                    List<Question> allQuestions;
+                    if (TopicId != null)
+                    {
+                        allQuestions = await QuizEngine.GenerateQuizAsync(TopicId, LessonId, 100);
+                    }
+                    else
+                    {
+                        var p = await Progress.GetProfileAsync();
+                        allQuestions = await QuizEngine.GenerateLearnedQuizAsync(
+                            p.LessonsCompleted,
+                            p.TopicsCompleted,
+                            p.TopicStatistics.Keys,
+                            100);
+                    }
 
                     var questionLookup = allQuestions.ToDictionary(q => q.Id);
                     var restoredQuestions = new List<Question>();
@@ -384,7 +525,7 @@ else if (quizState == QuizState.Complete)
                         }
 
                         quizState = QuizState.InProgress;
-                        InitQuestion();
+                        await InitQuestion();
                         restored = true;
                     }
                 }
@@ -399,14 +540,17 @@ else if (quizState == QuizState.Complete)
                 else
                 {
                     var profile = await Progress.GetProfileAsync();
-                    var completedTopics = profile.TopicsCompleted.Count > 0 ? profile.TopicsCompleted : null;
-                    questions = await QuizEngine.GenerateMixedQuizAsync(completedTopics, 5);
+                    questions = await QuizEngine.GenerateLearnedQuizAsync(
+                        profile.LessonsCompleted,
+                        profile.TopicsCompleted,
+                        profile.TopicStatistics.Keys,
+                        5);
                 }
 
                 if (questions.Count > 0)
                 {
                     quizState = QuizState.InProgress;
-                    InitQuestion();
+                    await InitQuestion();
                     await SaveQuizState();
                 }
                 else
@@ -455,6 +599,9 @@ else if (quizState == QuizState.Complete)
             else if (purchase == "hint-pack-3") totalBought += 3;
         }
         hintsAvailable = totalBought - p.HintsUsed;
+        skipTokens = p.SkipTokens;
+        fiftyFiftyTokens = p.FiftyFiftyTokens;
+        secondChanceTokens = p.SecondChanceTokens;
     }
 
     private async Task UseHint()
@@ -467,22 +614,77 @@ else if (quizState == QuizState.Complete)
         await Progress.SaveProfileAsync(p);
     }
 
-    private void InitQuestion()
+    private async Task UseSkip()
+    {
+        if (skipTokens <= 0 || answerSubmitted) return;
+        var p = await Progress.GetProfileAsync();
+        if (p.SkipTokens <= 0) return;
+        p.SkipTokens--;
+        skipTokens = p.SkipTokens;
+        await Progress.SaveProfileAsync(p);
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+        await NextQuestion();
+    }
+
+    private async Task UseFiftyFifty()
+    {
+        if (fiftyFiftyTokens <= 0 || answerSubmitted) return;
+        var q = questions[currentIndex];
+        if (q.Options == null || q.CorrectAnswer == null) return;
+        var wrong = q.Options.Where(o => o != q.CorrectAnswer).OrderBy(_ => _random.Next()).Take(2).ToList();
+        if (wrong.Count == 0) return;
+        foreach (var w in wrong) eliminatedOptions.Add(w);
+        var p = await Progress.GetProfileAsync();
+        if (p.FiftyFiftyTokens <= 0) return;
+        p.FiftyFiftyTokens--;
+        fiftyFiftyTokens = p.FiftyFiftyTokens;
+        await Progress.SaveProfileAsync(p);
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+    }
+
+    private async Task UseSecondChance()
+    {
+        if (secondChanceTokens <= 0 || !answerSubmitted || lastCorrect) return;
+        var p = await Progress.GetProfileAsync();
+        if (p.SecondChanceTokens <= 0) return;
+        p.SecondChanceTokens--;
+        secondChanceTokens = p.SecondChanceTokens;
+        await Progress.SaveProfileAsync(p);
+
+        // Roll back the last wrong answer
+        if (results.Count > 0) results.RemoveAt(results.Count - 1);
+        if (wrongCount > 0) wrongCount--;
+        answerSubmitted = false;
+        fillInAnswer = "";
+        msSelected.Clear();
+        catAssignments.Clear();
+        catSelectedItem = null;
+        errorSelectedStep = -1;
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+    }
+
+    private async Task InitQuestion()
     {
         answerSubmitted = false;
         fillInAnswer = "";
         selectedLeft = null;
         hintShown = false;
         errorSelectedStep = -1;
+        eliminatedOptions.Clear();
         userMatches.Clear();
         matchResults.Clear();
+        msSelected.Clear();
+        catAssignments.Clear();
+        catSelectedItem = null;
+        catItemsShuffled.Clear();
+        shuffledRights.Clear();
 
         var q = questions[currentIndex];
         if (showHintsByDefault && hintsAvailable > 0 && q.CorrectAnswer != null)
         {
             hintShown = true;
             hintsAvailable--;
-            _ = DeductHintAsync();
+            await DeductHintAsync();
         }
 
         if (q.Type == QuestionType.ProofOrdering && q.Steps != null)
@@ -493,6 +695,49 @@ else if (quizState == QuizState.Complete)
         {
             shuffledRights = q.Pairs.Select(p => p.Right).OrderBy(_ => _random.Next()).ToList();
         }
+        if (q.Type == QuestionType.Categorize && q.CategoryItems != null)
+        {
+            catItemsShuffled = q.CategoryItems.Keys.OrderBy(_ => _random.Next()).ToList();
+        }
+    }
+
+    private void ToggleMultiSelect(string option)
+    {
+        if (answerSubmitted) return;
+        if (!msSelected.Add(option)) msSelected.Remove(option);
+    }
+
+    private async Task SubmitMultiSelect()
+    {
+        if (answerSubmitted || msSelected.Count == 0) return;
+        var q = questions[currentIndex];
+        var joined = string.Join("|", msSelected);
+        var result = QuizEngine.ValidateAnswer(q, joined);
+        result.UserAnswer = string.Join(", ", msSelected);
+        await RecordResult(result);
+    }
+
+    private void SelectCatItem(string item)
+    {
+        if (answerSubmitted) return;
+        catSelectedItem = catSelectedItem == item ? null : item;
+    }
+
+    private void AssignCatBucket(string bucket)
+    {
+        if (answerSubmitted || catSelectedItem == null) return;
+        catAssignments[catSelectedItem] = bucket;
+        catSelectedItem = null;
+    }
+
+    private async Task SubmitCategorize()
+    {
+        if (answerSubmitted) return;
+        var q = questions[currentIndex];
+        var joined = string.Join(";", catAssignments.Select(kv => $"{kv.Key}=>{kv.Value}"));
+        var result = QuizEngine.ValidateAnswer(q, joined);
+        result.UserAnswer = string.Join(", ", catAssignments.Select(kv => $"{kv.Key}→{kv.Value}"));
+        await RecordResult(result);
     }
 
     private async Task DeductHintAsync()
@@ -598,7 +843,8 @@ else if (quizState == QuizState.Complete)
         }
 
         await SaveQuizState();
-        try { await JS.InvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong"); } catch { }
+        await JS.TryInvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong");
+        await JS.TryInvokeVoidAsync(lastCorrect ? "Haptics.success" : "Haptics.error");
     }
 
     private void ReviewConcept(string lessonId)
@@ -616,7 +862,7 @@ else if (quizState == QuizState.Complete)
         }
         else
         {
-            InitQuestion();
+            await InitQuestion();
         }
     }
 
@@ -636,20 +882,36 @@ else if (quizState == QuizState.Complete)
 
         quizEvent = await Gamification.AwardXpAsync(totalXpEarned);
 
+        // Phi Magnet: +50% bonus φ on top of awarded points
+        if (profile.PhiMagnetActive > 0)
+        {
+            var bonusPhi = totalXpEarned / 2;
+            var p2 = await Progress.GetProfileAsync();
+            p2.Points += bonusPhi;
+            p2.PhiMagnetActive--;
+            await Progress.SaveProfileAsync(p2);
+        }
+
         var score = questions.Count > 0 ? correctCount * 100 / questions.Count : 0;
         var quizId = LessonId ?? TopicId ?? "mixed";
         await Progress.RecordQuizResultAsync(quizId, TopicId, score, correctCount, questions.Count, totalXpEarned);
 
         quizState = QuizState.Complete;
         await SessionState.ClearSessionStateAsync();
-        try { await JS.InvokeVoidAsync("Sounds.playComplete"); } catch { }
-        try { await JS.InvokeVoidAsync("XpFloat.show", totalXpEarned, null, null); } catch { }
+        await JS.TryInvokeVoidAsync("Sounds.playComplete");
+        await JS.TryInvokeVoidAsync("XpFloat.show", totalXpEarned, null, null);
         if (quizEvent.LeveledUp)
-            try { await JS.InvokeVoidAsync("Sounds.playLevelUp"); } catch { }
+        {
+            await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
+            await JS.TryInvokeVoidAsync("Haptics.heavy");
+        }
         if (quizEvent.NewAchievements.Count > 0)
-            try { await JS.InvokeVoidAsync("Sounds.playAchievement"); } catch { }
+        {
+            await JS.TryInvokeVoidAsync("Sounds.playAchievement");
+            await JS.TryInvokeVoidAsync("Haptics.medium");
+        }
         if (score >= 80)
-            try { await JS.InvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40); } catch { }
+            await JS.TryInvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40);
     }
 
     private async Task Finish()
@@ -707,6 +969,35 @@ else if (quizState == QuizState.Complete)
 }
 
 <style>
+    /* Multiple-Select */
+    .ms-section .options-grid { display: flex; flex-direction: column; gap: 8px; }
+    .ms-hint { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 8px; }
+    .ms-option { display: flex; align-items: center; gap: 10px; text-align: left; }
+    .ms-option.active { border-color: var(--primary); background: rgba(91, 106, 191, 0.08); }
+    .ms-checkbox {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 20px; height: 20px; border: 2px solid var(--border);
+        border-radius: 4px; font-weight: 700; flex-shrink: 0; color: var(--primary);
+    }
+    .ms-option.active .ms-checkbox { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+    /* Numeric Input */
+    .num-unit { color: var(--text-muted); font-weight: 600; align-self: center; }
+
+    /* Categorize */
+    .cat-section { display: flex; flex-direction: column; gap: 10px; }
+    .cat-items-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cat-items-row .match-item { padding: 8px 12px; font-size: 0.9rem; }
+    .cat-items-row .match-item small { display: block; color: var(--primary); font-size: 0.75rem; margin-top: 2px; }
+    .cat-buckets { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+    .cat-bucket {
+        padding: 14px 10px; border-radius: var(--radius-sm); font-weight: 600;
+        background: var(--bg-surface); border: 2px dashed var(--border); cursor: pointer;
+        color: var(--text-secondary); transition: all 0.15s ease;
+    }
+    .cat-bucket.available { border-color: var(--primary); color: var(--primary); }
+    .cat-bucket:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .quiz-container {
         max-width: 600px;
         margin: 0 auto;
@@ -833,9 +1124,21 @@ else if (quizState == QuizState.Complete)
     .match-row {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         padding: 4px;
         border-radius: var(--radius-sm);
+    }
+
+    @@media (max-width: 360px) {
+        .match-row {
+            flex-direction: column;
+            gap: 6px;
+            align-items: stretch;
+        }
+        .match-arrow {
+            transform: rotate(90deg);
+            width: 100% !important;
+        }
     }
 
     .match-row.correct {
@@ -953,9 +1256,14 @@ else if (quizState == QuizState.Complete)
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 12px 20px;
+        padding: 14px 20px;
         border-radius: var(--radius-md);
-        min-width: 80px;
+        min-width: 100px;
+        flex: 1;
+    }
+
+    .results-stats {
+        flex-wrap: wrap;
     }
 
     .correct-stat { background: rgba(76, 175, 80, 0.1); color: var(--success); }
@@ -1038,20 +1346,20 @@ else if (quizState == QuizState.Complete)
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 10px 14px;
+        padding: 10px 16px;
         min-height: 44px;
-        border: 1px dashed var(--accent);
+        border: 2px solid var(--accent);
         border-radius: var(--radius-sm);
-        background: transparent;
+        background: rgba(196, 129, 58, 0.1);
         color: var(--accent);
-        font-size: 0.85rem;
-        font-weight: 600;
+        font-size: 0.9rem;
+        font-weight: 700;
         cursor: pointer;
-        margin-top: 4px;
-        transition: background var(--dur-normal) var(--ease-out);
+        margin-top: 8px;
+        transition: background var(--dur-normal) var(--ease-out), transform var(--dur-fast) var(--ease-out);
         -webkit-tap-highlight-color: transparent;
     }
-    .hint-btn:hover { background: rgba(240, 160, 48, 0.08); }
+    .hint-btn:hover { background: rgba(196, 129, 58, 0.18); }
     .hint-btn:active { transform: scale(0.97); }
 
     .hint-reveal {

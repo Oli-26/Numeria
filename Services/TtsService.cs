@@ -87,17 +87,17 @@ public class TtsService : ITtsService
 
     public async Task PauseAsync()
     {
-        try { await _js.InvokeVoidAsync("TTS.pause"); } catch { }
+        await _js.TryInvokeVoidAsync("TTS.pause");
     }
 
     public async Task ResumeAsync()
     {
-        try { await _js.InvokeVoidAsync("TTS.resume"); } catch { }
+        await _js.TryInvokeVoidAsync("TTS.resume");
     }
 
     public async Task StopAsync()
     {
-        try { await _js.InvokeVoidAsync("TTS.stop"); } catch { }
+        await _js.TryInvokeVoidAsync("TTS.stop");
     }
 
     public async Task<bool> IsSpeakingAsync()

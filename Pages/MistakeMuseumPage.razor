@@ -79,7 +79,7 @@ else
         }
     </div>
 
-    <p class="mm-instruction">Tap the step that contains the error:</p>
+    <p class="mm-instruction">Tap the first step where the mistake appears (later steps will be wrong too):</p>
 
     <div class="mm-steps">
         @foreach (var step in activeChallenge.Steps)
@@ -132,7 +132,7 @@ else
             }
 
             <div class="mm-error-explain">
-                <h3>The Error (Step @activeChallenge.ErrorStep)</h3>
+                <h3>First Mistake (Step @activeChallenge.ErrorStep)</h3>
                 <p>@activeChallenge.ErrorExplanation</p>
             </div>
 
@@ -188,12 +188,12 @@ else
         if (activeChallenge != null)
         {
             if (activeChallenge.SetupMath != null)
-                try { await JS.InvokeVoidAsync("renderMath", "mistake-setup-math", activeChallenge.SetupMath, true); } catch { }
+                await JS.TryInvokeVoidAsync("renderMath", "mistake-setup-math", activeChallenge.SetupMath, true);
 
             foreach (var step in activeChallenge.Steps)
             {
                 if (step.MathExpression != null)
-                    try { await JS.InvokeVoidAsync("renderMath", $"mistake-step-{step.Number}", step.MathExpression, true); } catch { }
+                    await JS.TryInvokeVoidAsync("renderMath", $"mistake-step-{step.Number}", step.MathExpression, true);
             }
         }
     }
@@ -225,8 +225,8 @@ else
 
         if (isCorrect)
         {
-            try { await JS.InvokeVoidAsync("Sounds.playCorrect"); } catch { }
-            try { await JS.InvokeVoidAsync("Confetti.launch", 40); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playCorrect");
+            await JS.TryInvokeVoidAsync("Confetti.launch", 40);
 
             if (!completedIds.Contains(activeChallenge.Id))
             {
@@ -242,7 +242,7 @@ else
         }
         else
         {
-            try { await JS.InvokeVoidAsync("Sounds.playWrong"); } catch { }
+            await JS.TryInvokeVoidAsync("Sounds.playWrong");
         }
     }
 
