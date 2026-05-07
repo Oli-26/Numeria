@@ -1,0 +1,182 @@
+[
+  {
+    "id": "net-01",
+    "topicId": "cs-networks",
+    "order": 1,
+    "title": "Network Layers: OSI and TCP/IP",
+    "description": "The seven-layer model, the four-layer reality, and why layering matters",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "net-01-c1",
+        "title": "Why Layer at All?",
+        "contentHtml": "<p>Networks are absurdly complex. A single web request travels through wires, radio waves, switches, routers, encryption, naming systems, congestion control, and a dozen protocols. Building this as one giant blob would be impossible. The solution: <strong>layering</strong>.</p><p>Each layer handles one specific concern and exposes a clean interface to the layer above. The layer above doesn't care how the layer below works — it just calls a function and trusts the result. This is exactly the abstraction principle that makes large software work, applied to networks.</p><p>The two famous layered models are the <strong>OSI</strong> seven-layer model (the textbook standard) and the <strong>TCP/IP</strong> four-layer model (what the internet actually uses). They overlap heavily but use different vocabulary. In practice, engineers refer to layers by OSI numbers (\"a Layer 4 load balancer\") even when the system is TCP/IP.</p>",
+        "mathExpressions": ["\\text{Layer } n+1 \\xrightarrow{\\text{interface}} \\text{Layer } n \\quad \\text{each layer hides its internals}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-01-c2",
+        "title": "The OSI Seven Layers",
+        "contentHtml": "<p>The <strong>OSI model</strong> defines seven layers from bottom to top: <strong>1 Physical</strong> (cables, radio, voltages), <strong>2 Data Link</strong> (Ethernet, MAC addresses, frames), <strong>3 Network</strong> (IP, routing), <strong>4 Transport</strong> (TCP, UDP, ports), <strong>5 Session</strong> (connection state), <strong>6 Presentation</strong> (encoding, encryption), <strong>7 Application</strong> (HTTP, SMTP, SSH).</p><p>The mnemonic 'Please Do Not Throw Sausage Pizza Away' captures the order. Each layer adds its own header to data on the way out and strips its header on the way in. By the time data reaches the wire, it's wrapped in headers from every layer.</p><p>OSI is more theoretical than practical. Layers 5 and 6 don't really exist as distinct things in modern protocol stacks; they're folded into either the application or the transport layer. But the OSI numbering is the lingua franca: \"Layer 2 switch\" (data link), \"Layer 3 router\" (IP), \"Layer 4 load balancer\" (TCP/UDP), \"Layer 7 proxy\" (HTTP).</p>",
+        "mathExpressions": ["\\text{OSI: } L_1 \\to L_2 \\to L_3 \\to L_4 \\to L_5 \\to L_6 \\to L_7"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-01-c3",
+        "title": "TCP/IP: The Four-Layer Reality",
+        "contentHtml": "<p>The internet doesn't actually run OSI; it runs <strong>TCP/IP</strong>, designed by Vint Cerf and Bob Kahn in the 1970s. TCP/IP has just four layers: <strong>Link</strong> (physical + data link), <strong>Internet</strong> (IP), <strong>Transport</strong> (TCP, UDP), <strong>Application</strong> (HTTP, DNS, etc.).</p><p>The brilliance of TCP/IP is the <strong>narrow waist</strong>: at the Internet layer, there is exactly one protocol (IP). Everything below it (Ethernet, Wi-Fi, fiber, satellite, carrier pigeon — yes, RFC 1149) and everything above it (HTTP, SSH, video calls, IoT) just has to speak IP. That single common protocol is what makes the internet 'the internet' rather than a collection of incompatible networks.</p><p>The narrow waist is also what enables the famous <strong>end-to-end principle</strong>: complexity belongs at the endpoints, not in the network. The network just delivers packets; whether those packets carry email, video, or BitTorrent is none of its business. This simplicity is the architectural decision that let the internet scale from four nodes in 1969 to billions of devices today.</p>",
+        "mathExpressions": ["\\text{TCP/IP: Link} \\to \\text{Internet (IP)} \\to \\text{Transport} \\to \\text{Application}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["net-q01", "net-q02", "net-q03", "net-q04", "net-q05", "net-q06", "net-q07", "net-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "net-02",
+    "topicId": "cs-networks",
+    "order": 2,
+    "title": "IP Addressing and DNS",
+    "description": "IPv4, IPv6, subnets, NAT, DNS resolution, and the routing system",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "net-02-c1",
+        "title": "IPv4, IPv6, and the Address Crunch",
+        "contentHtml": "<p>An <strong>IP address</strong> is a number that identifies a host on the internet. <strong>IPv4</strong> uses 32 bits, written as four dotted decimal numbers (e.g., 192.168.1.1). That's 4.3 billion addresses — generous in 1980, exhausted by 2011.</p><p><strong>IPv6</strong> uses 128 bits, written as eight groups of four hex digits (e.g., 2001:0db8::1). That's 3.4 × 10³⁸ addresses — enough for trillions per square meter of Earth's surface. Adoption has been slow (still under 50% globally as of the 2020s), but it's accelerating, especially on mobile networks.</p><p>The reason IPv4 didn't collapse is <strong>Network Address Translation (NAT)</strong>. Behind your home router, hundreds of devices share one public IP. The router rewrites packets so external services see only the public address. This works but breaks the end-to-end principle: incoming connections from outside can't reach NATed devices without port forwarding or hole-punching tricks.</p>",
+        "mathExpressions": ["2^{32} \\approx 4.3 \\times 10^9 \\quad \\text{vs} \\quad 2^{128} \\approx 3.4 \\times 10^{38}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-02-c2",
+        "title": "Subnets and CIDR",
+        "contentHtml": "<p>An IP address is split into a <strong>network prefix</strong> and a <strong>host part</strong>. All addresses sharing the same prefix are on the same <strong>subnet</strong>. Routers forward between subnets; hosts on the same subnet can talk directly without going through a router.</p><p><strong>CIDR notation</strong> writes a subnet as <code>192.168.1.0/24</code>: the address followed by the number of prefix bits. /24 means the first 24 bits are the network prefix, leaving 8 bits for hosts (256 addresses). /16 gives 65,536 hosts; /30 gives 4 (just enough for a point-to-point link with a network and broadcast address).</p><p>CIDR replaced an older system of fixed 'classes' (A, B, C). The class system wasted enormous swathes of the address space — a 'Class B' network had 65k addresses whether you needed 100 or 60,000. CIDR lets you allocate exactly the size you need, in powers of two, which extended IPv4's life by years.</p>",
+        "mathExpressions": ["\\text{prefix /n} \\implies 2^{32-n} \\text{ addresses (IPv4)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-02-c3",
+        "title": "DNS: The Internet's Phone Book",
+        "contentHtml": "<p>Humans are bad at remembering 142.250.190.78. We're great at remembering google.com. The <strong>Domain Name System (DNS)</strong> bridges the gap, translating human-readable names into IP addresses (and other records).</p><p>DNS is hierarchical. <strong>Root servers</strong> (13 logical servers, replicated worldwide) know where the top-level domain servers are. <strong>TLD servers</strong> (.com, .org, .uk, etc.) know where each domain's authoritative servers live. <strong>Authoritative servers</strong> hold the actual records for that domain. Your computer typically asks a <strong>recursive resolver</strong> (your ISP's, Google's 8.8.8.8, Cloudflare's 1.1.1.1) which walks this hierarchy and caches results.</p><p>DNS supports many record types: <strong>A</strong> (IPv4 address), <strong>AAAA</strong> (IPv6), <strong>CNAME</strong> (alias to another name), <strong>MX</strong> (mail server), <strong>TXT</strong> (arbitrary text, often used for verification), <strong>NS</strong> (delegation to other name servers). Modern web infrastructure depends on DNS in subtle ways — TLS certificate validation, email anti-spam (SPF, DKIM, DMARC), and CDN routing all live in DNS records.</p>",
+        "mathExpressions": ["\\text{root} \\to \\text{TLD} \\to \\text{authoritative} \\quad \\text{(hierarchical lookup)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["net-q09", "net-q10", "net-q11", "net-q12", "net-q13", "net-q14", "net-q15", "net-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "net-03",
+    "topicId": "cs-networks",
+    "order": 3,
+    "title": "TCP, UDP, and HTTP",
+    "description": "Reliable streams, datagrams, ports, and the language of the web",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "net-03-c1",
+        "title": "TCP: Reliable, Ordered Streams",
+        "contentHtml": "<p><strong>TCP (Transmission Control Protocol)</strong> turns IP's unreliable packet delivery into a <strong>reliable, ordered byte stream</strong>. Send 1MB and TCP guarantees: it arrives, it arrives in order, and duplicates are filtered out. The cost: bookkeeping.</p><p>TCP starts with a <strong>three-way handshake</strong>: SYN, SYN-ACK, ACK. Both sides agree on initial sequence numbers and the connection is open. Each byte is numbered. When a sender sends data, the receiver sends back an <strong>ACK</strong> with the next expected byte number. Lost packets are detected (by missing ACKs or duplicate ACKs) and <strong>retransmitted</strong>.</p><p>TCP also implements <strong>flow control</strong> (the receiver advertises how much buffer space it has) and <strong>congestion control</strong> (the sender backs off when the network is congested). Algorithms like CUBIC (default in Linux) and BBR (Google's, used in YouTube) determine how quickly senders can ramp up. This is why HTTP downloads start slow and accelerate — TCP is feeling out the available bandwidth.</p>",
+        "mathExpressions": ["\\text{SYN} \\to \\text{SYN-ACK} \\to \\text{ACK} \\quad \\text{(3-way handshake establishes the connection)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-03-c2",
+        "title": "UDP: Fast, Lossy Datagrams",
+        "contentHtml": "<p><strong>UDP (User Datagram Protocol)</strong> is TCP's minimalist sibling. It just sends packets. No handshake, no order, no retransmission, no flow control. Datagrams might arrive, might not, might be reordered, might be duplicated. UDP doesn't care.</p><p>This sounds useless until you remember the alternative cost. TCP's reliability comes with latency (waiting for ACKs and retransmissions) and head-of-line blocking (packet 5 waits for packet 3 even if it's already there). For real-time applications — voice calls, video streaming, online games, DNS lookups — losing a few packets is often better than waiting for them.</p><p>Modern internet protocols increasingly use UDP as a starting point and build their own reliability on top. <strong>QUIC</strong>, the foundation of HTTP/3, runs over UDP and reimplements connections, encryption, and retransmission with much lower latency than TCP+TLS. The lesson: TCP is great, but its design assumptions (1980s networks) aren't always optimal in 2025.</p>",
+        "mathExpressions": ["\\text{UDP overhead} = 8 \\text{ bytes (vs TCP's 20+)} \\quad \\text{minimal, no state}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-03-c3",
+        "title": "HTTP: The Web's Language",
+        "contentHtml": "<p><strong>HTTP (HyperText Transfer Protocol)</strong> sits at the application layer. It's a request-response protocol where clients send requests (GET, POST, PUT, DELETE, etc.) and servers send responses (200 OK, 404 Not Found, 500 Server Error). Headers carry metadata; bodies carry data.</p><p>HTTP is plaintext-readable, which is why it's easy to debug with tools like curl and browser devtools. Each request is independent (stateless) — to track sessions, the server sends back a <strong>cookie</strong> that the client returns on subsequent requests. JWTs and OAuth tokens layer authentication on top.</p><p>HTTP has evolved through major versions. <strong>HTTP/1.1</strong> (1997) added persistent connections and pipelining. <strong>HTTP/2</strong> (2015) introduced binary framing, multiplexed streams over one TCP connection, and header compression. <strong>HTTP/3</strong> (2022) moved to QUIC over UDP for faster connection setup and no head-of-line blocking. Each version preserved the same semantics (methods, status codes, headers) while overhauling the wire format.</p>",
+        "mathExpressions": ["\\text{HTTP} = \\text{Request}(\\text{method, path, headers, body}) \\to \\text{Response}(\\text{status, headers, body})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["net-q17", "net-q18", "net-q19", "net-q20", "net-q21", "net-q22", "net-q23", "net-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "net-04",
+    "topicId": "cs-networks",
+    "order": 4,
+    "title": "CORS, Firewalls, and Network Boundaries",
+    "description": "Same-origin policy, CORS, NAT, firewalls, and proxies",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "net-04-c1",
+        "title": "Same-Origin Policy and CORS",
+        "contentHtml": "<p>Browsers enforce the <strong>same-origin policy</strong>: JavaScript on <code>example.com</code> cannot read responses from <code>bank.com</code>. Without this, every site you visit could silently read your email, scrape your bank account, and post on your social media. The policy is the bedrock of web security.</p><p>But sometimes legitimate cross-origin access is needed: an SPA on <code>app.example.com</code> calling its API on <code>api.example.com</code>. <strong>CORS (Cross-Origin Resource Sharing)</strong> is the controlled relaxation. The server explicitly opts in by sending headers like <code>Access-Control-Allow-Origin: https://app.example.com</code>.</p><p>For \"non-simple\" requests (custom headers, methods other than GET/POST/HEAD, etc.), the browser sends a <strong>preflight</strong> OPTIONS request first to ask permission. The server responds with allowed origins, methods, and headers. Only if the preflight passes does the browser send the real request. Misconfigured CORS is the #1 source of \"my API works in Postman but not in the browser\" confusion among new web developers.</p>",
+        "mathExpressions": ["\\text{origin} = (\\text{scheme}, \\text{host}, \\text{port}) \\quad \\text{requests across origins are restricted by default}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-04-c2",
+        "title": "Firewalls: Allowlists for Networks",
+        "contentHtml": "<p>A <strong>firewall</strong> is a network filter that decides which packets are allowed through. The simplest kind, a <strong>stateless packet filter</strong>, looks at each packet's source IP, destination IP, port, and protocol, and matches against rules. <strong>Stateful firewalls</strong> additionally track connections, allowing return traffic for outbound connections without explicit rules.</p><p>The default-deny philosophy is foundational: <em>block everything, then explicitly allow what you need</em>. A typical web server firewall allows inbound 80 (HTTP) and 443 (HTTPS) and blocks everything else inbound, while permitting all outbound traffic.</p><p><strong>Application-layer firewalls</strong> (also called Web Application Firewalls or WAFs) inspect HTTP traffic and block patterns matching known attacks (SQL injection strings, XSS payloads). Cloud providers offer them as managed services (AWS WAF, Cloudflare). They're not bulletproof — sophisticated attackers can often bypass them — but they raise the cost of attacks and stop opportunistic scanners cold.</p>",
+        "mathExpressions": ["\\text{firewall rules: ALLOW iff } \\bigvee_i \\text{rule}_i(\\text{packet}) \\text{ matches} \\quad (\\text{else DROP})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-04-c3",
+        "title": "NAT, Proxies, and Reverse Proxies",
+        "contentHtml": "<p><strong>Network Address Translation (NAT)</strong> rewrites packet source/destination addresses as packets cross a boundary. Your home router does NAT so dozens of devices share one public IP. <strong>Carrier-grade NAT (CGN)</strong> does it at ISP scale.</p><p>A <strong>forward proxy</strong> (often just \"proxy\") sits between clients and the internet. Corporate networks use them to enforce policy, cache content, and log access. Tor exit nodes are a kind of anonymizing proxy. The defining trait: clients are configured to use the proxy, and the proxy makes outbound requests on their behalf.</p><p>A <strong>reverse proxy</strong> sits between the internet and your servers. Clients think they're talking to your application; really they're talking to nginx or Cloudflare or AWS ALB, which forwards to backend servers. Reverse proxies enable load balancing, TLS termination, caching, rate limiting, and DDoS mitigation. Almost every modern web service has at least one reverse proxy in front, often several.</p>",
+        "mathExpressions": ["\\text{NAT: } (\\text{src}_\\text{int}, \\text{port}_\\text{int}) \\to (\\text{src}_\\text{pub}, \\text{port}_\\text{pub}) \\quad \\text{maintain mapping for return traffic}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["net-q25", "net-q26", "net-q27", "net-q28", "net-q29", "net-q30", "net-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "net-05",
+    "topicId": "cs-networks",
+    "order": 5,
+    "title": "TLS, Certificates, and Web Security",
+    "description": "Symmetric vs asymmetric crypto, TLS handshake, certificates, and the chain of trust",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "net-05-c1",
+        "title": "Why HTTPS, and How TLS Works",
+        "contentHtml": "<p>HTTP is plaintext. Anyone on the path between client and server — coffee-shop Wi-Fi, your ISP, a state-level adversary — can read everything you send and impersonate either side. <strong>HTTPS = HTTP over TLS</strong> fixes this by adding three guarantees: <strong>confidentiality</strong> (encrypted), <strong>integrity</strong> (tamper-detected), <strong>authenticity</strong> (you really are talking to who you think you are).</p><p>The <strong>TLS handshake</strong> establishes a shared secret between client and server. Modern TLS 1.3 does this in just one round trip: client sends a hello with its supported ciphers and a key share; server picks a cipher, sends its certificate and its own key share; both sides derive the session key from the combined shares. Subsequent application data is encrypted with this key.</p><p>The brilliant trick is <strong>asymmetric cryptography</strong> bootstrapping <strong>symmetric cryptography</strong>. Asymmetric crypto (RSA, ECDSA, X25519) lets two parties agree on a secret over an open channel, but it's slow. Symmetric crypto (AES-GCM, ChaCha20) is fast but requires a shared key. TLS uses asymmetric to set up, symmetric to run.</p>",
+        "mathExpressions": ["\\text{TLS: bootstrap symmetric key via asymmetric crypto} \\implies \\text{fast secure channel}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-05-c2",
+        "title": "Certificates and the Chain of Trust",
+        "contentHtml": "<p>Encryption alone isn't enough. If an attacker intercepts your TLS handshake and substitutes their own key, you'd have a perfectly secure channel — to the attacker. You need <strong>authentication</strong>: proof that the server is really google.com.</p><p>This is what <strong>certificates</strong> do. A certificate binds a domain name to a public key, signed by a <strong>Certificate Authority (CA)</strong>. Your browser ships with a list of trusted root CAs (about 100-150). When you visit google.com, the server sends its cert; your browser verifies the cert was signed by a trusted CA (or by an intermediate CA that was signed by a trusted root); if so, the public key really does belong to google.com.</p><p>This is called the <strong>chain of trust</strong>. It's beautiful in theory, fragile in practice. Compromised CAs (DigiNotar, 2011) issued fake certs for major domains. <strong>Certificate Transparency</strong> logs make all issued certs publicly auditable. <strong>Let's Encrypt</strong> made certs free and automated, removing one of the last excuses for plain HTTP. As of the 2020s, &gt;95% of web traffic is HTTPS.</p>",
+        "mathExpressions": ["\\text{cert} = \\text{Sign}_{CA}(\\text{domain}, \\text{public key}, \\text{validity})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "net-05-c3",
+        "title": "Forward Secrecy, Key Exchange, and the Future",
+        "contentHtml": "<p>Modern TLS uses <strong>ephemeral key exchange</strong>: the keys protecting your session today are generated fresh and discarded after use. Even if the server's long-term private key is later stolen, past sessions can't be decrypted. This property is called <strong>forward secrecy</strong>, and TLS 1.3 makes it mandatory.</p><p>The standard key exchange in TLS 1.3 is <strong>X25519</strong> (Elliptic Curve Diffie-Hellman over Curve25519). Both sides generate ephemeral keypairs, exchange public keys, and combine to derive a shared secret. The math is elegant: the public keys travel openly, but only the parties with the corresponding private keys can compute the shared secret.</p><p>The next disruption is <strong>post-quantum cryptography</strong>. A sufficiently large quantum computer could break RSA and ECC via Shor's algorithm. NIST has standardized lattice-based schemes (Kyber for key exchange, Dilithium for signatures). TLS 1.3 hybrid modes already deploy these in production. \"Harvest now, decrypt later\" attackers are recording today's encrypted traffic, hoping quantum computers will let them read it later. Migration is starting now to preempt that.</p>",
+        "mathExpressions": ["\\text{Diffie-Hellman: } g^a, g^b \\text{ public}; \\;\\; (g^a)^b = (g^b)^a = g^{ab} \\text{ shared secret}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["net-q32", "net-q33", "net-q34", "net-q35", "net-q36", "net-q37"],
+    "puzzleId": null
+  }
+]

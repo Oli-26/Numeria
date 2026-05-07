@@ -1,0 +1,182 @@
+[
+  {
+    "id": "go-01",
+    "topicId": "cs-lang-go",
+    "order": 1,
+    "title": "Simplicity by Design",
+    "description": "Go's deliberate minimalism, types, and the spec you can read in an afternoon",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "go-01-c1",
+        "title": "Why Go Exists",
+        "contentHtml": "<p><strong>Go</strong> was designed at Google starting in 2007 by Robert Griesemer, Rob Pike, and Ken Thompson. The motivation: writing C++ at Google was painful (slow compiles, complex language, awkward concurrency); Java's JVM was heavy; dynamic languages couldn't scale to large servers. Go aimed to be a simple, compiled, garbage-collected language with first-class concurrency.</p><p>The defining choice is <strong>radical simplicity</strong>. The Go language specification fits in a small book. There are no exceptions, no generics until 2022, no inheritance, no operator overloading, no implicit conversions, no constructors, no destructors. Many features common in other languages were deliberately omitted because they didn't pull their weight.</p><p>The design philosophy: optimize for reading, not writing. Code is read far more often than written, especially in large teams. Go's restraint forces consistency — there's usually one obvious way to do something. The result: large Go codebases are easier to navigate than equivalent code in more expressive languages. The cost: occasionally verbose for problems that have elegant solutions in richer type systems.</p>",
+        "mathExpressions": ["\\text{Go: small spec, no surprises, optimized for large-team readability}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-01-c2",
+        "title": "Types, Structs, and the Type System",
+        "contentHtml": "<p>Go is statically typed, but the syntax is concise. <code>x := 5</code> infers <code>int</code>. <code>type User struct { Name string; Age int }</code> defines a struct. Methods are defined separately: <code>func (u User) Greet() string { return \"hi \" + u.Name }</code>.</p><p>Go has no classes. Methods can be defined on any named type — including type aliases for built-ins. <code>type MyInt int; func (m MyInt) Double() MyInt { return m * 2 }</code>. The receiver (<code>m</code>) is just the first argument, made syntactically special.</p><p>The pointer/value distinction is explicit. <code>(u User)</code> takes a copy; <code>(u *User)</code> takes a pointer. Use pointer receivers when methods modify state or to avoid copying large structs. Go has no <code>this</code> keyword — the receiver name is just a variable, by convention a single letter.</p>",
+        "mathExpressions": ["\\text{type T struct \\{...\\}; func (t T) Method() ...} \\quad \\text{(no class, just methods on types)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-01-c3",
+        "title": "Slices, Maps, and the Built-in Containers",
+        "contentHtml": "<p>Go's standard containers are tiny but cover most use cases. <strong>Slices</strong> are dynamic arrays: <code>s := []int{1, 2, 3}; s = append(s, 4)</code>. Internally a slice is a (pointer, length, capacity) struct. Slicing is cheap (no copy); growing may reallocate.</p><p><strong>Maps</strong> are hash tables: <code>m := map[string]int{\"x\": 1}; m[\"y\"] = 2</code>. Map iteration order is randomized to discourage reliance on it. <strong>Channels</strong> (covered next lesson) are first-class types for goroutine communication: <code>ch := make(chan int)</code>.</p><p>That's basically the whole standard collection library — slices, maps, channels, plus arrays (fixed-size, rarely used directly). No sets, no linked lists, no trees in the standard library. Most programs need only slices and maps. When you do need something more, you write it or pull a library; Go culture favors small dependencies.</p>",
+        "mathExpressions": ["\\text{slice: (ptr, len, cap)} \\quad \\text{map: hash table} \\quad \\text{channel: communication}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["go-q01", "go-q02", "go-q03", "go-q04", "go-q05", "go-q06", "go-q07", "go-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "go-02",
+    "topicId": "cs-lang-go",
+    "order": 2,
+    "title": "Goroutines and Channels",
+    "description": "Cheap concurrency built into the language",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "go-02-c1",
+        "title": "Goroutines: Cheap, Many, Multiplexed",
+        "contentHtml": "<p>A <strong>goroutine</strong> is Go's lightweight concurrent unit. <code>go someFunction()</code> launches a new goroutine running concurrently with everything else. They start with tiny stacks (typically 2KB) that grow on demand, so spawning hundreds of thousands is feasible.</p><p>Goroutines are <strong>scheduled</strong> by the Go runtime onto OS threads. The <strong>M:N scheduler</strong> multiplexes M goroutines onto N OS threads. When a goroutine blocks on I/O, the runtime parks it and runs another on the same thread. CPU-bound goroutines are preempted to ensure fairness.</p><p>This makes \"start a goroutine per connection\" practical at scale where \"start a thread per connection\" wouldn't be. A Go web server can handle 100,000 concurrent connections on modest hardware. The simplicity is striking — <code>go</code> in front of a function is all the syntax. Combined with channels, you have one of the cleanest concurrency stories in any mainstream language.</p>",
+        "mathExpressions": ["\\text{goroutine: 2KB stack, scheduled M:N onto OS threads}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-02-c2",
+        "title": "Channels: Communicating Sequential Processes",
+        "contentHtml": "<p>Goroutines coordinate via <strong>channels</strong>. <code>ch := make(chan int)</code> creates a synchronous channel of ints. <code>ch &lt;- 5</code> sends; <code>x := &lt;-ch</code> receives. Both block until the other side is ready. This is Tony Hoare's CSP, baked into the language.</p><p><strong>Buffered channels</strong> have capacity: <code>ch := make(chan int, 100)</code>. Sends block only when full; receives block only when empty. Useful for rate limiting and producer-consumer patterns. The famous Go motto: \"don't communicate by sharing memory; share memory by communicating.\"</p><p><strong>Select statements</strong> wait on multiple channels: <code>select { case x := &lt;-ch1: ...; case ch2 &lt;- y: ...; default: ...}</code>. Picks a ready case (randomly if multiple) or runs default if none. Select is what makes Go concurrency expressive — combine it with timeouts (<code>case &lt;-time.After(...)</code>) and contexts (<code>case &lt;-ctx.Done()</code>) for cancellation and orchestration.</p>",
+        "mathExpressions": ["\\text{ch <- v} \\quad \\text{x := <-ch} \\quad \\text{(synchronous rendezvous, CSP)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-02-c3",
+        "title": "Mutexes, Atomics, and the Race Detector",
+        "contentHtml": "<p>Go has channels but also conventional <strong>sync primitives</strong>: <code>sync.Mutex</code>, <code>sync.RWMutex</code>, <code>sync.WaitGroup</code>, <code>sync/atomic</code>. The advice is \"share by communicating when possible, share with mutexes when easier.\"</p><p>The Go <strong>race detector</strong> (built into the compiler with <code>-race</code>) instruments memory accesses to find data races at runtime. Every Go developer is expected to run their tests under <code>go test -race</code> before committing. The race detector has caught countless concurrency bugs in the wild.</p><p>Gotchas remain. <strong>Goroutine leaks</strong> happen when a goroutine blocks forever on a channel that no one will write to or read from. <strong>Capturing loop variables</strong> in goroutines (the same variable, not a fresh copy each iteration) was a famous gotcha until Go 1.22 fixed the semantics. <strong>Channel direction</strong> (closed channel reads return zero values) requires care. Modern Go style guides codify these patterns into widely-followed best practices.</p>",
+        "mathExpressions": ["\\text{race detector: } \\text{go test -race} \\implies \\text{find races at runtime}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["go-q09", "go-q10", "go-q11", "go-q12", "go-q13", "go-q14", "go-q15", "go-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "go-03",
+    "topicId": "cs-lang-go",
+    "order": 3,
+    "title": "Interfaces and Structural Typing",
+    "description": "Implicit implementation and the interface{} (now any) type",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "go-03-c1",
+        "title": "Interfaces Are Implicit",
+        "contentHtml": "<p>Go's <strong>interface</strong> is its main polymorphism mechanism. Define one: <code>type Reader interface { Read(p []byte) (n int, err error) }</code>. Any type with a matching <code>Read</code> method automatically satisfies the interface — no <code>implements</code> declaration. This is <strong>structural typing</strong>.</p><p>The classic standard-library example: <code>io.Reader</code>, <code>io.Writer</code>, <code>io.Closer</code>. Any function reading from a Reader works on files, network connections, in-memory buffers, decompressors — whoever defines a Read method. Composition via interface embedding (<code>type ReadWriter interface { Reader; Writer }</code>) is straightforward.</p><p>The pattern is liberating. New types can satisfy old interfaces without modifying anything. Tests can use small mock types implementing the interface. Library boundaries become genuinely cross-cutting. The trade-off: you can't see at the type definition which interfaces it satisfies — you must search.</p>",
+        "mathExpressions": ["\\text{type T satisfies interface I if T has all methods of I (structural)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-03-c2",
+        "title": "interface{} (any) and Type Assertions",
+        "contentHtml": "<p>The empty interface <code>interface{}</code> (renamed <strong>any</strong> in Go 1.18) holds any value. Like Java's <code>Object</code> or Rust's <code>Box&lt;dyn Any&gt;</code>. Useful for storing heterogeneous values; required when you need true polymorphism without a known interface.</p><p>To get back to a concrete type, use a <strong>type assertion</strong>: <code>x, ok := val.(int)</code>. If val holds an int, x is the int and ok is true; otherwise ok is false and x is the zero value. <strong>Type switches</strong> handle multiple cases: <code>switch v := val.(type) { case int: ...; case string: ...; default: ...}</code>.</p><p>Go culture leans against <code>any</code>. It loses static type checking and forces runtime checks. With generics (added in Go 1.18 after a long debate), much of <code>any</code>'s historical use cases now have type-safe alternatives. Modern Go uses generics for type-safe containers and any only when the value's type genuinely isn't known.</p>",
+        "mathExpressions": ["\\text{any} = \\text{interface\\{\\}} \\implies \\text{holds any value, requires assertion to use}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-03-c3",
+        "title": "Generics in Modern Go",
+        "contentHtml": "<p>For most of Go's history, generics were the famous omission. Without them, you wrote either type-specific code (one Sort per type) or used <code>interface{}</code> with type assertions. Big generic-collection libraries simply didn't exist.</p><p><strong>Go 1.18</strong> (March 2022) added generics. <code>func Map[T, U any](s []T, f func(T) U) []U { ... }</code> defines a generic Map function. <strong>Type parameters</strong> can be constrained: <code>func Sum[T constraints.Ordered](s []T) T</code> requires T to support comparison.</p><p>Generics in Go are deliberately conservative. No higher-kinded types, limited inference, fewer features than Rust or Haskell. The decision was \"add the smallest amount that handles the most common cases\" — same philosophy as the rest of the language. The result has been positive: standard libraries (slices, maps, sync packages) gained generic functions; user code rarely needs them but appreciates them when it does.</p>",
+        "mathExpressions": ["\\text{Go 1.18+: } \\text{func F[T constraint](x T) T} \\quad \\text{type-parameterized}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["go-q17", "go-q18", "go-q19", "go-q20", "go-q21", "go-q22", "go-q23", "go-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "go-04",
+    "topicId": "cs-lang-go",
+    "order": 4,
+    "title": "Error Handling, defer, and panic",
+    "description": "Errors as values, deferred cleanup, and the no-exceptions philosophy",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "go-04-c1",
+        "title": "Errors Are Values",
+        "contentHtml": "<p>Go has no exceptions for normal error handling. Functions that can fail return <strong>error</strong> as their last return value. <code>file, err := os.Open(\"foo.txt\"); if err != nil { return err }</code>. The caller checks; the compiler doesn't enforce the check, but tooling (errcheck, golangci-lint) flags missing checks.</p><p>The <code>error</code> type is just an interface: <code>type error interface { Error() string }</code>. Any type with an Error method is an error. This makes error types extensible. Standard idioms: <code>errors.New(\"msg\")</code> for simple errors; <code>fmt.Errorf(\"%w: ...\", err)</code> for wrapping with context; <code>errors.Is</code> and <code>errors.As</code> for inspection.</p><p>The famous criticism: <strong>boilerplate</strong>. Real Go code is full of <code>if err != nil { return err }</code>. Defenders argue this makes error paths visible and forces handling. Detractors prefer Rust's <code>?</code> or exceptions. The honest answer is that it's a design trade-off; Go chose explicit at the cost of verbosity, deliberately.</p>",
+        "mathExpressions": ["\\text{result, err := f()} \\quad \\text{if err != nil \\{ return err \\}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-04-c2",
+        "title": "defer: Deferred Cleanup",
+        "contentHtml": "<p><strong>defer</strong> schedules a function call to run when the surrounding function returns. <code>file, err := os.Open(...); defer file.Close()</code>. Now Close runs whether the function returns normally or panics. This is Go's mechanism for RAII-style cleanup.</p><p>defers run in <strong>LIFO order</strong>: the last deferred call runs first. This naturally handles paired acquire/release: <code>lock.Lock(); defer lock.Unlock()</code>. They run after the return statement evaluates but before the function actually returns, so deferred code can examine and modify named return values.</p><p>Common patterns: <strong>resource cleanup</strong> (close files, release locks), <strong>tracing</strong> (log entry/exit), <strong>recover from panic</strong> (next concept), <strong>timing</strong> (defer printing elapsed time). Idiomatic Go uses defer ubiquitously; the cost is negligible (a small allocation per defer).</p>",
+        "mathExpressions": ["\\text{defer f()} \\to \\text{f runs in LIFO order at function return}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-04-c3",
+        "title": "panic and recover",
+        "contentHtml": "<p>For truly exceptional situations (programmer errors, unrecoverable failures), Go has <strong>panic</strong>. Calling panic stops normal execution, runs deferred functions up the stack, and crashes the program with a stack trace.</p><p><strong>recover</strong>, called inside a deferred function, can catch a panic and turn it back into a regular error. <code>defer func() { if r := recover(); r != nil { err = fmt.Errorf(\"panic: %v\", r) } }()</code>. Used in HTTP servers (per-request panic recovery), goroutine supervisors, and libraries that don't want to bring down the host process.</p><p>Style guideline: <strong>panic for programmer errors, return error for everything else</strong>. Index out of bounds, nil pointer dereference, type assertion failures all panic — the program is in an undefined state. User input being invalid, network failing, file not found return errors — those are expected. Conflating the two is the most common Go style mistake; large codebases have linting rules to prevent panicking in non-exceptional paths.</p>",
+        "mathExpressions": ["\\text{panic} \\to \\text{unwind stack, run defers, crash} \\quad \\text{recover catches panic in deferred fn}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["go-q25", "go-q26", "go-q27", "go-q28", "go-q29", "go-q30", "go-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "go-05",
+    "topicId": "cs-lang-go",
+    "order": 5,
+    "title": "Standard Library, Tooling, and Where Go Wins",
+    "description": "The batteries-included library, gofmt, and the cloud-native era",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "go-05-c1",
+        "title": "The Standard Library",
+        "contentHtml": "<p>Go's <strong>standard library</strong> is famously comprehensive. <strong>net/http</strong>: production-ready HTTP server and client. <strong>encoding/json</strong>: JSON encode/decode via reflection. <strong>database/sql</strong>: portable SQL interface. <strong>crypto</strong>: complete cryptographic suite. <strong>os/exec</strong>: subprocess management. <strong>regexp</strong>: regular expressions. The list goes on.</p><p>You can build a complete production web service using only the standard library. No web framework needed. <code>http.HandleFunc(\"/\", handler); http.ListenAndServe(\":8080\", nil)</code> is a working server. This is by design — Go was built for cloud-era infrastructure, and the team understood what backend services need.</p><p>The <strong>standard library has near-perfect backward compatibility</strong>. Code written for Go 1.0 (2012) generally works in Go 1.22 (2024). The team takes the compatibility promise seriously: deprecation is rare, breaking changes effectively never happen. This is dramatically different from the Python 2→3 saga or the C++ standard library's careful additions.</p>",
+        "mathExpressions": ["\\text{stdlib: HTTP, JSON, SQL, crypto, regex, ...} \\quad \\text{(production-ready out of box)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-05-c2",
+        "title": "Tooling: gofmt, go test, go modules",
+        "contentHtml": "<p>Go ships with a <strong>standard formatter</strong> (<code>gofmt</code>) that everyone uses. There's exactly one canonical formatting; debates about tabs vs spaces or brace placement simply don't happen in Go. Most editors run <code>gofmt</code> on save. The cultural impact is real — every Go codebase looks more or less the same.</p><p><strong>go test</strong> is the built-in test runner: any function in <code>*_test.go</code> named <code>TestXxx(t *testing.T)</code> is a test. Subtests, benchmarks, examples, fuzzing (added 1.18) all work without extra dependencies. <code>go test -race</code> runs the race detector; <code>go test -cover</code> reports coverage; <code>go test -bench</code> runs benchmarks.</p><p><strong>go modules</strong> (since 1.11) handle dependencies. <code>go.mod</code> lists requirements; <code>go.sum</code> pins exact hashes. Dependencies fetched from public proxies are verified against the sum file. Reproducible builds, easy versioning, no Python-style virtual environment dance. The Go ecosystem learned from earlier languages' mistakes and shipped good tooling from day one.</p>",
+        "mathExpressions": ["\\text{gofmt + go test + go mod} \\quad \\text{single, official toolchain}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "go-05-c3",
+        "title": "Where Go Wins",
+        "contentHtml": "<p>Go has come to dominate <strong>cloud infrastructure</strong>. <strong>Docker</strong>, <strong>Kubernetes</strong>, <strong>etcd</strong>, <strong>Prometheus</strong>, <strong>Grafana</strong>, <strong>InfluxDB</strong>, <strong>CockroachDB</strong>, <strong>Hugo</strong>, <strong>Terraform</strong>, <strong>Consul</strong>, <strong>Caddy</strong> — all written in Go. The Cloud Native Computing Foundation's projects skew heavily toward Go.</p><p>Why? Static binary that compiles in seconds; deploys without runtime dependencies; first-class concurrency for I/O-heavy work; predictable performance without GC tuning; small, readable codebases that survive team rotation. Cloud infrastructure has exactly Go's strengths.</p><p>Where Go is weaker: <strong>numerical and ML work</strong> (Python and Julia win), <strong>systems programming with no-GC requirements</strong> (Rust and C win), <strong>language complexity</strong> (Go is sometimes <em>too</em> simple — generics arrived late, error handling is verbose). But for backend microservices, CLIs, and infrastructure tooling, Go's combination of simplicity, performance, and tooling makes it the default choice for many companies.</p>",
+        "mathExpressions": ["\\text{Go domain: cloud infra, backend services, CLIs} \\quad \\text{(simple + fast + deployable)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["go-q32", "go-q33", "go-q34", "go-q35", "go-q36", "go-q37"],
+    "puzzleId": null
+  }
+]

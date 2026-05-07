@@ -1,0 +1,182 @@
+[
+  {
+    "id": "db-01",
+    "topicId": "cs-databases",
+    "order": 1,
+    "title": "The Relational Model",
+    "description": "Tables, rows, keys, normalization, and Codd's twelve rules",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "db-01-c1",
+        "title": "Codd's Big Idea: Data as Relations",
+        "contentHtml": "<p>In 1970, IBM researcher <strong>Edgar F. Codd</strong> published a paper titled <em>A Relational Model of Data for Large Shared Data Banks</em>. It proposed something radical: stop organizing data as nested hierarchies or pointer chains. Instead, store everything as <strong>relations</strong> — what we now call <strong>tables</strong>.</p><p>A relation is a set of <strong>tuples</strong> (rows), and each tuple has the same fixed set of <strong>attributes</strong> (columns). Mathematically, a relation is a subset of the Cartesian product of its column domains. The <strong>relational algebra</strong> defines operations — selection, projection, union, intersection, difference, join — that produce new relations from existing ones.</p><p>Codd's insight was that this clean mathematical foundation makes databases <strong>declarative</strong>. You don't navigate pointers; you describe what data you want. The system figures out how to retrieve it. This idea was so powerful that it dominated the database world for fifty years and still rules most production systems.</p>",
+        "mathExpressions": ["R \\subseteq D_1 \\times D_2 \\times \\cdots \\times D_n \\quad \\text{(a relation as a subset of column domains)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-01-c2",
+        "title": "Keys: Primary, Foreign, and Composite",
+        "contentHtml": "<p>A <strong>primary key</strong> is the column (or set of columns) that uniquely identifies each row. Every table should have one. Common choices: an auto-increment integer (<code>id</code>), a UUID, or a natural key like an email address.</p><p>A <strong>foreign key</strong> is a column whose values must match the primary key of another table. If <code>orders.customer_id</code> is a foreign key referencing <code>customers.id</code>, the database refuses to insert an order with a customer ID that doesn't exist. This <strong>referential integrity</strong> is one of the relational model's superpowers — bad data simply can't be saved.</p><p>A <strong>composite key</strong> is a primary key made of multiple columns. In a table mapping students to courses, the primary key might be <code>(student_id, course_id)</code> together. Either column alone could repeat, but the pair is unique. Composite keys are common in junction tables that model many-to-many relationships.</p>",
+        "mathExpressions": ["\\text{PK uniqueness: } \\forall t_1, t_2 \\in R,\\; t_1.\\text{key} = t_2.\\text{key} \\implies t_1 = t_2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-01-c3",
+        "title": "Normalization: Avoiding Duplication",
+        "contentHtml": "<p><strong>Normalization</strong> is the process of organizing tables to eliminate redundancy. The classic forms are <strong>1NF</strong> (no repeating groups, atomic values), <strong>2NF</strong> (no partial dependencies on composite keys), and <strong>3NF</strong> (no transitive dependencies). Higher forms (BCNF, 4NF, 5NF) handle subtler edge cases.</p><p>Why bother? Redundant data is bug paradise. If a customer's address is stored in fifty rows of the orders table and they move, fifty updates must succeed atomically — or the data lies. Normalize to one row in a <code>customers</code> table, and one update fixes everything.</p><p>The tradeoff: normalized schemas require <strong>joins</strong> to assemble the data application code wants. Joins cost performance. Real-world systems often <strong>denormalize</strong> hot paths — duplicating data deliberately to make reads fast — and accept the consistency burden. The right answer is rarely \"fully normalize everything\" or \"never normalize\"; it's \"normalize first, denormalize where measurements show you must.\"</p>",
+        "mathExpressions": ["1NF \\subset 2NF \\subset 3NF \\subset BCNF \\subset 4NF \\subset 5NF"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["db-q01", "db-q02", "db-q03", "db-q04", "db-q05", "db-q06", "db-q07", "db-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "db-02",
+    "topicId": "cs-databases",
+    "order": 2,
+    "title": "SQL: The Query Language",
+    "description": "SELECT, JOIN, GROUP BY, subqueries, and the dialects",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "db-02-c1",
+        "title": "SELECT, FROM, WHERE: The Holy Trinity",
+        "contentHtml": "<p><strong>SQL</strong> (Structured Query Language) was designed by IBM in the 1970s as a human-readable layer over the relational model. The core query shape is unbelievably stable: <code>SELECT columns FROM table WHERE condition</code>. Master this, and you have read access to most of the world's data.</p><p>SQL is <strong>set-based</strong>. <code>SELECT name FROM users WHERE age &gt; 18</code> doesn't say \"loop through rows.\" It says \"give me the set of names where the age condition holds.\" The database engine plans the execution — it might use an index, scan the whole table, or split work across cores.</p><p>Modern SQL adds <code>ORDER BY</code> for sorting, <code>LIMIT</code>/<code>OFFSET</code> for pagination, <code>DISTINCT</code> for de-duplication, and <code>CASE</code> for conditional logic. The language is enormous (thousands of pages of spec), but the Pareto principle applies: 90% of real-world SQL is built from a small set of patterns.</p>",
+        "mathExpressions": ["\\sigma_{\\text{age} > 18}(\\pi_{\\text{name}}(\\text{users})) \\quad \\text{relational algebra for SELECT name WHERE age > 18}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-02-c2",
+        "title": "Joins: Combining Tables",
+        "contentHtml": "<p>Real schemas split data across many tables. To assemble it for a query, you <strong>join</strong> tables together. The most common join is <strong>INNER JOIN</strong>: keep rows where the join condition matches in both tables. <code>SELECT u.name, o.total FROM users u INNER JOIN orders o ON u.id = o.user_id</code> returns one row per matching pair.</p><p>Other join types: <strong>LEFT JOIN</strong> (keep all left rows, fill nulls when the right has no match), <strong>RIGHT JOIN</strong> (mirror), <strong>FULL OUTER JOIN</strong> (keep unmatched rows from both sides), <strong>CROSS JOIN</strong> (every-left-with-every-right Cartesian product).</p><p>Joins are conceptually simple but computationally expensive. The database engine has multiple <strong>join algorithms</strong> — nested loop, hash join, merge join — and the planner picks one based on table sizes, indexes, and statistics. Bad joins (e.g., joining unindexed columns on huge tables) are the #1 cause of slow queries in the wild.</p>",
+        "mathExpressions": ["A \\bowtie_{A.x = B.y} B = \\{(a, b) : a \\in A,\\, b \\in B,\\, a.x = b.y\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-02-c3",
+        "title": "Aggregation, GROUP BY, and HAVING",
+        "contentHtml": "<p>SQL excels at <strong>aggregation</strong>: collapsing many rows into summary statistics. <code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code> are the workhorses. <code>SELECT COUNT(*) FROM orders</code> returns one number — how many rows.</p><p><strong>GROUP BY</strong> partitions rows into groups before aggregating. <code>SELECT user_id, COUNT(*) FROM orders GROUP BY user_id</code> returns one row per user with their order count. Add <code>HAVING</code> to filter aggregate results: <code>HAVING COUNT(*) &gt; 10</code> keeps only users with more than 10 orders.</p><p>Watch out: <code>WHERE</code> filters rows <em>before</em> aggregation; <code>HAVING</code> filters groups <em>after</em>. <code>WHERE COUNT(*) &gt; 10</code> is a syntax error because COUNT doesn't exist before grouping. Modern SQL also offers <strong>window functions</strong> (<code>ROW_NUMBER() OVER (...)</code>, <code>SUM(...) OVER (...)</code>) that compute aggregates without collapsing rows — invaluable for ranking, running totals, and time-series analysis.</p>",
+        "mathExpressions": ["\\gamma_{\\text{user\\_id};\\, \\text{count}(*) \\to n}(\\text{orders}) \\quad \\text{(group-by aggregation)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["db-q09", "db-q10", "db-q11", "db-q12", "db-q13", "db-q14", "db-q15", "db-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "db-03",
+    "topicId": "cs-databases",
+    "order": 3,
+    "title": "ACID & Transactions",
+    "description": "Atomicity, consistency, isolation, durability, and the isolation levels",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "db-03-c1",
+        "title": "What ACID Guarantees",
+        "contentHtml": "<p>A <strong>transaction</strong> is a group of operations that the database treats as a single unit. The classic example: transferring money between accounts. Debit one, credit the other. Both must succeed or both must fail — never one without the other.</p><p>The <strong>ACID</strong> properties spell out what a database promises about transactions. <strong>A</strong>tomicity: all-or-nothing. <strong>C</strong>onsistency: the database moves from one valid state to another (constraints hold). <strong>I</strong>solation: concurrent transactions don't see each other's intermediate state. <strong>D</strong>urability: once committed, the change survives crashes.</p><p>Implementing ACID is hard. Atomicity needs <strong>write-ahead logging</strong> so partial transactions can be rolled back after a crash. Durability needs <strong>fsync</strong> calls that force data to disk — slow, but the database lies if it skips them. Isolation needs <strong>locking</strong> or <strong>multi-version concurrency control (MVCC)</strong>. ACID is a major reason traditional relational databases are slower than modern key-value stores: the guarantees cost real CPU and disk.</p>",
+        "mathExpressions": ["T = \\{op_1, op_2, \\ldots, op_n\\} \\quad \\text{either all execute or none do}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-03-c2",
+        "title": "Isolation Levels and Concurrency Anomalies",
+        "contentHtml": "<p>Strict isolation — running every transaction as if it were the only one — is correct but slow. So SQL defines <strong>isolation levels</strong> that trade isolation for performance. The four levels (weakest to strongest) are <strong>READ UNCOMMITTED</strong>, <strong>READ COMMITTED</strong>, <strong>REPEATABLE READ</strong>, and <strong>SERIALIZABLE</strong>.</p><p>Lower levels permit specific <strong>anomalies</strong>. <em>Dirty read</em>: see uncommitted data from another transaction. <em>Non-repeatable read</em>: re-reading a row inside a transaction returns different data. <em>Phantom read</em>: re-running a query returns new rows that weren't there before. SERIALIZABLE forbids all anomalies; READ UNCOMMITTED forbids almost none.</p><p>The default in PostgreSQL and Oracle is READ COMMITTED. The default in MySQL InnoDB is REPEATABLE READ. Most applications work fine with these defaults but break in subtle ways under concurrency you didn't anticipate. The fix is usually to bump isolation, use <code>SELECT FOR UPDATE</code> locks, or restructure the transaction. \"It worked in dev\" is the precise sound of an isolation bug discovering production.</p>",
+        "mathExpressions": ["\\text{READ UNCOMMITTED} \\subset \\text{READ COMMITTED} \\subset \\text{REPEATABLE READ} \\subset \\text{SERIALIZABLE}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-03-c3",
+        "title": "Two-Phase Commit and Distributed Transactions",
+        "contentHtml": "<p>ACID across a single database is hard. ACID across <em>multiple</em> databases — \"transfer money from bank A to bank B\" — is harder. The classic solution is <strong>two-phase commit (2PC)</strong>.</p><p>Phase 1 (prepare): a <strong>coordinator</strong> asks every participant if they can commit. They write the transaction durably and reply YES (vote to commit) or NO (abort). Phase 2 (commit/abort): if all voted YES, the coordinator tells everyone to commit; if any voted NO, everyone aborts.</p><p>2PC is correct but suffers from a fundamental flaw: if the coordinator dies after phase 1 but before phase 2, participants are left holding locks waiting for instructions that never come. This is why modern distributed systems often avoid 2PC entirely and use eventually-consistent designs, sagas (compensating transactions), or single-leader systems. The CAP theorem (Consistency, Availability, Partition tolerance — pick two) makes formal what practitioners learned the hard way: distributed ACID is a luxury good.</p>",
+        "mathExpressions": ["\\text{2PC: Prepare} \\to \\text{Vote} \\to \\text{Commit/Abort} \\quad \\text{(blocking on coordinator failure)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["db-q17", "db-q18", "db-q19", "db-q20", "db-q21", "db-q22", "db-q23", "db-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "db-04",
+    "topicId": "cs-databases",
+    "order": 4,
+    "title": "Indexes & Query Performance",
+    "description": "B-trees, hash indexes, query plans, and execution strategies",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "db-04-c1",
+        "title": "Why Indexes Matter",
+        "contentHtml": "<p>Without an index, finding a row by some column requires a <strong>full table scan</strong>: read every row, check the condition. For a million-row table, that's a million reads. With an index, the database can find matching rows in <strong>logarithmic time</strong> — typically twenty or so reads instead of a million.</p><p>An index is a separate data structure that maps column values to the rows where those values live. The database maintains the index automatically as data changes. The cost: writes are slower (every insert/update/delete must update each index), and indexes consume disk space.</p><p>The first lesson of database performance: <strong>add indexes for the columns you filter and join on</strong>. The second lesson: <strong>don't add indexes you don't need</strong>. A poorly-tuned database with twenty indexes per table is slower than the same database with five well-chosen ones.</p>",
+        "mathExpressions": ["O(n) \\text{ scan} \\to O(\\log n) \\text{ index lookup} \\quad \\text{huge for large } n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-04-c2",
+        "title": "B-Trees, Hash Indexes, and Beyond",
+        "contentHtml": "<p>The default index structure in nearly every major relational database is the <strong>B-tree</strong> (technically a B+ tree). It's a balanced multi-way tree where each node has many children. Lookups, range scans, and ordered iteration are all efficient. B-trees stay shallow even with billions of rows — typical depth is 3-4 levels.</p><p><strong>Hash indexes</strong> are faster for exact-match lookups but useless for range queries (\"all users with age between 25 and 35\"). They store key-to-row mappings in a hash table. PostgreSQL has them; MySQL InnoDB doesn't expose them directly but uses adaptive hashing internally.</p><p>Specialized indexes solve specialized problems. <strong>GiST</strong>/<strong>SP-GiST</strong> for geometric and full-text data. <strong>GIN</strong> for arrays and JSON. <strong>BRIN</strong> for huge mostly-sorted tables (one entry per block range, tiny but coarse). <strong>Bitmap</strong> indexes for low-cardinality columns. Choosing the right index for the right workload is half the art of database tuning.</p>",
+        "mathExpressions": ["\\text{B-tree height} \\approx \\log_b(n) \\quad \\text{where } b \\text{ is branching factor (often 100+)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-04-c3",
+        "title": "Query Plans and the EXPLAIN Command",
+        "contentHtml": "<p>When you submit a SQL query, the database <strong>parses</strong> it, <strong>plans</strong> several possible execution strategies, and <strong>chooses</strong> the cheapest one based on table statistics. The chosen sequence of operations is the <strong>query plan</strong>.</p><p>Almost every database exposes this with an <code>EXPLAIN</code> command. <code>EXPLAIN SELECT ...</code> shows what the planner intends to do: which indexes it will use, which join algorithms it picks, the estimated number of rows. Reading EXPLAIN output is the single highest-leverage skill for diagnosing slow queries.</p><p>Common red flags in a plan: <em>Seq Scan</em> on a large table when an index should apply (missing or unused index), <em>Nested Loop</em> with millions of iterations (need a hash or merge join), <em>filter</em> applied late in the pipeline (push it down via better WHERE clauses or schema). The fix is usually adding the right index, rewriting the query, updating statistics, or denormalizing a hot path.</p>",
+        "mathExpressions": ["\\text{plan cost} = f(\\text{rows}, \\text{IO}, \\text{CPU}) \\quad \\text{planner picks } \\arg\\min_{\\text{plan}} \\text{cost}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["db-q25", "db-q26", "db-q27", "db-q28", "db-q29", "db-q30", "db-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "db-05",
+    "topicId": "cs-databases",
+    "order": 5,
+    "title": "NoSQL & Distributed Databases",
+    "description": "Key-value, document, column-family, graph, and the CAP theorem",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "db-05-c1",
+        "title": "Why NoSQL Happened",
+        "contentHtml": "<p>By the late 2000s, web companies were hitting the limits of single-machine relational databases. Twitter, Amazon, Facebook, Google needed to store data spanning thousands of machines. Sharding a relational database across that many nodes is brutal — joins explode, ACID across shards is impractical.</p><p><strong>NoSQL</strong> ('Not Only SQL') is the umbrella term for the wave of databases that emerged: <strong>key-value stores</strong> (Redis, DynamoDB), <strong>document databases</strong> (MongoDB, Couchbase), <strong>column-family stores</strong> (Cassandra, HBase), and <strong>graph databases</strong> (Neo4j, JanusGraph). Each gives up some relational features in exchange for horizontal scalability.</p><p>The trade-off chart: relational gives you joins, ACID, and SQL but scales vertically; NoSQL gives you horizontal scale, schema flexibility, and specialized query patterns but typically not full ACID across nodes. Modern systems blur the line: PostgreSQL has JSON columns and clustering, while DynamoDB and Cosmos DB now offer transactions. Pick the database that matches your access patterns, not the one with the trendiest name.</p>",
+        "mathExpressions": ["\\text{vertical scaling: bigger machine} \\quad \\text{vs} \\quad \\text{horizontal scaling: more machines}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-05-c2",
+        "title": "The CAP Theorem",
+        "contentHtml": "<p>Eric Brewer's <strong>CAP theorem</strong> (2000, formally proved by Gilbert and Lynch in 2002) states that a distributed data store can guarantee at most two of: <strong>C</strong>onsistency (every read sees the latest write), <strong>A</strong>vailability (every request gets a response), <strong>P</strong>artition tolerance (the system survives network splits).</p><p>In practice, P is non-negotiable — networks partition, period — so the real choice is C vs A. <strong>CP systems</strong> (HBase, MongoDB by default, etcd, Zookeeper) refuse requests during partitions to preserve consistency. <strong>AP systems</strong> (Cassandra, Riak, DynamoDB) keep accepting reads and writes during partitions and reconcile divergent replicas later.</p><p>The CAP theorem is often misread as a free choice. The real lesson is subtler: under partitions, you must sacrifice one of C or A, but during normal operation, you can have plenty of both. The richer framework is <strong>PACELC</strong>: under Partitions, choose A or C; Else (no partition), choose Latency or Consistency. Most real systems are PA/EL — fast and available, with eventual consistency.</p>",
+        "mathExpressions": ["\\text{CAP: at most 2 of } \\{C, A, P\\} \\quad \\text{but } P \\text{ is forced} \\implies \\text{choose C or A under partition}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "db-05-c3",
+        "title": "Eventual Consistency and Beyond",
+        "contentHtml": "<p><strong>Eventual consistency</strong> is the AP relaxation: replicas may temporarily disagree, but if writes stop, they will eventually converge. This is fine for shopping carts, social feeds, and metrics. It's a disaster for bank balances or inventory counters.</p><p>Stronger guarantees on top of eventual consistency: <strong>read-your-writes</strong> (a client always sees its own writes), <strong>monotonic reads</strong> (a client never sees state go backward), <strong>causal consistency</strong> (related operations are seen in order). Each adds machinery (vector clocks, session tokens) but stops short of full strong consistency.</p><p><strong>CRDTs</strong> (Conflict-free Replicated Data Types) are a beautiful idea: data structures whose merge operation is mathematically guaranteed to converge regardless of order. A grow-only counter, a last-write-wins set, an OR-set. Modern collaborative editors (Figma, Apple Notes, Google Docs sync layers) use CRDT-like algorithms to merge concurrent edits without conflicts. It's the cutting edge where distributed systems and data structures meet.</p>",
+        "mathExpressions": ["\\text{CRDT merge} \\circ \\text{is associative, commutative, idempotent} \\implies \\text{convergence}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["db-q32", "db-q33", "db-q34", "db-q35", "db-q36", "db-q37"],
+    "puzzleId": null
+  }
+]

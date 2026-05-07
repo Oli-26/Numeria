@@ -1,0 +1,130 @@
+[
+  {
+    "id": "mastery-clean-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which is the strongest argument FOR allowing some duplication rather than extracting an abstraction?",
+    "options": ["Duplication is faster to type", "Compilers handle duplicates better", "The wrong abstraction is more expensive than duplication", "All abstractions slow down the code"],
+    "correctAnswer": "The wrong abstraction is more expensive than duplication",
+    "explanation": "Sandi Metz's principle: a wrong abstraction couples unrelated things, fights every change, and is hard to undo. Some duplication while you wait to see the right shape is cheaper.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-clean-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Adding tests to a legacy codebase is most safely done by writing characterization tests that pin down current behavior before refactoring.",
+    "correctAnswer": "True",
+    "explanation": "Characterization tests (Michael Feathers, 'Working Effectively with Legacy Code') capture what the code currently does — bugs and all — so refactoring doesn't change observable behavior. Then you can clean up safely.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-clean-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the rule, popularized by Bob Martin, that says 'leave the code cleaner than you found it'?",
+    "correctAnswer": "Boy Scout Rule",
+    "acceptableAnswers": ["Boy Scout Rule", "boy scout rule", "the Boy Scout Rule"],
+    "explanation": "The Boy Scout Rule encourages incremental improvement. Small cleanups on every visit compound into a healthier codebase over time.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-clean-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each SOLID letter to its principle:",
+    "pairs": [
+      {"left": "S", "right": "Single Responsibility"},
+      {"left": "O", "right": "Open/Closed"},
+      {"left": "L", "right": "Liskov Substitution"},
+      {"left": "I", "right": "Interface Segregation"},
+      {"left": "D", "right": "Dependency Inversion"}
+    ],
+    "correctAnswer": null,
+    "explanation": "These five OOP principles, formulated by Robert Martin around 2000, capture much of what makes class design maintainable.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-clean-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why is a comment that simply restates the code generally a code smell?",
+    "options": ["Comments slow down compilation", "It signals the code itself isn't clear enough — improve naming or extract instead", "Modern languages forbid comments", "Comments take up too much screen space"],
+    "correctAnswer": "It signals the code itself isn't clear enough — improve naming or extract instead",
+    "explanation": "If you need to explain what code does in a comment, that's evidence the code wasn't expressive enough. Better names or extracted functions usually replace such comments.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-clean-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument:",
+    "steps": [
+      "I am introducing a new payment provider",
+      "I create a PaymentProvider abstract class",
+      "Stripe and PayPal subclasses implement it",
+      "I add new methods to PaymentProvider whenever a provider has a unique feature",
+      "Subclasses that don't support those methods throw NotImplementedException",
+      "This satisfies the Open/Closed Principle"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 violates Liskov Substitution. Subclasses that throw NotImplementedException for inherited methods cannot stand in for the base class — code expecting a PaymentProvider can't safely use them. Either the method belongs only on a more specific subtype, or the abstraction is wrong.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-clean-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Goodhart's law ('when a measure becomes a target, it ceases to be a good measure') applies to code coverage and other software metrics.",
+    "correctAnswer": "True",
+    "explanation": "Mandating 100% coverage (or any single metric) often produces bad behavior: tests that hit lines without asserting anything, code reorganized to game the metric, etc. Use metrics as diagnostics, not goals.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-clean-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "What is the strongest argument for the 'pure core, imperative shell' pattern?",
+    "options": ["It runs faster on modern CPUs", "It uses less memory", "The pure core is trivially testable and easy to reason about", "It avoids needing version control"],
+    "correctAnswer": "The pure core is trivially testable and easy to reason about",
+    "explanation": "Pure functions have no hidden inputs or outputs. Tests are simple, parallelism is safe, and reasoning is local. Side effects are confined to a thin shell that's also easy to inspect.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-clean-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of one TDD red-green-refactor cycle:",
+    "steps": [
+      "Write a failing test for the next small piece of behavior",
+      "Run tests; confirm only the new one fails (red)",
+      "Write the simplest code that makes the test pass",
+      "Run tests; all pass (green)",
+      "Refactor the code (and tests) while keeping all tests green",
+      "Commit; repeat with the next test"
+    ],
+    "correctAnswer": null,
+    "explanation": "The discipline is small, testable steps. The cycle's rhythm — red, green, refactor — keeps you in a state where you always have working code with tests passing.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-clean-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What principle says that software should behave the way reasonable users expect (avoiding surprises)?",
+    "correctAnswer": "Principle of Least Astonishment",
+    "acceptableAnswers": ["Principle of Least Astonishment", "Least Astonishment", "POLA", "principle of least astonishment", "Principle of Least Surprise"],
+    "explanation": "Surprises are bugs in disguise. Whether in API design, UI, or function names, predictable behavior is one of the most important properties of usable software.",
+    "xpReward": 40
+  }
+]

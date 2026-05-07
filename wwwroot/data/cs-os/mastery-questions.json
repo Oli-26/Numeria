@@ -1,0 +1,129 @@
+[
+  {
+    "id": "mastery-os-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why is a context switch between threads in the same process generally faster than between threads in different processes?",
+    "options": ["Same-process switches use fewer registers", "Same-process switches don't flush the TLB or change page tables", "Same-process switches are atomic", "Same-process switches use less power"],
+    "correctAnswer": "Same-process switches don't flush the TLB or change page tables",
+    "explanation": "Threads in one process share the same address space, so the TLB stays valid across the switch. Switching to a different process requires changing page tables and flushing TLB entries — significantly more expensive.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-os-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Memory-mapped files can be faster than read()/write() because the kernel handles paging in the background and avoids extra copies.",
+    "correctAnswer": "True",
+    "explanation": "mmap maps file pages directly into process address space. The kernel pages them in on access; no buffer-to-buffer copies are needed. Especially powerful for large files with random access patterns.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-os-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the name of the small CPU cache that holds recent virtual-to-physical address translations?",
+    "correctAnswer": "TLB",
+    "acceptableAnswers": ["TLB", "Translation Lookaside Buffer", "translation lookaside buffer", "tlb"],
+    "explanation": "The TLB caches page-table entries. TLB misses force a page-table walk, which is much slower. Reducing TLB pressure (e.g., via huge pages) is a recurring perf optimization.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-os-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each kernel mechanism to its purpose:",
+    "pairs": [
+      {"left": "System call", "right": "User-to-kernel transition for privileged operations"},
+      {"left": "Interrupt", "right": "Hardware-initiated CPU diversion"},
+      {"left": "Page fault", "right": "Access to an unmapped or protected virtual page"},
+      {"left": "Signal", "right": "Software-delivered notification to a process"}
+    ],
+    "correctAnswer": null,
+    "explanation": "These are the four primary ways control flow crosses the user-kernel boundary or is redirected by the OS.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-os-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which of these is the strongest reason to prefer mutexes over lock-free atomics in most code?",
+    "options": ["Mutexes are faster", "Mutexes are correct, easy to reason about, and well-served by good debuggers", "Mutexes use less memory", "Atomics are deprecated"],
+    "correctAnswer": "Mutexes are correct, easy to reason about, and well-served by good debuggers",
+    "explanation": "Lock-free code is hard to write correctly, hard to debug, and frequently broken in subtle memory-ordering ways. Mutexes are well-understood and adequate for almost all production code. Reach for atomics only with measurements and review.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-os-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this concurrency argument:",
+    "steps": [
+      "I have a producer thread and a consumer thread sharing a queue",
+      "I make the queue's size and head/tail variables 'volatile' in C++",
+      "I assume volatile gives me thread safety",
+      "I run my code; it works on x86",
+      "I deploy to ARM and see corruption",
+      "ARM has different memory ordering, so I just need a stronger compiler flag"
+    ],
+    "correctAnswer": "3",
+    "explanation": "Step 3 is the foundational error. In C/C++, 'volatile' does NOT provide thread safety — it only prevents some compiler optimizations. You need atomic operations and explicit memory ordering (or mutexes). Volatile was for memory-mapped hardware registers, not concurrent shared variables.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-os-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "On Linux, copy-on-write makes fork() cheap because pages are only duplicated when actually written.",
+    "correctAnswer": "True",
+    "explanation": "After fork, parent and child share read-only mappings of the same physical pages. The kernel duplicates a page only when one of them writes to it. Without COW, fork would have to copy the entire address space — prohibitively slow.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-os-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why might Firecracker (used by AWS Lambda) be preferred over Docker for running short-lived untrusted workloads?",
+    "options": ["Firecracker is faster than containers in steady state", "Firecracker provides VM-level isolation with container-like startup speed", "Firecracker doesn't require Linux", "Firecracker uses no memory"],
+    "correctAnswer": "Firecracker provides VM-level isolation with container-like startup speed",
+    "explanation": "Firecracker is a microVM hypervisor specifically designed for serverless: tens of milliseconds startup, MB-scale overhead, but full VM isolation. This makes it suitable for running untrusted multi-tenant code at scale without container's weaker boundary.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-os-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the events when a userspace program calls read() on a file:",
+    "steps": [
+      "Userspace invokes the read() syscall, trapping into kernel mode",
+      "Kernel checks the file descriptor table for the open file",
+      "If the requested data is in the page cache, copy it to user buffer",
+      "If not, issue a disk I/O request and block the calling thread",
+      "When I/O completes, copy the data into the user buffer",
+      "Return from kernel mode; userspace continues with the data"
+    ],
+    "correctAnswer": null,
+    "explanation": "This is the canonical syscall flow for blocking I/O. Async/io_uring rearranges some of these steps but the fundamental phases are similar.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-os-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Which microkernel has been formally verified to be free of kernel-level bugs?",
+    "correctAnswer": "seL4",
+    "acceptableAnswers": ["seL4", "sel4", "seL4 microkernel"],
+    "explanation": "seL4 was the first general-purpose OS kernel proven correct against its formal specification (Klein et al., 2009). It's used in safety-critical and high-assurance systems.",
+    "xpReward": 40
+  }
+]

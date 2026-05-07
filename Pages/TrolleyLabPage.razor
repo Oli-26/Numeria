@@ -1,0 +1,193 @@
+@page "/trolley-lab"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Trolley Lab</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Trolley Lab" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    var dilemma = dilemmas[index];
+
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Trolley Lab</h1>
+    </div>
+
+    <div class="card tl-intro">
+        <Icon Name="puzzle" Size="22" Stroke="var(--accent)" />
+        <p>Each scenario forces a choice. Your verdicts shape your ethical profile -- consequentialist, deontological, virtue, or contractualist.</p>
+    </div>
+
+    <div class="card tl-dilemma">
+        <div class="tl-tag">@dilemma.Title</div>
+        <p class="tl-prompt">@((MarkupString)dilemma.Prompt)</p>
+
+        <div class="tl-tracks">
+            <svg viewBox="0 0 320 120" class="tl-svg">
+                <line x1="20" y1="60" x2="160" y2="60" stroke="var(--text-secondary)" stroke-width="3"/>
+                <line x1="160" y1="60" x2="300" y2="30" stroke="var(--accent)" stroke-width="3"/>
+                <line x1="160" y1="60" x2="300" y2="90" stroke="var(--error)" stroke-width="3"/>
+                <circle cx="290" cy="30" r="6" fill="var(--accent)"/>
+                <circle cx="290" cy="90" r="6" fill="var(--error)"/>
+                <text x="296" y="22" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionACost</text>
+                <text x="296" y="108" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionBCost</text>
+                <rect x="20" y="50" width="24" height="20" rx="3" fill="var(--primary)"/>
+            </svg>
+        </div>
+
+        @if (verdict == null)
+        {
+            <div class="tl-actions">
+                <button class="btn btn-accent" @onclick="() => Choose(0)">@dilemma.OptionA</button>
+                <button class="btn btn-outline" @onclick="() => Choose(1)">@dilemma.OptionB</button>
+            </div>
+        }
+        else
+        {
+            <div class="tl-result">
+                <strong>You chose: @(verdict == 0 ? dilemma.OptionA : dilemma.OptionB)</strong>
+                <p>@dilemma.Resolution</p>
+                <div class="tl-frames">
+                    <div class="tl-frame"><span>Util.</span> <strong>@(verdict == dilemma.UtilPick ? "✓" : "✗")</strong></div>
+                    <div class="tl-frame"><span>Deont.</span> <strong>@(verdict == dilemma.DeontPick ? "✓" : "✗")</strong></div>
+                    <div class="tl-frame"><span>Virtue</span> <strong>@(verdict == dilemma.VirtuePick ? "✓" : "✗")</strong></div>
+                    <div class="tl-frame"><span>Contract</span> <strong>@(verdict == dilemma.ContractPick ? "✓" : "✗")</strong></div>
+                </div>
+                <button class="btn btn-primary" style="margin-top:12px;width:100%" @onclick="Next">@(index < dilemmas.Count - 1 ? "Next dilemma" : "See profile")</button>
+            </div>
+        }
+    </div>
+
+    @if (showProfile)
+    {
+        <div class="card tl-profile">
+            <h3>Your ethical profile</h3>
+            <div class="tl-bars">
+                @foreach (var (label, score) in Scores())
+                {
+                    <div class="tl-bar-row">
+                        <span>@label</span>
+                        <div class="tl-bar"><div class="tl-bar-fill" style="@($"width:{score * 100 / dilemmas.Count}%")"></div></div>
+                        <strong>@score / @dilemmas.Count</strong>
+                    </div>
+                }
+            </div>
+            <button class="btn btn-outline" style="margin-top:12px;width:100%" @onclick="Reset">Restart</button>
+        </div>
+    }
+}
+
+@code {
+    private bool unlocked;
+    private int index;
+    private int? verdict;
+    private bool showProfile;
+    private readonly List<int> picks = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-trolley-lab");
+            StateHasChanged();
+        }
+    }
+
+    private void Choose(int v)
+    {
+        verdict = v;
+        picks.Add(v);
+    }
+
+    private void Next()
+    {
+        if (index < dilemmas.Count - 1) { index++; verdict = null; }
+        else showProfile = true;
+    }
+
+    private void Reset() { index = 0; verdict = null; showProfile = false; picks.Clear(); }
+
+    private List<(string, int)> Scores()
+    {
+        int u = 0, d = 0, v = 0, c = 0;
+        for (int i = 0; i < picks.Count; i++)
+        {
+            if (picks[i] == dilemmas[i].UtilPick) u++;
+            if (picks[i] == dilemmas[i].DeontPick) d++;
+            if (picks[i] == dilemmas[i].VirtuePick) v++;
+            if (picks[i] == dilemmas[i].ContractPick) c++;
+        }
+        return new() { ("Utilitarian", u), ("Deontological", d), ("Virtue ethics", v), ("Contractualist", c) };
+    }
+
+    private record Dilemma(string Title, string Prompt, string OptionA, string OptionB,
+        string OptionACost, string OptionBCost, int UtilPick, int DeontPick, int VirtuePick, int ContractPick, string Resolution);
+
+    private static readonly List<Dilemma> dilemmas = new()
+    {
+        new("The Switch", "A runaway trolley will kill <strong>five</strong> workers. You can pull a lever to divert it to a side track where it kills <strong>one</strong>.",
+            "Pull the lever", "Do nothing", "1 dies", "5 die", 0, 1, 0, 0,
+            "Most people pull. Utilitarians clearly say yes; deontologists worry you've used the one as a means. Foot's original 1967 case."),
+        new("The Footbridge", "Same trolley, five workers. The only way to stop it is to push a <strong>large stranger</strong> off a footbridge into its path. His mass will stop it.",
+            "Push the stranger", "Do nothing", "1 dies (by your hand)", "5 die", 0, 1, 1, 1,
+            "Most people refuse. The math is identical to the Switch -- but pushing feels like murder. Reveals the doing/allowing distinction."),
+        new("The Surgeon", "Five patients will die without organ transplants. A healthy traveler walks in for a checkup. Their organs would save all five.",
+            "Harvest organs", "Let five die", "1 dies", "5 die", 0, 1, 1, 1,
+            "Almost no one accepts this. Same utilitarian math, but trust in institutions collapses if surgeons calculate. The contractualist objection is strongest here."),
+        new("The Crying Baby", "Soldiers will find your hiding village if they hear a sound. Your baby cries. You can smother her -- or all 30 villagers, including her, will be killed.",
+            "Smother the baby", "Risk discovery", "1 dies", "30 die", 0, 1, 1, 0,
+            "An impossible choice. M*A*S*H, Sophie's Choice, and Walzer's just-war essays all turn on it. The act feels monstrous; the alternative is worse."),
+        new("Ticking Bomb", "A captured terrorist knows where a bomb is hidden that will kill thousands. Torture might extract the location.",
+            "Authorize torture", "Refuse torture", "1 person harmed", "Thousands at risk", 0, 1, 1, 1,
+            "Real intelligence services say torture rarely works. Philosophical thought experiments treat the info as guaranteed -- which is the trick. Most ethicists reject the framing."),
+        new("Self-Driving Car", "A self-driving car must choose: hit five jaywalking pedestrians, or swerve into a wall, killing its single passenger.",
+            "Save pedestrians (kill passenger)", "Save passenger (hit pedestrians)", "1 dies", "5 die", 0, 0, 0, 0,
+            "The MIT Moral Machine survey: people want others' cars to sacrifice the passenger, but they want their own car to protect them. Markets respond accordingly."),
+        new("Famine Relief", "You can donate $200 to save a child's life from preventable disease. Or buy a new pair of shoes.",
+            "Donate", "Keep the money", "$200 lost", "1 child dies", 0, 0, 0, 0,
+            "Peter Singer's drowning child argument extended. Almost everyone says donate is right, almost no one consistently does it. Demandingness is the deepest objection to utilitarianism."),
+        new("Lying Murderer", "A killer asks where your friend is hiding. You know. The killer will believe whatever you say.",
+            "Lie", "Tell the truth", "Friend lives", "Friend dies", 0, 1, 0, 0,
+            "Kant famously said you must not lie even here. Almost everyone disagrees. Some Kantians have spent 200 years trying to rescue him from his own example.")
+    };
+}
+
+<style>
+    .tl-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .tl-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .tl-dilemma { padding: 16px; }
+    .tl-tag { display: inline-block; padding: 3px 10px; background: rgba(74,95,224,0.1); color: var(--primary); border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-bottom: 10px; }
+    .tl-prompt { font-size: 0.95rem; line-height: 1.55; color: var(--text-primary); margin: 0 0 14px; }
+
+    .tl-svg { width: 100%; height: auto; max-width: 360px; display: block; margin: 0 auto 12px; }
+    .tl-actions { display: flex; gap: 8px; }
+    .tl-actions button { flex: 1; }
+
+    .tl-result strong { display: block; font-size: 0.95rem; margin-bottom: 6px; }
+    .tl-result p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 12px; }
+    .tl-frames { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .tl-frame { background: var(--bg-surface); padding: 8px 6px; border-radius: var(--radius-sm); text-align: center; }
+    .tl-frame span { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; }
+    .tl-frame strong { font-size: 0.95rem; color: var(--text-primary); }
+
+    .tl-profile { padding: 16px; }
+    .tl-profile h3 { margin: 0 0 12px; font-size: 1rem; }
+    .tl-bars { display: flex; flex-direction: column; gap: 10px; }
+    .tl-bar-row { display: grid; grid-template-columns: 100px 1fr 50px; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .tl-bar { height: 8px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; }
+    .tl-bar-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
+    .tl-bar-row strong { text-align: right; font-weight: 700; color: var(--primary); }
+</style>

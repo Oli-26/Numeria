@@ -1,0 +1,362 @@
+[
+  {
+    "id": "nlin-01",
+    "topicId": "physics-nonlinear",
+    "order": 1,
+    "title": "Phase Space and Fixed Points",
+    "description": "Geometric thinking about dynamical systems and the linear stability program",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "nlin-01-c1",
+        "title": "Flows in Phase Space",
+        "contentHtml": "<p>A <strong>dynamical system</strong> is a rule that tells a state how to evolve in time. For continuous time, we write it as a system of ODEs <code>ẋ = F(x)</code> where <code>x ∈ ℝⁿ</code> is the <strong>state vector</strong>. The set of all possible states is <strong>phase space</strong>; a particular history is a <strong>trajectory</strong>; the field <code>F</code> is the <strong>flow</strong>.</p><p>Two huge gains come from this geometric picture. First, the existence-and-uniqueness theorem says trajectories of a smooth, time-independent ODE never cross — phase space is foliated by curves that go to fixed points, cycles, or off to infinity. Second, you can read off qualitative behavior just by sketching <code>F</code>, without ever solving the ODE in closed form. For a damped pendulum the energy decreases along every trajectory, so all initial conditions spiral into the rest position; you do not need a formula to know that.</p><p>The <strong>state space dimension</strong> matters: 1D flows can only approach fixed points, 2D flows add closed orbits (Poincaré–Bendixson rules out chaos in 2D autonomous systems), and 3D is the minimum dimension for chaos. Dimension is destiny.</p>",
+        "mathExpressions": ["\\dot{\\mathbf{x}} = \\mathbf{F}(\\mathbf{x}), \\quad \\mathbf{x} \\in \\mathbb{R}^n", "\\text{trajectories of smooth autonomous ODEs cannot cross}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-01-c2",
+        "title": "Fixed Points and Linearization",
+        "contentHtml": "<p>A <strong>fixed point</strong> (equilibrium) is a state <code>x*</code> with <code>F(x*) = 0</code> — the system parked there stays there forever. The interesting question is whether nearby trajectories return (stable) or run away (unstable). Linearizing the flow around <code>x*</code> with the <strong>Jacobian</strong> <code>J = ∂F/∂x|_{x*}</code> gives <code>δẋ = J·δx</code>, whose dynamics are completely determined by the eigenvalues of J.</p><p>For a 2D system with eigenvalues λ₁, λ₂, the classification is gorgeous: both real and negative gives a <strong>stable node</strong>; both real and positive an unstable node; opposite signs a <strong>saddle</strong>; complex with negative real part a <strong>stable spiral</strong>; pure imaginary a <strong>centre</strong>. The trace–determinant plane is the cheat sheet that summarizes all these cases.</p><p>The <strong>Hartman–Grobman theorem</strong> guarantees that, near a hyperbolic fixed point (no eigenvalues with zero real part), the nonlinear and linearized flows are topologically equivalent. Linear analysis tells the truth — locally — almost always. The exceptional cases (eigenvalues on the imaginary axis) are exactly where bifurcations live.</p>",
+        "mathExpressions": ["J_{ij} = \\left.\\frac{\\partial F_i}{\\partial x_j}\\right|_{\\mathbf{x}^*}", "\\delta \\dot{\\mathbf{x}} = J \\, \\delta \\mathbf{x}", "\\text{stable iff } \\mathrm{Re}(\\lambda_i) < 0 \\;\\; \\forall i"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-01-c3",
+        "title": "Limit Cycles and Conserved Quantities",
+        "contentHtml": "<p>Beyond fixed points, the next-simplest attractor is a <strong>limit cycle</strong> — an isolated closed orbit that nearby trajectories spiral onto. The Van der Pol oscillator <code>ẍ - μ(1 - x²)ẋ + x = 0</code> has a stable limit cycle for any μ &gt; 0; it is the prototype self-sustained oscillator and explains heartbeats, neuron firing, and triode-tube electronics.</p><p>Conservative systems behave very differently. A Hamiltonian system <code>q̇ = ∂H/∂p, ṗ = -∂H/∂q</code> conserves H along every trajectory, so motion is confined to constant-energy surfaces. There can be no attractors at all — phase-space volume is preserved by <strong>Liouville's theorem</strong>. The pendulum, planetary orbits, and idealized billiards all live in this volume-preserving world.</p><p>Two diagnostics distinguish dissipative from conservative flows. Dissipative systems satisfy <code>∇·F &lt; 0</code> (volumes shrink), allowing attractors. Conservative systems have <code>∇·F = 0</code>, ruling them out. This single sign decides whether a system can settle down or whether it forever wanders the energy shell — a distinction that becomes crucial when we get to Hamiltonian chaos and KAM theory.</p>",
+        "mathExpressions": ["\\dot{q}_i = \\frac{\\partial H}{\\partial p_i}, \\quad \\dot{p}_i = -\\frac{\\partial H}{\\partial q_i}", "\\nabla \\cdot \\mathbf{F} < 0 \\;\\Rightarrow\\; \\text{dissipative (attractors possible)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q01", "nlin-q02", "nlin-q03", "nlin-q04", "nlin-q05", "nlin-q06", "nlin-q07", "nlin-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-02",
+    "topicId": "physics-nonlinear",
+    "order": 2,
+    "title": "Bifurcations and Normal Forms",
+    "description": "How qualitative behavior changes as a parameter is tuned",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "nlin-02-c1",
+        "title": "Local Bifurcations of Fixed Points",
+        "contentHtml": "<p>A <strong>bifurcation</strong> is a qualitative change in the phase portrait as a parameter is varied. The simplest local bifurcations of a 1D system <code>ẋ = f(x; r)</code> can be classified by their <strong>normal forms</strong> — the simplest possible ODE that captures the essential behavior near the bifurcation point.</p><p>Four classics. <strong>Saddle-node</strong> (<code>ẋ = r + x²</code>): two fixed points collide and annihilate at <code>r = 0</code>; below it, none exist. <strong>Transcritical</strong> (<code>ẋ = rx - x²</code>): two fixed points pass through each other and exchange stability. <strong>Supercritical pitchfork</strong> (<code>ẋ = rx - x³</code>): a stable fixed point becomes unstable while two new stable ones bloom symmetrically — the textbook spontaneous symmetry breaking. <strong>Subcritical pitchfork</strong> (<code>ẋ = rx + x³</code>): the new branches are unstable, and the system jumps to a distant attractor when the trivial fixed point loses stability — a recipe for hysteresis.</p><p>Normal forms are universal: any system undergoing one of these bifurcations is, after a smooth change of variables, locally equivalent to its normal form. This is why such different systems — buckling beams, lasers turning on, fish populations — all look qualitatively the same near threshold. <strong>Universality</strong> is the central word of the field.</p>",
+        "mathExpressions": ["\\text{saddle-node:} \\;\\; \\dot{x} = r + x^2", "\\text{transcritical:} \\;\\; \\dot{x} = rx - x^2", "\\text{pitchfork:} \\;\\; \\dot{x} = rx - x^3"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-02-c2",
+        "title": "Hopf Bifurcations: The Birth of Oscillation",
+        "contentHtml": "<p>In 2D and higher, a new bifurcation appears: a complex-conjugate pair of eigenvalues crosses the imaginary axis. A stable spiral becomes an unstable spiral, and a small-amplitude limit cycle is born. This is the <strong>Hopf bifurcation</strong>, normal form <code>ṙ = μr - r³, θ̇ = ω + br²</code> in polar coordinates.</p><p><strong>Supercritical Hopf</strong> (cubic coefficient negative): a stable limit cycle of amplitude <code>r ∝ √μ</code> grows continuously as <code>μ</code> crosses zero. The system glides smoothly into oscillation — neuron firing in the FitzHugh–Nagumo model, the onset of convection rolls, flutter in aeroelastic structures. <strong>Subcritical Hopf</strong> (cubic coefficient positive): a small-amplitude unstable cycle exists below threshold, and at threshold the system jumps to a large-amplitude oscillation. This is dangerous in engineering: a turbine blade does not gradually flutter; it suddenly explodes.</p><p>Hopf is the gateway from steady to oscillatory behavior, just as the pitchfork is the gateway from one steady state to two. Linear stability (eigenvalues) tells you when it happens; the cubic nonlinear coefficient tells you whether the transition is graceful or catastrophic.</p>",
+        "mathExpressions": ["\\dot{r} = \\mu r - r^3, \\quad \\dot{\\theta} = \\omega + b r^2", "r_{\\text{cycle}} = \\sqrt{\\mu} \\quad \\text{(supercritical, } \\mu > 0\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-02-c3",
+        "title": "Global Bifurcations and Hysteresis",
+        "contentHtml": "<p>Local bifurcations are detected by linearization at a fixed point. <strong>Global bifurcations</strong> involve large-scale features of phase space and are invisible to local analysis: limit cycles colliding with saddles (<strong>homoclinic bifurcation</strong>), two limit cycles merging and disappearing (<strong>saddle-node of cycles</strong>), or a cycle's period diverging as it approaches a saddle (<strong>infinite-period bifurcation</strong>).</p><p>The most consequential signature of these is <strong>hysteresis</strong>. A subcritical pitchfork or fold gives the system two coexisting stable states over some parameter range. As the control parameter is swept up the system follows the lower branch until a saddle-node turns it off, then jumps to the upper branch; sweeping back down it stays on the upper branch until a different saddle-node turns it off, then drops. The two paths trace out a hysteresis loop.</p><p>This is the universal mechanism behind first-order phase transitions, neural switching, perceptual bistability (the Necker cube), magnetic recording, and ecosystem regime shifts. \"Catastrophe theory,\" popular in the 1970s, was largely the systematic enumeration of these elementary catastrophes (cusp, swallowtail, butterfly) by René Thom.</p>",
+        "mathExpressions": ["\\dot{x} = h + rx - x^3 \\quad \\text{(cusp catastrophe with imperfection } h\\text{)}", "\\text{hysteresis loop: distinct } x(r) \\text{ on upward vs downward sweeps}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q09", "nlin-q10", "nlin-q11", "nlin-q12", "nlin-q13", "nlin-q14", "nlin-q15", "nlin-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-03",
+    "topicId": "physics-nonlinear",
+    "order": 3,
+    "title": "1D Maps and the Period-Doubling Route to Chaos",
+    "description": "The logistic map, Feigenbaum constants, and universality",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "nlin-03-c1",
+        "title": "The Logistic Map",
+        "contentHtml": "<p>Discrete-time dynamics live in <strong>iterated maps</strong> <code>x_{n+1} = f(x_n)</code>. The <strong>logistic map</strong> <code>x_{n+1} = r·x_n·(1 - x_n)</code> with <code>x ∈ [0,1]</code> and <code>r ∈ [0,4]</code> is the most studied dynamical system in history. It models a population whose growth rate <code>r</code> is reduced by crowding, and despite its trivial appearance it contains all the key phenomena of low-dimensional chaos.</p><p>For <code>r &lt; 1</code> the population dies out: the only attractor is <code>x* = 0</code>. At <code>r = 1</code> there is a transcritical bifurcation, and for <code>1 &lt; r &lt; 3</code> the population settles to <code>x* = 1 - 1/r</code>. At <code>r = 3</code> this fixed point loses stability via a <strong>flip bifurcation</strong> (the slope of <code>f</code> at the fixed point passes through −1), giving birth to a stable 2-cycle. The 2-cycle period-doubles to a 4-cycle at <code>r ≈ 3.449</code>, then 8-cycle at <code>r ≈ 3.544</code>, 16-cycle, and so on.</p><p>This <strong>period-doubling cascade</strong> accumulates at <code>r∞ ≈ 3.5699456</code>, beyond which the dynamics are chaotic — but interspersed with <strong>periodic windows</strong> of every imaginable period. The famous <code>r = 3.83</code> window contains a stable 3-cycle (Sharkovsky's theorem then guarantees cycles of every period). One trivial-looking quadratic, an entire universe.</p>",
+        "mathExpressions": ["x_{n+1} = r \\, x_n (1 - x_n), \\quad x \\in [0,1], \\;\\; r \\in [0,4]", "x^* = 1 - \\tfrac{1}{r} \\;\\; \\text{stable for } 1 < r < 3"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-03-c2",
+        "title": "Feigenbaum's Universal Constants",
+        "contentHtml": "<p>Mitchell Feigenbaum noticed something remarkable in 1975. The parameter values <code>r_n</code> at which period <code>2ⁿ</code> appears in the logistic map satisfy a geometric scaling: <code>(r_n - r_{n-1})/(r_{n+1} - r_n) → δ</code>, where <code>δ ≈ 4.6692016091...</code>. The widths of successive bifurcations also scale geometrically with a different ratio <code>α ≈ 2.5029078750...</code></p><p>The shock came when Feigenbaum tested other unimodal maps — the sine map, the cubic map, the cosine map — and found exactly the same δ and α. These constants are <strong>universal</strong>: they do not depend on the particular form of f, only on the fact that f has a smooth quadratic maximum. Feigenbaum borrowed renormalization-group machinery from statistical physics to prove it: the doubling cascade has a universal fixed point in the space of maps, and δ and α are eigenvalues of its linearization.</p><p>Even more astonishing: the same δ ≈ 4.6692 has been measured experimentally — in dripping faucets, Belousov–Zhabotinsky chemistry, Rayleigh–Bénard convection cells, and semiconductor diodes driven into nonlinearity. The rules of the route to chaos do not care what is doing the chaos. This is one of the most dramatic predictions ever made by dynamical systems theory.</p>",
+        "mathExpressions": ["\\delta = \\lim_{n \\to \\infty} \\frac{r_n - r_{n-1}}{r_{n+1} - r_n} \\approx 4.6692016091", "\\alpha \\approx 2.5029078750", "r_\\infty \\approx 3.5699456718"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-03-c3",
+        "title": "Cobweb Plots and the Tent Map",
+        "contentHtml": "<p>A <strong>cobweb diagram</strong> visualizes iteration: plot <code>y = f(x)</code> and the diagonal <code>y = x</code>, then alternate vertical hops to the curve and horizontal hops to the diagonal. Fixed points are intersections; their stability is read from the slope <code>|f'(x*)|</code> — stable if &lt; 1, unstable if &gt; 1. Periodic orbits, basins of attraction, and chaotic transients all become visually obvious.</p><p>The piecewise-linear <strong>tent map</strong> <code>T(x) = 2x</code> for <code>x &lt; ½</code>, <code>T(x) = 2(1 - x)</code> for <code>x ≥ ½</code> is the cleanest example of chaos. Each iteration doubles the precision needed to predict the next state, so n iterations amplify initial error by 2ⁿ. In binary, the tent map is just a left-shift on the binary expansion of x. Predictability collapses in roughly <code>log₂(1/ε)</code> iterations for initial uncertainty ε. The Lyapunov exponent <code>λ = ln 2</code> exactly.</p><p>The logistic map at <code>r = 4</code> is <em>conjugate</em> to the tent map by the change of variables <code>x = sin²(πθ/2)</code>. So two dynamics that look entirely different — a smooth quadratic and a piecewise-linear tent — share the same chaotic skeleton. Conjugacy is the dynamical-systems version of \"same up to a coordinate change.\"</p>",
+        "mathExpressions": ["|f'(x^*)| < 1 \\;\\Leftrightarrow\\; x^* \\text{ stable}", "T(x) = \\begin{cases} 2x & 0 \\le x < \\tfrac{1}{2} \\\\ 2(1-x) & \\tfrac{1}{2} \\le x \\le 1 \\end{cases}", "\\lambda_{\\text{tent}} = \\ln 2 \\approx 0.6931"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q17", "nlin-q18", "nlin-q19", "nlin-q20", "nlin-q21", "nlin-q22", "nlin-q23", "nlin-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-04",
+    "topicId": "physics-nonlinear",
+    "order": 4,
+    "title": "Lyapunov Exponents and Sensitive Dependence",
+    "description": "Quantifying chaos and the death of long-term prediction",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "nlin-04-c1",
+        "title": "The Butterfly Effect Made Quantitative",
+        "contentHtml": "<p>The <strong>Lyapunov exponent</strong> <code>λ</code> measures the average exponential rate at which nearby trajectories separate. If two initial conditions differ by <code>δ₀</code>, after time <code>t</code> their separation is roughly <code>δ(t) ≈ δ₀ e^{λt}</code>. <strong>Positive λ is the operational definition of chaos</strong>: prediction error grows exponentially, and any finite measurement precision is amplified to system-size error in finite time.</p><p>The prediction horizon for chaotic systems is <code>T ≈ (1/λ) ln(L/δ₀)</code>, where L is the size of the attractor. For Earth's atmosphere, <code>1/λ ≈ 2-3</code> days, which sets the fundamental limit on weather prediction. Reducing initial uncertainty by <code>e</code> buys you only one Lyapunov time more — a 10× better measurement adds about 2.3 days. There is no engineering escape from this; it is a property of the dynamics.</p><p>Lorenz coined the phrase <strong>\"butterfly effect\"</strong> after a 1972 talk title (\"Does the flap of a butterfly's wings in Brazil set off a tornado in Texas?\"). The mathematical content is exactly positive λ. He had stumbled on the phenomenon a decade earlier when he reran a numerical weather simulation from a printed intermediate state — rounded from 0.506127 to 0.506 — and watched the trajectory diverge completely from the original within weeks of simulated time.</p>",
+        "mathExpressions": ["\\delta(t) \\approx \\delta_0 \\, e^{\\lambda t}", "\\lambda = \\lim_{t \\to \\infty} \\frac{1}{t} \\ln \\frac{|\\delta(t)|}{|\\delta_0|}", "T_{\\text{predict}} \\sim \\frac{1}{\\lambda} \\ln\\!\\left(\\frac{L}{\\delta_0}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-04-c2",
+        "title": "The Lyapunov Spectrum",
+        "contentHtml": "<p>An n-dimensional flow has n Lyapunov exponents, one per direction. The full <strong>Lyapunov spectrum</strong> <code>λ₁ ≥ λ₂ ≥ ... ≥ λ_n</code> describes how an infinitesimal n-ball of initial conditions deforms under the flow: it stretches along the directions of positive λ_i and contracts along negative ones, becoming an n-dimensional ellipsoid whose principal axes grow as <code>e^{λ_i t}</code>.</p><p>For an autonomous flow, one exponent is always zero (the direction along the trajectory). The sum <code>Σ λ_i</code> equals the average phase-space divergence and must be negative for any dissipative system that has a bounded attractor. So a chaotic dissipative 3D flow has signature <strong>(+, 0, −)</strong> with the negative exponent dominating: stretching along one direction, neutral along the flow, contraction overall.</p><p>For the Lorenz system at the canonical parameters (σ = 10, β = 8/3, ρ = 28) the spectrum is approximately (0.906, 0, −14.572). The Kaplan–Yorke conjecture relates these exponents to the fractal dimension of the attractor: <code>D_KY = j + (Σ_{i=1}^j λ_i)/|λ_{j+1}|</code> where j is the largest integer for which the partial sum is non-negative. For Lorenz this gives D_KY ≈ 2.062, confirming the attractor is a fractal of dimension just above two.</p>",
+        "mathExpressions": ["\\lambda_1 \\geq \\lambda_2 \\geq \\dots \\geq \\lambda_n", "\\sum_i \\lambda_i = \\langle \\nabla \\cdot \\mathbf{F} \\rangle < 0 \\quad \\text{(dissipative)}", "D_{KY} = j + \\frac{\\sum_{i=1}^{j} \\lambda_i}{|\\lambda_{j+1}|}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-04-c3",
+        "title": "Measuring Lyapunov Exponents Experimentally",
+        "contentHtml": "<p>Computing λ from a known ODE is straightforward: integrate two trajectories that differ by a small δ, periodically renormalize the perturbation back to size <code>δ₀</code> (recording the growth factor each time), and average <code>ln(growth)/Δt</code> over a long run. The renormalization is essential because for finite Δt the perturbation would saturate at the size of the attractor and λ would be underestimated.</p><p>The harder problem is extracting λ from experimental time series of an unknown system. The <strong>Wolf algorithm</strong> (1985) embeds the time series into a phase space using time-delay coordinates <code>(x(t), x(t+τ), x(t+2τ), ...)</code> via Takens' theorem, then applies the renormalization recipe to nearest neighbors in this reconstructed space. The Rosenstein algorithm averages over many neighbor pairs and is more robust to noise.</p><p>Positive Lyapunov exponents have been measured in dripping faucets (λ ≈ 1.5/drop), Rayleigh–Bénard cells, fibrillating heart tissue, EEG signals during epileptic seizures, and currency markets. A common gotcha: positive λ alone does not prove low-dimensional chaos — colored noise can fake it. Combining λ with dimension estimates and surrogate-data tests is the rigorous protocol.</p>",
+        "mathExpressions": ["\\mathbf{y}(t) = \\big(x(t),\\, x(t+\\tau),\\, x(t+2\\tau),\\, \\dots,\\, x(t+(m-1)\\tau)\\big)", "\\lambda_1 \\approx \\frac{1}{N \\Delta t} \\sum_{k=1}^{N} \\ln \\frac{|\\delta_k(\\Delta t)|}{|\\delta_0|}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q25", "nlin-q26", "nlin-q27", "nlin-q28", "nlin-q29", "nlin-q30", "nlin-q31", "nlin-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-05",
+    "topicId": "physics-nonlinear",
+    "order": 5,
+    "title": "Strange Attractors",
+    "description": "Lorenz, Rössler, Hénon, and the geometry of chaos",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nlin-05-c1",
+        "title": "The Lorenz System",
+        "contentHtml": "<p>In 1963 the meteorologist Edward Lorenz simplified the equations of Rayleigh–Bénard convection — a fluid layer heated from below — to a system of three ODEs:</p><p><code>ẋ = σ(y - x)</code><br/><code>ẏ = x(ρ - z) - y</code><br/><code>ż = xy - βz</code></p><p>Here x is roughly the convection rate, y the horizontal temperature contrast, z the vertical contrast. With the canonical parameters <strong>σ = 10, β = 8/3, ρ = 28</strong>, almost all initial conditions wind up tracing the famous butterfly-shaped <strong>Lorenz attractor</strong>.</p><p>The attractor is bounded, deterministic, and yet aperiodic: trajectories never repeat, never cross, and never settle. They circle one \"wing\" some unpredictable number of times, then suddenly switch to the other wing and circle there. Lorenz showed that a Poincaré section of the attractor reduces — in projection — to a one-dimensional unimodal map, which is why his three-dimensional flow inherits the period-doubling and chaos of 1D maps.</p><p>The geometric punchline: the attractor has Hausdorff dimension ≈ 2.06, so it is more than a surface but less than a volume. Its volume is zero (Lorenz is dissipative, contraction rate −σ−1−β ≈ −13.67) yet it is dense in itself. This is what \"strange\" means in <strong>strange attractor</strong>: chaotic dynamics on a fractal set.</p>",
+        "mathExpressions": ["\\dot{x} = \\sigma(y - x)", "\\dot{y} = x(\\rho - z) - y", "\\dot{z} = xy - \\beta z", "(\\sigma, \\beta, \\rho) = (10,\\, 8/3,\\, 28)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-05-c2",
+        "title": "Rössler and Hénon: Minimal Chaos",
+        "contentHtml": "<p>Otto Rössler asked in 1976 what the simplest possible 3D chaotic flow could look like. His answer:</p><p><code>ẋ = -y - z, ẏ = x + ay, ż = b + z(x - c)</code></p><p>with one quadratic term and standard parameters <code>a = 0.1, b = 0.1, c = 14</code>. The Rössler attractor is a single twisted band that, when sliced by a Poincaré section, reduces to a horseshoe-folded unimodal map. It contains period-doubling, chaos, and periodic windows just like the logistic map — but as a continuous flow you can hold in your head.</p><p>For maps the prototype is the <strong>Hénon map</strong> <code>x_{n+1} = 1 - a x_n² + y_n, y_{n+1} = b x_n</code> at (a, b) = (1.4, 0.3), introduced in 1976. It is dissipative (Jacobian determinant −b = −0.3, so areas shrink by 70% per iteration) yet exponentially stretching, creating a stretch-and-fold structure that traces out a fractal Cantor-like set with dimension ≈ 1.26.</p><p>What Lorenz, Rössler, and Hénon all share is a <strong>stretching-and-folding</strong> mechanism: the flow stretches a small region apart, then folds it back on itself. The repeated stretch-and-fold creates the layered, self-similar geometry of strange attractors — like kneading dough. Smale's <strong>horseshoe map</strong> is the abstract prototype that proves chaos must follow whenever this geometry exists in phase space.</p>",
+        "mathExpressions": ["\\dot{x} = -y - z, \\quad \\dot{y} = x + ay, \\quad \\dot{z} = b + z(x - c)", "x_{n+1} = 1 - a x_n^2 + y_n, \\quad y_{n+1} = b x_n", "(a, b)_{\\text{H\\'enon}} = (1.4,\\, 0.3)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-05-c3",
+        "title": "Fractal Dimension of Attractors",
+        "contentHtml": "<p>A strange attractor has non-integer dimension. The <strong>box-counting (capacity) dimension</strong> is <code>D₀ = lim_{ε→0} ln N(ε)/ln(1/ε)</code>, where N(ε) is the number of ε-sized boxes needed to cover the attractor. For a smooth curve N grows as 1/ε so D₀ = 1; for a smooth surface N ~ 1/ε² so D₀ = 2; for a Cantor middle-thirds set <code>D₀ = ln 2 / ln 3 ≈ 0.6309</code>; for the Lorenz attractor D₀ ≈ 2.06.</p><p>A whole hierarchy of <strong>generalized dimensions</strong> <code>D_q</code> captures the <em>multifractal</em> nature of real attractors — the natural measure on the attractor visits some regions far more often than others. The <strong>information dimension</strong> D₁ weights boxes by their probability; the <strong>correlation dimension</strong> D₂ comes from the Grassberger–Procaccia algorithm, which counts the fraction of point-pairs within distance r in an embedded time series. D₂ is the dimension you actually compute from experimental data.</p><p>Why do we care? Fractal dimension <strong>bounds the number of degrees of freedom</strong> the attractor really uses. A high-dimensional ODE that lives on a 2.06-dimensional attractor is, dynamically, almost a 3-variable system — and Whitney's embedding theorem tells you that 2 ⌈2.06⌉ + 1 = 7 delay coordinates suffice to faithfully reconstruct it. Dimension is the first thing to compute when you suspect low-dimensional chaos in messy data.</p>",
+        "mathExpressions": ["D_0 = \\lim_{\\varepsilon \\to 0} \\frac{\\ln N(\\varepsilon)}{\\ln(1/\\varepsilon)}", "D_q = \\frac{1}{q-1} \\lim_{\\varepsilon \\to 0} \\frac{\\ln \\sum_i p_i^q}{\\ln \\varepsilon}", "C(r) \\sim r^{D_2} \\quad \\text{(Grassberger\\textendash Procaccia)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q33", "nlin-q34", "nlin-q35", "nlin-q36", "nlin-q37", "nlin-q38", "nlin-q39", "nlin-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-06",
+    "topicId": "physics-nonlinear",
+    "order": 6,
+    "title": "Hamiltonian Chaos and KAM Theory",
+    "description": "How integrable systems break down and what survives",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nlin-06-c1",
+        "title": "Integrability and Action-Angle Variables",
+        "contentHtml": "<p>A Hamiltonian system with N degrees of freedom is <strong>integrable</strong> if it has N functionally independent, mutually Poisson-commuting conserved quantities (the <strong>Liouville–Arnold theorem</strong>). When this happens, there exist canonical <strong>action-angle coordinates</strong> <code>(I, θ)</code> such that the actions are constants of motion and the angles wind uniformly: <code>İ = 0, θ̇ = ω(I)</code>.</p><p>Geometrically the trajectory is confined to an N-dimensional torus in 2N-dimensional phase space, and motion on the torus is <strong>quasi-periodic</strong> with frequencies ω₁(I), ..., ω_N(I). The Kepler problem is integrable (energy, angular momentum vector, Laplace–Runge–Lenz vector). The harmonic oscillator is integrable. The free rigid body is integrable. Most everything else, generically, is not.</p><p>This is the deep reason chaos was hidden for so long: every textbook problem solvable in closed form happens to be integrable, and integrable systems fill measure zero of all Hamiltonian systems. Poincaré realized this when he tried to solve the three-body problem in the 1890s, and famously concluded that no third constant of motion exists for the restricted three-body problem. Real solar-system dynamics is non-integrable.</p>",
+        "mathExpressions": ["\\dot{\\mathbf{I}} = 0, \\quad \\dot{\\boldsymbol{\\theta}} = \\boldsymbol{\\omega}(\\mathbf{I})", "\\{F_i, F_j\\} = 0 \\;\\; \\forall i,j \\quad \\text{(involution)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-06-c2",
+        "title": "The KAM Theorem",
+        "contentHtml": "<p>The <strong>Kolmogorov–Arnold–Moser theorem</strong> (1954–1963) is one of the great results of 20th-century mathematics. It addresses the question: when an integrable Hamiltonian H₀ is perturbed by ε·H₁, what happens to the invariant tori? Naively one expects them all to break up, since the perturbation couples the previously independent angles. KAM says the opposite: <strong>most tori survive</strong> for sufficiently small ε.</p><p>The surviving tori are those whose frequency vectors <code>ω(I)</code> are <em>sufficiently irrational</em>, satisfying a Diophantine condition <code>|⟨k, ω⟩| ≥ γ/|k|^τ</code> for all integer vectors k ≠ 0. Tori with frequencies that are rational or near-rational are destroyed first, replaced by intricate networks of resonance islands and chaotic layers. The phase portrait becomes a fractal jumble: KAM tori interspersed with chaotic seas, the chaotic seas getting bigger as ε grows.</p><p>This explains the long-term stability of the solar system. Although planetary orbits are not exactly integrable, the planets' frequencies sit close enough to KAM tori that orbits remain bounded for cosmologically long times. Numerical integration by Laskar in the 1990s nonetheless revealed that Mercury's orbit is chaotic on a 5-million-year Lyapunov timescale — KAM is a probabilistic statement, not a guarantee for any particular orbit.</p>",
+        "mathExpressions": ["H(\\mathbf{I}, \\boldsymbol{\\theta}) = H_0(\\mathbf{I}) + \\varepsilon H_1(\\mathbf{I}, \\boldsymbol{\\theta})", "|\\langle \\mathbf{k}, \\boldsymbol{\\omega} \\rangle| \\geq \\frac{\\gamma}{|\\mathbf{k}|^\\tau} \\quad \\forall \\mathbf{k} \\in \\mathbb{Z}^N \\setminus \\{0\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-06-c3",
+        "title": "Arnold Diffusion and the Standard Map",
+        "contentHtml": "<p>For 2-degree-of-freedom systems, the surviving KAM tori in 4D phase space are 2D and they topologically separate the 3D energy shell into bounded regions. Trajectories trapped between tori cannot escape: chaos is confined. For three or more degrees of freedom this no longer works — the tori don't divide the space — and trajectories can in principle wander through the chaotic web on enormous timescales. This is <strong>Arnold diffusion</strong>, a slow seepage along resonance channels with diffusion coefficients exponentially small in 1/ε.</p><p>The cleanest model of these phenomena is the <strong>Chirikov standard map</strong>:</p><p><code>p_{n+1} = p_n + K sin(θ_n)</code><br/><code>θ_{n+1} = θ_n + p_{n+1}</code></p><p>This area-preserving map on the cylinder shows the entire KAM scenario as K is increased: nested KAM curves at K = 0, breakup of higher-order resonances for small K, the breakup of the \"last\" KAM torus (the golden-mean torus, with frequency the most irrational number possible) at <code>K_c ≈ 0.9716</code>, and global diffusion above K_c.</p><p>Applications span charged-particle motion in tokamaks, comet orbits in the outer solar system, beam dynamics in particle accelerators (where a single resonance crossing can dump a beam), and the stability of asteroid belts.</p>",
+        "mathExpressions": ["p_{n+1} = p_n + K \\sin\\theta_n", "\\theta_{n+1} = \\theta_n + p_{n+1} \\pmod{2\\pi}", "K_c \\approx 0.9716 \\quad \\text{(golden-mean torus breakup)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q41", "nlin-q42", "nlin-q43", "nlin-q44", "nlin-q45", "nlin-q46", "nlin-q47", "nlin-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-07",
+    "topicId": "physics-nonlinear",
+    "order": 7,
+    "title": "Synchronization and Coupled Oscillators",
+    "description": "Kuramoto, phase locking, and chimera states",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nlin-07-c1",
+        "title": "Phase Locking of Two Oscillators",
+        "contentHtml": "<p>Two oscillators with slightly different natural frequencies, weakly coupled, can spontaneously lock to a common rhythm. Christiaan Huygens noticed in 1665 that two pendulum clocks hung on the same wall synchronized in antiphase within hours, transmitting tiny vibrations through the shared support. The phenomenon is universal — fireflies in Southeast Asia flash in unison, neurons in the cortex synchronize during attention, the lunar libration is locked 1:1 to the orbit.</p><p>The minimal model is the <strong>Adler equation</strong> for the phase difference φ = θ₁ − θ₂:</p><p><code>φ̇ = Δω - K sin(φ)</code></p><p>where Δω is the frequency mismatch and K the coupling strength. Phase locking (<code>φ̇ = 0</code>) requires <code>|Δω| ≤ K</code> — the famous <strong>Arnold tongue</strong> in (Δω, K) space. Outside the tongue, the phase difference grows monotonically (\"phase drift\"); inside it the oscillators march in lockstep. At the tongue boundary lies an infinite-period bifurcation: the phase slips slow down without bound as K is tuned in.</p><p>Higher-order tongues at frequency ratios m:n (1:2, 2:3, 3:5, ...) appear when the coupling is nonlinear, producing the famous <strong>devil's staircase</strong> — locked plateaus densely interspersed at every rational ratio.</p>",
+        "mathExpressions": ["\\dot{\\varphi} = \\Delta\\omega - K \\sin\\varphi", "\\text{locking iff } |\\Delta\\omega| \\leq K", "\\text{Arnold tongues at every rational ratio } m:n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-07-c2",
+        "title": "The Kuramoto Model",
+        "contentHtml": "<p>Yoshiki Kuramoto in 1975 wrote down the analytically tractable model of <strong>N coupled phase oscillators</strong>:</p><p><code>θ̇_i = ω_i + (K/N) Σ_j sin(θ_j - θ_i), i = 1, ..., N</code></p><p>The natural frequencies ω_i are drawn from a distribution g(ω) (typically Lorentzian or Gaussian). Define the complex order parameter <code>r e^{iψ} = (1/N) Σ_j e^{iθ_j}</code>: r ∈ [0, 1] measures coherence, ψ is the average phase. r = 0 means incoherent, r = 1 means perfectly synchronized.</p><p>Kuramoto's beautiful self-consistency analysis in the N → ∞ limit shows a <strong>continuous phase transition</strong> at a critical coupling <code>K_c = 2/(π g(0))</code>. Below K_c, r = 0 and the population is incoherent. Above K_c, a finite fraction of oscillators lock to the mean-field phase ψ, with order parameter <code>r ∝ √(K - K_c)</code> growing as a square root — a mean-field critical exponent. Oscillators with |ω_i − ⟨ω⟩| &lt; Kr lock; the rest drift incoherently.</p><p>The model is the de facto framework for synchronization phenomena: power grid stability (each generator a phase oscillator), pacemaker cells in the heart, circadian rhythms, Josephson junction arrays, applause synchronization in concert halls.</p>",
+        "mathExpressions": ["\\dot{\\theta}_i = \\omega_i + \\frac{K}{N} \\sum_{j=1}^{N} \\sin(\\theta_j - \\theta_i)", "r e^{i\\psi} = \\frac{1}{N} \\sum_{j=1}^{N} e^{i\\theta_j}", "K_c = \\frac{2}{\\pi g(0)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-07-c3",
+        "title": "Chimera States",
+        "contentHtml": "<p>In 2002 Kuramoto and Battogtokh discovered something unsettling: in a ring of identical oscillators with non-local coupling, the system spontaneously splits into a synchronous group and an incoherent group, even though every oscillator is identical and the coupling is symmetric. This is a <strong>chimera state</strong> — named after the mythical creature with parts of multiple animals — because order and disorder coexist in the same system at the same time, breaking the symmetry by themselves.</p><p>The defining ingredients are: (1) an oscillator population with a phase-lag coupling kernel — typically <code>θ̇_i = ω - Σ_j G(|i - j|) sin(θ_i - θ_j + α)</code> with α slightly less than π/2; (2) <strong>non-local coupling</strong> (each oscillator couples to many neighbors, not just nearest-neighbor and not all-to-all). Chimeras are dynamical attractors of the system: starting close to one, you stay close.</p><p>Initially viewed as numerical curiosities, chimeras have since been observed experimentally in coupled chemical oscillators (BZ reaction droplets), optical-mechanical metamaterials, electronic circuits, and most strikingly in unihemispheric sleep — dolphins and many birds sleep with one brain hemisphere synchronously asleep while the other is awake and active. The chimera state may be a generic dynamical regime of the brain.</p>",
+        "mathExpressions": ["\\dot{\\theta}_i = \\omega - \\sum_{j} G(|i - j|) \\sin(\\theta_i - \\theta_j + \\alpha)", "\\alpha \\lesssim \\pi/2, \\quad G(r) \\text{ non-local kernel}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q49", "nlin-q50", "nlin-q51", "nlin-q52", "nlin-q53", "nlin-q54", "nlin-q55", "nlin-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-08",
+    "topicId": "physics-nonlinear",
+    "order": 8,
+    "title": "Solitons and Coherent Structures",
+    "description": "Nonlinear waves that hold themselves together",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "nlin-08-c1",
+        "title": "The KdV Equation and Russell's Wave",
+        "contentHtml": "<p>In August 1834 the Scottish engineer John Scott Russell rode his horse alongside a barge on the Union Canal that suddenly stopped. A solitary heap of water, about ten meters long, detached from the bow and rolled forward at constant speed for over a mile without changing shape — Russell's <strong>\"Wave of Translation.\"</strong> Linear wave theory of the day said this was impossible: any localized pulse must disperse. Russell built a wave tank in his garden and spent decades proving the phenomenon real.</p><p>The resolution came from Korteweg and de Vries in 1895, with what we now call the <strong>KdV equation</strong>:</p><p><code>∂_t u + 6u ∂_x u + ∂_x³ u = 0</code></p><p>The first nonlinear term steepens wave fronts; the second dispersive term spreads them. For specially shaped pulses these effects exactly cancel, producing the <strong>soliton</strong> solution <code>u(x,t) = (c/2) sech²(½√c (x - ct))</code>: a sech²-shaped hump whose amplitude, width, and speed are all linked (taller waves travel faster).</p><p>What stunned the dynamical-systems community was Zabusky and Kruskal's 1965 numerical experiment: when two KdV solitons collide, they pass through each other, emerging unchanged except for a phase shift. The KdV equation turned out to be <strong>integrable</strong> in the same Liouville–Arnold sense as the Kepler problem — but as an infinite-dimensional Hamiltonian system, with infinitely many conserved quantities.</p>",
+        "mathExpressions": ["\\partial_t u + 6 u \\partial_x u + \\partial_x^3 u = 0", "u(x, t) = \\frac{c}{2} \\, \\mathrm{sech}^2\\!\\left[\\tfrac{\\sqrt{c}}{2}(x - c t)\\right]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-08-c2",
+        "title": "NLS and Sine-Gordon Solitons",
+        "contentHtml": "<p>KdV was the first; many more integrable soliton equations followed. The <strong>nonlinear Schrödinger equation</strong> (NLS),</p><p><code>i ∂_t ψ + ½ ∂_x² ψ + |ψ|² ψ = 0</code></p><p>governs the slowly-varying complex envelope of nearly-monochromatic wave trains in dispersive nonlinear media. Its <strong>bright-soliton</strong> solution <code>ψ = η sech(η x) e^{i η² t/2}</code> is the basis of long-haul fiber-optic communication: in the right fiber regime, dispersion and Kerr nonlinearity balance and a soliton pulse propagates without distortion over thousands of kilometers.</p><p>The <strong>sine-Gordon equation</strong> <code>∂_t² φ - ∂_x² φ + sin φ = 0</code> appears in long Josephson junctions, in the Frenkel–Kontorova model of dislocations, and historically in differential geometry. Its solitons are <strong>kinks</strong>: <code>φ(x, t) = 4 arctan exp((x - vt)/√(1 - v²))</code>. A kink interpolates between two distinct vacua φ = 0 and φ = 2π. Kink and antikink can collide and annihilate, kink and kink scatter elastically — a cleanly relativistic 1+1D soliton physics that prefigured topological-soliton ideas in particle theory.</p><p>Common to all these equations is the <strong>inverse scattering transform</strong>, which solves them by mapping them to a linear scattering problem and back, generalizing the Fourier transform to nonlinear PDEs.</p>",
+        "mathExpressions": ["i \\partial_t \\psi + \\tfrac{1}{2} \\partial_x^2 \\psi + |\\psi|^2 \\psi = 0", "\\partial_t^2 \\varphi - \\partial_x^2 \\varphi + \\sin\\varphi = 0", "\\varphi_{\\text{kink}}(x, t) = 4 \\arctan \\exp\\!\\left(\\frac{x - vt}{\\sqrt{1 - v^2}}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-08-c3",
+        "title": "Solitons in the Real World",
+        "contentHtml": "<p>Solitons are not a mathematical curiosity. Internal solitary waves a hundred meters tall propagate beneath the surface of the Andaman Sea and the Sulu Sea, visible from space as bands of surface roughness; oil rigs in the South China Sea must be engineered to survive their passage. Tsunamis are approximately KdV solitons in shallow water. Atmospheric solitons (\"morning glory\" cloud rolls in the Gulf of Carpentaria) glide hundreds of kilometers without breaking.</p><p><strong>Optical solitons</strong> were demonstrated experimentally by Mollenauer at Bell Labs in 1980 and used in commercial transoceanic fiber systems through the 1990s. The same NLS equation describes <strong>matter-wave solitons</strong> in attractive Bose–Einstein condensates (first observed in lithium-7, 2002): a self-bound wave-packet of cold atoms that behaves like a particle.</p><p>Topological solitons — kinks, vortices, monopoles, skyrmions — appear throughout condensed matter physics. <strong>Magnetic skyrmions</strong>, swirling spin textures a few nanometers across, are stabilized by chiral interactions in materials like MnSi and proposed as ultra-dense memory bits. The pattern is the same one Russell saw in 1834: nonlinearity, when it balances dispersion or topological constraint, produces particle-like coherent objects that survive collisions and propagate without distortion.</p>",
+        "mathExpressions": ["\\text{soliton: balance of nonlinearity and dispersion (or topology)}", "v_{\\text{KdV soliton}} = c \\propto \\text{amplitude}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q57", "nlin-q58", "nlin-q59", "nlin-q60", "nlin-q61", "nlin-q62", "nlin-q63", "nlin-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-09",
+    "topicId": "physics-nonlinear",
+    "order": 9,
+    "title": "Pattern Formation and Turing Instability",
+    "description": "How spatial structure spontaneously emerges from uniform states",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "nlin-09-c1",
+        "title": "Turing's 1952 Insight",
+        "contentHtml": "<p>Alan Turing's last major paper, <em>The Chemical Basis of Morphogenesis</em> (1952), proposed that the spatial patterns of biology — leopard spots, zebra stripes, the spacing of digits and feathers — could arise spontaneously from a uniform mixture of two reacting and diffusing chemicals. This was deeply counterintuitive: diffusion is supposed to smooth things out. Turing showed that, paradoxically, <strong>diffusion can drive instability</strong> when one species diffuses much faster than the other.</p><p>The recipe needs two reactants: an <strong>activator</strong> u that catalyzes its own production, and an <strong>inhibitor</strong> v that suppresses u and is produced by it. If the inhibitor diffuses faster than the activator (D_v ≫ D_u), a small bump of u creates a large surrounding cloud of v that suppresses u everywhere except near the bump. The result is a stable spatial pattern with characteristic wavelength.</p><p>Linear stability of the homogeneous state about <code>(u*, v*)</code> for the reaction-diffusion system <code>∂_t u = D_u ∇²u + f(u, v), ∂_t v = D_v ∇²v + g(u, v)</code> shows that perturbations of wavevector k grow if a specific dispersion relation has a positive maximum at some <code>k* ≠ 0</code>. The instability picks out a wavelength <code>2π/k*</code> set entirely by the diffusion ratio and the reaction kinetics — pattern from nothing.</p>",
+        "mathExpressions": ["\\partial_t u = D_u \\nabla^2 u + f(u, v)", "\\partial_t v = D_v \\nabla^2 v + g(u, v)", "\\text{Turing instability requires } D_v \\gg D_u"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-09-c2",
+        "title": "Belousov-Zhabotinsky and Reaction-Diffusion Waves",
+        "contentHtml": "<p>The most spectacular experimental demonstration of nonlinear chemistry is the <strong>Belousov–Zhabotinsky (BZ) reaction</strong> — bromate, malonic acid, and a metal-ion catalyst (cerium or ferroin) in sulfuric acid. Boris Belousov discovered it in 1951 trying to mimic the citric acid cycle and was rejected from journals because chemical oscillation was \"thermodynamically impossible.\" Anatol Zhabotinsky resurrected and characterized it in the 1960s, and BZ has been the textbook far-from-equilibrium oscillator ever since.</p><p>In a stirred reactor, the BZ solution oscillates between yellow (oxidized) and colorless (reduced) with a period of seconds to minutes. In a thin unstirred layer, it produces <strong>spiral waves</strong>: rotating spirals of oxidized state that are the prototype excitable-medium pattern. The same spiral-wave dynamics describes the calcium signaling that triggers heart contractions, and pathological reentrant spirals cause cardiac fibrillation — a leading cause of sudden death.</p><p>The minimal model is FitzHugh–Nagumo or Oregonator, both two-variable activator-inhibitor schemes. Spirals, target waves, and Turing patterns all emerge from the same family of equations — only the parameter regime changes. Cells, slime molds, and chemical reactors do not need a blueprint to make patterns; the equations make patterns for them.</p>",
+        "mathExpressions": ["\\text{BrO}_3^- + \\text{HBrO}_2 + 2\\,\\text{Ce}^{3+} + 3\\,\\text{H}^+ \\to 2\\,\\text{HBrO}_2 + 2\\,\\text{Ce}^{4+} + \\text{H}_2\\text{O}", "\\partial_t u = u(1 - u)(u - a) - v + D \\nabla^2 u \\quad \\text{(FitzHugh\\textendash Nagumo)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-09-c3",
+        "title": "Rayleigh-Bénard and the Route to Turbulence",
+        "contentHtml": "<p>A horizontal fluid layer heated from below remains motionless until the temperature gradient exceeds a threshold; above it the fluid breaks into orderly <strong>convection rolls</strong>. This is <strong>Rayleigh–Bénard convection</strong>, governed by the dimensionless Rayleigh number <code>Ra = gαΔT d³/(νκ)</code>. The critical Rayleigh number for the onset of convection is <code>Ra_c ≈ 1708</code> for free-slip boundaries — predicted by Lord Rayleigh in 1916 and confirmed countless times.</p><p>As Ra increases past Ra_c, the system passes through a sequence of bifurcations: rolls, wavy rolls, then more complex patterns, then time-periodic states, then quasi-periodicity, then chaos and eventually fully developed turbulence. This is the experimental embodiment of the <strong>Ruelle–Takens–Newhouse</strong> route (1971): three Hopf bifurcations from a steady state, and after the third (a 3-torus) the dynamics generically becomes chaotic — directly contradicting Landau's earlier conjecture of an infinite cascade of frequencies.</p><p>Period-doubling routes (Feigenbaum) and intermittency routes (Pomeau–Manneville) have also been observed in carefully controlled Rayleigh–Bénard cells, in Taylor–Couette flow between rotating cylinders, and in flame fronts. The qualitative routes to chaos are universal; the quantitative thresholds depend on geometry. The full transition to fully developed turbulence at very high Reynolds number is not yet understood — arguably the central open problem in classical physics.</p>",
+        "mathExpressions": ["\\mathrm{Ra} = \\frac{g \\alpha \\Delta T \\, d^3}{\\nu \\kappa}, \\quad \\mathrm{Ra}_c \\approx 1708", "\\text{Ruelle\\textendash Takens: steady} \\to T^1 \\to T^2 \\to T^3 \\to \\text{chaos}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q65", "nlin-q66", "nlin-q67", "nlin-q68", "nlin-q69", "nlin-q70", "nlin-q71", "nlin-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "nlin-10",
+    "topicId": "physics-nonlinear",
+    "order": 10,
+    "title": "Control of Chaos and Applications",
+    "description": "OGY, time-delay control, and chaos beyond physics",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "nlin-10-c1",
+        "title": "The OGY Method",
+        "contentHtml": "<p>For decades, chaos was viewed as the enemy of control — by definition, chaotic systems amplify any tiny imperfection. In 1990 Edward Ott, Celso Grebogi, and James Yorke turned this on its head with the <strong>OGY method</strong>: precisely <em>because</em> chaotic systems are sensitive, vanishingly small control inputs can stabilize chosen behavior. Sensitivity becomes leverage.</p><p>The strategy. A strange attractor is densely woven from <strong>unstable periodic orbits (UPOs)</strong> — period-1, period-2, period-3, ... orbits that are saddles in phase space. Each has stable and unstable manifolds. Pick a target UPO. Wait until the natural chaotic trajectory wanders close to it (it will, by ergodicity — typically within a few hundred iterations). At that moment, apply a small parameter perturbation that nudges the trajectory onto the stable manifold of the UPO. The trajectory then converges to the UPO without further effort, until noise kicks it off and the cycle repeats.</p><p>The required control signal is tiny — just enough to overcome the noise — yet stabilizes a target behavior that the unperturbed system never visits. OGY was first demonstrated experimentally on a chaotic magnetoelastic ribbon (Ditto, Rauseo, Spano 1990) and within a few years on cardiac tissue (controlling fibrillation in vitro), CO₂ lasers, and electronic circuits.</p>",
+        "mathExpressions": ["\\delta p_n = - \\frac{\\boldsymbol{\\xi}_u \\cdot (\\mathbf{x}_n - \\mathbf{x}^*)}{\\boldsymbol{\\xi}_u \\cdot \\partial_p \\mathbf{x}^*} \\cdot \\frac{\\lambda_u}{\\lambda_u - 1}", "\\text{wait until trajectory enters control region near UPO; nudge}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-10-c2",
+        "title": "Time-Delay Feedback (Pyragas Control)",
+        "contentHtml": "<p>OGY requires knowledge of the UPO and online state estimation — heavy machinery for fast systems. Kestutis Pyragas in 1992 proposed a beautiful alternative: feed the system back its own past, delayed by the period τ of the target UPO:</p><p><code>u(t) = K[x(t - τ) - x(t)]</code></p><p>If x(t) is on the period-τ orbit, then x(t − τ) = x(t) and the control signal vanishes. The control is <strong>non-invasive</strong> — it doesn't change the orbit it stabilizes, only its stability. Off the orbit, the feedback grows and damps deviations.</p><p>The advantages are huge. No model of the dynamics is needed; no UPO needs to be located in advance. You only need to estimate the period τ. Implementation is a one-line modification to the experiment: a delay line and a gain. <strong>Time-delay feedback control</strong> has been used to stabilize lasers, electronic chaos generators, plasma discharges, the heart in animal models, and high-power microwave sources.</p><p>Limitations: the gain K must satisfy a stability criterion, and an \"odd-number limitation\" (now known to have exceptions) restricts which UPOs can be stabilized. Extended TDFC (multiple delays) and adaptive variants address these. The lesson is general: <strong>chaos is not noise — it is structure</strong>, and that structure can be engineered.</p>",
+        "mathExpressions": ["u(t) = K \\big[ x(t - \\tau) - x(t) \\big]", "u(t) = 0 \\quad \\text{when } x(t) = x(t - \\tau) \\;\\; \\text{(non-invasive)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nlin-10-c3",
+        "title": "Chaos in Biology, Finance, and Beyond",
+        "contentHtml": "<p>Nonlinear dynamics is everywhere outside physics. <strong>Cardiac arrhythmia</strong>: a normal heartbeat is a stable limit cycle; ventricular fibrillation is a spatiotemporally chaotic regime that kills within minutes. The defibrillator is a brute-force reset; chaos-control techniques aim for gentler interventions. <strong>Epileptic seizures</strong> show signatures of bifurcations from chaotic background activity to high-amplitude synchronous oscillation.</p><p><strong>Population biology</strong>: the discrete logistic map was originally studied by Robert May (1976) as a model of insect populations, and his paper \"Simple mathematical models with very complicated dynamics\" persuaded ecologists that population fluctuations need not have external causes. <strong>Ecology</strong>: predator-prey systems can have stable cycles, chaos, or alternative stable states (lakes flipping between clear and turbid).</p><p><strong>Finance</strong>: whether markets are truly chaotic is debated, but many price-series statistics (fat tails, volatility clustering, multi-scale correlations) have analogues in turbulent flows. Mantegna and Stanley pioneered \"econophysics\" in the 1990s using nonlinear and statistical-physics tools. <strong>Climate</strong>: glacial-interglacial cycles are not periodic but are bounded — possibly a chaotic attractor in a low-dimensional climate model.</p><p>The unifying lesson of the field: <strong>complexity in behavior does not imply complexity in cause</strong>. A handful of nonlinear ODEs can produce dynamics indistinguishable from random — and a handful of well-chosen control inputs can tame them. Half a century after Lorenz, that insight is still rearranging entire scientific fields.</p>",
+        "mathExpressions": ["\\text{Robert May (1976): } x_{n+1} = r x_n (1 - x_n) \\text{ as ecology model}", "\\text{complex dynamics} \\;\\not\\Rightarrow\\; \\text{complex equations}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nlin-q73", "nlin-q74", "nlin-q75", "nlin-q76", "nlin-q77", "nlin-q78", "nlin-q79", "nlin-q80"],
+    "puzzleId": null
+  }
+]

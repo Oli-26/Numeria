@@ -1,0 +1,394 @@
+[
+  {
+    "id": "econ-fin-01",
+    "topicId": "econ-finance",
+    "order": 1,
+    "title": "Time Value of Money",
+    "description": "Present value, discounting, compounding — the most useful equation in finance",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "econ-fin-01-c1",
+        "title": "A Dollar Today vs A Dollar Tomorrow",
+        "contentHtml": "<p>The first idea in finance: <strong>a dollar today is worth more than a dollar tomorrow</strong>.</p><p>Three reasons. You could invest today's dollar and earn interest. You may not be alive tomorrow. Inflation may erode tomorrow's purchasing power.</p><p>Even if those reasons didn't apply, pure preference for sooner-over-later is the empirical norm. The <strong>discount rate</strong> r captures all of this in one number — the price you charge for delaying gratification.</p><p>Every financial decision involves comparing cash flows arriving at different times. Time value of money is how we convert them to a common basis.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-01-c2",
+        "title": "Future Value & Compounding",
+        "contentHtml": "<p>The simplest formula: $1 invested at rate r grows to $(1+r) in one year.</p><p>Reinvesting that, after two years it's $(1+r)². After t years, it's $(1+r)^t. This is <strong>compounding</strong> — interest on interest.</p><p>The power of compounding gets dramatic over long horizons. $1,000 invested at 7% for 40 years grows to about $14,974. The same $1,000 at 4% grows to only $4,801. Three percentage points triple the result.</p><p>Continuous compounding gives FV = PV·e^(rt). The exponential function is just compounding pushed to infinitely small periods. This is why financial people see e^x everywhere.</p>",
+        "mathExpressions": [
+          "FV = PV(1+r)^t, \\quad FV = PV \\cdot e^{rt}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-01-c3",
+        "title": "Present Value & Discounting",
+        "contentHtml": "<p>Run compounding backwards. If $1 in t years is worth what today, given rate r? Answer: $1/(1+r)^t. This is the <strong>present value (PV)</strong>.</p><p>Discounting converts future cash flows into today's dollars. Once everything is in today's dollars, you can compare and add.</p><p>For a stream of cash flows C_1, C_2, …, C_T:</p><p>PV = C_1/(1+r) + C_2/(1+r)² + … + C_T/(1+r)^T.</p><p>This single formula prices bonds, stocks, projects, mortgages, pensions, and anything else with future cash flows. It's the most-used equation in finance.</p>",
+        "mathExpressions": [
+          "PV = \\sum_{t=1}^{T} \\frac{C_t}{(1+r)^t}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-01-c4",
+        "title": "Annuities & Perpetuities",
+        "contentHtml": "<p>Two simplifications worth memorizing.</p><p>A <strong>perpetuity</strong> pays C forever. PV = C/r. A bond paying $50/year forever, at 5% rate, is worth $1,000 today.</p><p>An <strong>annuity</strong> pays C for T periods. PV = (C/r)·[1 − 1/(1+r)^T]. Mortgages and pensions are annuities.</p><p>A <strong>growing perpetuity</strong> pays C, then C(1+g), then C(1+g)², forever. PV = C/(r-g), provided r > g. This is the Gordon growth model — used to price stocks under the assumption of steady dividend growth.</p><p>Most complex valuation problems can be decomposed into combinations of these patterns.</p>",
+        "mathExpressions": [
+          "PV_{perp} = \\frac{C}{r}, \\quad PV_{ann} = \\frac{C}{r}\\left[1 - \\frac{1}{(1+r)^T}\\right]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-01-c5",
+        "title": "NPV: The Decision Rule",
+        "contentHtml": "<p>The investment decision rule built on present value: invest if and only if <strong>NPV > 0</strong>.</p><p>NPV (net present value) is the present value of inflows minus the present value of outflows, all discounted at the appropriate cost of capital.</p><p>NPV > 0 means the project's discounted cash flows exceed its costs — it adds value. NPV < 0 means it destroys value. NPV = 0 means it's a wash.</p><p>The crucial input is the discount rate r, which should reflect the project's risk and the firm's cost of capital. The wrong rate produces wrong decisions: too low and you take bad projects, too high and you reject good ones.</p><p>The simplicity is deceptive — accurately forecasting cash flows and choosing the right discount rate are where finance gets hard. But the decision rule itself is one line, and it's the right rule.</p>",
+        "mathExpressions": [
+          "NPV = -C_0 + \\sum_{t=1}^{T} \\frac{C_t}{(1+r)^t}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-fin-02",
+    "topicId": "econ-finance",
+    "order": 2,
+    "title": "Risk & Return",
+    "description": "Variance, covariance, Sharpe ratio — pricing risk",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "econ-fin-02-c1",
+        "title": "Why Risk-Adjusted Returns",
+        "contentHtml": "<p>Two assets returned 10% last year. One is Treasury bills. The other is Bitcoin. Are they equivalent? Obviously not.</p><p>Raw returns don't tell you what you got per unit of risk. The investor cares about <strong>risk-adjusted return</strong> — how much expected return she earned for the volatility she stomached.</p><p>The first move in finance is to recognize that return alone is not the metric. Risk has to be priced, measured, and traded off explicitly.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-02-c2",
+        "title": "Measuring Risk",
+        "contentHtml": "<p>The classical measure of risk is <strong>variance</strong> (or its square root, <strong>standard deviation</strong>) of returns. It captures total dispersion.</p><p>This conflates upside and downside, which has been criticized — investors don't worry about positive surprises. Downside-focused measures (semi-variance, Value at Risk, expected shortfall) refine this.</p><p>Variance also ignores tail behavior. A return distribution with most mass clustered near the mean but with a long left tail (a 'black swan') has the same variance as a more symmetric distribution but is much riskier. Hence the post-2008 emphasis on tail risk.</p><p>For most pedagogy, σ is the workhorse measure. Real risk management uses several complementary metrics simultaneously.</p>",
+        "mathExpressions": [
+          "\\sigma^2 = E[(R - E[R])^2]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-02-c3",
+        "title": "Sharpe Ratio",
+        "contentHtml": "<p>The most-used risk-adjusted return: <strong>Sharpe ratio</strong> = (E[R] − R_f) / σ.</p><p>Excess return per unit of volatility. Higher is better.</p><p>A Sharpe of 0.5 is solidly positive but unremarkable. 1.0 is good. Above 2.0 is exceptional and rarely sustainable. Hedge funds advertising 'Sharpe of 3' should raise eyebrows — that's near Madoff territory.</p><p>The Sharpe ratio assumes returns are roughly normal and that volatility is a comprehensive risk measure. Both can fail. Strategies with hidden tail risk (selling out-of-the-money options) can show high Sharpes for years before blowing up. The 2008 crisis was full of such Sharpe-rich-but-fragile strategies.</p>",
+        "mathExpressions": [
+          "S = \\frac{E[R] - R_f}{\\sigma}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-02-c4",
+        "title": "Covariance and Correlation",
+        "contentHtml": "<p>Once you have multiple assets, you need to know how they move together.</p><p><strong>Covariance</strong> Cov(A, B) measures the joint movement of A and B around their means. <strong>Correlation</strong> ρ_AB normalizes covariance to between -1 and +1, divorcing it from the asset's individual variances.</p><p>ρ = +1: assets move in lockstep. ρ = -1: perfect mirror. ρ = 0: uncorrelated.</p><p>The fundamental insight: an asset's contribution to portfolio risk is <em>not</em> its standalone variance — it's its covariance with the rest of the portfolio. A volatile asset that moves opposite to your other holdings can <em>reduce</em> portfolio risk.</p><p>This is the foundation for diversification and modern portfolio theory.</p>",
+        "mathExpressions": [
+          "\\text{Cov}(A,B) = E[(R_A - E[R_A])(R_B - E[R_B])], \\quad \\rho = \\frac{\\text{Cov}(A,B)}{\\sigma_A \\sigma_B}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-02-c5",
+        "title": "Risk-Return Tradeoff",
+        "contentHtml": "<p>The empirical regularity: across asset classes, higher average returns come with higher volatility.</p><p>Long-term US data (roughly): T-bills 3% returns, 1% volatility. Government bonds 5%/8%. Corporate bonds 6%/10%. Stocks 10%/16%. Small-cap stocks 12%/20%. Riskier asset, higher reward.</p><p>This is no accident — if a high-return asset existed without high risk, capital would flow in until prices rose and returns fell to match. <strong>Risk premia</strong> exist because investors are risk-averse and demand extra return to hold risky assets.</p><p>The exact size of the equity premium has been debated. The '<strong>equity premium puzzle</strong>' (Mehra-Prescott 1985) noted that historical equity premia look too high to be explained by reasonable risk aversion alone. Resolutions include rare disasters, ambiguity, loss aversion, and habits — none fully settled.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-fin-03",
+    "topicId": "econ-finance",
+    "order": 3,
+    "title": "Portfolio Theory",
+    "description": "Markowitz — diversification, the efficient frontier, mean-variance optimization",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "econ-fin-03-c1",
+        "title": "Diversification",
+        "contentHtml": "<p>Don't put all your eggs in one basket — but the math is what makes the principle precise.</p><p>For two assets with equal variance σ² but correlation ρ: an equal-weighted portfolio has variance (1+ρ)σ²/2.</p><p>If ρ = 1, the portfolio variance is just σ²: no benefit from combining. If ρ = 0, variance is σ²/2: half as much. If ρ = -1, variance can hit zero: the two assets perfectly hedge.</p><p>The implication: <strong>combining imperfectly correlated assets reduces risk without sacrificing expected return</strong>. As you add more assets with low pairwise correlation, the portfolio's risk shrinks dramatically.</p>",
+        "mathExpressions": [
+          "\\sigma_p^2 = w_A^2 \\sigma_A^2 + w_B^2 \\sigma_B^2 + 2 w_A w_B \\rho \\sigma_A \\sigma_B"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-03-c2",
+        "title": "Diversifiable vs Systematic Risk",
+        "contentHtml": "<p>How much can you diversify? Not all the way to zero. Total risk decomposes into two parts.</p><p><strong>Idiosyncratic (diversifiable) risk</strong>: specific to individual assets. Apple's product launch fails. Boeing has a quality scandal. These shocks average out across enough assets.</p><p><strong>Systematic (market) risk</strong>: affects all assets, can't be diversified away. Recessions, monetary policy shifts, geopolitical shocks.</p><p>As you hold more assets, idiosyncratic risk shrinks toward zero, leaving only systematic risk. By 30 or so well-chosen stocks you've captured most diversification benefits — though academics debate the exact number.</p><p>The implication for asset pricing: only systematic risk should be priced. Idiosyncratic risk can be diversified away for free, so the market shouldn't pay you for bearing it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-03-c3",
+        "title": "The Efficient Frontier",
+        "contentHtml": "<p>Markowitz (1952) formalized the choice problem: given a set of assets, what portfolios are 'efficient'?</p><p>For each level of expected return, find the portfolio with minimum variance. Plotted in (σ, E[R]) space, these portfolios trace the <strong>efficient frontier</strong> — a hyperbola opening rightward.</p><p>Inefficient portfolios sit below the frontier — you can get the same return with less risk, or more return with the same risk. Rational investors only hold efficient portfolios.</p><p>The frontier shifts as you add assets. Generally, more assets (especially uncorrelated ones) push the frontier up and to the left — better return for less risk.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-finance/efficient-frontier.png\" alt=\"Markowitz efficient frontier of portfolios in risk-return space\" loading=\"lazy\"><figcaption>The Markowitz efficient frontier — best risk-return combinations. Image: Wikimedia Commons / Public Domain.</figcaption></figure>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-03-c4",
+        "title": "The Capital Market Line",
+        "contentHtml": "<p>Add a risk-free asset (Treasury bills) to the efficient frontier. Things simplify dramatically.</p><p>The optimal frontier becomes a straight line — the <strong>Capital Market Line</strong> — tangent to the efficient frontier at one specific portfolio: the <strong>tangency portfolio</strong>.</p><p>All efficient portfolios are now combinations of two things: the risk-free asset and the tangency portfolio. Conservative investors hold mostly cash plus a little of the tangency portfolio. Aggressive investors lever up by borrowing and putting more than 100% into the tangency portfolio.</p><p>This is <strong>two-fund separation</strong>: the question of <em>what risky assets to hold</em> separates from <em>how much risk to take</em>. The first is the same for everyone (the tangency portfolio). The second depends on your individual risk tolerance.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-03-c5",
+        "title": "Strengths and Weaknesses",
+        "contentHtml": "<p>Markowitz's framework was revolutionary — Nobel-winning in 1990. Its core ideas pervade modern finance: that risk should be measured at the portfolio level, that diversification is mathematically free risk reduction, that mean-variance optimization can systematize portfolio choice.</p><p>But it has well-known limitations.</p><p><strong>Estimation error.</strong> The optimization needs expected returns, variances, and covariances as inputs. These are estimated from data and can be wildly off. Optimal weights can change dramatically with small input changes — 'error maximization' rather than utility maximization.</p><p><strong>Non-normal returns.</strong> Real return distributions have fat tails. Variance underestimates risk in tail-heavy regimes.</p><p><strong>Static.</strong> The framework optimizes for a single period. Multiperiod and dynamic optimization (Merton, Black-Litterman) are richer but harder.</p><p>Practitioners use Markowitz as a foundation, not a recipe — adding shrinkage estimators, robust optimization, factor structure, and judgment to discipline the math.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-fin-04",
+    "topicId": "econ-finance",
+    "order": 4,
+    "title": "CAPM & Asset Pricing",
+    "description": "Beta, the security market line, factor models, arbitrage pricing",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "econ-fin-04-c1",
+        "title": "The CAPM Equation",
+        "contentHtml": "<p>The <strong>Capital Asset Pricing Model</strong> (Sharpe-Lintner-Mossin, 1964): in equilibrium, an asset's expected return equals the risk-free rate plus a premium proportional to its <em>systematic</em> risk.</p><p>The proportionality constant is <strong>beta</strong> β — the asset's covariance with the market portfolio, normalized by market variance. β = 1 means the asset moves one-for-one with the market. β > 1 means it amplifies market moves; β < 1 means it dampens them.</p><p>The whole CAPM lives in one equation: E[R_i] = R_f + β_i·(E[R_m] − R_f).</p>",
+        "mathExpressions": [
+          "E[R_i] = R_f + \\beta_i (E[R_m] - R_f), \\quad \\beta_i = \\frac{\\text{Cov}(R_i, R_m)}{\\text{Var}(R_m)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-04-c2",
+        "title": "What CAPM Gets Right",
+        "contentHtml": "<p>The CAPM is the simplest model that captures three correct ideas.</p><p>One: only systematic risk should be priced. Diversifiable risk can be eliminated for free, so the market doesn't pay you for bearing it. β is the right risk measure.</p><p>Two: there's a market price of risk — the equity premium — and individual assets earn return proportional to their exposure to it. The Security Market Line plots E[R] vs β as a straight line through (0, R_f) and (1, E[R_m]).</p><p>Three: in equilibrium, all investors hold the market portfolio scaled to their risk tolerance. Aggregating individual portfolios gives the market — a built-in consistency check.</p><p>For decades, CAPM was the dominant framework. It's still taught first because the intuition is right, even when the model itself is incomplete.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-04-c3",
+        "title": "What CAPM Gets Wrong",
+        "contentHtml": "<p>Empirically, CAPM doesn't fit the data well.</p><p>The Fama-MacBeth tests showed that beta alone doesn't explain the cross-section of expected returns. Many other variables — <strong>size</strong>, <strong>value</strong>, <strong>momentum</strong>, <strong>profitability</strong> — predict returns even after controlling for beta.</p><p>Roll's critique (1977): the 'market portfolio' should include all wealth (housing, human capital, art, foreign assets). Stock indices are crude proxies. Without the true market, CAPM tests are unfalsifiable.</p><p>The CAPM also assumes single-period optimization, homogeneous expectations, and no taxes or transaction costs — none literally true.</p><p>Modern asset pricing largely replaces CAPM with multi-factor models that absorb known anomalies.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-04-c4",
+        "title": "Fama-French and Multi-Factor Models",
+        "contentHtml": "<p>Fama and French (1992, 1993) showed that two additional factors capture much of what beta misses.</p><p><strong>Size (SMB):</strong> small-cap stocks earn higher returns than large-caps. Maybe they're riskier; maybe they're under-researched.</p><p><strong>Value (HML):</strong> high book-to-market (value) stocks earn higher returns than low book-to-market (growth) stocks. The value premium has been remarkably persistent across countries and decades, though has weakened post-2008.</p><p>Their three-factor model (market + SMB + HML) explains roughly 90% of cross-sectional variation in stock returns — a huge improvement over CAPM.</p><p>Later extensions add momentum (Carhart 4-factor), profitability and investment (Fama-French 5-factor), and dozens of other 'factors' from the academic factor zoo.</p>",
+        "mathExpressions": [
+          "E[R_i] = R_f + \\beta_M(R_m - R_f) + \\beta_S \\cdot SMB + \\beta_V \\cdot HML"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-04-c5",
+        "title": "Arbitrage Pricing Theory",
+        "contentHtml": "<p>Stephen Ross's <strong>Arbitrage Pricing Theory (APT)</strong> generalizes the multi-factor approach.</p><p>Assume returns are driven by k underlying factors plus idiosyncratic noise. By no-arbitrage, expected returns must be linear functions of factor exposures (loadings) and the prices of those factor risks.</p><p>APT doesn't say what the factors <em>are</em> — that's an empirical question. They might be macroeconomic (inflation, GDP shocks, term spread), statistical (principal components), or characteristic-based (size, value, momentum).</p><p>The big advantage over CAPM: APT doesn't require a 'market portfolio' or strong assumptions about preferences. It's just no-arbitrage logic plus a linear factor structure.</p><p>Modern asset pricing is almost entirely factor-model based. The unresolved question is which factors are 'real' (compensating for genuine risk) versus statistical artifacts (mining the data hard enough to find spurious patterns). Ross's theorem set the structure for that ongoing debate.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-fin-05",
+    "topicId": "econ-finance",
+    "order": 5,
+    "title": "Efficient Markets",
+    "description": "Weak, semi-strong, strong forms — and the long debate over whether markets are",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "econ-fin-05-c1",
+        "title": "The Efficient Markets Hypothesis",
+        "contentHtml": "<p>Eugene Fama's <strong>efficient markets hypothesis (EMH)</strong>, in one line: <em>asset prices fully reflect all available information</em>.</p><p>The intuition: if a profitable trade was obvious, smart investors would already have made it, pushing prices to where the trade is no longer profitable. The market quickly arbitrages away predictable patterns.</p><p>Implications: technical analysis (using price patterns to predict future prices) shouldn't work. Skilled active managers shouldn't consistently beat indices after fees. Free lunches don't exist — at least not for long.</p><p>EMH is the central theoretical claim of modern finance. Whether it's true, partially true, or wrong is one of the longest-running debates in economics.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-05-c2",
+        "title": "Three Forms",
+        "contentHtml": "<p>Fama distinguished three nested versions of EMH.</p><p><strong>Weak form:</strong> prices reflect all <em>past price</em> information. Technical analysis can't generate excess returns.</p><p><strong>Semi-strong form:</strong> prices reflect all <em>publicly available</em> information — past prices plus financial reports, news, and analyst opinions. Fundamental analysis on public data shouldn't beat the market either.</p><p><strong>Strong form:</strong> prices reflect <em>all</em> information, including private/insider information. Even insiders can't beat the market.</p><p>Empirical evidence is reasonably supportive of weak form. Semi-strong is roughly true with some anomalies. Strong form is clearly wrong — insider trading is profitable enough that it's been criminalized in most jurisdictions.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-05-c3",
+        "title": "Random Walks and Predictability",
+        "contentHtml": "<p>If prices reflect all information, then price changes should be roughly unpredictable — a <strong>random walk</strong>.</p><p>The key word is 'roughly.' Strict random walks are too strong; the modern formulation is that prices are martingales: E[P_{t+1} | I_t] = P_t. New information moves prices, but you can't predict the direction of new information.</p><p>The empirical record: short-horizon (daily, weekly) returns are very close to random walks. Longer horizons show some predictability — momentum (returns persist) over months, mean reversion over years.</p><p>The 'roughly random walk' is the right zeroth-order description. The deviations are real but small enough that simple trading strategies generally don't profit from them after costs.</p>",
+        "mathExpressions": [
+          "E[P_{t+1} | I_t] = P_t"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-05-c4",
+        "title": "Anomalies and Their Mortality",
+        "contentHtml": "<p>EMH's challenge: a long catalogue of <strong>anomalies</strong> — empirical patterns that seem to contradict it.</p><p>Examples: the value premium (cheap stocks beat expensive ones), momentum (winners keep winning over 3-12 month horizons), the small-firm effect, the January effect, the Monday effect, low-volatility outperformance, post-earnings drift.</p><p>The story of academic finance is largely a story of finding anomalies, then debating whether they reflect risk premia (compensation for bearing systematic risk) or genuine market inefficiency.</p><p>Two important patterns: many anomalies <em>shrink or disappear after publication</em> (McLean-Pontiff 2016) — markets seem to learn — and the more sophisticated and well-capitalized the market, the harder it becomes to find robust anomalies. Both findings support a 'mostly efficient' view.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-05-c5",
+        "title": "Behavioral Finance and Limits to Arbitrage",
+        "contentHtml": "<p>The behavioral critique of EMH: real investors aren't perfectly rational. They overreact, underreact, herd, anchor, suffer present-bias.</p><p>If irrational traders move prices, why don't rational arbitrageurs offset them? <strong>Limits to arbitrage</strong> (Shleifer-Vishny): real arbitrage is risky and capital-constrained. You can be right and still go bankrupt before prices correct.</p><p>The 1999-2000 dot-com bubble and the 2007-08 housing bubble are exhibit A and B. Anyone shorting tech in 1999 could have been right and still ruined. Long-Term Capital Management was right about convergence — but ran out of capital before convergence happened.</p><p>The modern synthesis: markets are efficient enough that beating them is hard, but inefficient enough that bubbles, manias, and persistent anomalies do exist. EMH is a useful baseline, not a literal description. The interesting questions are about the magnitude and duration of deviations, and the institutional features that determine when arbitrage succeeds or fails.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-fin-06",
+    "topicId": "econ-finance",
+    "order": 6,
+    "title": "Derivatives & Options",
+    "description": "Forwards, futures, calls, puts — Black-Scholes and the geometry of payoffs",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "econ-fin-06-c1",
+        "title": "What Derivatives Are",
+        "contentHtml": "<p>A <strong>derivative</strong> is a contract whose value derives from another asset (the 'underlying'). Stocks, bonds, currencies, commodities, interest rates, even other derivatives — all can be underlyings.</p><p>The basic types:</p><p><strong>Forwards/futures:</strong> agreement to buy or sell an asset at a fixed price on a future date.</p><p><strong>Options:</strong> the right (not obligation) to buy or sell at a fixed price.</p><p><strong>Swaps:</strong> exchange of cash flows (interest rate swaps, currency swaps).</p><p>Derivatives are tools for hedging, speculation, and synthetic exposure. They've grown into a multi-quadrillion-dollar global market — much larger than the underlying asset markets.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-06-c2",
+        "title": "Forwards and Futures",
+        "contentHtml": "<p>A <strong>forward contract</strong> locks in a price now for delivery later. A wheat farmer forwards next year's harvest at $300/bushel; come harvest, that's the price regardless of the spot market. Both parties hedge price risk.</p><p>By no-arbitrage, the forward price is the spot price grown at the cost-of-carry rate: F = S·e^(r-y)T, where y is the convenience yield or dividend yield.</p><p><strong>Futures</strong> are standardized, exchange-traded forwards with daily mark-to-market. Their economic logic is similar but the institutional setup eliminates counterparty risk and enables high leverage.</p><p>Futures markets exist for almost everything — commodities, currencies, stock indices, bonds, interest rates, even weather. Total daily volume in CME futures rivals the entire stock market.</p>",
+        "mathExpressions": [
+          "F_0 = S_0 e^{(r-y)T}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-06-c3",
+        "title": "Options: Calls and Puts",
+        "contentHtml": "<p>An option gives the right but not the obligation to transact.</p><p><strong>Call option:</strong> right to buy at strike K. Profitable when the stock rises above K. Payoff at expiry = max(S − K, 0).</p><p><strong>Put option:</strong> right to sell at strike K. Profitable when the stock falls below K. Payoff at expiry = max(K − S, 0).</p><p>The asymmetry — limited downside (premium paid), unlimited upside — makes options powerful tools. They cost money up front (the premium) but cap your loss while preserving upside.</p><p>Options can be combined into elaborate payoff structures: spreads, straddles, butterflies, collars, condors. Each shape expresses a specific view on the underlying's future distribution.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-finance/option-payoff.png\" alt=\"Long call option payoff diagram at expiration\" loading=\"lazy\"><figcaption>Long call option payoff: max(S − K, 0) at expiration. Image: Wikimedia Commons / CC BY 3.0.</figcaption></figure>",
+        "mathExpressions": [
+          "C_T = \\max(S_T - K, 0), \\quad P_T = \\max(K - S_T, 0)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-06-c4",
+        "title": "Black-Scholes",
+        "contentHtml": "<p>Fischer Black, Myron Scholes, and Robert Merton's 1973 result is one of the great achievements of mathematical economics — and earned a Nobel Prize (Scholes and Merton; Black had died).</p><p>Under assumptions including geometric Brownian motion of the underlying, constant volatility, no transaction costs, and continuous trading, the price of a European call has a closed-form solution involving five inputs: S, K, T, r, σ.</p><p>The breakthrough technique: <strong>dynamic replication</strong>. By continuously rebalancing a position in the stock and a risk-free bond, you can synthesize the option's payoff exactly. The cost of replication must equal the option's price — otherwise arbitrage. The PDE governing the replication portfolio is the famous Black-Scholes equation.</p><p>The model launched the modern derivatives industry. Its assumptions are imperfect (constant volatility especially is wrong — see implied volatility smiles), but it's the universal lingua franca. Practitioners 'speak' Black-Scholes, even when they know it's a useful approximation rather than literal truth.</p>",
+        "mathExpressions": [
+          "C = S \\cdot N(d_1) - K e^{-rT} N(d_2)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-06-c5",
+        "title": "The Greeks and Risk Management",
+        "contentHtml": "<p>Once you can price options, you can compute their sensitivities — the <strong>Greeks</strong>.</p><p><strong>Delta (Δ):</strong> sensitivity to underlying price. A call with Δ = 0.6 gains $0.60 per $1 stock rise.</p><p><strong>Gamma (Γ):</strong> rate of change of delta. Measures convexity. High-gamma positions accelerate as the stock moves.</p><p><strong>Vega (𝒱):</strong> sensitivity to volatility. Long-vega positions profit when volatility rises.</p><p><strong>Theta (Θ):</strong> sensitivity to time. Almost always negative for option buyers — time decay erodes premium.</p><p><strong>Rho (ρ):</strong> sensitivity to interest rates. Usually small except for long-dated options.</p><p>Trading desks watch Greeks continuously, hedging delta to stay neutral on direction, then taking views on volatility (vega), gamma (curvature), or term structure. Real derivatives risk management is essentially Greeks management.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-fin-07",
+    "topicId": "econ-finance",
+    "order": 7,
+    "title": "Stock Markets & Equity",
+    "description": "How exchanges work — IPOs, market makers, indices, bubbles and crashes",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "econ-fin-07-c1",
+        "title": "What a Stock Is",
+        "contentHtml": "<p>A <strong>share of stock</strong> represents fractional ownership of a corporation — a residual claim on the firm's assets after all debts are paid.</p><p>Shareholders get two things: <strong>dividends</strong> (a pro-rata share of profits the firm chooses to distribute) and <strong>capital gains</strong> (the change in share price between buying and selling).</p><p>Voting rights typically come with common shares — one share, one vote on board elections and major decisions. Preferred shares often forgo voting in exchange for fixed dividends.</p><p>Equity differs sharply from debt: bondholders are creditors with a contractual right to fixed payments; shareholders are owners with no such guarantees but unlimited upside if the firm grows.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-07-c2",
+        "title": "IPOs and the Primary Market",
+        "contentHtml": "<p>A company's first sale of stock to the public is its <strong>Initial Public Offering (IPO)</strong>. This is the <em>primary market</em> — capital flows from investors into the company.</p><p>Before going public, firms raise from founders, angels, and venture capital — equity but not on exchanges. The IPO unlocks broader investor pools, makes early investors liquid, and transitions the firm to public reporting.</p><p>Most IPOs are intermediated by investment banks, which underwrite the offering: setting the price, finding institutional buyers, and committing to buy unsold shares. The price is typically set just below expected first-day market price — the famous 'IPO underpricing' that gives early investors immediate gains while leaving money on the table for the issuer.</p><p>Direct listings and SPACs (special-purpose acquisition companies) have emerged as alternatives that bypass traditional underwriting in different ways.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-07-c3",
+        "title": "Exchanges and Market Microstructure",
+        "contentHtml": "<p>The <strong>secondary market</strong> is where existing shares change hands — NYSE, NASDAQ, LSE, Tokyo, Hong Kong, Shanghai. The original company doesn't see those proceeds; investors trade with each other.</p><p>Modern exchanges are electronic order books. Buyers post bids; sellers post asks. The <strong>bid-ask spread</strong> is the difference. Trades happen when a buyer crosses the spread or a seller hits a bid.</p><p><strong>Market makers</strong> stand ready to buy at the bid and sell at the ask, providing liquidity in exchange for the spread. <strong>High-frequency traders</strong> compete for narrow spreads at microsecond timescales — over half of US equity volume now comes from algorithmic trading.</p><p>Increased speed has compressed spreads and reduced average transaction costs for retail investors. It's also raised concerns about market fragility (flash crashes), latency arbitrage, and order types that disadvantage slower participants.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-07-c4",
+        "title": "Indices",
+        "contentHtml": "<p>A stock <strong>index</strong> tracks the price of a basket of stocks — a single number summarizing market performance.</p><p>The <strong>S&P 500</strong> is market-cap-weighted: each company's weight is its market value divided by total. Apple and Microsoft (each ~7% of the index) dominate; small-cap inclusions barely move the needle.</p><p>The <strong>Dow Jones</strong> is price-weighted (a higher-priced stock gets more weight regardless of company size) — an arbitrary historical accident, but the index is so prominent that it persists.</p><p>The <strong>Russell 2000</strong> tracks small-caps; the <strong>FTSE 100</strong> the UK; the <strong>Nikkei 225</strong> Japan; <strong>MSCI World</strong> developed markets globally.</p><p>The rise of <strong>index funds</strong> — Vanguard's S&P 500 fund (1976), then ETFs (1990s) — has shifted retail equity ownership massively toward passive holding of indices. By the 2020s, passive funds owned more than half of US large-cap equity. This has implications for price discovery, governance, and the active management industry.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-fin-07-c5",
+        "title": "Bubbles and Crashes",
+        "contentHtml": "<p>Markets occasionally lose touch with fundamentals. <strong>Bubbles</strong> — sustained price levels far above any reasonable valuation — and the inevitable crashes are recurring features of stock-market history.</p><p>Famous episodes: Dutch tulip mania (1637), South Sea Bubble (1720), 1929 Wall Street, 1980s Japan, 2000 dot-com, 2008 housing-and-credit, 2021 meme stocks and crypto.</p><p>Common features: easy credit, new technology or asset class without good valuation benchmarks, herding, leveraged speculation, and 'this time is different' narratives. The peak typically comes after retail enthusiasm becomes visible — by which point professionals are quietly exiting.</p><p>Crashes can be sudden (1987's Black Monday lost 22% in a day) or grinding (2000-02 dot-com bust took two years). They've grown more violent in the algorithmic era, but reasonably accommodative central banks have shortened the typical recovery.</p><p>From a portfolio standpoint, the lesson isn't 'avoid stocks' — long-run real returns have been ~6-7% for over a century — but rather: diversify, size positions modestly, plan for drawdowns, and treat anyone telling you 'this time is different' as a contrarian indicator.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,127 @@
+[
+  {
+    "id": "mastery-db-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which violation of normalization typically causes the worst update anomalies?",
+    "options": ["A nullable column", "Storing the same fact in many rows of a table", "Using an integer surrogate key", "Having more than one index"],
+    "correctAnswer": "Storing the same fact in many rows of a table",
+    "explanation": "Redundant facts (e.g., a customer's address copied into every order row) require updates to multiple places. If any update is missed, data is inconsistent. This is the core 3NF violation that drives normalization.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-db-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "If a query has a missing index, EXPLAIN will typically show a sequential (full table) scan on a large table.",
+    "correctAnswer": "True",
+    "explanation": "A 'Seq Scan' on a large table where you'd expect an index lookup is the classic missing-index signature. Adding the right index usually transforms it into 'Index Scan' or 'Index Only Scan'.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-db-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Which extension of the CAP theorem also accounts for the consistency-vs-latency trade-off during normal operation?",
+    "correctAnswer": "PACELC",
+    "acceptableAnswers": ["PACELC", "pacelc", "PACELC theorem"],
+    "explanation": "PACELC (Daniel Abadi) extends CAP: under Partitions choose A or C; Else (no partition) choose Latency or Consistency. It captures real-world trade-offs better than CAP alone.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-db-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each transaction property to what it prevents:",
+    "pairs": [
+      {"left": "Atomicity", "right": "Partial state after a crash"},
+      {"left": "Isolation", "right": "Interference from concurrent transactions"},
+      {"left": "Durability", "right": "Loss of committed data after crash"},
+      {"left": "Consistency", "right": "Violations of database invariants"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Each ACID property addresses a different failure mode. Together they make transactions a reliable abstraction for application code.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-db-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which scenario is best served by a graph database rather than a relational one?",
+    "options": ["Storing user account records", "Recording financial transactions", "Finding shortest paths in a social network", "Running OLAP analytics on a data warehouse"],
+    "correctAnswer": "Finding shortest paths in a social network",
+    "explanation": "Graph databases excel at queries that traverse many relationships (friend-of-friend, recommendations, fraud rings). Doing the same in SQL requires recursive CTEs and many joins.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-db-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this database design:",
+    "steps": [
+      "I store products in a 'products' table with columns id, name, tags",
+      "tags is a comma-separated string like 'electronics,sale,new'",
+      "To find products tagged 'sale', I run WHERE tags LIKE '%sale%'",
+      "This is fine because the LIKE query works",
+      "The schema is in 1NF since each cell has one string value"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is wrong. 1NF requires atomic values; a comma-separated list is a non-atomic, multi-valued attribute. The correct design is a separate 'product_tags' table linking products to tags many-to-many. This makes querying, indexing, and tag management vastly easier.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-db-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "A composite index on (a, b) can efficiently serve queries filtering only on column 'a', but generally not queries filtering only on column 'b'.",
+    "correctAnswer": "True",
+    "explanation": "Composite indexes are sorted by the leading column first. A query on 'a' alone uses the index; a query on 'b' alone usually cannot, because rows for any 'b' are scattered across the index.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-db-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why might a NoSQL document store (e.g., MongoDB) outperform a relational DB for a specific workload?",
+    "options": ["NoSQL is always faster", "Document stores avoid expensive joins by embedding related data", "NoSQL has stronger ACID guarantees", "Relational databases cannot scale beyond a single server"],
+    "correctAnswer": "Document stores avoid expensive joins by embedding related data",
+    "explanation": "When access patterns naturally fetch a parent and all its children together, embedding them in one document avoids joins entirely. The trade-off: data duplication and harder cross-document queries.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-db-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of two-phase commit:",
+    "steps": [
+      "Coordinator sends PREPARE to all participants",
+      "Each participant writes the transaction durably and replies YES or NO",
+      "Coordinator collects all votes",
+      "If all votes are YES, coordinator sends COMMIT; otherwise sends ABORT",
+      "Participants execute the COMMIT or ABORT and reply DONE"
+    ],
+    "correctAnswer": null,
+    "explanation": "2PC ensures all participants either commit or abort together. Its weakness — coordinator failure between steps 4 and 5 leaves participants blocked — has driven much of distributed-systems research.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-db-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Conflict-free Replicated Data Types whose merge operation is associative, commutative, and idempotent are called what (acronym)?",
+    "correctAnswer": "CRDTs",
+    "acceptableAnswers": ["CRDTs", "CRDT", "crdts", "crdt", "Conflict-free Replicated Data Types"],
+    "explanation": "CRDTs are data structures designed so concurrent edits always merge to a consistent state. Used in collaborative editors and eventually-consistent systems.",
+    "xpReward": 40
+  }
+]

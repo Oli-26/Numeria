@@ -1,0 +1,182 @@
+[
+  {
+    "id": "py-01",
+    "topicId": "cs-lang-python",
+    "order": 1,
+    "title": "Dynamic Typing and Duck Typing",
+    "description": "Names, objects, and the philosophy that types should follow behavior",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "py-01-c1",
+        "title": "Names Bind to Objects, Not Variables",
+        "contentHtml": "<p>Python's mental model is fundamentally different from C or Java. There are no <strong>variables</strong> in the C sense — boxes that hold values. There are only <strong>names</strong> bound to <strong>objects</strong>. Every value is an object on the heap; every name is a label that points to one.</p><p>When you write <code>x = 5</code>, you're not putting 5 into a box called x. You're creating an integer object 5 and binding the name x to it. <code>y = x</code> doesn't copy — it makes y point to the same object. This is why <code>a = [1, 2]; b = a; b.append(3)</code> mutates the list both names see — they're the same object.</p><p>Names live in <strong>namespaces</strong> (dictionaries, basically). Each function call creates a local namespace; the module has a global namespace; <code>builtins</code> is shared. The LEGB rule (Local, Enclosing, Global, Builtin) defines lookup order. Understanding this name/object split is the single biggest unlock in Python — most beginner confusion (\"why did my list change?\") traces back to it.</p>",
+        "mathExpressions": ["\\text{name} \\to \\text{object} \\quad \\text{not } \\text{variable} = \\text{value}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-01-c2",
+        "title": "Duck Typing: If It Quacks Like a Duck",
+        "contentHtml": "<p>Python doesn't care about an object's declared type — only about whether it supports the operations you perform on it. \"If it walks like a duck and quacks like a duck, it's a duck.\" A function that calls <code>len(x)</code> works on any object that defines <code>__len__</code>: list, string, dict, set, NumPy array, your custom class.</p><p>This is <strong>structural typing at runtime</strong>, in contrast to Java's nominal typing (\"this object IS a List\"). The benefits: massive code reuse, lightweight protocols, easy mocking in tests. The costs: errors only show up when you hit the offending line, not at compile time. Type errors that would be caught instantly in Java surface only after a function is actually invoked.</p><p>Modern Python adds <strong>type hints</strong> (PEP 484, 2014) that look like <code>def add(x: int, y: int) -&gt; int: return x + y</code>. The runtime ignores them; tools like <strong>mypy</strong>, <strong>pyright</strong>, and <strong>pyre</strong> use them for static analysis. Hints are widely adopted in modern Python (FastAPI, Pydantic, large codebases) and bring back many compile-time guarantees without sacrificing duck typing's flexibility.</p>",
+        "mathExpressions": ["\\text{can()? } x.\\text{quack}() \\implies x \\text{ is duck-like enough}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-01-c3",
+        "title": "Mutable vs Immutable Default Arguments",
+        "contentHtml": "<p>Python has a famous footgun: <strong>mutable default arguments</strong>. The default value of a parameter is evaluated <em>once</em>, when the function is defined — not on each call. So <code>def add_item(item, items=[]): items.append(item); return items</code> shares the same list across every call, accumulating items forever.</p><p>The fix: use <code>None</code> as the sentinel and create the mutable object inside: <code>def add_item(item, items=None): items = items if items is not None else []; ...</code>. Every Python style guide warns about this; every Python developer has been bitten at least once.</p><p>The deeper insight: Python is full of small, sharp edges that follow logically from its model. Late binding closures (loop variables captured by reference, not value), the difference between <code>is</code> and <code>==</code>, the way <code>+=</code> on a tuple inside a list raises an exception <em>and</em> mutates the list. Each is consistent with the language design; each surprises beginners. Mastering Python is largely about internalizing these.</p>",
+        "mathExpressions": ["\\text{def f(x=[]): ...} \\implies \\text{shared list across calls — bug!}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["py-q01", "py-q02", "py-q03", "py-q04", "py-q05", "py-q06", "py-q07", "py-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "py-02",
+    "topicId": "cs-lang-python",
+    "order": 2,
+    "title": "The Data Model and Dunder Methods",
+    "description": "How everything in Python is a protocol, expressed via __methods__",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "py-02-c1",
+        "title": "Everything Is an Object",
+        "contentHtml": "<p>In Python, <strong>everything is an object</strong>: integers, strings, functions, classes, modules, even types themselves. <code>type(5)</code> returns <code>int</code>; <code>type(int)</code> returns <code>type</code>; <code>type(type)</code> returns <code>type</code> (yes, type is its own type). This consistency is foundational.</p><p>Every object has an <strong>identity</strong> (<code>id()</code>), a <strong>type</strong> (<code>type()</code>), and a <strong>value</strong>. The identity never changes (it's the memory address in CPython). The type rarely changes. The value may or may not change — strings, tuples, frozensets, numbers are immutable; lists, dicts, sets, most user classes are mutable.</p><p>Functions are first-class objects: pass them as arguments, return them from other functions, store them in lists. This makes higher-order functions, decorators, and functional patterns natural. Classes are also objects — you can pass a class as a parameter, store it in a dict, even create one on the fly with <code>type(name, bases, dict)</code>. This metaprogramming flexibility is part of what makes Python feel so expressive.</p>",
+        "mathExpressions": ["\\text{everything: } x \\in \\text{Object} \\quad \\text{including } \\text{int}, \\text{type}, \\text{function}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-02-c2",
+        "title": "Dunder Methods: The Operator Protocols",
+        "contentHtml": "<p>Python's operators are syntactic sugar over <strong>dunder (double-underscore) methods</strong>. <code>a + b</code> calls <code>a.__add__(b)</code>; <code>len(x)</code> calls <code>x.__len__()</code>; <code>x[5]</code> calls <code>x.__getitem__(5)</code>; <code>x in container</code> calls <code>container.__contains__(x)</code>. Implementing the right dunder methods makes your custom class feel like a built-in.</p><p>Want your class to be iterable? Implement <code>__iter__</code>. Comparable? <code>__eq__</code>, <code>__lt__</code>. Used as a context manager? <code>__enter__</code>, <code>__exit__</code>. Hashable? <code>__hash__</code>. Stringifiable? <code>__repr__</code> (for debugging) and <code>__str__</code> (for display). Pickleable? <code>__reduce__</code>.</p><p>The unifying idea: the language defines <strong>protocols</strong> (collections of dunder methods); any class that implements a protocol participates in the corresponding language feature. There's no <code>implements Iterable</code> declaration like Java. Define <code>__iter__</code>, you're iterable. This is duck typing built into the core syntax.</p>",
+        "mathExpressions": ["a + b \\equiv a.\\_\\_add\\_\\_(b) \\quad \\text{operator} \\to \\text{dunder method}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-02-c3",
+        "title": "Decorators and Context Managers",
+        "contentHtml": "<p>A <strong>decorator</strong> is a function that takes a function and returns a (usually modified) function. The <code>@decorator</code> syntax is sugar: <code>@log\\ndef f(): ...</code> is identical to <code>def f(): ...; f = log(f)</code>. Decorators show up everywhere: <code>@property</code> for managed attributes, <code>@staticmethod</code>, <code>@functools.cache</code> for memoization, framework decorators like <code>@app.route</code>.</p><p>A <strong>context manager</strong> is an object usable in a <code>with</code> block. The <code>__enter__</code> method runs at block entry; <code>__exit__</code> runs on exit (including exceptions). <code>with open('f.txt') as f:</code> opens a file, runs your code, closes the file even on exceptions. <strong>contextlib.contextmanager</strong> turns a generator function into a context manager via the yield statement, making them trivial to write.</p><p>Both decorators and context managers exemplify Python's higher-order spirit: pass code around as values, wrap behavior with hooks, compose features at the language level. Idiomatic Python uses both heavily.</p>",
+        "mathExpressions": ["\\text{@dec is } f = \\text{dec}(f) \\quad \\text{(decorator wraps function)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["py-q09", "py-q10", "py-q11", "py-q12", "py-q13", "py-q14", "py-q15", "py-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "py-03",
+    "topicId": "cs-lang-python",
+    "order": 3,
+    "title": "Iterators, Generators, and Comprehensions",
+    "description": "Lazy sequences, the iterator protocol, and pythonic data flow",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "py-03-c1",
+        "title": "The Iterator Protocol",
+        "contentHtml": "<p>Anything with <code>__iter__</code> is <strong>iterable</strong>. <code>__iter__</code> returns an <strong>iterator</strong> — an object with <code>__next__</code> that produces successive values, raising <code>StopIteration</code> when done. The <code>for</code> loop is sugar over this protocol: <code>for x in xs:</code> calls <code>iter(xs)</code> once, then <code>next()</code> until exhausted.</p><p>This protocol is everywhere. Lists, tuples, dicts, sets, strings, files, generators all implement it. <code>enumerate</code>, <code>zip</code>, <code>map</code>, <code>filter</code>, <code>itertools</code> functions all return iterators. <strong>Iterators are lazy</strong>: values are produced on demand, not all at once. <code>open('huge.log')</code> doesn't load the whole file — it reads line by line as you iterate.</p><p>One critical caveat: iterators are single-pass. Once consumed, they're done. <code>list(iter([1,2,3]))</code> works; calling <code>list()</code> on the same iterator again returns <code>[]</code>. If you need to iterate multiple times, store in a list (eager) or define <code>__iter__</code> to return a fresh iterator each call.</p>",
+        "mathExpressions": ["\\text{iterable: } \\_\\_iter\\_\\_() \\to \\text{iterator} \\to \\_\\_next\\_\\_() \\to \\ldots \\to \\text{StopIteration}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-03-c2",
+        "title": "Generators: Functions That Pause",
+        "contentHtml": "<p>A <strong>generator</strong> is a function with a <code>yield</code> statement. Calling it doesn't run the body; it returns a generator object. Each <code>next()</code> resumes execution until the next <code>yield</code>, returns that value, and pauses again. The function's local state is preserved between yields.</p><p>Generators are wildly powerful. They turn imperative code into lazy pipelines: <code>def evens(): n = 0; while True: yield n; n += 2</code> is an infinite stream of even numbers, generated one at a time. Memory usage stays constant regardless of how many you consume.</p><p>Generator expressions are even more concise: <code>(x*2 for x in big_list)</code> creates a lazy generator, where <code>[x*2 for x in big_list]</code> creates an eager list. Same syntax, different memory profile. For pipelines processing millions of records, the generator version uses negligible memory; the list version may not fit in RAM. Idiomatic Python prefers generators when iterating once.</p>",
+        "mathExpressions": ["\\text{generator: function with yield} \\implies \\text{lazy iterator with preserved state}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-03-c3",
+        "title": "Comprehensions: List, Dict, Set, Generator",
+        "contentHtml": "<p><strong>List comprehensions</strong> are Python's signature feature for transforming sequences: <code>[expr for item in iterable if condition]</code>. Equivalent to a <code>map</code> + <code>filter</code> but more readable and often faster because the bytecode is optimized.</p><p>The same syntax extends to <strong>dict comprehensions</strong> (<code>{k: v for k, v in items}</code>), <strong>set comprehensions</strong> (<code>{x for x in xs}</code>), and <strong>generator expressions</strong> (<code>(x for x in xs)</code>). The square brackets, curly braces, or parentheses determine the result type.</p><p>Comprehensions can be nested: <code>[x for row in matrix for x in row]</code> flattens a 2D list. They can include conditionals: <code>[x if x &gt; 0 else 0 for x in xs]</code>. The Python style guide (PEP 8) suggests comprehensions for simple transformations and explicit loops when logic gets complex. The rule of thumb: if you need to break it across multiple lines or add a comment to understand it, switch to a regular loop.</p>",
+        "mathExpressions": ["[f(x) \\text{ for } x \\in S \\text{ if } P(x)] \\equiv \\{f(x) : x \\in S,\\, P(x)\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["py-q17", "py-q18", "py-q19", "py-q20", "py-q21", "py-q22", "py-q23", "py-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "py-04",
+    "topicId": "cs-lang-python",
+    "order": 4,
+    "title": "The GIL, Async, and Concurrency",
+    "description": "Why threads don't speed up CPU-bound code, and what to use instead",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "py-04-c1",
+        "title": "The Global Interpreter Lock (GIL)",
+        "contentHtml": "<p>CPython, the reference implementation, has a <strong>Global Interpreter Lock (GIL)</strong>: a mutex ensuring only one thread executes Python bytecode at a time within a single process. The result: <strong>threads cannot speed up pure-Python CPU-bound code</strong>. You can have 100 threads on a 32-core machine and still use only one core for computation.</p><p>Why exists? CPython's reference counting (the primary garbage collector) isn't thread-safe without a global lock. Removing the GIL has been attempted many times; until 2024 each attempt either tanked single-thread performance or introduced subtle bugs. Python 3.13 introduces an experimental <strong>no-GIL build</strong>, but it's still incompatible with much of the C extension ecosystem and not the default.</p><p>What threads <em>do</em> help with: I/O-bound work. While one thread is waiting on a socket or disk, others run. The GIL releases during I/O. So a multithreaded web scraper can absolutely make many concurrent requests; a multithreaded image filter cannot speed up the actual filtering.</p>",
+        "mathExpressions": ["\\text{GIL: at most 1 thread executing Python bytecode at once} \\implies \\text{threads = no CPU parallelism}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-04-c2",
+        "title": "asyncio and Cooperative Concurrency",
+        "contentHtml": "<p>Python's modern concurrency story is <strong>asyncio</strong>: cooperative, single-threaded scheduling using <code>async def</code> and <code>await</code>. An <code>async</code> function returns a coroutine; <code>await</code> suspends until the awaited operation completes, freeing the event loop to run other tasks.</p><p>This avoids the GIL problem because there's just one thread. It excels at I/O-bound concurrency: web servers handling thousands of connections, scrapers fetching many URLs, database clients pipelining queries. Frameworks like <strong>FastAPI</strong>, <strong>Starlette</strong>, <strong>aiohttp</strong>, and async database drivers form a rich ecosystem.</p><p>The main gotcha: an <code>async</code> function is contagious. Calling it requires <code>await</code>, which requires an async context. Mixing sync and async code is awkward — the famous \"function color\" problem. Fully embracing async means rewriting much of your I/O layer. For new I/O-heavy services, asyncio is usually the right choice; for mixed or CPU-heavy work, threads or multiprocessing remain better fits.</p>",
+        "mathExpressions": ["\\text{async/await: cooperative scheduling on single thread, ideal for I/O concurrency}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-04-c3",
+        "title": "Multiprocessing and Subinterpreters",
+        "contentHtml": "<p>For CPU-bound parallelism, the workaround is <strong>multiprocessing</strong>: spawn separate Python processes, each with its own GIL. Communication uses pipes, queues, or shared memory. The <code>multiprocessing</code> module mirrors the threading API but works across processes.</p><p>The cost: process creation is expensive, and inter-process communication has serialization overhead (typically pickle). Sharing large objects between processes is painful. <strong>numpy</strong> and <strong>pandas</strong> sidestep this for numerical work because their hot loops run in C, releasing the GIL — multithreaded numpy actually does parallelize.</p><p>The future is interesting. <strong>Subinterpreters</strong> (PEP 554, ongoing) give each interpreter its own GIL within a single process, with cheaper communication than multiprocessing. <strong>No-GIL builds</strong> (PEP 703) remove the GIL entirely. <strong>Mojo</strong> and <strong>Codon</strong> compile Python(-like) code to native code without the interpreter at all. Python's concurrency story is genuinely improving after decades of stagnation.</p>",
+        "mathExpressions": ["\\text{multiprocess: separate processes, separate GILs} \\implies \\text{true CPU parallelism}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["py-q25", "py-q26", "py-q27", "py-q28", "py-q29", "py-q30", "py-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "py-05",
+    "topicId": "cs-lang-python",
+    "order": 5,
+    "title": "The Ecosystem: pip, venv, NumPy, and Beyond",
+    "description": "Packaging, dependencies, and Python's irreplaceable scientific stack",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "py-05-c1",
+        "title": "Packaging: pip, venv, and the New Wave",
+        "contentHtml": "<p>Python packaging is famously messy. The basics: <strong>pip</strong> installs packages from <strong>PyPI</strong>; <strong>venv</strong> creates isolated environments per project so dependencies don't conflict. <code>pip install -r requirements.txt</code> in an activated venv has been the default workflow for years.</p><p>The classic pain points: managing transitive dependencies, reproducible installs, juggling Python versions across projects, and slow installs. The community has built better tools: <strong>poetry</strong> (lockfiles + dependency resolution), <strong>pipenv</strong>, <strong>conda</strong> (especially for scientific stacks with C dependencies), and <strong>pip-tools</strong>.</p><p>The current frontier is <strong>uv</strong> (Astral, 2024) and <strong>rye</strong> — Rust-based replacements that are 10-100× faster than pip while handling the entire workflow (Python install, venv, dependency resolution, locking). The ecosystem is consolidating around these. If you're starting a new Python project in 2025+, uv is increasingly the default choice.</p>",
+        "mathExpressions": ["\\text{pip + venv + requirements.txt} \\to \\text{poetry / uv / rye}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-05-c2",
+        "title": "NumPy, Pandas, and the Scientific Stack",
+        "contentHtml": "<p>Python's dominance in science and ML rests heavily on its <strong>scientific stack</strong>. <strong>NumPy</strong> provides n-dimensional arrays with vectorized operations implemented in C — operations on a million-element array run thousands of times faster than the equivalent Python loop. NumPy is the foundation under nearly all scientific Python.</p><p><strong>Pandas</strong> builds on NumPy with labeled tables (DataFrame), pioneering a Python style of data wrangling. <strong>SciPy</strong> adds numerical algorithms; <strong>scikit-learn</strong> adds classical ML; <strong>matplotlib</strong> and <strong>seaborn</strong> add plotting; <strong>statsmodels</strong> adds statistics; <strong>SymPy</strong> adds symbolic math.</p><p>The ML revolution rides on this stack. <strong>PyTorch</strong>, <strong>TensorFlow</strong>, <strong>JAX</strong> all expose Python APIs over high-performance C++/CUDA backends. <strong>Hugging Face transformers</strong>, <strong>spaCy</strong>, <strong>LangChain</strong> sit on top. The combination of Python's ergonomics with native-code performance via libraries is why Python — not Julia, not Lua — won ML.</p>",
+        "mathExpressions": ["\\text{Python ergonomics} + \\text{C/CUDA performance via libraries} = \\text{ML's lingua franca}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "py-05-c3",
+        "title": "Web, Tooling, and Where Python Goes Next",
+        "contentHtml": "<p>Beyond science, Python has a strong web stack. <strong>Django</strong> (batteries-included, opinionated) and <strong>Flask</strong> (minimal, flexible) defined Python web for a decade. The modern era favors async-first frameworks: <strong>FastAPI</strong> (with Pydantic for type-validated APIs) is one of the fastest-growing web frameworks anywhere.</p><p>Tooling has matured rapidly. <strong>ruff</strong> (Astral) is a lint+format tool 10-100× faster than Python-based predecessors (flake8, pylint, black). <strong>mypy</strong> and <strong>pyright</strong> bring real static typing. <strong>pytest</strong> has displaced unittest as the dominant test framework. <strong>pre-commit</strong> hooks integrate them all.</p><p>The next era of Python is performance. <strong>Faster CPython</strong> (Mark Shannon's project) brings 10-50% speedups across releases. <strong>PyPy</strong> offers a JIT-compiled alternative interpreter, often 5-10× faster on long-running workloads. <strong>Mojo</strong> aims for full-stack Python+systems compilation. Python won't ever be C-fast, but it's catching up — and combined with the ecosystem advantage, that's enough to keep it the most popular language in the world.</p>",
+        "mathExpressions": ["\\text{Python: ergonomics} + \\text{ecosystem} \\gg \\text{raw speed} \\implies \\text{still wins}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["py-q32", "py-q33", "py-q34", "py-q35", "py-q36", "py-q37"],
+    "puzzleId": null
+  }
+]

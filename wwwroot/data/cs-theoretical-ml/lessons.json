@@ -1,0 +1,254 @@
+[
+  {
+    "id": "tml-01",
+    "topicId": "cs-theoretical-ml",
+    "order": 1,
+    "title": "Classical Learning Theory: VC, PAC, Rademacher",
+    "description": "Uniform convergence, capacity, and the bounds that tell you when generalization is guaranteed",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "tml-01-c1",
+        "title": "PAC Learning and Uniform Convergence",
+        "contentHtml": "<p><strong>PAC (Probably Approximately Correct) learning</strong>, formalized by Valiant in 1984, asks a precise question: how many samples does it take, with high probability, to find a hypothesis whose true error is within <code>ε</code> of the best possible? The standard route to an answer is <strong>uniform convergence</strong>: bound the gap between empirical and true error <em>uniformly over the entire hypothesis class</em>, so that any empirical risk minimizer (ERM) is guaranteed to be near-optimal.</p><p>For a finite class <code>H</code> with <code>|H|</code> hypotheses, a Hoeffding-plus-union bound gives <code>P[ |R̂(h) - R(h)| > ε ] ≤ 2|H|exp(-2nε²)</code>. Inverting: with probability <code>1 - δ</code>, every <code>h ∈ H</code> satisfies <code>|R̂(h) - R(h)| ≤ √(log(2|H|/δ) / (2n))</code>. The bound depends on <code>log|H|</code>, not <code>|H|</code> — capacity is logarithmic, which is why discrete classes scale gracefully.</p><p>Infinite classes (linear classifiers, neural networks) require subtler capacity measures: VC dimension, fat-shattering, Rademacher complexity. The framework — sample complexity grows with capacity, ERM works whenever uniform convergence holds — was the canonical answer to <em>why machine learning works</em> for thirty years. Vapnik and Chervonenkis built the foundation in 1971; Bartlett, Mendelson, Koltchinskii, and others developed the modern, dimension-free machinery in the 2000s.</p>",
+        "mathExpressions": ["\\Pr\\!\\left[\\sup_{h \\in \\mathcal{H}} |\\hat R(h) - R(h)| > \\varepsilon\\right] \\leq 2|\\mathcal{H}|\\exp(-2 n \\varepsilon^2)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-01-c2",
+        "title": "VC Dimension and the Sauer-Shelah Lemma",
+        "contentHtml": "<p>For an infinite class <code>H</code>, count not <em>members</em> but <em>distinct labelings</em>. The <strong>growth function</strong> <code>Π_H(n)</code> is the maximum number of distinct binary labelings <code>H</code> can produce on <em>any</em> <code>n</code> points. A class <strong>shatters</strong> a set if it produces all <code>2^n</code> labelings on it. The <strong>VC dimension</strong> <code>d</code> is the largest <code>n</code> that <code>H</code> can shatter.</p><p>The <strong>Sauer-Shelah lemma</strong> is the magic that makes everything work: above the VC dimension, the growth function turns polynomial. <code>Π_H(n) ≤ ∑_{i=0}^d C(n,i) ≤ (en/d)^d</code> for <code>n ≥ d</code>. So an infinite class behaves like a finite class with effective size <code>(en/d)^d</code>, and uniform-convergence rates become <code>O(√(d log(n/d) / n))</code> — sample complexity scales with VC dimension, not with the (infinite) parameter count.</p><p>Examples: linear classifiers in <code>R^d</code> have VC dimension <code>d+1</code>. Axis-aligned rectangles in <code>R^2</code> have VC dimension 4. Neural networks with <code>W</code> weights and ReLU activations have VC dimension <code>Θ(W L log W)</code> (Bartlett-Harvey-Liaw-Mehrabian 2019). For a 70B-parameter LLM trained on 10 trillion tokens, the VC bound is vacuous — many orders of magnitude larger than the dataset. This is the first crack in classical theory.</p>",
+        "mathExpressions": ["\\Pi_{\\mathcal{H}}(n) \\leq \\sum_{i=0}^{d} \\binom{n}{i} \\leq \\left(\\frac{en}{d}\\right)^{d} \\quad \\text{for } n \\geq d = \\operatorname{VC}(\\mathcal{H})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-01-c3",
+        "title": "Rademacher Complexity",
+        "contentHtml": "<p><strong>Rademacher complexity</strong> is the modern, distribution-aware capacity measure. Given a sample <code>S = (x_1, …, x_n)</code> and i.i.d. random signs <code>σ_i ∈ {±1}</code> (Rademacher variables), the empirical Rademacher complexity is <code>R̂_n(F) = E_σ sup_{f ∈ F} (1/n) ∑_i σ_i f(x_i)</code>. Intuition: how well can your function class correlate with pure noise? A class that can fit any random labeling is too rich.</p><p>The master theorem: with probability <code>1 - δ</code>, every <code>f</code> in the class satisfies <code>R(f) ≤ R̂(f) + 2 R̂_n(F) + 3√(log(2/δ)/(2n))</code>. Rademacher complexity dominates VC bounds: it adapts to the data distribution and to scale-sensitive structure (margins, norms) that VC ignores.</p><p>For linear classifiers <code>{x ↦ ⟨w, x⟩ : ‖w‖ ≤ B}</code> on inputs with <code>‖x‖ ≤ R</code>, the Rademacher complexity is <code>BR/√n</code> — entirely norm-based, no parameter count. <strong>Bartlett's margin bounds</strong> (1998-2017) extend this to deep networks: generalization scales with products of <em>spectral norms</em> of weight matrices, not the number of parameters. This is the deepest version of classical theory and the natural gateway to thinking about why parameter count is the wrong yardstick for modern networks.</p>",
+        "mathExpressions": ["\\hat{\\mathfrak{R}}_n(\\mathcal{F}) = \\mathbb{E}_{\\sigma}\\!\\left[\\sup_{f \\in \\mathcal{F}} \\frac{1}{n} \\sum_{i=1}^{n} \\sigma_i f(x_i)\\right], \\quad \\sigma_i \\sim \\operatorname{Unif}\\{-1, +1\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q01", "tml-q02", "tml-q03", "tml-q04", "tml-q05", "tml-q06", "tml-q07", "tml-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "tml-02",
+    "topicId": "cs-theoretical-ml",
+    "order": 2,
+    "title": "The Generalization Paradox of Deep Learning",
+    "description": "Why classical bounds predict failure for overparameterized networks — and why they don't fail",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "tml-02-c1",
+        "title": "Zhang et al. 2017: Networks Memorize Random Labels",
+        "contentHtml": "<p>The paper that broke classical learning theory was <em>Understanding Deep Learning Requires Rethinking Generalization</em> (Zhang, Bengio, Hardt, Recht, Vinyals, 2017). The experiment is brutally simple: take CIFAR-10, replace every label with a uniformly random label, train the same standard ResNet that achieves ~92% on real data. It reaches <strong>zero training error</strong>. The network memorizes <code>n log k</code> bits of pure noise.</p><p>The same network, trained on real labels, generalizes well. So the hypothesis class contains both the memorizing solution and the generalizing solution; it has the capacity to fit anything; yet on natural data it picks the right one. Classical uniform-convergence bounds — VC, Rademacher, even early margin bounds — must therefore be <strong>vacuous</strong> for this network. They predict that any network capable of memorizing random labels cannot generalize. The network demonstrably can do both.</p><p>This was not a small calibration issue. The bounds were off by hundreds of orders of magnitude on real networks, while the networks themselves were achieving state-of-the-art accuracy. Either the entire framework was wrong, or it was missing the critical ingredient. The next decade of theory has been a sustained attempt to find that ingredient, and a recognition that <em>uniform convergence over the hypothesis class</em> is simply the wrong object to study for the actual training procedure used.</p>",
+        "mathExpressions": ["\\hat R_{\\text{train}}(f_\\theta) \\to 0 \\text{ on random labels}, \\quad \\text{but } R(f_\\theta) - \\hat R(f_\\theta) \\text{ remains small on natural data}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-02-c2",
+        "title": "Why Uniform Convergence Cannot Explain Deep Learning",
+        "contentHtml": "<p>Nagarajan and Kolter (NeurIPS 2019, <em>Uniform Convergence May Be Unable to Explain Generalization in Deep Learning</em>) sharpened the point. They constructed settings where, no matter how you cleverly restrict the hypothesis class to just the networks that SGD actually finds, the uniform-convergence bound is <em>provably</em> at least as bad as the trivial bound. The pessimism is not a calibration artifact; it is fundamental to the framework when applied to overparameterized models.</p><p>The intuition: uniform convergence asks how the worst-case <code>h ∈ H</code> behaves on a sample. For overparameterized networks, the worst-case <code>h</code> in the class found by SGD is still terrible — it includes pathological boundary cases. The network SGD <em>actually</em> picks is much better than the worst case. The framework cannot see this distinction. To explain deep learning, theory must abandon worst-case-over-class arguments and instead study the specific solution the optimization algorithm produces. This reframes the problem: generalization is a property of the <strong>algorithm</strong> (SGD on this loss), not just the <strong>hypothesis class</strong>. <strong>Algorithmic stability</strong>, <strong>implicit regularization</strong>, and <strong>data-dependent</strong> bounds replace classical capacity arguments. The shift is roughly as profound as moving from worst-case complexity to average-case complexity in algorithmic theory.</p>",
+        "mathExpressions": ["\\sup_{f \\in \\mathcal{H}_{\\text{SGD}}} (R(f) - \\hat R(f)) \\not\\to 0 \\quad \\text{even with } \\hat R(f_{\\text{actual}}) \\to 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-02-c3",
+        "title": "Norm-Based and Compression-Based Bounds",
+        "contentHtml": "<p>Several rescue strategies emerged. <strong>Norm-based bounds</strong> (Bartlett-Foster-Telgarsky 2017, Neyshabur 2018) replaced parameter count with products of layerwise spectral norms <code>∏_ℓ ‖W_ℓ‖_σ</code>, possibly times Frobenius corrections. These are sometimes non-vacuous and track relative performance across networks reasonably well, but their predicted constants are still large.</p><p><strong>PAC-Bayes bounds</strong> (Dziugaite-Roy 2017) treat the trained network as a sample from a posterior distribution and bound the KL-divergence to a prior. Optimizing the bound itself can yield <em>numerically non-vacuous</em> generalization guarantees on MNIST and small CIFAR networks — the first sub-100% upper bounds for actual deep nets. The bounds remain orders of magnitude larger than measured generalization gaps.</p><p><strong>Compression-based bounds</strong> (Arora-Ge-Neyshabur-Zhang 2018) take a different angle: if the trained network can be compressed (pruned, quantized) to <code>k</code> effective bits without losing accuracy, then the generalization bound depends on <code>k</code>, not on the original parameter count. Empirically, deep nets often compress dramatically. None of these frameworks fully explain modern LLM generalization, but they collectively shifted the field from <em>capacity-as-parameter-count</em> to <em>effective-capacity-of-the-found-solution</em>. The right object to study is the trained network, not the architecture.</p>",
+        "mathExpressions": ["\\operatorname{gen-gap}(f) \\lesssim \\frac{\\prod_{\\ell=1}^{L} \\|W_\\ell\\|_{\\sigma} \\cdot \\sqrt{\\sum_{\\ell} \\frac{\\|W_\\ell\\|_F^2}{\\|W_\\ell\\|_\\sigma^2}}}{\\sqrt{n}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q09", "tml-q10", "tml-q11", "tml-q12", "tml-q13", "tml-q14", "tml-q15", "tml-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "tml-03",
+    "topicId": "cs-theoretical-ml",
+    "order": 3,
+    "title": "Neural Tangent Kernel and the Lazy Regime",
+    "description": "Jacot 2018 — what infinite-width networks reveal, and why the kernel picture is incomplete",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "tml-03-c1",
+        "title": "The NTK: Linearization Around Initialization",
+        "contentHtml": "<p>The <strong>Neural Tangent Kernel</strong>, introduced by Jacot, Gabriel, and Hongler (NeurIPS 2018), is the single sharpest tool for analyzing neural network training. The construction: linearize the network <code>f(x; θ)</code> around its initial parameters <code>θ_0</code>, so <code>f(x; θ) ≈ f(x; θ_0) + ⟨∇_θ f(x; θ_0), θ - θ_0⟩</code>. The training dynamics of the linearized model under squared loss become a kernel regression problem with kernel <code>Θ(x, x') = ⟨∇_θ f(x; θ_0), ∇_θ f(x'; θ_0)⟩</code>.</p><p>The remarkable result Jacot et al. prove: in the <strong>infinite-width limit</strong>, with appropriate parameterization, this kernel <code>Θ(x, x')</code> is <em>deterministic</em> (concentrating around its expectation), <em>constant in time</em> during training (it doesn't drift), and analytically computable for fully-connected networks via a recursion over depth. Training a sufficiently wide neural network is therefore equivalent — in this regime — to performing kernel regression with a specific, depth-determined kernel.</p><p>This collapses neural networks to a classical, convex, fully-understood object. Generalization, optimization landscape, and predictions are all governed by spectral properties of <code>Θ</code>. Lee, Xiao, Schoenholz, Bahri, Sohl-Dickstein, Pennington (2019) developed the parallel <strong>infinite-width Bayesian</strong> picture (NNGP); together NTK and NNGP gave the first fully-tractable theory of any kind for deep networks.</p>",
+        "mathExpressions": ["\\Theta(x, x') = \\left\\langle \\nabla_\\theta f(x; \\theta_0), \\nabla_\\theta f(x'; \\theta_0) \\right\\rangle \\xrightarrow{\\text{width} \\to \\infty} \\Theta_\\infty(x, x')"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-03-c2",
+        "title": "Lazy Training and the Frozen Kernel",
+        "contentHtml": "<p>The NTK regime is also called the <strong>lazy training regime</strong> (Chizat, Oyallon, Bach 2019). In this regime, parameters move infinitesimally — the network is effectively a linear function of a fixed featurization <code>φ(x) = ∇_θ f(x; θ_0)</code>. The features themselves don't change; only the linear weights on top of them do. This is exactly kernel regression with the (random) feature map at initialization.</p><p>Lazy training happens whenever the network is wide enough relative to the data, and parameters are scaled appropriately at initialization (the <strong>NTK parameterization</strong> or <strong>standard parameterization with large width</strong>). For finite practical networks, lazy training is approximately true near initialization but breaks down deeper into training.</p><p>The lazy regime is mathematically beautiful but it has a serious problem: <strong>it cannot do feature learning</strong>. Real deep networks succeed because they learn hierarchical, task-specific features — edges, then textures, then objects, then concepts. A frozen kernel cannot express this. Empirically, kernels derived from infinite-width NTK <em>underperform</em> the actual finite-width neural networks they describe, sometimes by large margins on hard tasks. This is the central tension of NTK theory: when it applies cleanly, the network has stopped doing the thing that makes deep learning interesting. The next regime — mean-field — is the attempt to escape laziness.</p>",
+        "mathExpressions": ["\\theta_t - \\theta_0 = O(1/\\sqrt{n_{\\text{width}}}), \\quad f(x; \\theta_t) - f(x; \\theta_0) = O(1)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-03-c3",
+        "title": "What NTK Predicts and Where It Fails",
+        "contentHtml": "<p>NTK theory makes concrete, falsifiable predictions. (1) <strong>Convergence:</strong> gradient descent on an overparameterized network converges to zero training loss at a rate determined by the smallest eigenvalue of <code>Θ</code>. This was rigorously proved by Du-Zhai-Poczos-Singh, Allen-Zhu-Li-Song, and others (2018-2019), explaining why deep nets train despite non-convexity. (2) <strong>Generalization:</strong> the test error is governed by spectral alignment of the target function with the NTK's eigenfunctions — eigenvectors with large eigenvalues are learned first; targets that are well-explained by top eigendirections generalize fastest. (3) <strong>Spectral bias / frequency principle:</strong> low-frequency components of targets fit before high-frequency ones, matching widely-observed empirical behavior.</p><p>Where NTK fails: <strong>convolutional architectures</strong> get a useful but incomplete description (CNN-NTKs miss the inductive bias the architecture provides for natural images). <strong>Modern transformers</strong> evidently operate far from the lazy regime — features at later layers do dramatic things to representations during training, which a frozen kernel cannot capture. <strong>Scaling-law behaviors</strong> (capability emergence, compute-vs-quality curves) are not predicted by NTK. The honest summary: NTK is the right theory for a regime that real networks pass through but do not stay in. Beyond it, you need feature learning.</p>",
+        "mathExpressions": ["f_t(x) = \\sum_i e^{-\\lambda_i t} \\langle u_i, y \\rangle u_i(x), \\quad (\\lambda_i, u_i) = \\text{eigendecomposition of } \\Theta_\\infty"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q17", "tml-q18", "tml-q19", "tml-q20", "tml-q21", "tml-q22", "tml-q23", "tml-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "tml-04",
+    "topicId": "cs-theoretical-ml",
+    "order": 4,
+    "title": "Mean-Field Theory and Feature Learning",
+    "description": "The other limit — where features actually move and signal propagation governs depth",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "tml-04-c1",
+        "title": "The Mean-Field Limit",
+        "contentHtml": "<p>If NTK is the linearized regime, <strong>mean-field theory</strong> is the regime where features move. The mean-field analysis of two-layer networks (Chizat-Bach 2018, Mei-Montanari-Nguyen 2018, Rotskoff-Vanden-Eijnden 2018, Sirignano-Spiliopoulos 2018) treats the <code>m</code> hidden neurons as a measure on parameter space, and tracks how that measure evolves under gradient flow as <code>m → ∞</code>.</p><p>Concretely: write the network as <code>f(x; ρ) = ∫ φ(x; θ) dρ(θ)</code> where <code>ρ</code> is a probability measure over hidden parameters. Gradient descent induces a Wasserstein gradient flow on <code>ρ</code> — a partial differential equation on the space of measures. Unlike NTK, the parameters of individual neurons drift <em>significantly</em> during training; the entire neuron distribution evolves to specialize to the task.</p><p>The Mei-Misiakiewicz-Montanari (2018, 2019) papers provided the cleanest analysis. Under the right scaling (the <strong>mean-field parameterization</strong>, which scales output weights as <code>1/m</code> rather than <code>1/√m</code>), the dynamics admit nontrivial features. Convergence to global minima is provable for two-layer networks under suitable conditions. The mean-field regime is the natural framework for understanding why width helps and why feature learning happens — at the cost of being technically much harder than NTK.</p>",
+        "mathExpressions": ["\\partial_t \\rho_t = \\nabla \\cdot \\!\\left(\\rho_t \\nabla \\frac{\\delta \\mathcal{L}}{\\delta \\rho_t}\\right), \\quad f(x; \\rho_t) = \\int \\sigma(\\theta^\\top x) \\, d\\rho_t(\\theta)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-04-c2",
+        "title": "Signal Propagation and the Edge of Chaos",
+        "contentHtml": "<p>Even before training begins, deep networks face a problem: random initialization can either crush activation variance to zero through depth or blow it up. <strong>Signal propagation theory</strong>, developed by Schoenholz, Gilmer, Ganguli, Sohl-Dickstein and collaborators (2016-2017), gives recursions for how activation variance and gradient variance evolve layer by layer in a randomly-initialized network.</p><p>For an activation <code>φ</code> and weight scale <code>σ_w</code>, the variance recursion is <code>q_{ℓ+1} = σ_w² · E[φ(z)²] + σ_b²</code> where <code>z ~ N(0, q_ℓ)</code>. There is a <strong>fixed point</strong>; whether iteration <em>contracts</em> toward it (ordered phase, gradients vanish) or <em>diverges</em> (chaotic phase, gradients explode) depends on the slope of the recursion at the fixed point. The boundary between these two phases — <strong>the edge of chaos</strong> — is where signal can propagate to arbitrary depth without vanishing or exploding.</p><p>For tanh networks, careful tuning of <code>σ_w</code> places initialization at the edge of chaos and enables training of networks 10,000 layers deep (Xiao et al. 2018, Pennington-Schoenholz-Ganguli 2017). For ReLU, He initialization sits exactly at the variance-preserving fixed point. The signal-propagation framework also explains why residual connections, LayerNorm, and pre-norm placement are stable — they keep the network on the manifold of trainable initializations regardless of depth. Modern transformers' depth scalability is, in this view, an applied result of signal-propagation theory.</p>",
+        "mathExpressions": ["q_{\\ell+1} = \\sigma_w^2 \\, \\mathbb{E}_{z \\sim \\mathcal{N}(0, q_\\ell)}[\\varphi(z)^2] + \\sigma_b^2, \\quad \\chi(q^*) = \\sigma_w^2 \\, \\mathbb{E}[\\varphi'(z)^2]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-04-c3",
+        "title": "Tensor Programs and the Roberts-Yaida-Hanin Effective Theory",
+        "contentHtml": "<p>Greg Yang's <strong>Tensor Programs</strong> framework (2019-2022) unified NTK, NNGP, mean-field, and feature-learning analyses into a single combinatorial calculus. Any architecture expressible as a sequence of standard tensor operations admits an infinite-width limit; Tensor Programs gives an algorithm for computing it. The framework also produced <strong>μP (maximal-update parameterization)</strong>, a scaling rule under which optimal hyperparameters at small width transfer to arbitrary width — used in practice to tune large-model training cheaply at small scale.</p><p>The Roberts-Yaida-Hanin <em>Principles of Deep Learning Theory</em> (2022) book takes a complementary effective-field-theory approach: rather than the strict infinite-width limit, expand around it in <code>1/width</code>. The leading-order term recovers NTK; the next correction captures finite-width feature learning, fluctuations, and the breakdown of laziness. Their picture frames neural network training as a perturbative expansion much like quantum field theory expansions in coupling constants, with depth-to-width ratio playing the role of an effective coupling.</p><p>The synthesis from these threads: in the strict infinite-width limit, networks become kernel methods (NTK) or Gaussian processes (NNGP). At finite width — which is where every real network lives — there are systematic corrections that produce feature learning, and a hierarchy of regimes (lazy, mean-field, feature-learning) parameterized by initialization scaling. Real LLMs typically operate in the feature-learning regime, far from the lazy limit, which is why their behavior is rich.</p>",
+        "mathExpressions": ["f(x; \\theta) = f_\\infty(x) + \\frac{1}{n_{\\text{width}}} f_1(x) + \\frac{1}{n_{\\text{width}}^2} f_2(x) + \\cdots"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q25", "tml-q26", "tml-q27", "tml-q28", "tml-q29", "tml-q30", "tml-q31", "tml-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "tml-05",
+    "topicId": "cs-theoretical-ml",
+    "order": 5,
+    "title": "Double Descent",
+    "description": "Belkin et al. 2019 — the modern bias-variance picture and the second descent",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "tml-05-c1",
+        "title": "Classical Bias-Variance and the U-Curve",
+        "contentHtml": "<p>The classical <strong>bias-variance decomposition</strong> partitions expected test error into bias squared (how badly does the best-in-class function approximate the truth?) and variance (how much does the learned function fluctuate over training samples?). Bias falls as model capacity grows; variance rises. Test error traces a U-shape, with an interior minimum at the <strong>sweet spot</strong> capacity. This was the textbook picture from Geman-Bienenstock-Doursat (1992) through the late 2010s.</p><p>The U-curve implies: keep models small enough to avoid overfitting, but large enough to fit. Cross-validation locates the minimum. Polynomial regression with degree <code>d</code> on <code>n</code> samples has variance <code>~σ²d/n</code> when <code>d &lt; n</code>, and the minimum lies at moderate <code>d</code>. The interpolation point <code>d = n</code> sits at the catastrophic peak of variance — the model can fit the training set exactly but is wildly unstable. Beyond <code>d = n</code> was traditionally not considered: the linear system becomes underdetermined, regularization is required to pick a solution, and classical theory had nothing useful to say.</p><p>Deep networks blew through <code>d = n</code> a decade ago and kept performing better. The classical U-curve picture was incomplete. Belkin and collaborators provided the missing piece.</p>",
+        "mathExpressions": ["\\mathbb{E}\\!\\left[(\\hat f(x) - y)^2\\right] = \\underbrace{(\\mathbb{E}[\\hat f(x)] - f^*(x))^2}_{\\text{bias}^2} + \\underbrace{\\operatorname{Var}(\\hat f(x))}_{\\text{variance}} + \\sigma^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-05-c2",
+        "title": "Belkin et al. 2019: The Second Descent",
+        "contentHtml": "<p>Belkin, Hsu, Ma, and Mandal (PNAS 2019, <em>Reconciling modern machine-learning practice and the classical bias-variance trade-off</em>) showed empirically and theoretically that the U-curve has a continuation. As model complexity grows past the <strong>interpolation threshold</strong> at <code>d = n</code> (where the model can exactly fit the training data), test error first <em>peaks</em> at the threshold (the classical variance blowup) and then <em>descends again</em>, often to values below the classical sweet spot.</p><p>This is the <strong>double descent</strong> curve: classical underparameterized regime (U-shape, sweet spot at moderate capacity) → interpolation peak at <code>d = n</code> → modern overparameterized regime (descending again, with infinite-width / infinite-depth often the best). The peak is a real phenomenon — visible in linear regression with random features, kernel methods, and deep networks — caused by the variance explosion when <code>d ≈ n</code>.</p><p>The second descent occurs because, beyond <code>d = n</code>, there is more than one solution that interpolates the data. Optimization (gradient descent, minimum-norm pseudoinverse) selects one with implicit regularization properties — typically the minimum-norm interpolant. As <code>d</code> grows further, the space of interpolating solutions enlarges, and the minimum-norm one becomes smoother, simpler, and lower-variance. Modern deep networks live deep in the second descent. Going wider is consistently safer than going to the sweet spot.</p>",
+        "mathExpressions": ["\\text{Test error}(d) : \\quad d \\ll n \\Rightarrow \\text{U-shape}; \\quad d \\approx n \\Rightarrow \\text{peak}; \\quad d \\gg n \\Rightarrow \\text{descending}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-05-c3",
+        "title": "Sample-Wise and Epoch-Wise Double Descent",
+        "contentHtml": "<p>Nakkiran, Kaplun, Bansal, Yang, Barak, Sutskever (ICLR 2020) generalized the phenomenon. Double descent is not just <strong>model-wise</strong> (varying parameter count). It also occurs <strong>sample-wise</strong> (varying training set size at fixed model) and <strong>epoch-wise</strong> (varying training time at fixed model and data). The peak occurs whenever the <em>effective</em> model complexity equals the dataset size — which can be reached by adding data, by adding parameters, or by training longer.</p><p>This produces a striking practical pathology: <strong>more data can hurt</strong>. If you are at the sweet spot and add data without scaling the model, you can push the system across the interpolation threshold from below, walking into the peak. The fix is to scale model capacity along with data — which Chinchilla scaling laws ratify from the empirical side. Double descent gives the theoretical reason why naive data scaling can backfire and why coordinated scaling is necessary.</p><p>The reconciliation with classical theory: the bias-variance decomposition is not wrong, but variance is non-monotone in capacity. Implicit regularization from the optimizer makes overparameterized solutions well-behaved. The classical wisdom (\"more parameters means more overfitting\") was a true statement <em>about the underparameterized regime</em>; it does not extend to <code>d ≫ n</code>. Belkin's framing — <strong>interpolation is not the enemy</strong>, the threshold is — has reshaped modern practice.</p>",
+        "mathExpressions": ["\\text{peak when } d_{\\text{eff}}(\\text{model}, t, n) \\approx n, \\quad \\text{achievable along any of: } d, t, n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q33", "tml-q34", "tml-q35", "tml-q36", "tml-q37", "tml-q38", "tml-q39", "tml-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "tml-06",
+    "topicId": "cs-theoretical-ml",
+    "order": 6,
+    "title": "Implicit Regularization, Flat Minima, and SGD",
+    "description": "Why the algorithm matters as much as the architecture",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "tml-06-c1",
+        "title": "Implicit Bias of Gradient Descent",
+        "contentHtml": "<p>For separable linear classification with logistic loss, gradient descent converges <em>in direction</em> to the <strong>maximum-margin classifier</strong> — the same solution as a hard-margin SVM — even though there is no explicit margin term in the loss (Soudry-Hoffer-Nacson-Gunasekar-Srebro 2018). The algorithm <em>implicitly regularizes</em> by selecting one specific zero-loss solution out of the infinite family available.</p><p>This pattern generalizes. For matrix factorization, gradient descent finds the minimum nuclear-norm solution. For deep linear networks, it tends toward low-rank solutions in late layers. For ReLU networks, the picture is messier but the same flavor — gradient flow on overparameterized networks does not pick an arbitrary interpolating solution; it picks one that's smooth, low-norm, or low-complexity in some sense determined by the optimization geometry, not the loss.</p><p>This <strong>implicit regularization</strong> is the missing ingredient classical learning theory could not see. Capacity arguments looked at the worst-case interpolant; SGD never finds the worst case. The shift from \"why doesn't this overfit?\" to \"why does the optimizer find this particular solution?\" is the conceptual core of the post-2017 generalization literature. The algorithm is the regularizer.</p>",
+        "mathExpressions": ["\\frac{w_t}{\\|w_t\\|} \\xrightarrow{t \\to \\infty} \\arg\\max_{\\|w\\|=1} \\min_i y_i \\langle w, x_i \\rangle"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-06-c2",
+        "title": "Flat Minima, SGD Noise, and Bayesian Posteriors",
+        "contentHtml": "<p>Hochreiter and Schmidhuber argued in 1997 that <strong>flat minima generalize better</strong> than sharp ones — a flat minimum in parameter space corresponds to a function that is robust to small parameter perturbations. The hypothesis: SGD prefers flat minima because of its noise structure, and flat minima give better test error.</p><p>This was made precise by several streams. Mandt-Hoffman-Blei (2017) interpreted SGD as approximate <strong>Bayesian inference</strong>: with constant learning rate, SGD's stationary distribution is approximately a Gaussian centered at a local minimum, with covariance determined by the learning rate, batch size, and curvature. Larger learning rate and smaller batch size give wider posteriors that concentrate on flatter regions. The famous <strong>linear scaling rule</strong> (η ∝ batch size, He et al. 2017) is a direct consequence of this picture.</p><p>The flatness-generalization correlation is real but subtle. Naive flatness measures (Hessian eigenvalue magnitude) are not reparameterization-invariant — you can flatten a sharp minimum by rescaling weights. Modern theory (Dinh-Pascanu-Bengio 2017 critique; Foret-Kleiner-Mobahi-Neyshabur 2021 SAM paper) uses worst-case flatness: minimize <code>max_{‖ε‖&lt;ρ} L(θ + ε)</code> rather than just <code>L(θ)</code>. <strong>Sharpness-Aware Minimization (SAM)</strong> implements this and consistently improves generalization on vision and language tasks. The picture: SGD's noise picks flat minima; sharpness-aware training amplifies that bias; flatness genuinely tracks generalization when measured properly.</p>",
+        "mathExpressions": ["\\theta_{t+1} = \\theta_t - \\eta \\nabla L_B(\\theta_t), \\quad p_\\infty(\\theta) \\propto \\exp\\!\\left(-\\frac{2 L(\\theta)}{\\eta \\Sigma}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-06-c3",
+        "title": "Algorithmic Stability and Information-Theoretic Bounds",
+        "contentHtml": "<p><strong>Algorithmic stability</strong> (Bousquet-Elisseeff 2002, Hardt-Recht-Singer 2016) bypasses uniform convergence entirely. A learning algorithm is <em>uniformly β-stable</em> if changing a single training example changes the output's loss by at most <code>β</code>. Stability directly bounds expected generalization gap: <code>E[gen-gap] ≤ β</code>. SGD on smooth losses is provably stable with <code>β = O(η T / n)</code>, giving generalization bounds that depend on the number of training steps, not on the network capacity. This is the cleanest existing answer for why deep networks generalize.</p><p>Hardt-Recht-Singer's analysis of SGD on smooth non-convex loss yields <code>O(η T)</code> stability, vacuous for long training. Refinements use data-dependent stability, on-average stability, or replace stability with information-theoretic bounds <code>I(W; S)</code> — the mutual information between the trained weights and the training set (Russo-Zou 2016, Xu-Raginsky 2017). If the algorithm \"remembers\" little about the data, generalization follows. PAC-Bayes bounds, which optimize a posterior over weights, fit the same family. None of these frameworks gives tight numerical bounds on real LLMs, but they give the right conceptual handle: generalization is a property of <strong>algorithmic information leakage</strong> from the training set into the trained model. Mitigating that leakage — through stability, low-information optimization, or compressibility — is the modern theoretical lever.</p>",
+        "mathExpressions": ["\\mathbb{E}[R(\\hat f) - \\hat R(\\hat f)] \\leq \\sqrt{\\frac{2 \\sigma^2 I(W; S)}{n}}, \\quad I(W; S) = \\text{mutual info between weights and data}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q41", "tml-q42", "tml-q43", "tml-q44", "tml-q45", "tml-q46", "tml-q47", "tml-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "tml-07",
+    "topicId": "cs-theoretical-ml",
+    "order": 7,
+    "title": "Frontiers: Scaling Laws, Transformers, and Mechanistic Theory",
+    "description": "Where theory meets frontier models — scaling laws, in-context learning, SAEs and circuits",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "tml-07-c1",
+        "title": "Scaling Laws as Theoretical Objects",
+        "contentHtml": "<p>Empirical <strong>scaling laws</strong> (Kaplan et al. 2020, Hoffmann et al. 2022 / Chinchilla) describe how loss decreases as a power law in compute, data, and parameters: <code>L(N, D) ≈ A/N^α + B/D^β + L_∞</code>. The exponents <code>α ≈ 0.34</code>, <code>β ≈ 0.28</code> are surprisingly stable across architectures, datasets, and modalities. Why?</p><p>Several theoretical pictures. <strong>Random feature / kernel theory</strong> (Spigler-Geiger-Wyart 2020, Bahri-Dyer-Kaplan-Lee-Sharma 2024) derives scaling exponents from the eigenspectrum of the data manifold and the regression target. If the target's expansion in the kernel's eigenfunctions has coefficients that decay as a power law, the regression error decays as a corresponding power law in <code>N</code>. The exponent comes from <strong>spectral regularity</strong> of the data — natural data has approximately power-law eigenspectra, which produces approximately power-law learning curves.</p><p><strong>Manifold dimension</strong> arguments link <code>α</code> to the intrinsic dimension of the data manifold: <code>α ∼ 1/(d_eff + something)</code>. <strong>Resolution / capacity</strong> arguments treat parameter count as the number of distinct concepts representable. None of these theories is yet predictive enough to derive <code>α = 0.34</code> from first principles, but they together explain <em>why</em> scaling laws are power laws (rather than logarithms or exponentials), and predict when they should bend or break — at finite-data regimes, near data uniqueness limits, or when capabilities emerge discretely.</p>",
+        "mathExpressions": ["L(N, D) \\approx \\frac{A}{N^\\alpha} + \\frac{B}{D^\\beta} + L_\\infty, \\quad \\alpha, \\beta \\sim \\text{spectral exponent of data manifold}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-07-c2",
+        "title": "In-Context Learning as Implicit Inference",
+        "contentHtml": "<p>Transformers exhibit <strong>in-context learning</strong> (ICL): given a few input-output examples in the prompt, they generalize to new inputs without any parameter updates. The Brown et al. (GPT-3) paper made this empirically central; the theoretical question is what algorithm the trained network is implementing on the fly.</p><p>One thread, originating with Garg-Tsipras-Liang-Valiant (2022) and developed by Akyürek-Schuurmans-Andreas-Ma-Zhou, von Oswald-Niklasson-Randazzo-Sacramento-Mordvintsev-Zhmoginov-Vladymyrov, shows transformers can <em>implement</em> linear regression / gradient descent / kernel regression on the in-context examples within their forward pass. The attention pattern over the few-shot context performs operations isomorphic to a learning algorithm. Empirically, training transformers on synthetic regression tasks induces them to implement Bayes-optimal inference for the task family.</p><p>A second thread (Xie-Raghunathan-Liang-Ma 2022, Hahn-Goyal 2023) frames ICL as <strong>Bayesian model averaging</strong>: the pretrained model approximates a posterior over a latent task variable; the in-context examples sharpen the posterior; the prediction is the posterior-predictive on the next input. The frame explains why ICL improves with more examples (sharper posterior), why irrelevant examples hurt less than expected (the prior dominates), and why prompt format matters dramatically (it changes which task the posterior latches onto). In-context learning is, on this view, a strong demonstration that pretraining has produced a meta-learner with a coherent implicit Bayesian structure.</p>",
+        "mathExpressions": ["p(y \\mid x, \\mathcal{D}_{\\text{ctx}}) \\approx \\sum_T p(y \\mid x, T) \\, p(T \\mid \\mathcal{D}_{\\text{ctx}}), \\quad T = \\text{latent task}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "tml-07-c3",
+        "title": "Mechanistic Interpretability: Circuits, SAEs, and Theory",
+        "contentHtml": "<p><strong>Mechanistic interpretability</strong> closes the loop from theory to specific algorithms inside trained models. Anthropic's <em>A Mathematical Framework for Transformer Circuits</em> (Elhage et al. 2021) reformulated attention as a sum of specific operator types — virtual attention heads, induction heads, copying heads — each with an explicit circuit-level description. The 2022 follow-up (Olsson et al.) identified <strong>induction heads</strong> as a primary mechanism behind in-context learning, with a sharp phase transition where ICL ability emerges as induction heads form during training.</p><p><strong>Sparse autoencoders (SAEs)</strong> (Bricken et al. 2023, Templeton et al. 2024) decompose dense activations into a much larger basis of sparse <strong>features</strong>. Anthropic's <em>Scaling Monosemanticity</em> paper trained SAEs on Claude 3 Sonnet, finding millions of features that activate on specific concepts — the Golden Gate Bridge, deception, sycophancy — and showed that <em>steering</em> these features causally controls model behavior. This is the strongest evidence that frontier-model activation space is a sparse code over interpretable features.</p><p>The theoretical frame settling out: networks decompose into <strong>features in superposition</strong> (Elhage et al. 2022) — activation space packs more features than dimensions, with interference managed by sparsity. Circuits are sparse subgraphs over these features. Generalization and capability emergence become questions about feature-formation dynamics. None of this reduces to a closed-form theorem yet, but it's the first framework connecting the algorithmic content of trained networks back to the dynamics that produced them — closing the long arc from VC theory to a real mechanistic account of why deep learning works.</p>",
+        "mathExpressions": ["x \\approx \\sum_{i=1}^{M} f_i(x) \\, d_i, \\quad M \\gg \\dim(x), \\quad \\|f(x)\\|_0 \\ll M \\quad (\\text{features in superposition})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["tml-q49", "tml-q50", "tml-q51", "tml-q52", "tml-q53", "tml-q54", "tml-q55", "tml-q56"],
+    "puzzleId": null
+  }
+]

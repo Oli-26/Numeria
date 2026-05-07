@@ -1,0 +1,326 @@
+[
+  {
+    "id": "comp-01",
+    "topicId": "cs-compilers",
+    "order": 1,
+    "title": "Lexing and Finite Automata",
+    "description": "From character streams to tokens via regex and DFAs",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "comp-01-c1",
+        "title": "The Lexer's Job",
+        "contentHtml": "<p>A <strong>lexer</strong> (or scanner) consumes a raw character stream and emits a sequence of <strong>tokens</strong> — atomic syntactic units like <code>IDENT(\"foo\")</code>, <code>INT(42)</code>, <code>PLUS</code>, <code>LPAREN</code>. Each token typically carries a <em>kind</em>, a <em>lexeme</em> (the matched text), and source <em>span</em> (start/end offsets) for diagnostics.</p><p>The lexer is the first reduction in information density: gigabytes of source text become a stream where the parser no longer cares about whitespace, comments, or whether <code>123</code> was written with underscore separators. It also enforces the <strong>maximal munch</strong> rule — given <code>&gt;=</code>, the lexer prefers the two-character <code>GE</code> token over <code>GT</code> followed by <code>EQ</code>. This is why <code>&gt;&gt;</code> in C++ template parsing was historically a problem: the lexer eagerly produced a right-shift token even inside <code>vector&lt;vector&lt;int&gt;&gt;</code>, requiring a special parser hack until C++11.</p><p>Lexers are usually hand-written in production compilers (rustc, clang, V8) for speed and good error messages, even when the rest of the compiler uses generated parsers. <strong>flex</strong> and <strong>re2c</strong> generate fast table-driven lexers from regex specs.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-01-c2",
+        "title": "Regular Expressions and Finite Automata",
+        "contentHtml": "<p>Token classes are defined by <strong>regular expressions</strong>. Identifiers: <code>[a-zA-Z_][a-zA-Z0-9_]*</code>. Integer literals: <code>0|[1-9][0-9]*</code>. Floats, strings, comments — each is a regex.</p><p>By <strong>Kleene's theorem</strong>, every regular expression has an equivalent <strong>nondeterministic finite automaton (NFA)</strong>, every NFA has an equivalent <strong>deterministic finite automaton (DFA)</strong>, and DFAs are exactly what real lexers run. The classical pipeline: regex → NFA via <strong>Thompson's construction</strong> → DFA via <strong>subset construction</strong> → minimized DFA via <strong>Hopcroft's algorithm</strong>.</p><p>The DFA is a state machine: at each character, look up the next state in a transition table. This is O(1) per character — lexing runs at memory bandwidth. Some states are <strong>accepting</strong> and tagged with a token kind. The lexer simulates the DFA, remembers the last accepting state, and on a dead state backtracks to that point and emits the corresponding token. <strong>RE2</strong> and <strong>Hyperscan</strong> push this further with multi-pattern DFAs and SIMD acceleration. Note that regex features like backreferences are <em>not</em> regular and require backtracking engines like PCRE.</p>",
+        "mathExpressions": ["\\text{regex} \\xrightarrow{\\text{Thompson}} \\text{NFA} \\xrightarrow{\\text{subset}} \\text{DFA} \\xrightarrow{\\text{Hopcroft}} \\text{min DFA}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-01-c3",
+        "title": "Practical Lexing: Modes, Lookahead, and Errors",
+        "contentHtml": "<p>Real lexers do more than run a single DFA. <strong>Lexer modes</strong> (or start conditions) handle context-sensitive lexing: inside a string literal, <code>\"</code> ends the string instead of starting one. Template literals in JavaScript switch back and forth between expression mode and string mode. Heredocs in shell, raw strings in Rust, and indentation-sensitive lexing in Python all require mode tracking.</p><p>Python's lexer is a famous case study. It tracks indentation levels on a stack and synthesizes virtual <code>INDENT</code> and <code>DEDENT</code> tokens — the parser sees a regular token grammar even though the source uses whitespace structurally. The same trick appears in Haskell's layout rule.</p><p><strong>Error recovery</strong> matters too: a real lexer reports useful diagnostics like \"unterminated string literal at line 42\" rather than crashing. Modern compilers also annotate every token with full source spans so later phases (parser, type checker, codegen) can produce errors that point at the original characters. Rust's <code>rustc_lexer</code> and Swift's <code>libSyntax</code> are good examples of lexers designed for IDE integration where partial, malformed, and rapidly-changing input is the norm.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q01", "comp-q02", "comp-q03", "comp-q04", "comp-q05", "comp-q06", "comp-q07", "comp-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-02",
+    "topicId": "cs-compilers",
+    "order": 2,
+    "title": "Parsing and Grammars",
+    "description": "Context-free grammars, LL/LR, recursive descent, and ambiguity",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "comp-02-c1",
+        "title": "Context-Free Grammars",
+        "contentHtml": "<p>Languages with nesting (matched parentheses, nested expressions, blocks) cannot be described by regular expressions — the <strong>pumping lemma</strong> proves it. They need <strong>context-free grammars (CFGs)</strong>: a set of production rules over terminals (tokens) and nonterminals.</p><p>A typical expression grammar fragment in <strong>BNF</strong>: <code>Expr ::= Expr '+' Term | Term</code>; <code>Term ::= Term '*' Factor | Factor</code>; <code>Factor ::= INT | '(' Expr ')'</code>. The grammar both <em>defines</em> the language and <em>structures</em> it — operator precedence and associativity fall out of which nonterminal recurses on which side.</p><p>A grammar is <strong>ambiguous</strong> if some sentence has more than one parse tree. The classic case: <code>if E then if E then S else S</code> — does the <code>else</code> bind to the inner or outer <code>if</code>? Most languages disambiguate by convention (else binds to the nearest if). C's <code>(a)*b</code> — is it a cast of <code>*b</code> to type <code>a</code>, or multiplication? — requires the parser to know whether <code>a</code> is a typedef, a famous example of context sensitivity leaking into the parser. <strong>Chomsky normal form</strong> and the <strong>CYK algorithm</strong> can parse any CFG in O(n³), but real compilers use restricted grammar classes that admit linear-time parsing.</p>",
+        "mathExpressions": ["E \\to E + T \\mid T \\qquad T \\to T * F \\mid F \\qquad F \\to \\text{INT} \\mid (\\,E\\,)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-02-c2",
+        "title": "Recursive Descent and LL Parsing",
+        "contentHtml": "<p><strong>LL(k)</strong> parsers read input <strong>L</strong>eft-to-right and produce a <strong>L</strong>eftmost derivation, looking ahead <em>k</em> tokens. The most common form, <strong>recursive descent</strong>, writes one mutually recursive function per nonterminal — <code>parseExpr</code>, <code>parseTerm</code>, <code>parseFactor</code> — each consuming tokens and returning an AST node.</p><p>Recursive descent is hand-written in nearly every modern production compiler: <strong>rustc</strong>, <strong>clang</strong>, <strong>roslyn (C#)</strong>, <strong>TypeScript</strong>, <strong>V8</strong>, <strong>GHC</strong>. The reasons are pragmatic: total control over error recovery, easy lookahead, easy to debug, easy to integrate with IDE features like incremental reparsing. The cost is that the grammar must be massaged: <strong>left recursion</strong> (<code>E → E + T</code>) sends a recursive descent parser into infinite loop and must be rewritten using loops or right recursion. Operator precedence is often handled with the <strong>Pratt parser</strong> trick (precedence climbing), which elegantly handles left associativity without left recursion.</p><p>Tools like <strong>ANTLR</strong> generate LL(*) parsers from grammars and are widely used for DSLs and configuration languages. <strong>Parser combinators</strong> (Haskell's <code>parsec</code>, Rust's <code>nom</code>) build parsers compositionally as higher-order functions — beautiful, sometimes slow, mostly LL in spirit.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-02-c3",
+        "title": "LR Parsing, Yacc, and GLR",
+        "contentHtml": "<p><strong>LR(k)</strong> parsers read <strong>L</strong>eft-to-right and produce a <strong>R</strong>ightmost derivation in reverse, using a state machine driven by a parse table. They handle a strictly larger class of grammars than LL — including left recursion natively — but the tables are dense and harder to read. <strong>LALR(1)</strong> is a practical compromise: smaller tables, slightly less power than full LR(1), used by <strong>yacc</strong>, <strong>bison</strong>, and historically by GCC's parser.</p><p>An LR parser maintains a stack of states. At each step it either <strong>shifts</strong> (push next token's state) or <strong>reduces</strong> (pop a handle and replace with its nonterminal, running the rule's semantic action). <strong>Shift-reduce conflicts</strong> and <strong>reduce-reduce conflicts</strong> indicate grammar ambiguity or insufficient lookahead — the bane of every yacc programmer.</p><p>For genuinely ambiguous grammars (natural language, some legacy DSLs), <strong>GLR (generalized LR)</strong> parsers run multiple parses in parallel and produce a parse forest. Bison supports a GLR mode. <strong>Tree-sitter</strong>, used by Atom, Neovim, and GitHub, is a GLR parser tuned for incremental, error-tolerant parsing in editors — it can re-parse only the changed region of a file in microseconds, which is essential for live syntax highlighting and structural editing.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q09", "comp-q10", "comp-q11", "comp-q12", "comp-q13", "comp-q14", "comp-q15", "comp-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-03",
+    "topicId": "cs-compilers",
+    "order": 3,
+    "title": "Abstract Syntax Trees",
+    "description": "AST design, visitor pattern, and tree transformations",
+    "xpReward": 115,
+    "concepts": [
+      {
+        "id": "comp-03-c1",
+        "title": "AST vs Parse Tree",
+        "contentHtml": "<p>A <strong>parse tree</strong> (or concrete syntax tree, CST) records every grammar production used — including parenthesizations, semicolons, and helper nonterminals. It's a verbatim record of the input. An <strong>abstract syntax tree (AST)</strong> drops these surface details and keeps only the semantic structure. <code>(1 + 2)</code> and <code>1 + 2</code> share an AST: a binary <code>Add</code> node with two integer leaves.</p><p>ASTs in production compilers are typically tagged unions / sum types. In Rust: <code>enum Expr { Lit(i64), Var(Symbol), BinOp(Op, Box&lt;Expr&gt;, Box&lt;Expr&gt;), Call(Box&lt;Expr&gt;, Vec&lt;Expr&gt;), ... }</code>. In OCaml: <code>type expr = Lit of int | Var of string | BinOp of op * expr * expr | ...</code>. In C++ or Java: a class hierarchy with virtual methods. <strong>GHC</strong>'s AST is famously parameterized over a phase index, so the same tree type carries different annotations as it moves through renaming, type checking, and desugaring.</p><p>For IDEs, you often want both: a CST that preserves trivia (comments, whitespace) for refactoring and pretty-printing, plus an AST view for semantic analysis. Roslyn and Rust Analyzer both use this dual representation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-03-c2",
+        "title": "The Visitor Pattern and Tree Walks",
+        "contentHtml": "<p>Most compiler passes are structured as <strong>tree walks</strong>: recursively descend the AST, do something at each node, possibly return a transformed tree. Type checking, constant folding, name resolution, lowering, and code generation all follow this shape.</p><p>In OOP languages, the <strong>visitor pattern</strong> separates the operation from the data structure. You define a <code>Visitor</code> interface with one <code>visitX</code> method per AST node type, and each AST node has an <code>accept(Visitor v)</code> that dispatches to the right method. The trade-off — adding a new node type forces updating every visitor, but adding a new operation is easy — is the famous <strong>expression problem</strong>. Sum types in functional languages flip the trade-off: pattern matching makes new operations easy, new variants harder.</p><p>Compiler engineers use both. clang's AST visitors generate a method per <code>StmtClass</code> via X-macros. Rust's <code>syn</code> crate provides <code>Fold</code> and <code>Visit</code> traits. GHC's <strong>SYB</strong> (\"Scrap Your Boilerplate\") uses generic programming to traverse heterogeneous trees with minimal boilerplate. Modern systems often use a <strong>data-oriented</strong> design: store nodes in a flat <code>Vec</code> indexed by integer IDs (rustc's HIR/THIR/MIR all do this) — better cache behavior, cheap clone, supports incremental computation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-03-c3",
+        "title": "Desugaring and Lowering",
+        "contentHtml": "<p>Source languages have many surface conveniences that aren't really fundamental. <code>for x in xs</code>, <code>x?.y?.z</code>, list comprehensions, async/await, pattern matching, string interpolation — all of these can be rewritten in terms of simpler constructs. <strong>Desugaring</strong> is the compiler pass that performs these rewrites, producing a smaller \"core\" language for the rest of the compiler to deal with.</p><p>GHC desugars Haskell into <strong>Core</strong>, a tiny lambda calculus with case expressions and let-bindings — perhaps a dozen node types total. Every fancy Haskell feature (type classes, do-notation, list comprehensions, GADTs) reduces to Core. This is enormously useful: optimizations and code generators only need to handle the small core language, even though the surface language is huge.</p><p>Rust calls this lowering: <code>HIR</code> (high-level IR, tree-shaped, post-name-resolution) lowers to <code>THIR</code> (typed HIR, after type checking) lowers to <code>MIR</code> (mid-level IR, control-flow graph form). Each lowering peels away a layer of abstraction. Swift uses <code>SIL</code>; Kotlin lowers to <code>IR</code>; OCaml lowers to <code>Lambda</code> then to <code>Cmm</code>. The pattern is universal: keep the surface language rich for users, the IR small for the compiler.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q17", "comp-q18", "comp-q19", "comp-q20", "comp-q21", "comp-q22", "comp-q23", "comp-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-04",
+    "topicId": "cs-compilers",
+    "order": 4,
+    "title": "Semantic Analysis and Symbol Tables",
+    "description": "Name resolution, scoping, and the lexical environment",
+    "xpReward": 125,
+    "concepts": [
+      {
+        "id": "comp-04-c1",
+        "title": "Name Resolution and Scoping",
+        "contentHtml": "<p>After parsing, names in the AST are just strings. <strong>Name resolution</strong> binds each use of a name to its declaration. The data structure is a <strong>symbol table</strong>: a map from names to <strong>bindings</strong> (where the binding records type, kind, source location, mutability, etc.).</p><p>Most languages have <strong>lexical scoping</strong> (a.k.a. static scoping): a name's meaning is determined by the program text surrounding the use, not by runtime call stack. Symbol tables are typically structured as a stack of <em>scopes</em>: push on entering a block, pop on exit. Lookup walks from innermost to outermost. <strong>Shadowing</strong> happens naturally — a closer binding eclipses a farther one.</p><p>Some languages have <strong>dynamic scoping</strong> (older Lisp, bash variables, Common Lisp's <code>special</code> declarations) where lookup walks the call stack instead. Implicit parameters in Scala, dynamic variables in Clojure, and React context similarly resemble dynamic scope. Modules, namespaces, and qualified names like <code>std::vector</code> add another dimension. <strong>Hoisting</strong> in JavaScript and <strong>forward declarations</strong> in C/C++ complicate things further. Resolution can also depend on type information (overload resolution in C++ and Java) — these languages need name resolution and type checking interleaved, not strictly sequential.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-04-c2",
+        "title": "Closures and Captured Variables",
+        "contentHtml": "<p>When a function is a value (first-class), it can be created in one scope and called in another. <strong>Closures</strong> capture the lexical environment so free variables in the function body still refer to the right bindings, even after the enclosing scope has returned.</p><p>Implementation strategies. <strong>Flat closures</strong> (used by OCaml, Rust, Go) compile a closure to a struct containing a code pointer plus copies (or pointers) of captured variables. <strong>Linked-environment closures</strong> (older Scheme implementations) keep a chain of environment frames. Capturing by reference vs by value is a real semantic decision: Java's inner classes require captured locals to be <code>final</code>; C++ lambdas have explicit <code>[&amp;]</code> vs <code>[=]</code>; Rust uses <code>Fn</code> / <code>FnMut</code> / <code>FnOnce</code> traits to encode capture mode in the type system.</p><p>Closures interact with memory management: a closure that escapes its defining function must extend the lifetime of any captured stack values. C++ lambdas that capture by reference can dangle. Rust's borrow checker statically prevents this. GC'd languages (JavaScript, Java, Python) move captured values to the heap automatically. <strong>Closure conversion</strong> is the compiler pass that makes closures explicit, lifting nested functions to top level with an extra environment parameter — a key step in functional language compilation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-04-c3",
+        "title": "Modules, Namespaces, and Linking",
+        "contentHtml": "<p>Beyond function-level scoping, real systems need <strong>modules</strong>: separately compilable units with controlled interfaces. The compiler must reconcile names across modules — and ideally without re-parsing every dependency from scratch.</p><p>Approaches differ wildly. <strong>C/C++</strong> uses textual <strong>#include</strong>: the preprocessor copy-pastes header files. This is slow (the same headers are reparsed in every translation unit) and fragile (macro contamination, ODR violations). C++20 modules and clang's PCH/PCM try to fix it. <strong>Java</strong> and <strong>C#</strong> compile to bytecode containing rich symbol tables; the compiler resolves cross-module references by reading other compiled units. <strong>Rust</strong>'s rlib/rmeta files contain serialized type information for downstream crates. <strong>OCaml</strong> uses <code>.cmi</code> interface files. <strong>Go</strong>'s package archives contain an export-data section.</p><p>Once modules are independently compiled, the <strong>linker</strong> ties them together. The linker resolves symbols (turns <code>printf</code> from a name into an address), performs <strong>relocations</strong>, and produces the final executable or shared library. <strong>LTO (link-time optimization)</strong> defers serious optimization until link time, when the whole program is visible: this enables cross-module inlining and devirtualization. <strong>ThinLTO</strong> in LLVM keeps the parallelism of separate compilation while still doing whole-program work.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q25", "comp-q26", "comp-q27", "comp-q28", "comp-q29", "comp-q30", "comp-q31", "comp-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-05",
+    "topicId": "cs-compilers",
+    "order": 5,
+    "title": "Type Systems and Inference",
+    "description": "Hindley-Milner, unification, and type checking algorithms",
+    "xpReward": 135,
+    "concepts": [
+      {
+        "id": "comp-05-c1",
+        "title": "Type Checking vs Type Inference",
+        "contentHtml": "<p><strong>Type checking</strong> asks: given a program where every binding has a declared type, is it well-typed? <strong>Type inference</strong> asks: given a program with no annotations (or partial annotations), can the compiler reconstruct the most general types automatically?</p><p>Most languages with rich types use a mix. C++, Java, C# require annotations on function signatures but infer locals (<code>auto</code>, <code>var</code>). ML, Haskell, OCaml infer almost everything. Rust infers locals fully and infers signatures partially (lifetimes, some generic parameters). The famous result by <strong>Damas, Hindley, and Milner</strong> is that ML's type system admits sound, complete <strong>principal type</strong> inference: there's always a unique most-general type, and it can be computed.</p><p>Type checking proceeds bottom-up: each AST node's type is a function of its children's types. A literal <code>42</code> has type <code>Int</code>. <code>e1 + e2</code> requires both subexpressions to have a numeric type; the result has the same type. Function application <code>f x</code> requires <code>f : T1 → T2</code> and <code>x : T1</code>; the result has type <code>T2</code>. Errors surface as type mismatches with source spans. The art is producing diagnostics a human can act on — Elm and Rust have invested heavily in this.</p>",
+        "mathExpressions": ["\\frac{\\Gamma \\vdash f : T_1 \\to T_2 \\quad \\Gamma \\vdash x : T_1}{\\Gamma \\vdash f\\,x : T_2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-05-c2",
+        "title": "Hindley-Milner and Unification",
+        "contentHtml": "<p>The <strong>Hindley-Milner</strong> system (HM) uses three ingredients: type variables, unification, and let-polymorphism. Type variables are placeholders. <strong>Unification</strong> solves equations like <code>α → β = Int → γ</code> by walking both sides simultaneously and producing a substitution: <code>α := Int, β := γ</code>. The classic algorithm is <strong>Robinson's unification</strong>; modern implementations use union-find for near-linear performance.</p><p><strong>Algorithm W</strong> traverses the AST, generating fresh type variables for unknowns and unifying as it goes. At <code>let x = e1 in e2</code>, the type of <code>e1</code> is <strong>generalized</strong>: any type variables not free in the surrounding environment become quantified, giving a <em>type scheme</em> like <code>∀α. α → α</code> for the identity function. At each use, the scheme is <strong>instantiated</strong> with fresh variables.</p><p>The <strong>occurs check</strong> prevents infinite types: trying to unify <code>α = α → β</code> would produce <code>α = (α → β) → β = ((α → β) → β) → β = ...</code>. Modern type inference engines (GHC's <strong>OutsideIn(X)</strong>, OCaml's level-based generalization) extend HM with type classes, GADTs, higher-rank types, and impredicative polymorphism — but the unification core remains. Bidirectional type checking (used in Idris, Roc, and modern dependent type systems) flips the direction information flows for better error messages and more decidable inference in richer systems.</p>",
+        "mathExpressions": ["\\text{unify}(\\alpha \\to \\beta, \\text{Int} \\to \\gamma) \\;\\Rightarrow\\; \\{\\alpha \\mapsto \\text{Int},\\; \\beta \\mapsto \\gamma\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-05-c3",
+        "title": "Subtyping, Generics, and Soundness",
+        "contentHtml": "<p>Many languages add <strong>subtyping</strong>: <code>Cat &lt;: Animal</code>, so a <code>Cat</code> can be used where an <code>Animal</code> is expected. Subtyping interacts subtly with generics through <strong>variance</strong>. <code>List&lt;Cat&gt;</code> being a subtype of <code>List&lt;Animal&gt;</code> is safe only if the list is read-only (covariant) — a writable list would break soundness. Java and C# encode this via <code>? extends T</code> / <code>? super T</code> wildcards or <code>in</code>/<code>out</code> markers. Scala uses <code>+T</code>/<code>-T</code>. Get this wrong and you get the famous Java array covariance hole — <code>Object[] xs = new String[10]; xs[0] = 42;</code> compiles but throws <code>ArrayStoreException</code> at runtime.</p><p><strong>Generics</strong> can be implemented two ways. <strong>Monomorphization</strong> (C++ templates, Rust generics, Swift specialized generics) generates a separate copy per type instantiation: zero runtime cost, larger binaries, slower compile times. <strong>Type erasure</strong> (Java, Haskell, OCaml) compiles generic code once and uses uniform representations: smaller binaries, dynamic dispatch costs, can't recover type info at runtime.</p><p>A type system is <strong>sound</strong> if well-typed programs don't \"go wrong\" — Robin Milner's slogan. Soundness is proved by progress-and-preservation theorems. Real languages have bugs in their soundness: Java's array covariance, TypeScript's bivariant function parameters, early Scala's <strong>DOT calculus</strong> issues. Rust's affine types and lifetimes bring soundness to memory safety; the borrow checker is essentially a substructural type system.</p>",
+        "mathExpressions": ["\\text{Cat} <: \\text{Animal} \\;\\not\\Rightarrow\\; \\text{MutList}\\langle\\text{Cat}\\rangle <: \\text{MutList}\\langle\\text{Animal}\\rangle"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q33", "comp-q34", "comp-q35", "comp-q36", "comp-q37", "comp-q38", "comp-q39", "comp-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-06",
+    "topicId": "cs-compilers",
+    "order": 6,
+    "title": "Intermediate Representations and SSA",
+    "description": "Linear IR, control-flow graphs, and static single assignment form",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "comp-06-c1",
+        "title": "Why an IR?",
+        "contentHtml": "<p>A <strong>compiler IR</strong> is a representation between the source AST and machine code. The big idea is <strong>decoupling</strong>: M front-ends and N back-ends become M + N pieces of work instead of M × N if they share an IR. LLVM's success rests entirely on this — clang, rustc, swiftc, ldc, ghc (via the LLVM back-end), and dozens of others share LLVM IR and inherit its optimizations and code generators.</p><p>An IR also moves the program toward a form where optimization is tractable. ASTs are convenient for parsing but inconvenient for analysis: scope, control flow, and aliasing are implicit. A linear IR with explicit basic blocks and instructions makes everything explicit. <strong>LLVM IR</strong> is a typed, three-address, RISC-like virtual instruction set. <strong>Cranelift IR</strong> (used by wasmtime and the Wasmer engine) is similar but designed for fast compilation rather than peak optimization. <strong>WebAssembly</strong> itself is essentially a portable IR.</p><p>Compilers often have several IRs at decreasing levels of abstraction. GCC has <strong>GENERIC → GIMPLE → RTL</strong>. Rust has <strong>HIR → THIR → MIR → LLVM IR</strong>. Swift has <strong>Swift AST → SIL → LLVM IR</strong>. Each level removes some abstraction (closures, generics, pattern matching) and exposes more for optimization.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-06-c2",
+        "title": "Basic Blocks and the Control-Flow Graph",
+        "contentHtml": "<p>A <strong>basic block</strong> is a maximal sequence of instructions with one entry and one exit — no jumps in or out except at the boundaries. Inside a basic block, control flow is straight-line. Between basic blocks, control flow is described by edges in the <strong>control-flow graph (CFG)</strong>.</p><p>The CFG is the substrate for almost every optimization and analysis. <strong>Dominators</strong> tell you which blocks must execute before others. The <strong>post-dominator tree</strong> dual gives \"which blocks must execute after\". <strong>Loop detection</strong> finds back edges in the dominator tree. <strong>Reachability</strong> identifies dead code. <strong>Liveness</strong> propagates backward through the CFG to determine which variables are needed at each point. <strong>Reaching definitions</strong> propagates forward to find which assignments may reach each use.</p><p>These are all instances of <strong>data-flow analysis</strong>, computed by iterating a transfer function until a fixed point. The framework is general: pick a lattice, a transfer function per instruction, and a meet (join) operator at control-flow merges. Liveness uses set union; constant propagation uses constant lattice meet. <strong>Cooper, Harvey, and Kennedy</strong>'s O(N α(N)) dominator algorithm is the standard. Modern compilers compute these analyses lazily and incrementally.</p>",
+        "mathExpressions": ["\\text{LiveOut}(B) = \\bigcup_{S \\in \\text{succ}(B)} \\text{LiveIn}(S) \\quad \\text{LiveIn}(B) = \\text{Use}(B) \\cup (\\text{LiveOut}(B) \\setminus \\text{Def}(B))"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-06-c3",
+        "title": "Static Single Assignment Form",
+        "contentHtml": "<p><strong>SSA form</strong> is a beautiful transformation: every variable is assigned exactly once. Multiple assignments to the same source-level variable become assignments to fresh names <code>x1</code>, <code>x2</code>, <code>x3</code>. At control-flow merges where different definitions reach the same use, a special <strong>φ-function</strong> selects the right one based on which predecessor was taken.</p><p>SSA makes <strong>def-use chains</strong> explicit and unique: each variable has exactly one definition, so use-def is just a pointer. This dramatically simplifies optimizations like constant propagation, dead code elimination, and value numbering — they go from awkward iterative analyses to nearly trivial sparse ones.</p><p>Constructing SSA naively places φ-functions everywhere; <strong>Cytron, Ferrante, Rosen, Wegman, and Zadeck</strong>'s algorithm uses the <strong>dominance frontier</strong> to place them minimally. Modern compilers use <strong>Braun et al.'s</strong> simpler on-the-fly construction. LLVM IR is built around SSA. The <strong>Sea-of-Nodes</strong> IR (HotSpot's C2 JIT, GraalVM) takes SSA further by also dissolving the order between independent instructions, encoding only true data and control dependencies — letting the scheduler re-order more aggressively. SSA is the dominant IR design for production optimizing compilers.</p>",
+        "mathExpressions": ["x_3 = \\phi(x_1, x_2) \\quad \\text{(picks } x_1 \\text{ from one predecessor, } x_2 \\text{ from the other)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q41", "comp-q42", "comp-q43", "comp-q44", "comp-q45", "comp-q46", "comp-q47", "comp-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-07",
+    "topicId": "cs-compilers",
+    "order": 7,
+    "title": "IR Optimizations",
+    "description": "Constant folding, DCE, CSE, inlining, and loop transformations",
+    "xpReward": 145,
+    "concepts": [
+      {
+        "id": "comp-07-c1",
+        "title": "The Optimization Bestiary",
+        "contentHtml": "<p>Most optimizations are tiny on their own; the magic is composition. A short tour: <strong>constant folding</strong> (compute <code>2 + 3</code> at compile time). <strong>Constant propagation</strong> (replace uses of variables known to be constant). <strong>Algebraic simplification</strong> (<code>x * 1 → x</code>, <code>x &amp; x → x</code>, <code>x - x → 0</code>). <strong>Strength reduction</strong> (replace <code>x * 8</code> with <code>x &lt;&lt; 3</code>; replace multiplication by induction-variable arithmetic in loops). <strong>Dead code elimination (DCE)</strong> (remove instructions whose results are unused). <strong>Common subexpression elimination (CSE)</strong> (compute <code>a + b</code> once if it appears twice with identical operands).</p><p>Each pass enables others. Inlining a function exposes its body to constant propagation; constant propagation creates dead branches; DCE removes them; the smaller CFG enables better register allocation. LLVM's <strong>-O2</strong> runs roughly 100 passes in a carefully ordered pipeline. Some passes (GVN — global value numbering — and SCCP — sparse conditional constant propagation) combine several classical optimizations into more powerful unified analyses.</p><p>The art is balancing aggressiveness against compile time and code size. JIT compilers (V8, JVM C2, .NET RyuJIT) have tighter compile-time budgets. AOT optimizing compilers (GCC -O3, clang -O3, GHC) can afford more. Profile-guided optimization (PGO) makes some of these decisions data-driven.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-07-c2",
+        "title": "Inlining: The Most Important Optimization",
+        "contentHtml": "<p><strong>Inlining</strong> replaces a call with the body of the callee. It's often called the most important optimization because it doesn't just remove call overhead — it exposes the callee's code to the caller's context. Constant arguments become constants in the callee. Dead branches become dead code. Closures get specialized.</p><p>The cost is binary size and potentially worse instruction-cache behavior. Compilers use <strong>cost models</strong>: estimate the size of the callee, the call frequency (from PGO if available), the savings from constant-propagated arguments, and decide whether to inline. LLVM's inliner runs heuristics like \"inline if callee body is below threshold and call site has constant arguments\" then re-runs subsequent passes to capture the cascading benefits.</p><p>The trickiest cases involve recursion (most compilers won't inline recursive calls without unrolling), virtual calls (need <strong>devirtualization</strong> first — inferring the concrete type at the call site), and across-module calls (need LTO). HotSpot's JIT uses <strong>type profiling</strong> to inline polymorphic call sites speculatively, with deoptimization fallback if assumptions break. <strong>Cross-module inlining</strong> via LTO/ThinLTO is one of the largest sources of performance improvement when going from <code>-O2</code> to <code>-O2 -flto</code> on large C++ codebases.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-07-c3",
+        "title": "Loop Optimizations",
+        "contentHtml": "<p>Loops dominate runtime in numerical and data-processing code, so compilers invest heavily in transforming them. <strong>Loop-invariant code motion (LICM)</strong> hoists computations whose value doesn't change across iterations out of the loop. <strong>Induction variable simplification</strong> recognizes patterns like <code>i, i+1, i+2, ...</code> and replaces complex address computations with simple increments. <strong>Loop unrolling</strong> duplicates the body to reduce loop overhead and expose more instruction-level parallelism. <strong>Loop fusion</strong> merges two adjacent loops over the same range to reuse loaded data. <strong>Loop interchange</strong> swaps nested loops to improve locality (the difference between iterating a matrix row-major vs column-major).</p><p><strong>Vectorization</strong> turns scalar loops into SIMD instructions: <code>for i: c[i] = a[i] + b[i]</code> becomes a loop over chunks of 4 or 8 elements processed in one AVX/NEON instruction. <strong>Polyhedral compilation</strong> (Polly, GraphIte) models nested loops as integer polyhedra and applies sophisticated transformations like tiling and skewing.</p><p>Soundness requires careful aliasing and dependence analysis: you can't reorder iterations if iteration <em>i</em> writes to memory iteration <em>i+1</em> reads. <strong>Restrict</strong> qualifiers in C, no-aliasing semantics in Fortran, and Rust's borrow checker all give compilers more room to optimize. Fortran's lack of aliasing is a major reason it remains popular for HPC numerical code.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q49", "comp-q50", "comp-q51", "comp-q52", "comp-q53", "comp-q54", "comp-q55", "comp-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-08",
+    "topicId": "cs-compilers",
+    "order": 8,
+    "title": "Code Generation and Register Allocation",
+    "description": "Instruction selection, scheduling, and graph coloring",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "comp-08-c1",
+        "title": "Instruction Selection",
+        "contentHtml": "<p><strong>Instruction selection</strong> maps IR operations onto target ISA instructions. A naive approach picks one instruction per IR op, but real ISAs are richer — x86 has <code>lea</code> (load effective address), which can compute <code>base + index*scale + disp</code> in one instruction; ARM has fused multiply-add; both have addressing modes that fold loads or stores into compute instructions.</p><p>The classical formulation is <strong>tree pattern matching</strong>: write the IR as expression trees, write each ISA instruction as a tree pattern with cost, find a minimum-cost cover. <strong>BURG</strong> (bottom-up rewrite generators) and similar tools generate optimal selectors automatically. LLVM's <strong>SelectionDAG</strong> ISel runs a DAG-based variant; the newer <strong>GlobalISel</strong> reformulates this as a more incremental, easier-to-debug pipeline. Cranelift uses <strong>ISLE</strong> (a DSL for instruction selection rules) to keep the selector readable and verifiable.</p><p>Modern selectors must handle thousands of patterns: every addressing mode of every instruction on x86_64, every NEON/SVE intrinsic on ARM, every special form like leading-zero-count, popcount, or branchless conditionals. The selected instructions still operate on virtual registers — actual machine registers come later via register allocation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-08-c2",
+        "title": "Register Allocation: Graph Coloring vs Linear Scan",
+        "contentHtml": "<p>The IR has unlimited virtual registers; the CPU has 16 (x86_64) or 32 (ARM64) general-purpose registers. <strong>Register allocation</strong> assigns virtual registers to physical ones, spilling to stack when not enough are available. Spills are expensive — every memory access is far slower than a register access — so good allocation matters.</p><p><strong>Chaitin-Briggs graph coloring</strong> models the problem as graph coloring on the <strong>interference graph</strong>: nodes are virtual registers, edges connect registers whose live ranges overlap (so they can't share a physical register). A k-coloring of this graph (where k is the number of physical registers) is a valid allocation. Coloring is NP-hard in general, but <strong>Chaitin's heuristic</strong> — repeatedly remove nodes of degree &lt; k, then try to color the rest, spilling on conflicts — works well in practice. GCC and historic LLVM used variants of this.</p><p><strong>Linear scan</strong> (Poletto and Sarkar, 1999) sorts live ranges by start point and walks them in one pass, assigning registers as ranges become live and freeing them as ranges end. Much simpler and faster than graph coloring at modest quality cost. Used by V8, HotSpot's C1 (the fast tier), and historically the Java JIT. <strong>LLVM's modern allocator</strong> is greedy, region-based, and uses live-range splitting — a hybrid of these ideas. <strong>Cranelift</strong> uses <strong>regalloc2</strong>, a backtracking allocator inspired by IonMonkey designed for fast compile times.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-08-c3",
+        "title": "Instruction Scheduling and Calling Conventions",
+        "contentHtml": "<p>After selection and allocation, instructions still need to be ordered. Modern CPUs are deeply pipelined and out-of-order — but reordering at compile time can still help: hide load latency behind unrelated work, fill branch delay slots, group instructions to feed multiple execution ports.</p><p><strong>List scheduling</strong> is the standard heuristic: build a dependence DAG, topologically sort with priorities favoring critical-path or longest-latency-first. <strong>Software pipelining</strong> (modulo scheduling) overlaps multiple loop iterations to expose more parallelism — important on in-order architectures (older ARM, GPUs, DSPs) and still useful on out-of-order ones.</p><p><strong>Calling conventions</strong> (ABIs) dictate how arguments are passed (which registers, which stack slots), which registers callers vs callees must preserve, how the return value is delivered, and the stack frame layout. <strong>System V AMD64</strong> uses <code>rdi, rsi, rdx, rcx, r8, r9</code> for the first six integer args; Windows x64 uses <code>rcx, rdx, r8, r9</code>; AArch64 uses <code>x0..x7</code>. The compiler must respect these at every external call. <strong>Tail-call optimization</strong> reuses the current frame for a final call, important for functional languages — Scheme requires it; C compilers do it as an optimization but can't rely on it. Cross-language interop (Rust calling C, Python's CFFI, Wasm imports) is mostly a story of matching ABIs precisely.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q57", "comp-q58", "comp-q59", "comp-q60", "comp-q61", "comp-q62", "comp-q63", "comp-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "comp-09",
+    "topicId": "cs-compilers",
+    "order": 9,
+    "title": "JIT, AOT, and Runtime Systems",
+    "description": "Tiered compilation, deoptimization, and GC interaction",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "comp-09-c1",
+        "title": "AOT vs JIT: When to Compile",
+        "contentHtml": "<p><strong>Ahead-of-time (AOT)</strong> compilation produces machine code before the program runs. C, C++, Rust, Go, Swift, OCaml — all primarily AOT. Pros: predictable startup, no warmup, no runtime compiler memory. Cons: must guess about runtime behavior, can't specialize on real input data, harder to profile-optimize without separate PGO runs.</p><p><strong>Just-in-time (JIT)</strong> compilation produces machine code while the program runs. JavaScript engines (V8, SpiderMonkey, JavaScriptCore), the JVM (HotSpot, OpenJ9), .NET (RyuJIT), and PyPy are JITs. Pros: can specialize on observed types and values, can deoptimize and recompile when assumptions change, can collect runtime statistics for free. Cons: warmup time, runtime memory and CPU cost for the compiler itself, harder to ship to platforms that forbid JIT (iOS, locked-down embedded, some sandboxes).</p><p>Hybrids exist. <strong>.NET ReadyToRun</strong> AOT-compiles bytecode but allows JIT for newly loaded code. <strong>GraalVM Native Image</strong> AOT-compiles JVM programs at the cost of giving up dynamic class loading. <strong>WebAssembly</strong> is typically streamed through a baseline compiler (Liftoff in V8) for fast startup, then re-tiered to an optimizing compiler (TurboFan / Cranelift) for hot code. The choice of AOT vs JIT is mostly about the dynamism of the language and the deployment constraints.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-09-c2",
+        "title": "Tiered Compilation and Speculation",
+        "contentHtml": "<p>Production JITs use <strong>tiered compilation</strong>: cheap, fast compilers handle cold and warming-up code; expensive, optimizing compilers handle hot code. <strong>V8</strong> has Ignition (interpreter) → Sparkplug (baseline) → Maglev (mid-tier) → TurboFan (top tier). <strong>HotSpot</strong> has the interpreter → C1 (client) → C2 (server). <strong>SpiderMonkey</strong> has Baseline → IonMonkey → WarpMonkey. The interpreter records type feedback and call counts; once a function gets hot, the JIT compiles it using that feedback.</p><p><strong>Speculation</strong> is the reason JITs can sometimes outrun AOT compilers on dynamic languages. If <code>x.foo</code> has only ever seen objects with a particular shape, the JIT inlines a direct field load instead of a hash lookup, with a guard that bails out if a different shape appears. <strong>Inline caches</strong> (monomorphic, polymorphic, megamorphic) record observed types at call sites. When a guard fails, the JIT <strong>deoptimizes</strong>: rolls back to the interpreter, restoring the values of locals from the optimized stack frame using a precomputed <strong>deopt info</strong> table.</p><p>This is brittle and powerful. Crockford's classic dictum about JavaScript hidden classes — \"don't add properties after construction\" — is really advice to the V8 JIT: a stable shape lets it monomorphize accesses. <strong>Cranelift</strong> deliberately does not speculate; it targets predictable, sandboxed Wasm and prefers compile-time determinism over peak performance.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "comp-09-c3",
+        "title": "Garbage Collection and the Compiler",
+        "contentHtml": "<p>Languages with <strong>garbage collection</strong> need cooperation from the compiler. The collector needs to find every pointer in the program: in registers, in stack frames, in heap objects. The compiler emits <strong>stack maps</strong> (or GC maps) at <strong>safepoints</strong> — points in compiled code where the GC may pause the thread, listing which registers and stack slots hold pointers vs raw integers.</p><p><strong>Precise (exact) GC</strong> relies on these stack maps and lets the collector move objects (compaction). <strong>Conservative GC</strong> (Boehm GC, formerly used by Mono) treats anything that looks like a pointer as a pointer; this misses fewer leaks but can pin objects unnecessarily and prevents compaction. The HotSpot JIT, V8, and SBCL Lisp all use precise GC with compiler-generated stack maps.</p><p>Compiler-GC interactions get subtle. <strong>Read barriers</strong> and <strong>write barriers</strong> are tiny code snippets the compiler inserts on every reference load/store to keep the collector's bookkeeping current — generational GCs use write barriers to track old-to-young pointers; concurrent GCs (Shenandoah, ZGC, Go's collector) use load barriers to handle concurrent moves. <strong>Escape analysis</strong> identifies objects that don't outlive their allocation function and can be stack-allocated, cutting GC pressure dramatically. <strong>Region-based memory management</strong> (Cyclone, MLKit) and <strong>ownership/borrowing</strong> (Rust) sidestep GC entirely at the cost of more compiler complexity. Calling conventions, exception handling, debug info (DWARF), and asynchronous unwinding all have to integrate with whatever memory model the runtime assumes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["comp-q65", "comp-q66", "comp-q67", "comp-q68", "comp-q69", "comp-q70", "comp-q71", "comp-q72"],
+    "puzzleId": null
+  }
+]

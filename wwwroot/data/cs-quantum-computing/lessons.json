@@ -1,0 +1,452 @@
+[
+  {
+    "id": "qc-01",
+    "topicId": "cs-quantum-computing",
+    "order": 1,
+    "title": "Qubits and Single-Qubit Gates",
+    "description": "Superposition, the Bloch sphere, and the basic single-qubit operations",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "qc-01-c1",
+        "title": "What a Qubit Actually Is",
+        "contentHtml": "<p>A classical bit is either 0 or 1. A <strong>qubit</strong> is a unit vector in a two-dimensional complex Hilbert space. We write its state as <code>|ψ⟩ = α|0⟩ + β|1⟩</code>, where <code>α, β ∈ ℂ</code> and <code>|α|² + |β|² = 1</code>. The two complex amplitudes encode <em>two real degrees of freedom</em> after normalization and ignoring an irrelevant global phase.</p><p>The popular phrase that a qubit is \"both 0 and 1 at the same time\" is misleading. A qubit is in a definite quantum state — a superposition with specific amplitudes. When you <strong>measure</strong> in the computational basis, you get outcome 0 with probability <code>|α|²</code> and outcome 1 with probability <code>|β|²</code>, and the state collapses to whichever you observed.</p><p>What makes qubits powerful is not parallelism. A single qubit holds essentially the same information as a classical bit (you can extract one bit from a measurement). The advantage emerges only when many qubits become <em>entangled</em>: an n-qubit register lives in a <code>2ⁿ</code>-dimensional space, exponentially larger than n classical bits, and unitary evolution can manipulate all amplitudes coherently.</p>",
+        "mathExpressions": [
+          "\\ket{\\psi} = \\alpha\\ket{0} + \\beta\\ket{1}, \\quad |\\alpha|^2 + |\\beta|^2 = 1",
+          "P(0) = |\\alpha|^2, \\quad P(1) = |\\beta|^2"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-01-c2",
+        "title": "The Bloch Sphere",
+        "contentHtml": "<p>Up to global phase, every pure single-qubit state can be written as <code>|ψ⟩ = cos(θ/2)|0⟩ + e^{iφ}sin(θ/2)|1⟩</code>. The angles <code>(θ, φ)</code> identify a point on the unit sphere in ℝ³ — the <strong>Bloch sphere</strong>. The north pole is <code>|0⟩</code>, the south pole is <code>|1⟩</code>, and the equator holds equal-superposition states like <code>|+⟩ = (|0⟩ + |1⟩)/√2</code> and <code>|−⟩ = (|0⟩ − |1⟩)/√2</code>.</p><p>Single-qubit unitary gates correspond to rotations of the Bloch sphere. The Pauli-X gate is a 180° rotation about the x-axis (the quantum NOT). Pauli-Y and Pauli-Z rotate about y and z. Phase gates like S (90° about z) and T (45° about z) introduce relative phase. Measurement in the computational basis projects onto the z-axis poles.</p><p>Mixed states — statistical mixtures rather than pure superpositions — sit <em>inside</em> the ball, with the center being the maximally mixed state <code>I/2</code>. This geometric picture only works in two dimensions; for d > 2 the analogous space is the much higher-dimensional generalized Bloch body. Still, the Bloch sphere is the workhorse mental model for thinking about single-qubit operations.</p>",
+        "mathExpressions": [
+          "\\ket{\\psi} = \\cos(\\theta/2)\\ket{0} + e^{i\\varphi}\\sin(\\theta/2)\\ket{1}",
+          "\\ket{+} = \\frac{1}{\\sqrt{2}}(\\ket{0} + \\ket{1}), \\quad \\ket{-} = \\frac{1}{\\sqrt{2}}(\\ket{0} - \\ket{1})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-01-c3",
+        "title": "X, H, S, T and Universal Gate Sets",
+        "contentHtml": "<p>The most common single-qubit gates: <strong>Pauli-X</strong> (bit-flip, the quantum NOT), <strong>Hadamard H</strong> (creates superposition: H|0⟩ = |+⟩, H|1⟩ = |−⟩), <strong>phase gate S</strong> (a 90° z-rotation, S|1⟩ = i|1⟩), and <strong>T gate</strong> (a 45° z-rotation). All are 2×2 unitary matrices acting on the qubit's amplitude vector.</p><p>A set of gates is <strong>universal</strong> if any unitary can be approximated to arbitrary accuracy by some sequence of those gates. Just H, T, and the two-qubit CNOT gate together form a universal set. So does {H, S, CNOT, Toffoli}. The <strong>Solovay–Kitaev theorem</strong> guarantees efficient compilation: any single-qubit unitary can be approximated to error <code>ε</code> using <code>O(log^c(1/ε))</code> gates from a universal set, with <code>c ≈ 4</code> classically and <code>c ≈ 1</code> with modern algorithms.</p><p>Hardware constraints matter. Superconducting platforms like IBM's <em>Heron</em> and Google's <em>Willow</em> implement a native gate set — typically arbitrary single-qubit rotations plus a two-qubit entangling gate (CZ, iSWAP, or fSim). Compilers map your logical circuit onto these natives. The T gate is special: in surface-code fault-tolerance schemes, T is enormously more expensive than Clifford gates (H, S, CNOT), and a circuit's <em>T-count</em> usually dominates its real-world cost.</p>",
+        "mathExpressions": [
+          "X = \\begin{pmatrix} 0 & 1 \\\\ 1 & 0 \\end{pmatrix}, \\quad H = \\frac{1}{\\sqrt{2}}\\begin{pmatrix} 1 & 1 \\\\ 1 & -1 \\end{pmatrix}",
+          "S = \\begin{pmatrix} 1 & 0 \\\\ 0 & i \\end{pmatrix}, \\quad T = \\begin{pmatrix} 1 & 0 \\\\ 0 & e^{i\\pi/4} \\end{pmatrix}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q01", "qc-q02", "qc-q03", "qc-q04", "qc-q05", "qc-q06", "qc-q07", "qc-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-02",
+    "topicId": "cs-quantum-computing",
+    "order": 2,
+    "title": "Multi-Qubit States and Entanglement",
+    "description": "Tensor products, CNOT, Bell states, no-cloning, and teleportation",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "qc-02-c1",
+        "title": "Tensor Products and the CNOT Gate",
+        "contentHtml": "<p>The state of an n-qubit register lives in <code>(ℂ²)^⊗n = ℂ^{2ⁿ}</code>, formed by the tensor product of single-qubit spaces. A two-qubit state is a unit vector with four amplitudes: <code>|ψ⟩ = α|00⟩ + β|01⟩ + γ|10⟩ + δ|11⟩</code>. This exponential dimension is the resource quantum algorithms exploit.</p><p>The <strong>CNOT</strong> (controlled-NOT) gate is the canonical two-qubit gate: flip the target qubit if and only if the control qubit is |1⟩. As a 4×4 matrix, CNOT permutes basis states |10⟩↔|11⟩ while leaving |00⟩, |01⟩ alone. Combined with single-qubit gates, CNOT generates the entire group of unitary operations on n qubits.</p><p>Importantly, applying CNOT to a superposed control creates correlations the qubits didn't have separately. Apply Hadamard to qubit 1 starting from |00⟩, then CNOT with qubit 1 as control: you get <code>(|00⟩ + |11⟩)/√2</code>, the first <strong>Bell state</strong>. Neither qubit alone has a definite state — the two qubits are <em>entangled</em>. This is a strictly quantum phenomenon with no classical analog.</p>",
+        "mathExpressions": [
+          "\\text{CNOT} = \\begin{pmatrix} 1 & 0 & 0 & 0 \\\\ 0 & 1 & 0 & 0 \\\\ 0 & 0 & 0 & 1 \\\\ 0 & 0 & 1 & 0 \\end{pmatrix}",
+          "\\ket{\\Phi^+} = \\frac{1}{\\sqrt{2}}(\\ket{00} + \\ket{11})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-02-c2",
+        "title": "Bell States and the No-Cloning Theorem",
+        "contentHtml": "<p>The four <strong>Bell states</strong> form an orthonormal basis of two-qubit entangled states: <code>|Φ⁺⟩, |Φ⁻⟩, |Ψ⁺⟩, |Ψ⁻⟩</code>, each a maximally entangled superposition like <code>(|00⟩ ± |11⟩)/√2</code> or <code>(|01⟩ ± |10⟩)/√2</code>. They are eigenstates of correlated observables — measuring one qubit instantly tells you what the other will give in the matching basis. Bell states are the resource that powers teleportation, superdense coding, and entanglement-based key distribution.</p><p>The <strong>no-cloning theorem</strong> (Wootters, Zurek, Dieks, 1982) states there is no unitary U such that <code>U(|ψ⟩|0⟩) = |ψ⟩|ψ⟩</code> for every <code>|ψ⟩</code>. The proof is one line: linearity forces the would-be cloner to fail on superpositions. You cannot make a perfect copy of an unknown quantum state.</p><p>This single fact reshapes the engineering. Classical error correction relies on duplicating bits; quantum error correction must instead encode information redundantly without copying it. No-cloning also underpins quantum cryptography: BB84 key distribution is secure precisely because an eavesdropper cannot copy the qubits in transit. And it explains why \"making a backup\" of a quantum register is fundamentally not a thing — you have to redo the computation.</p>",
+        "mathExpressions": [
+          "\\{\\ket{\\Phi^\\pm}, \\ket{\\Psi^\\pm}\\} = \\left\\{\\frac{\\ket{00} \\pm \\ket{11}}{\\sqrt{2}}, \\frac{\\ket{01} \\pm \\ket{10}}{\\sqrt{2}}\\right\\}",
+          "\\nexists\\, U: U(\\ket{\\psi}\\ket{0}) = \\ket{\\psi}\\ket{\\psi} \\text{ for all } \\ket{\\psi}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-02-c3",
+        "title": "Quantum Teleportation",
+        "contentHtml": "<p><strong>Quantum teleportation</strong> transfers an arbitrary unknown qubit state from Alice to Bob using one shared Bell pair plus two classical bits. It does not violate no-cloning — the original state is destroyed in the process — and it does not transmit information faster than light, because the two classical bits have to travel through ordinary channels.</p><p>The protocol: Alice and Bob share a Bell pair <code>|Φ⁺⟩</code>. Alice has an unknown qubit <code>|ψ⟩</code>. She performs a Bell-basis measurement on her qubit and her half of the pair, getting one of four outcomes (00, 01, 10, 11). She sends those two bits to Bob. Depending on the outcome, Bob applies one of {I, X, Z, XZ} to his half — recovering exactly <code>|ψ⟩</code>.</p><p>Teleportation has been demonstrated over fiber (hundreds of km), through free space, and via satellite (China's Micius, 2017, 1200 km ground-to-satellite). It is also the engine inside many fault-tolerant quantum architectures: <em>gate teleportation</em> performs logical operations by consuming pre-distilled magic states. In modern surface-code blueprints (IBM, Google, PsiQuantum), most non-Clifford gates are implemented this way, which is why <em>magic state distillation</em> is one of the dominant overheads in fault-tolerant designs.</p>",
+        "mathExpressions": [
+          "\\ket{\\psi}_A \\otimes \\ket{\\Phi^+}_{BC} \\xrightarrow{\\text{Bell-meas, classical comm, correction}} \\ket{\\psi}_C",
+          "\\text{Bob applies: } 00 \\to I,\\; 01 \\to X,\\; 10 \\to Z,\\; 11 \\to XZ"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q09", "qc-q10", "qc-q11", "qc-q12", "qc-q13", "qc-q14", "qc-q15", "qc-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-03",
+    "topicId": "cs-quantum-computing",
+    "order": 3,
+    "title": "Circuits, Reversibility, and Compilation",
+    "description": "Quantum circuits, oracle queries, depth, and Solovay-Kitaev",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "qc-03-c1",
+        "title": "The Circuit Model",
+        "contentHtml": "<p>A <strong>quantum circuit</strong> is an ordered sequence of gates acting on a register of qubits, possibly interleaved with measurements. We draw it as horizontal wires (one per qubit) flowing left to right, with boxes for gates and connecting wires for multi-qubit operations. Inputs are usually <code>|0⟩</code>; the circuit applies a unitary <code>U = U_d U_{d-1} ⋯ U_1</code> followed by a final measurement.</p><p>Two cost measures dominate. <strong>Gate count</strong> (or two-qubit gate count) approximates total work. <strong>Depth</strong> is the length of the longest sequential path — gates that act on disjoint qubits can run in parallel, so depth is the wall-clock time on idealized hardware. Depth matters more than count on near-term devices because qubits decohere over wall-clock time. A high-count, low-depth circuit can succeed where a low-count, high-depth circuit fails.</p><p>Most quantum algorithms are described in terms of an <strong>oracle</strong>: a black-box unitary <code>U_f</code> that encodes a function <code>f</code> via <code>U_f|x⟩|y⟩ = |x⟩|y ⊕ f(x)⟩</code>. We then count <strong>query complexity</strong>: how many calls to U_f the algorithm makes. Most famous separations between quantum and classical (Deutsch–Jozsa, Bernstein–Vazirani, Simon, Grover) are stated in this model. Implementing the oracle as a real circuit is part of the engineering job.</p>",
+        "mathExpressions": [
+          "U_f \\ket{x}\\ket{y} = \\ket{x}\\ket{y \\oplus f(x)}",
+          "U = U_d U_{d-1} \\cdots U_1, \\quad \\text{depth} = d"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-03-c2",
+        "title": "Reversibility and Ancillas",
+        "contentHtml": "<p>Every quantum gate is unitary, hence <strong>reversible</strong>. Classical functions like AND or OR are not reversible — they erase information (you can't recover a, b from a∧b). Quantum circuits get around this with the <strong>Toffoli gate</strong> (CCNOT), which computes <code>(a, b, c) → (a, b, c ⊕ ab)</code>. The first two qubits are preserved; the third absorbs the result. Toffoli is universal for reversible classical computation.</p><p>To run an arbitrary classical function f on a quantum computer, we extend it to a reversible version: introduce <strong>ancilla qubits</strong> to hold intermediate results so nothing is erased mid-computation. Then we typically <em>uncompute</em> the ancillas — running the steps in reverse — so that the final state has the answer in a target register and ancillas back to <code>|0⟩</code>. Uncomputation is essential because dirty ancillas left behind would leak information about intermediate values, destroying interference patterns the algorithm needs.</p><p><strong>Landauer's principle</strong> says erasing a bit dissipates at least <code>kT ln 2</code> of heat. Reversible classical computing was once explored as a way to cheat thermodynamics. In quantum computing, reversibility isn't optional — it falls out of unitarity — but the same care about not erasing information governs how we structure circuits.</p>",
+        "mathExpressions": [
+          "\\text{Toffoli}: (a, b, c) \\to (a, b, c \\oplus ab)",
+          "\\Delta E_{\\text{erase}} \\geq k_B T \\ln 2 \\quad \\text{(Landauer)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-03-c3",
+        "title": "Compilation and Solovay–Kitaev",
+        "contentHtml": "<p>Real hardware implements only a small native gate set — say, arbitrary single-qubit rotations plus CZ on neighboring qubits. A <strong>compiler</strong> rewrites your high-level circuit into native gates, respects connectivity (inserting SWAPs when distant qubits must interact), and minimizes depth and two-qubit gate count.</p><p>The <strong>Solovay–Kitaev theorem</strong> guarantees that any single-qubit unitary can be approximated to error <code>ε</code> using <code>O(log^c(1/ε))</code> gates from any universal gate set, where the original proof gave <code>c ≈ 3.97</code> and modern algorithms achieve <code>c</code> close to 1 (Ross–Selinger, KMM). For fault-tolerant codes, this matters: the available logical operations are typically Clifford + T, so you must decompose arbitrary rotations into long T sequences. T-count dominates real-world cost.</p><p>Connectivity is the other big concern. Superconducting chips like IBM's <em>Heron</em> (2024, 133 qubits) use a heavy-hex lattice, and Google's <em>Willow</em> (2024, 105 qubits) uses a square grid. Trapped-ion systems (Quantinuum H2, IonQ Forte) offer all-to-all connectivity, sidestepping SWAP overhead but at lower clock speeds. The right architecture for your algorithm depends on whether your bottleneck is depth, fidelity, or qubit count.</p>",
+        "mathExpressions": [
+          "\\forall U \\in SU(2),\\, \\forall \\varepsilon > 0:\\, \\exists\\, g_1 \\cdots g_n \\text{ from universal set with } \\|U - g_1\\cdots g_n\\| < \\varepsilon, \\; n = O(\\log^c(1/\\varepsilon))",
+          "\\text{T-count} \\gg \\text{Clifford-count} \\quad \\text{in fault-tolerant cost}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q17", "qc-q18", "qc-q19", "qc-q20", "qc-q21", "qc-q22", "qc-q23", "qc-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-04",
+    "topicId": "cs-quantum-computing",
+    "order": 4,
+    "title": "Quantum Fourier Transform and Phase Estimation",
+    "description": "The QFT, phase estimation, and the engine behind Shor",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "qc-04-c1",
+        "title": "The Quantum Fourier Transform",
+        "contentHtml": "<p>The <strong>Quantum Fourier Transform (QFT)</strong> is the unitary that maps a basis state <code>|x⟩</code> for <code>x ∈ {0, ..., N−1}</code> with <code>N = 2ⁿ</code> to the Fourier-transformed superposition. Like the classical DFT, it transforms time-domain data into frequency-domain data — but on amplitudes rather than signal samples.</p><p>The classical FFT computes the DFT in <code>O(N log N) = O(n 2ⁿ)</code> time. The QFT runs in <code>O(n²) = O(log² N)</code> gates — exponentially faster in circuit size. The trick is that it acts on a superposition: it doesn't output the Fourier coefficients explicitly (you'd need exponentially many measurements to read all of them), but it makes them available as amplitudes that <em>interfere</em> with subsequent operations.</p><p>This is a recurring theme. Quantum speedups don't come from \"doing 2ⁿ classical computations in parallel.\" They come from constructing interference patterns in which the right answers reinforce and the wrong answers cancel, so a final measurement is likely to reveal the right answer. The QFT is the workhorse for setting up such interference for problems with hidden periodic structure.</p>",
+        "mathExpressions": [
+          "\\text{QFT}: \\ket{x} \\mapsto \\frac{1}{\\sqrt{N}} \\sum_{y=0}^{N-1} e^{2\\pi i x y / N} \\ket{y}",
+          "\\text{QFT cost: } O(n^2) \\text{ gates vs } O(n 2^n) \\text{ classical FFT}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-04-c2",
+        "title": "Quantum Phase Estimation",
+        "contentHtml": "<p><strong>Quantum Phase Estimation (QPE)</strong> is the most important application of the QFT. Given a unitary <code>U</code> and an eigenstate <code>|u⟩</code> with eigenvalue <code>e^{2πiφ}</code>, QPE produces an n-bit estimate of <code>φ</code>. The recipe: prepare an n-qubit ancilla register in equal superposition, apply controlled-<code>U^{2^k}</code> from each ancilla, then run inverse QFT on the ancilla. Measure to read out <code>φ</code> bit-by-bit.</p><p>QPE achieves accuracy <code>2⁻ⁿ</code> using <code>O(n)</code> ancillas and <code>O(2ⁿ)</code> calls to U (in the form of higher powers). With a polynomial number of queries it gives polynomial-precision phase estimates — exponentially better than naive sampling.</p><p>QPE is the engine of many quantum algorithms. Shor's algorithm uses it to find the order of an element modulo N (which leads to factoring). The <strong>HHL</strong> algorithm for linear systems uses QPE on a Hamiltonian <code>e^{iAt}</code> to extract eigenvalue information. Quantum chemistry uses QPE to read out energies from a molecular Hamiltonian's evolution. Whenever a problem reduces to extracting an eigenvalue, QPE is the tool.</p>",
+        "mathExpressions": [
+          "U\\ket{u} = e^{2\\pi i \\varphi} \\ket{u}, \\quad \\text{QPE} \\to \\text{n-bit estimate of } \\varphi",
+          "\\text{queries to } U: O(2^n) \\text{ for n-bit accuracy} \\Leftrightarrow O(1/\\varepsilon)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-04-c3",
+        "title": "Why Hidden Periodicity Is Easy for Quantum Computers",
+        "contentHtml": "<p>The deep reason QFT is powerful: it diagonalizes <em>shift</em>. Just as the classical Fourier transform turns convolution into pointwise multiplication, the QFT turns the cyclic-shift operator into a phase. Periodic structure in the time domain becomes <em>localization</em> in the frequency domain — a few sharp peaks instead of a complicated function.</p><p>Suppose <code>f: ℤ_N → S</code> is periodic with period <code>r</code>. Prepare the superposition <code>(1/√N) Σ_x |x⟩|f(x)⟩</code>, measure the second register to collapse <code>x</code> to a random shifted-by-r set of values, then apply QFT to the first register. The result concentrates on multiples of <code>N/r</code>: measure once and you learn <code>r</code> (with high probability, after a continued-fraction post-processing step). This is the whole point of Shor's algorithm — finding the period of <code>a^x mod N</code> instantly cracks RSA.</p><p>Classically, finding the period of a function with no other structure requires roughly <code>√N</code> queries (birthday-style collision). Quantumly: <code>O(log N)</code> queries. This exponential separation is the cornerstone of quantum cryptanalysis and also extends to other <strong>hidden subgroup problems</strong>, of which factoring and discrete log are abelian instances. Non-abelian cases (e.g., graph isomorphism) remain stubbornly open.</p>",
+        "mathExpressions": [
+          "\\text{period } r \\text{ in time} \\xleftrightarrow{\\text{QFT}} \\text{peaks at multiples of } N/r \\text{ in frequency}",
+          "\\text{HSP: find } H \\leq G \\text{ such that } f(x) = f(y) \\iff xH = yH"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q25", "qc-q26", "qc-q27", "qc-q28", "qc-q29", "qc-q30", "qc-q31", "qc-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-05",
+    "topicId": "cs-quantum-computing",
+    "order": 5,
+    "title": "Shor's Algorithm and Grover's Algorithm",
+    "description": "Factoring via period finding, and √N search by amplitude amplification",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "qc-05-c1",
+        "title": "Shor: Factoring as Period Finding",
+        "contentHtml": "<p><strong>Shor's algorithm</strong> (1994) factors an n-bit integer <code>N</code> in time polynomial in <code>n</code>. The classical reduction is elementary number theory: pick a random <code>a</code> coprime to <code>N</code>, find the multiplicative order <code>r</code> of <code>a</code> mod <code>N</code> (smallest <code>r</code> with <code>a^r ≡ 1 mod N</code>). If <code>r</code> is even and <code>a^{r/2} ≢ −1 mod N</code>, then <code>gcd(a^{r/2} ± 1, N)</code> yields a non-trivial factor of <code>N</code>. Each random <code>a</code> succeeds with probability at least 1/2.</p><p>The whole game reduces to <strong>order finding</strong>: compute the period <code>r</code> of <code>f(x) = a^x mod N</code>. Classically, this is essentially as hard as factoring. Quantumly, it's a hidden-subgroup problem that QPE plus QFT solves in <code>O((log N)²(log log N)(log log log N))</code> with the best variants — polynomial in the bit-length.</p><p>The cryptographic stakes are huge. RSA's security rests on integer factoring; Diffie–Hellman and elliptic-curve cryptography rest on the discrete log, also broken by Shor. A scalable, fault-tolerant quantum computer breaks essentially all currently deployed public-key cryptography. NIST began standardizing <strong>post-quantum cryptography</strong> (lattice-based, hash-based, code-based) precisely because of this threat. As of 2024, the largest number factored with a fully Shor-style protocol on real hardware is small (15 was a milestone; 21 has been claimed); we are not yet close to breaking 2048-bit RSA, which would require millions of physical qubits with current overheads.</p>",
+        "mathExpressions": [
+          "f(x) = a^x \\bmod N, \\quad r = \\text{ord}_N(a)",
+          "\\gcd(a^{r/2} \\pm 1, N) \\text{ yields factor of } N \\text{ when } r \\text{ even and } a^{r/2} \\not\\equiv -1"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-05-c2",
+        "title": "Grover: √N Search and Amplitude Amplification",
+        "contentHtml": "<p><strong>Grover's algorithm</strong> (1996) finds a marked element in an unsorted database of size <code>N</code> using <code>O(√N)</code> queries to a black-box oracle. Classically you need <code>Ω(N)</code> on average. The quadratic speedup is more modest than Shor's exponential but applies to a vastly broader class of problems — anywhere you can phrase a search as an oracle.</p><p>The algorithm works by <strong>amplitude amplification</strong>. Start in equal superposition over all N items, amplitude <code>1/√N</code> on each. Apply the oracle (flips the sign of the marked item) followed by the Grover diffusion operator (reflection about the average amplitude). Each iteration rotates the state vector toward the marked element by angle <code>2 arcsin(1/√N) ≈ 2/√N</code>. After <code>≈ (π/4)√N</code> iterations the marked-element amplitude is near 1; measure and read it out.</p><p>The <code>√N</code> bound is <strong>optimal</strong> for unstructured search (Bennett, Bernstein, Brassard, Vazirani 1997 — no quantum algorithm can do better with only oracle access). Grover generalizes to <strong>amplitude estimation</strong> (estimate <code>P(success)</code> with quadratic speedup over Monte Carlo) and to many algorithmic primitives: collision finding, mean estimation, NP-search heuristics. Practical Grover requires the oracle implemented as a coherent quantum circuit — building that oracle for, e.g., a SAT formula, is the expensive part on real hardware.</p>",
+        "mathExpressions": [
+          "\\text{Grover queries: } \\frac{\\pi}{4}\\sqrt{N} \\text{ vs classical } \\Omega(N)",
+          "\\theta = 2\\arcsin\\left(\\frac{1}{\\sqrt{N}}\\right) \\approx \\frac{2}{\\sqrt{N}} \\text{ rotation per iteration}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-05-c3",
+        "title": "What These Speedups Do (and Don't) Buy",
+        "contentHtml": "<p>It's tempting to assume Grover gives a free quadratic speedup on every algorithm. It doesn't. Grover is competitive only on <em>unstructured</em> problems with a clean oracle. Where classical algorithms exploit structure (SAT solvers' clause learning, branch-and-bound, ILP cutting planes), the comparison is much messier; quantum advantages are often theoretical and small.</p><p>Symmetric cryptography is the cleanest practical Grover target. AES-128 has 2¹²⁸ keys; Grover-style key search would take <code>2⁶⁴</code> quantum queries. So the rule of thumb is to <em>double key sizes</em> against quantum adversaries: AES-256 retains 128 bits of effective security against Grover. By contrast, Shor doesn't just halve the security of RSA — it kills it outright.</p><p>For Shor itself, current resource estimates for breaking 2048-bit RSA are around 20 million noisy physical qubits running for hours under reasonable error rates (Gidney–Ekerå 2021). Today's largest fault-tolerant prototypes run at the level of a handful of logical qubits (Google Willow's 2024 demonstration showed below-threshold error suppression on a distance-7 surface code). The factoring threat is real but the engineering gap remains enormous, and post-quantum migration buys time more than it dodges fundamentals.</p>",
+        "mathExpressions": [
+          "\\text{Grover on AES-128: } 2^{64} \\text{ queries} \\implies \\text{use AES-256}",
+          "\\text{Shor on RSA-2048: } \\approx 2 \\times 10^7 \\text{ noisy physical qubits (Gidney–Ekerå 2021)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q33", "qc-q34", "qc-q35", "qc-q36", "qc-q37", "qc-q38", "qc-q39", "qc-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-06",
+    "topicId": "cs-quantum-computing",
+    "order": 6,
+    "title": "Variational Algorithms: VQE and QAOA",
+    "description": "Hybrid quantum-classical algorithms for the NISQ era",
+    "xpReward": 145,
+    "concepts": [
+      {
+        "id": "qc-06-c1",
+        "title": "VQE: Variational Quantum Eigensolver",
+        "contentHtml": "<p>The <strong>Variational Quantum Eigensolver (VQE)</strong> (Peruzzo et al., 2014) finds the ground-state energy of a Hamiltonian <code>H</code> using a hybrid quantum-classical loop. Prepare a parameterized state <code>|ψ(θ)⟩</code> on the quantum computer, measure the expectation value <code>⟨ψ(θ)|H|ψ(θ)⟩</code>, and let a classical optimizer adjust <code>θ</code> to minimize that energy. The variational principle guarantees the result is an upper bound on the true ground-state energy.</p><p>VQE is attractive because it's <em>shallow</em>. Unlike phase estimation (which requires deep, fault-tolerant circuits), VQE pushes most of the work onto a classical optimizer and uses the quantum device only for state preparation and energy measurement. This makes it the leading candidate algorithm for noisy intermediate-scale quantum (<strong>NISQ</strong>) hardware.</p><p>Applications cluster around quantum chemistry: H₂ (Peruzzo 2014), LiH, BeH₂, water (IBM 2017), and small molecules ranging up to about 12 qubits in production runs. The dream is computing reaction energies and binding affinities for drug discovery and catalysis. The catch: chemical accuracy (1 kcal/mol) requires very high-precision energy estimates, which means many shots and very low gate noise — a target current devices struggle to hit.</p>",
+        "mathExpressions": [
+          "E(\\theta) = \\bra{\\psi(\\theta)} H \\ket{\\psi(\\theta)} \\geq E_0",
+          "\\theta^* = \\arg\\min_\\theta E(\\theta), \\quad \\text{repeat measure-and-update}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-06-c2",
+        "title": "QAOA and Combinatorial Optimization",
+        "contentHtml": "<p>The <strong>Quantum Approximate Optimization Algorithm</strong> (Farhi, Goldstone, Gutmann 2014) tackles classical combinatorial optimization problems like Max-Cut, Max-3-SAT, and Ising-model ground states. Encode the problem cost as a Hamiltonian <code>H_C</code>; then alternate <em>p</em> rounds of <code>e^{−iγH_C}</code> (cost evolution) with <code>e^{−iβH_M}</code> (mixer evolution, often <code>H_M = Σ X_i</code>) on a uniform-superposition initial state. A classical optimizer tunes the <code>2p</code> parameters <code>(γ, β)</code> to maximize the average cost.</p><p>At <code>p = 1</code>, QAOA on Max-Cut already beats random guessing and matches the Goemans–Williamson approximation ratio in some regimes. As <code>p → ∞</code>, QAOA converges to the optimum (it's effectively adiabatic). The open question is whether finite-<code>p</code> QAOA gives a quantum advantage over the best classical heuristics for any practically interesting problem class — current evidence is mixed.</p><p>QAOA fits NISQ hardware well: it's variational, low-depth, robust to some noise, and uses standard two-qubit gates. Companies like QunaSys, Zapata, and 1QBit have applied QAOA-flavored algorithms to portfolio optimization, scheduling, and logistics. Whether these beat classical solvers on real instances remains a live empirical question — the most honest current answer is \"sometimes, on small toy problems, by narrow margins.\"</p>",
+        "mathExpressions": [
+          "\\ket{\\psi(\\gamma, \\beta)} = \\prod_{k=1}^p e^{-i\\beta_k H_M} e^{-i\\gamma_k H_C} \\ket{+}^{\\otimes n}",
+          "\\text{maximize } \\bra{\\psi}H_C\\ket{\\psi}, \\text{ tune } 2p \\text{ params classically}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-06-c3",
+        "title": "Ansätze and Barren Plateaus",
+        "contentHtml": "<p>Variational algorithms hinge on the choice of <strong>ansatz</strong>: the parametrized circuit family <code>|ψ(θ)⟩</code>. <strong>Hardware-efficient ansätze</strong> stack alternating layers of single-qubit rotations and native two-qubit gates — easy to run, but expressive and structureless. <strong>Problem-inspired ansätze</strong> (UCCSD for chemistry, the Hamiltonian-variational ansatz, ADAPT-VQE) bake physics into the circuit at the cost of extra gates.</p><p>The most painful issue is the <strong>barren plateau phenomenon</strong> (McClean et al., 2018): for sufficiently expressive random circuits, gradients of <code>E(θ)</code> vanish exponentially in the number of qubits. Optimization on a flat landscape is essentially hopeless — every direction looks identically zero, and shot noise overwhelms any real signal. Hardware-efficient ansätze in particular suffer barren plateaus at moderate depth.</p><p>Mitigations include warm starts, locality-preserving cost functions, layer-wise training, problem-aware ansätze, and identity initialization. None fully solves the issue. Combined with circuit noise — which adds its own \"noise-induced\" barren plateaus — this is why the consensus has cooled on near-term variational quantum advantage. The fundamental question of whether VQE/QAOA can deliver real-world speedups in the NISQ era is still open in 2026, with skeptics increasingly outweighing the optimists.</p>",
+        "mathExpressions": [
+          "\\text{Var}[\\partial_\\theta E] \\sim \\frac{1}{2^{2n}} \\text{ (barren plateau, exponentially small)}",
+          "\\text{ansatz examples: HEA, UCCSD, HVA, ADAPT-VQE}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q41", "qc-q42", "qc-q43", "qc-q44", "qc-q45", "qc-q46", "qc-q47", "qc-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-07",
+    "topicId": "cs-quantum-computing",
+    "order": 7,
+    "title": "Quantum Simulation",
+    "description": "Trotterization, Hamiltonian simulation, and the chemistry killer-app",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "qc-07-c1",
+        "title": "Why Quantum Simulation Was the Original Idea",
+        "contentHtml": "<p>Feynman's 1982 lecture \"Simulating Physics with Computers\" is the founding pitch for quantum computing. His point: quantum systems with n particles live in <code>2ⁿ</code>-dimensional Hilbert spaces, so simulating them on classical hardware costs exponential memory. But you could in principle build a controlled quantum system that <em>is</em> the simulation — same dimensionality, same dynamics, polynomial overhead.</p><p>Concretely: simulating the time evolution <code>e^{−iHt}</code> of a local n-qubit Hamiltonian on a classical computer takes <code>O(2ⁿ)</code> work; on a quantum computer it takes <code>poly(n, t)</code>. This exponential speedup is for a real, physically motivated problem (Lloyd 1996 made it rigorous). Crucially, this isn't an oracle separation — it's an honest practical speedup whenever you can encode the Hamiltonian.</p><p>Applications: predicting chemical reaction rates, designing catalysts, simulating high-temperature superconductors, understanding nitrogen fixation in nitrogenase (a long-standing target — classical methods can't handle the Fe-Mo cofactor), simulating lattice gauge theories from particle physics. Most experts agree that quantum chemistry and materials are the most likely first applications to deliver real-world quantum advantage, ahead of any cryptanalytic application of Shor.</p>",
+        "mathExpressions": [
+          "\\dim \\mathcal{H} = 2^n \\text{ for n qubits} \\implies \\text{classical sim is } O(2^n)",
+          "U(t) = e^{-iHt}, \\quad H = \\sum_j H_j \\text{ local terms}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-07-c2",
+        "title": "Trotterization and Modern Simulation Methods",
+        "contentHtml": "<p>The basic trick to simulate <code>U(t) = e^{−iHt}</code> when <code>H = Σ H_j</code> is the <strong>Trotter–Suzuki decomposition</strong>: <code>e^{−iHt} ≈ (Π_j e^{−iH_j t/r})^r</code>. Each <code>e^{−iH_j t/r}</code> is a small step of a single local term, easy to implement. Higher-order Trotter formulas reduce error scaling; first-order has error <code>O(t²/r)</code>, second-order <code>O(t³/r²)</code>.</p><p>Trotterization is simple but expensive. Newer methods cut cost dramatically. <strong>Linear combinations of unitaries (LCU)</strong> simulate <code>H</code> by querying a block-encoding. <strong>Quantum signal processing (QSP)</strong> and <strong>qubitization</strong> (Low–Chuang 2019) achieve near-optimal scaling: <code>O(t‖H‖ + log(1/ε))</code> queries — additive in error rather than multiplicative. These are now the gold standard for Hamiltonian simulation in fault-tolerant resource estimates.</p><p>Resource estimates for chemistry — say, computing the activation energy of FeMoco — have come down by 5+ orders of magnitude over the past decade through better encodings, better ansätze, and active-space tricks. Still, fault-tolerant chemistry beyond toy molecules requires hundreds to thousands of logical qubits and trillions of T gates, well beyond 2026 hardware.</p>",
+        "mathExpressions": [
+          "e^{-iHt} \\approx \\left(\\prod_j e^{-iH_j t/r}\\right)^r, \\quad \\text{first-order error } O(t^2/r)",
+          "\\text{qubitization: } O(t\\|H\\| + \\log(1/\\varepsilon)) \\text{ queries to block-encoding of } H"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-07-c3",
+        "title": "Encoding Chemistry into Qubits",
+        "contentHtml": "<p>Molecules are described by an electronic Hamiltonian: kinetic plus Coulomb terms in a basis of orbitals. The <strong>second-quantized form</strong> writes <code>H</code> as sums of fermionic creation/annihilation operators <code>a_p^† a_q^† a_r a_s</code> with one- and two-electron integrals as coefficients.</p><p>To run on qubits we need a <strong>fermion-to-qubit mapping</strong>. The standard <strong>Jordan–Wigner transformation</strong> assigns one qubit per orbital and turns each fermion operator into a chain of Pauli operators that enforces antisymmetry — but the chains are O(n) long, making local fermion terms into nonlocal qubit terms. <strong>Bravyi–Kitaev</strong> reduces the chain length to <code>O(log n)</code>; newer mappings (parity, ternary tree) trade off locality and qubit count further. Choosing the right encoding can shrink simulation cost by orders of magnitude.</p><p>Active-space methods cut the orbital count by freezing core electrons and only treating valence interactions quantumly. Most NISQ chemistry papers run a small active space on the quantum computer and a much larger CASSCF or coupled-cluster calculation classically around it. The full quantum simulation of meaningful catalysts — like the cytochrome-P450 metabolism simulations, or industrial Haber-Bosch nitrogen-fixation alternatives — remains an aspirational target requiring fault-tolerance.</p>",
+        "mathExpressions": [
+          "H = \\sum_{pq} h_{pq} a_p^\\dagger a_q + \\frac{1}{2}\\sum_{pqrs} h_{pqrs} a_p^\\dagger a_q^\\dagger a_r a_s",
+          "\\text{JW: } a_j \\to \\frac{1}{2}(X_j + iY_j) \\bigotimes_{k<j} Z_k"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q49", "qc-q50", "qc-q51", "qc-q52", "qc-q53", "qc-q54", "qc-q55", "qc-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-08",
+    "topicId": "cs-quantum-computing",
+    "order": 8,
+    "title": "Quantum Error Correction",
+    "description": "Bit-flip, phase-flip, the Shor code, surface codes, and the threshold theorem",
+    "xpReward": 155,
+    "concepts": [
+      {
+        "id": "qc-08-c1",
+        "title": "Why Quantum Error Correction Is Different",
+        "contentHtml": "<p>Classical error correction copies bits and votes: triplicate the bit, flip back any minority. Quantum error correction can't copy unknown states (no-cloning), and qubits suffer continuous errors — not just discrete bit-flips, but phase rotations and arbitrary single-qubit unitaries. Worse, measuring a qubit collapses its state, so we can't just look to check for errors.</p><p>The way out: encode each <strong>logical qubit</strong> across many <strong>physical qubits</strong>, then measure only the <em>syndrome</em> — operators that detect errors without revealing the encoded state itself. Crucially, continuous errors decompose into discrete Pauli errors (X, Y, Z) when measured against a stabilizer code: the syndrome forces the error into a discrete diagnosis, which we then correct.</p><p>The simplest example is the <strong>three-qubit bit-flip code</strong>: encode <code>|0⟩ → |000⟩, |1⟩ → |111⟩</code>. A single bit-flip on any one of the three qubits can be detected by measuring <code>Z_1Z_2</code> and <code>Z_2Z_3</code> (which only reveal whether the qubits agree, not their values). Match the syndrome to the error, apply X to the affected qubit, and the logical state is restored. This corrects bit-flips but does nothing about phase errors. The dual three-qubit phase-flip code corrects phases but not bit-flips. Concatenating them gives Shor's nine-qubit code, which corrects any single-qubit error.</p>",
+        "mathExpressions": [
+          "\\ket{0}_L = \\ket{000}, \\quad \\ket{1}_L = \\ket{111}, \\quad \\text{stabilizers } Z_1 Z_2,\\, Z_2 Z_3",
+          "\\text{Shor code: 9 physical qubits} \\to \\text{1 logical qubit, corrects any 1-qubit error}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-08-c2",
+        "title": "Stabilizer Codes and the Surface Code",
+        "contentHtml": "<p>The <strong>stabilizer formalism</strong> (Gottesman) describes a quantum code by the abelian group <em>S</em> of Pauli operators that fix the codespace. For <code>n</code> physical qubits and <code>n − k</code> independent stabilizer generators, the codespace encodes <code>k</code> logical qubits. Errors are detected by measuring the generators — outcomes give the syndrome, which we feed to a classical decoder.</p><p>The <strong>surface code</strong> (Kitaev 1997) is the dominant practical code. Place qubits on a 2D lattice; each plaquette and each vertex contributes one stabilizer (an X-type or Z-type four-body operator). The code distance <code>d</code> equals the lattice size; a distance-<code>d</code> code can correct any error of weight <code>(d − 1)/2</code>. Crucially, all stabilizers are <em>geometrically local</em> — implementable on any planar chip. A logical qubit takes <code>O(d²)</code> physical qubits, so larger <code>d</code> means more overhead but exponentially better protection.</p><p>Surface code is Google's choice for Willow (2024), IBM's roadmap target, and most superconducting fault-tolerance proposals. In December 2024 Google demonstrated <em>below-threshold</em> error suppression on a distance-7 surface code, the first experiment to show the logical error rate decreasing as code distance increases — a key milestone toward useful fault-tolerance. Other codes (color codes, LDPC codes, recently the <strong>bivariate bicycle codes</strong> from IBM 2024) offer better encoding rates but trade off connectivity demands.</p>",
+        "mathExpressions": [
+          "\\text{stabilizer code: } S = \\langle g_1, \\ldots, g_{n-k}\\rangle \\subset \\mathcal{P}_n, \\; -I \\notin S",
+          "\\text{surface code: } [[d^2 + (d-1)^2,\\, 1,\\, d]] \\text{ (rotated)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-08-c3",
+        "title": "The Threshold Theorem",
+        "contentHtml": "<p>The <strong>threshold theorem</strong> (Aharonov–Ben-Or, Knill–Laflamme–Zurek, Kitaev, late 1990s) is the theoretical foundation of fault-tolerant quantum computing: if every physical gate has error rate below some threshold <code>p_th</code>, then arbitrarily long quantum computations are possible at <em>polynomial</em> overhead — by recursively concatenating codes or by increasing surface-code distance, we drive the logical error rate down exponentially with overhead.</p><p>The threshold for the surface code under realistic noise is around <code>p_th ≈ 0.5–1%</code> per gate. State-of-the-art two-qubit gate fidelities sit around 99.7–99.9% on the best superconducting and trapped-ion platforms in 2024–2025 — comfortably <em>below</em> threshold. That's why Google Willow's 2024 result mattered: it showed logical error rates dropping with code distance, which is the experimental signature of operating below threshold.</p><p>The catch is overhead. Even at 10× below threshold, breaking RSA-2048 with Shor under realistic error rates requires roughly <code>10⁷–10⁸</code> physical qubits and hours of runtime (Gidney–Ekerå 2021). Recent algorithmic and code-level improvements (LDPC codes, magic state cultivation, 2024 IBM bivariate bicycle codes) keep cutting this; current best estimates for various commercially interesting tasks now sit in the <code>10⁵–10⁶</code> physical qubit range. The hardware to hit those numbers does not yet exist, but the engineering trajectory is clear.</p>",
+        "mathExpressions": [
+          "p < p_{\\text{th}} \\implies \\text{logical error rate } p_L \\sim (p/p_{\\text{th}})^{(d+1)/2}",
+          "p_{\\text{th}}(\\text{surface code}) \\approx 0.5\\%–1\\% \\text{ per gate (depolarizing noise)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q57", "qc-q58", "qc-q59", "qc-q60", "qc-q61", "qc-q62", "qc-q63", "qc-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-09",
+    "topicId": "cs-quantum-computing",
+    "order": 9,
+    "title": "Hardware Platforms and the NISQ Era",
+    "description": "Transmons, trapped ions, neutral atoms, photonic — and what each does well",
+    "xpReward": 155,
+    "concepts": [
+      {
+        "id": "qc-09-c1",
+        "title": "Superconducting Transmons",
+        "contentHtml": "<p><strong>Superconducting transmon qubits</strong> are the dominant industrial platform — used by Google, IBM, Rigetti, Quantinuum (legacy), Amazon, and most academic labs. A transmon is essentially an LC resonator with a Josephson junction replacing the inductor; the junction's nonlinearity makes the energy levels unequally spaced so we can address only the bottom two as our qubit. Microwave pulses drive single-qubit rotations; tunable couplers or static capacitive coupling implement two-qubit gates.</p><p>Transmons live on a chip at ~10 mK in a dilution refrigerator, with coherence times <code>T_1, T_2 ≈ 50–500 µs</code> (top-end labs in 2024). Two-qubit gate fidelities sit around 99.5–99.9% with gate times of 30–500 ns. The fast clock speed (microsecond gates) is a strength; the cryogenic infrastructure and crosstalk on dense lattices are weaknesses.</p><p>Recent milestones: <strong>Google Willow</strong> (Dec 2024) — 105 qubits, distance-7 surface code, first below-threshold demonstration. <strong>IBM Heron</strong> (2024) — 133 qubits with high-fidelity tunable couplers, scaling to Condor (1121 qubits) and Kookaburra. <strong>Rigetti Ankaa</strong> — 84 qubits with 99% gate fidelity. The industry roadmap targets <code>10⁴+</code> physical qubit chips in the late 2020s, multi-chip modular systems for the millions-of-qubits range.</p>",
+        "mathExpressions": [
+          "T_1, T_2 \\approx 50\\text{–}500\\,\\mu\\text{s}, \\quad \\text{gate fidelity } \\approx 99.5\\text{–}99.9\\%",
+          "\\text{Willow (2024): 105 qubits, surface code distance 7}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-09-c2",
+        "title": "Trapped Ions, Neutral Atoms, Photonic",
+        "contentHtml": "<p><strong>Trapped ion</strong> qubits use individual atomic ions (Yb⁺, Ca⁺, Ba⁺) levitated in vacuum traps and addressed by lasers. Coherence times are spectacular (seconds to minutes — orders of magnitude better than transmons), gate fidelities are the highest of any platform (99.9%+ on small systems), and connectivity is all-to-all within a trap. The downside is slow gates (10–100 µs) and harder scaling beyond ~50 ions per trap. <strong>IonQ</strong>, <strong>Quantinuum</strong> (H1, H2), and academic groups push trapped ion frontier; Quantinuum H2 reached 56 qubits with high fidelity in 2024.</p><p><strong>Neutral atoms</strong> (Rydberg atom arrays) levitate hundreds to thousands of atoms in optical tweezer arrays, addressing each individually with focused lasers. <strong>Atom Computing</strong> demonstrated a 1180-atom array in 2023; <strong>QuEra</strong>'s Aquila is publicly accessible. Strengths: massive arrays, reconfigurable connectivity, mid-circuit measurement; weaknesses: still maturing gate fidelities and slower clock speeds. Promising platform for analog quantum simulation and lattice-based algorithms.</p><p><strong>Photonic</strong> quantum computers use single photons in linear-optical circuits. <strong>Xanadu</strong>, <strong>PsiQuantum</strong>, and <strong>Quandela</strong> are the major players. Photons don't decohere in flight — they're naturally suited to networking and travel through ordinary fiber — but two-photon gates are probabilistic, requiring measurement-based or fusion-based architectures. PsiQuantum is pursuing fault-tolerant photonic computers as their first product. Different physics, different engineering trade-offs; no single platform has clearly won.</p>",
+        "mathExpressions": [
+          "\\text{trapped ion: } T_2 \\sim \\text{seconds–minutes, fidelity } 99.9\\%+",
+          "\\text{platforms: superconducting, trapped ion, neutral atom, photonic, NV-center, topological}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-09-c3",
+        "title": "What NISQ Means and What's Next",
+        "contentHtml": "<p>John Preskill's 2018 term <strong>NISQ</strong> — Noisy Intermediate-Scale Quantum — describes the current hardware era: 50–1000-ish qubits with gate error rates around 0.1–1%, no error correction, limited circuit depth before noise dominates. NISQ devices can run circuits up to ~100 layers deep on a few dozen qubits before noise erases the signal.</p><p>The original NISQ pitch was that variational algorithms (VQE, QAOA) plus error mitigation might achieve practical advantage in this regime. As of 2026, that pitch has cooled. Barren plateaus, noise-induced training failure, and steady classical-algorithm progress have made unambiguous \"NISQ quantum advantage\" elusive. Sampling-based <em>quantum supremacy</em> claims (Google 2019, USTC 2020, Google Willow 2024) demonstrate computations classical computers can't simulate, but they don't solve useful problems.</p><p>The field is increasingly post-NISQ: focused on <strong>early fault tolerance</strong> — a few hundred high-quality logical qubits running shorter, magic-state-distillation-aware algorithms. Google Willow's below-threshold demonstration is the bellwether. Most analysts expect the first commercially valuable quantum applications (chemistry, materials, optimization) to require fault-tolerance. The 2030s, not the 2020s, are the realistic timeline for \"useful quantum,\" and the engineering work to get there is now the central challenge of the field.</p>",
+        "mathExpressions": [
+          "\\text{NISQ: } 50\\text{–}1000 \\text{ qubits, no QEC, } \\sim 100 \\text{-layer-deep circuits before noise dominates}",
+          "\\text{early FTQC: } \\sim 100 \\text{ logical qubits, } \\sim 10^4\\text{–}10^5 \\text{ physical qubits}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q65", "qc-q66", "qc-q67", "qc-q68", "qc-q69", "qc-q70", "qc-q71", "qc-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "qc-10",
+    "topicId": "cs-quantum-computing",
+    "order": 10,
+    "title": "Quantum Complexity and the Modern Landscape",
+    "description": "BQP, oracle separations, supremacy claims, and where quantum is heading",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "qc-10-c1",
+        "title": "BQP, P, and NP",
+        "contentHtml": "<p><strong>BQP</strong> (Bounded-error Quantum Polynomial time) is the class of decision problems solvable in polynomial time by a quantum computer with bounded error probability. It is the quantum analog of <strong>BPP</strong> (Bounded-error classical Probabilistic Polynomial). We know <code>P ⊆ BPP ⊆ BQP ⊆ PSPACE</code> — quantum is at least as powerful as randomized polynomial time, and at most as powerful as polynomial-space classical computation.</p><p>The relationship between BQP and NP is one of the field's deepest open questions. We do <em>not</em> know that BQP contains NP — Grover gives only a quadratic speedup on NP-style search, not a polynomial-time algorithm. There's evidence (oracle separations, complexity-theoretic obstructions) suggesting BQP <em>does not</em> contain NP-complete problems efficiently. Factoring sits in NP ∩ co-NP, conjectured outside P but not believed to be NP-complete, and Shor places it in BQP — so factoring is a problem quantum solves but is plausibly not the hardest in NP.</p><p>The takeaway: quantum doesn't \"break NP-completeness.\" It carves out a distinct class of problems (factoring, discrete log, abelian hidden subgroup, simulation, certain sampling tasks) that classical computers struggle with and quantum computers handle efficiently — but most of NP-hard combinatorial optimization probably remains hard for both.</p>",
+        "mathExpressions": [
+          "P \\subseteq BPP \\subseteq BQP \\subseteq PSPACE",
+          "\\text{BQP vs NP: incomparable as far as we know; neither known to contain the other}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-10-c2",
+        "title": "Oracle Separations and Sampling Supremacy",
+        "contentHtml": "<p>Oracle separations show provable quantum-classical gaps for query complexity. <strong>Deutsch–Jozsa</strong>: 1 quantum query versus <code>2^{n−1}+1</code> classical (for a constant-vs-balanced promise). <strong>Bernstein–Vazirani</strong>: 1 quantum query versus <code>n</code> classical. <strong>Simon's algorithm</strong>: <code>O(n)</code> quantum versus <code>Ω(2^{n/2})</code> classical for a hidden-XOR problem. These are exponential separations, but the problems are contrived to make oracles fail classically.</p><p><strong>Quantum supremacy</strong> (or \"quantum computational advantage\") asks: can a quantum device perform <em>any</em> computation that no classical computer can simulate in reasonable time? The 2019 Google Sycamore experiment (53 qubits, random circuit sampling) was the first claimed demonstration. USTC's photonic Jiuzhang (2020) and Zuchongzhi (2021), and Google's 2024 Willow random-circuit-sampling result are subsequent claims. Most rely on the conjecture that approximating output distributions of random quantum circuits is classically hard (anti-concentration plus a hardness assumption like polynomial hierarchy not collapsing).</p><p>These claims have been challenged repeatedly — better classical algorithms have eaten into earlier supremacy gaps. The 2024 Willow claim used a circuit beyond plausible classical simulation by orders of magnitude, but classical simulation methods continue improving. The honest position: sampling supremacy is a meaningful experimental milestone, but it is not the same as solving a useful problem faster than a classical computer can.</p>",
+        "mathExpressions": [
+          "\\text{Simon: } O(n) \\text{ quantum vs } \\Omega(2^{n/2}) \\text{ classical queries}",
+          "\\text{RCS hardness: assumes polynomial hierarchy doesn't collapse}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qc-10-c3",
+        "title": "When Does \"Useful Quantum\" Arrive?",
+        "contentHtml": "<p>Forecasting timelines is treacherous. Best-guess consensus in 2026: <strong>fault-tolerant quantum chemistry on industrially relevant molecules</strong> — late 2020s to early 2030s. <strong>Cryptographically relevant quantum computers</strong> capable of breaking RSA-2048 — early-to-mid 2030s, with significant uncertainty. <strong>NISQ quantum advantage on a useful problem</strong> — possibly never, possibly soon; the burden of proof has shifted to the optimists.</p><p>Drivers of the timeline. <strong>Hardware</strong>: Google, IBM, IonQ, Quantinuum, PsiQuantum, Atom Computing all have plausible roadmaps to <code>10⁴+</code>-qubit machines by 2030. <strong>Codes</strong>: surface codes are the workhorse, but new LDPC codes (IBM 2024 bivariate bicycle, gross codes) cut overhead 10×; further code innovation could cut another 10×. <strong>Algorithms</strong>: resource estimates for chemistry have fallen 5+ orders of magnitude in a decade; this trend continues. <strong>Error mitigation</strong>: probabilistic error cancellation and zero-noise extrapolation extend NISQ usefulness modestly.</p><p>Headwinds: classical algorithms keep improving (e.g., tensor-network simulation now matches some early supremacy claims), barren plateaus and noise-induced training failure dim NISQ prospects, and the engineering of millions of well-controlled physical qubits is genuinely hard. The most honest summary: quantum computing is real, the physics works, the engineering is on track but slow, and meaningful commercial impact is plausible but not imminent. Anyone telling you a precise year for \"the quantum revolution\" is selling something.</p>",
+        "mathExpressions": [
+          "\\text{rough timeline: chemistry } \\sim 2030,\\, \\text{Shor on RSA-2048 } \\sim 2035 \\text{ (huge error bars)}",
+          "\\text{driver budget: hardware, codes, algorithms, error mitigation}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qc-q73", "qc-q74", "qc-q75", "qc-q76", "qc-q77", "qc-q78", "qc-q79", "qc-q80"],
+    "puzzleId": null
+  }
+]

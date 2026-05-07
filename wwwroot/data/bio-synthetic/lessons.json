@@ -1,0 +1,326 @@
+[
+  {
+    "id": "synb-01",
+    "topicId": "bio-synthetic",
+    "order": 1,
+    "title": "The Engineering Vision: BioBricks and iGEM",
+    "description": "Tom Knight, Drew Endy, and the dream of standard biological parts",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "synb-01-c1",
+        "title": "From Genetic Engineering to Synthetic Biology",
+        "contentHtml": "<p>Recombinant DNA in the 1970s let biologists move single genes between organisms. <strong>Synthetic biology</strong>, named in the early 2000s by people like <strong>Tom Knight</strong> at MIT and <strong>Drew Endy</strong> at Stanford, asked a different question: can we engineer biology the way electrical engineers design circuits — with standard parts, predictable behavior, and reusable abstractions?</p><p>The motivating frustration was that every cloning project was artisanal. A promoter that worked in one construct behaved differently in another. Combining two devices that each worked alone usually broke both. Compared to electronics, where you can buy a 555 timer and trust it across designs, biology had no parts catalog and no engineering discipline.</p><p>Knight's 2003 manifesto proposed <strong>BioBricks</strong>: DNA fragments with standardized flanking restriction sites (EcoRI/XbaI/SpeI/PstI) that could be cut, pasted, and combined predictably. Each part would be characterized, deposited in a registry, and freely available. The vision was a parts list of life — the periodic table of synthetic biology.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-01-c2",
+        "title": "The Abstraction Hierarchy",
+        "contentHtml": "<p>Endy's 2005 <em>Nature</em> paper \"Foundations for Engineering Biology\" laid out a layered abstraction stack borrowed from computer engineering: <strong>DNA → parts → devices → systems</strong>. A biologist working at the systems layer should not need to know the DNA sequence, just as a programmer doesn't think about transistor physics.</p><p>A <strong>part</strong> is a basic functional element: a promoter, a ribosome binding site (RBS), a coding sequence, a terminator. A <strong>device</strong> combines parts to produce a defined behavior — for example, a promoter + RBS + GFP gene + terminator forms a fluorescence reporter device. A <strong>system</strong> assembles devices into a multi-function circuit, like a toggle switch or a biosensor.</p><p>The hierarchy is aspirational. In practice, <strong>context dependence</strong> breaks abstraction at every layer: a promoter's strength depends on its neighbors, RBS efficiency depends on downstream codons, and metabolic load couples unrelated devices through shared resources. Synthetic biology is partly the engineering project of pushing real biology closer to the clean abstractions the discipline pretends it already has.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-01-c3",
+        "title": "iGEM and the Registry of Standard Biological Parts",
+        "contentHtml": "<p>The <strong>International Genetically Engineered Machine</strong> competition (iGEM) was launched at MIT in 2004 as a summer course and grew into a global undergraduate competition with hundreds of teams annually. Each team designs and builds a synthetic biology project over a summer, then presents at the Giant Jamboree.</p><p>iGEM teams contribute parts to the <strong>Registry of Standard Biological Parts</strong>, a public catalog now containing tens of thousands of entries — promoters, reporters, sensors, logic gates. Famous early contributions include the <strong>Edinburgh 2006 arsenic biosensor</strong> (color-changing E. coli detecting arsenic in water) and the <strong>UT Austin/UCSF 2004 \"bactography\"</strong> photographic film made of light-sensitive bacteria.</p><p>iGEM mattered for two reasons. It trained a generation of researchers in synthetic biology when no curriculum existed, and it forced honest engagement with the gap between vision and reality: most BioBricks didn't compose cleanly, characterizations didn't transfer between labs, and the Registry became a graveyard of poorly documented parts. The community's response — better standards (RFC 10, RFC 25), the SBOL data format, MoClo-style assembly — drove much of the field's maturation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q01", "synb-q02", "synb-q03", "synb-q04", "synb-q05", "synb-q06", "synb-q07", "synb-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-02",
+    "topicId": "bio-synthetic",
+    "order": 2,
+    "title": "DNA Assembly: Gibson, Golden Gate, MoClo",
+    "description": "How synthetic biologists actually stitch DNA together",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "synb-02-c1",
+        "title": "BioBricks and the Limits of Restriction Cloning",
+        "contentHtml": "<p>The original <strong>BioBricks RFC 10</strong> assembly used a clever scheme: each part is flanked by EcoRI/XbaI on the 5' end and SpeI/PstI on the 3' end. XbaI and SpeI produce compatible sticky ends; ligating them creates a scar that neither enzyme can recut. This lets you join parts pairwise, then keep adding more.</p><p>The advantages were standardization and a low barrier to entry: any lab with basic molecular biology equipment could combine BioBricks. The disadvantages became apparent quickly. Each assembly step takes a day. The 8-bp scar between parts (<code>TACTAGAG</code>) introduces translational frame issues for protein fusions. Internal EcoRI/XbaI/SpeI/PstI sites in the part itself are forbidden, restricting which sequences can be parts at all.</p><p>The deeper problem: BioBricks join parts <em>two at a time</em>. A 10-part circuit takes 9 sequential assemblies — weeks of work. Modern synthetic biology demanded <strong>one-pot, multi-fragment</strong> assembly where many fragments combine in a single reaction.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-02-c2",
+        "title": "Gibson Assembly: Seamless and Scarless",
+        "contentHtml": "<p><strong>Gibson assembly</strong>, published by <strong>Daniel Gibson</strong> at the J. Craig Venter Institute in 2009, lets you join multiple DNA fragments in a single isothermal reaction at 50 °C. The fragments share short (15-40 bp) overlapping sequences at their ends. A three-enzyme master mix — T5 exonuclease (chews back 5' ends), Phusion polymerase (fills gaps), and Taq ligase (seals nicks) — does the rest.</p><p>The output is seamless: no scars, no forbidden sites, any sequence at any junction. Five to six fragments combine reliably in one tube; up to a dozen with care. Gibson assembly was the workhorse for Venter's 2010 synthesis of the entire 1.08-Mb <em>Mycoplasma mycoides</em> genome (\"Synthia\"), assembled from synthetic 1-kb fragments through hierarchical Gibson reactions.</p><p>The cost is overhang design and gene synthesis: every junction needs a unique overlap, and most projects order fragments from a synthesis company (Twist, IDT) at a few cents per base. Gibson assembly turned DNA construction from a craft into a design problem solvable in a CAD tool like Benchling or Geneious.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-02-c3",
+        "title": "Golden Gate and MoClo Modular Cloning",
+        "contentHtml": "<p><strong>Golden Gate assembly</strong> uses <strong>Type IIS</strong> restriction enzymes (BsaI, BsmBI, SapI) that cut <em>outside</em> their recognition site, leaving any 4-bp overhang you choose. Encode each junction with a different 4-bp sequence, and many fragments self-assemble into a defined order in one tube — typically 5-10 parts in a single overnight reaction.</p><p><strong>MoClo</strong> (Modular Cloning), published by Sylvestre Marillonnet's group in 2011, layers Golden Gate into a hierarchical standard. <strong>Level 0</strong> stores basic parts (promoters, CDSs, terminators) flanked by BsaI sites. A Level 0 → <strong>Level 1</strong> reaction combines parts into a transcription unit. A Level 1 → <strong>Level 2</strong> reaction combines several units into a multi-gene construct, switching enzymes (BsaI → BpiI) so the assembly product can't be re-cut.</p><p>MoClo and its plant-biology cousin <strong>GoldenBraid</strong> are now the dominant standards in academic synthetic biology. The Yeast MoClo toolkit (Dueber lab, 2015) and EcoFlex for E. coli give researchers hundreds of pre-characterized Level 0 parts they can compose into multi-gene pathways in two cloning steps. The discipline finally has the reusable parts library Endy imagined.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q09", "synb-q10", "synb-q11", "synb-q12", "synb-q13", "synb-q14", "synb-q15", "synb-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-03",
+    "topicId": "bio-synthetic",
+    "order": 3,
+    "title": "Genetic Circuit Design",
+    "description": "Promoters, RBS, terminators, and the math of transcriptional control",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "synb-03-c1",
+        "title": "The Parts: Promoters, RBS, Terminators",
+        "contentHtml": "<p>A bacterial transcriptional unit has four canonical parts. The <strong>promoter</strong> recruits RNA polymerase and sets transcription rate — constitutive (Anderson promoter library, J23100-J23119, ~3000-fold range) or inducible (pLac, pTet, pBAD respond to IPTG, aTc, arabinose). The <strong>ribosome binding site (RBS)</strong> sets translation initiation rate by base-pairing with the 16S rRNA anti-Shine-Dalgarno sequence. The <strong>coding sequence (CDS)</strong> is the protein. The <strong>terminator</strong> stops transcription so it doesn't bleed into downstream parts.</p><p>The Salis lab's <strong>RBS Calculator</strong> (2009) was a watershed: it predicts translation initiation rate from sequence using a thermodynamic model (Gibbs free energy of mRNA-rRNA hybridization plus secondary-structure penalties). For the first time, you could specify \"I want this protein expressed at 5,000 arbitrary units\" and the tool would design an RBS to hit that target within ~2-fold.</p><p>Promoter strength obeys a similar logic. The Voigt lab characterized hundreds of <em>E. coli</em> sigma factors and synthetic promoters; the resulting parts library is what circuit-design tools like Cello assume as their primitive vocabulary.</p>",
+        "mathExpressions": ["\\Delta G_{\\text{total}} = \\Delta G_{\\text{mRNA-rRNA}} + \\Delta G_{\\text{spacing}} + \\Delta G_{\\text{standby}} - \\Delta G_{\\text{mRNA fold}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-03-c2",
+        "title": "Repression and the Hill Function",
+        "contentHtml": "<p>Most genetic circuits are built from <strong>repressors</strong>: proteins that bind DNA operators and block transcription. LacI represses pLac unless allolactose (or IPTG) binds and releases it. TetR represses pTet unless tetracycline binds. The repressor-repressed system gives you an inverter (NOT gate): high TF input → low promoter output.</p><p>The steady-state output of a repressed promoter is well-modeled by a <strong>Hill function</strong>: <code>output = β · K^n / (K^n + [TF]^n)</code>, where β is the maximum expression rate, K is the half-repression concentration, and n is the Hill coefficient (cooperativity). Tetramerizing repressors like LacI typically have n ≈ 2; dimers like TetR n ≈ 1-2; very cooperative phage repressors can reach n ≈ 4.</p><p>The Hill coefficient matters because <strong>n controls switch sharpness</strong>. A circuit with n = 1 has a gradual response — a poor approximation of a digital gate. n ≥ 2 gives the sigmoidal response needed for clean ON/OFF behavior. Most circuit-design failures trace back to a repressor whose effective Hill coefficient is too low to behave digitally in the chosen genetic context.</p>",
+        "mathExpressions": ["\\frac{d[P]}{dt} = \\frac{\\beta \\cdot K^n}{K^n + [TF]^n} - \\gamma \\cdot [P]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-03-c3",
+        "title": "The Toggle Switch and the Repressilator",
+        "contentHtml": "<p>Two papers published back-to-back in <em>Nature</em> in January 2000 launched genetic circuit engineering. <strong>Gardner, Cantor, and Collins</strong> built a <strong>toggle switch</strong>: two repressors (LacI and a temperature-sensitive λ cI) each repressing the other's promoter. The system has two stable states (LacI-high or cI-high), and you can flip between them with a transient pulse of IPTG or heat. This was the first synthetic memory element — biology with bistability designed in, not borrowed.</p><p>The same week, <strong>Elowitz and Leibler</strong> published the <strong>repressilator</strong>: three repressors arranged in a cyclic loop (LacI represses TetR represses cI represses LacI). With appropriate kinetics, the circuit oscillates with a period of ~150 minutes, far longer than the cell cycle. Single-cell GFP reporters showed sustained but noisy oscillations across cell divisions.</p><p>Both papers proved a foundational claim: with a small number of well-characterized parts and a quantitative model, you can <em>design</em> dynamic behavior into living cells. The repressilator's noise also forced the field to confront <strong>stochasticity</strong> — at low molecule counts, deterministic ODE models fail, and you need the Gillespie algorithm or Langevin equations to predict circuit behavior.</p>",
+        "mathExpressions": ["\\dot{m}_i = -m_i + \\frac{\\alpha}{1 + p_j^n} + \\alpha_0, \\quad \\dot{p}_i = -\\beta(p_i - m_i)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q17", "synb-q18", "synb-q19", "synb-q20", "synb-q21", "synb-q22", "synb-q23", "synb-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-04",
+    "topicId": "bio-synthetic",
+    "order": 4,
+    "title": "Logic Gates, Cello, and Computational Design",
+    "description": "From transcription factors to Boolean circuits the compiler designs",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "synb-04-c1",
+        "title": "Building Boolean Logic in Cells",
+        "contentHtml": "<p>A repressed promoter is naturally a <strong>NOT gate</strong>. Two repressors converging on one promoter give a <strong>NOR gate</strong> (output ON only if both inputs OFF). Since {NOT, NOR} is functionally complete, every Boolean function can be built from cascades of repressor-promoter pairs.</p><p><strong>AND gates</strong> are subtler: classical implementations use a split T7 polymerase whose two halves are expressed from separate inducible promoters, or a chaperone-dependent CDS that only folds when both inputs are present. The Voigt lab's 2012 paper demonstrated <strong>AND, OR, NAND, NOR, XOR, and XNOR</strong> all built in <em>E. coli</em> from interchangeable parts.</p><p>The challenge is <strong>cascade depth</strong>. Each gate adds delay and noise; signals degrade as you go deeper. Real synthetic-biology circuits rarely exceed 4-5 gates in series before noise overwhelms the signal. This is the analog of digital electronics' fan-out limits, but tighter — biology is loud.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-04-c2",
+        "title": "Cello: A Compiler for Living Circuits",
+        "contentHtml": "<p><strong>Cello</strong>, published by <strong>Christopher Voigt's</strong> group in <em>Science</em> in 2016, was the first true compiler for genetic circuits. You write the desired logic in <strong>Verilog</strong> (the same hardware-description language used for chip design). Cello converts it to a logic graph, maps gates onto a library of characterized repressor-promoter NOT/NOR gates, runs simulations to predict response curves, and outputs a complete DNA sequence.</p><p>The library — 12 NOT/NOR gates from TetR-family repressors mined across bacterial genomes — was painstakingly characterized: each gate's response function (Hill parameters β, K, n) measured in <em>E. coli</em>. Cello solves a graph-mapping problem (which library gate goes at which graph node?) by minimizing an objective that combines on/off ratio, gate orthogonality, and metabolic load.</p><p>The 2016 paper showed Cello compiling 60 circuits across multiple sensors and outputs. About 75% worked first try — unprecedented for synthetic biology, where multi-gate circuits historically required months of debugging. Cello is the closest the field has come to Endy's vision of biology as routine engineering.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-04-c3",
+        "title": "CRISPR-Based Logic and Beyond",
+        "contentHtml": "<p>Repressor-based logic is limited by the small library of orthogonal repressors (those that don't cross-react). <strong>CRISPR interference (CRISPRi)</strong> using catalytically dead Cas9 (dCas9) targeted by guide RNAs offers a vast expansion: any 20-nt sequence can become a programmable repressor by designing a matching guide RNA. The Lim and Qi labs showed that hundreds of orthogonal CRISPRi gates can coexist in one cell.</p><p>Variants extend the toolkit further. <strong>dCas9-VPR</strong> activates rather than represses (CRISPRa). <strong>Anti-CRISPR proteins</strong> (Acr) provide off-switches. <strong>Cas12a/Cas13</strong> enable RNA-targeting and processable guide arrays for compact multi-input circuits. Wendell Lim's group built a 7-input Boolean classifier in human T cells using CRISPRi gates.</p><p>The newest frontier is <strong>analog and neural-network-style computation</strong>: instead of forcing biology into digital gates, exploit graded responses. Sarpeshkar and others build analog ladder circuits that compute multi-variable polynomials with far fewer parts than the equivalent Boolean implementation. The lesson is the same one electronics relearned: digital is convenient, but analog is what biology natively does, and embracing that often gives more computation per gene.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q25", "synb-q26", "synb-q27", "synb-q28", "synb-q29", "synb-q30", "synb-q31", "synb-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-05",
+    "topicId": "bio-synthetic",
+    "order": 5,
+    "title": "Metabolic Engineering",
+    "description": "Artemisinin, biofuels, and rewiring cells into chemical factories",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "synb-05-c1",
+        "title": "The Artemisinin Project: Synbio's Flagship Win",
+        "contentHtml": "<p><strong>Artemisinin</strong> is the front-line antimalarial drug, originally extracted from sweet wormwood (<em>Artemisia annua</em>) at low yield with volatile pricing. <strong>Jay Keasling's lab</strong> at UC Berkeley spent over a decade engineering yeast to produce <strong>artemisinic acid</strong>, a one-step chemical precursor to artemisinin.</p><p>The pathway required transferring 12+ genes from plant, yeast, and bacterial sources into <em>Saccharomyces cerevisiae</em>, then balancing flux through the mevalonate pathway to push carbon toward the desired product instead of native sterols. Pacific Biosciences founder Christopher Paddon and the Keasling lab's spinout <strong>Amyris</strong> achieved industrial yields of ~25 g/L by 2013, and <strong>Sanofi</strong> began commercial production in 2014 with a Gates Foundation-supported royalty-free license.</p><p>The artemisinin project mattered both as proof that synbio could deliver a real pharmaceutical and as a sober lesson: 150 person-years of work, lower-than-expected market impact (plant-derived artemisinin prices dropped, undercutting the synbio version commercially), and an ongoing debate about whether monoculture-engineered yeast or distributed plant cultivation is the right global supply strategy.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-05-c2",
+        "title": "Flux Balance Analysis and Pathway Optimization",
+        "contentHtml": "<p>Metabolic engineering needs computational tools. <strong>Flux Balance Analysis (FBA)</strong>, developed largely by Bernhard Palsson's group, treats a cell's metabolism as a steady-state linear program: maximize an objective (biomass, target product) subject to mass balance constraints (S · v = 0, where S is the stoichiometric matrix and v is the flux vector) and reaction bounds.</p><p>FBA on genome-scale models (~2000 reactions for E. coli's iJO1366, ~3000+ for yeast's iMM904) predicts maximum theoretical yields, identifies bottlenecks, and suggests gene knockouts that redirect flux toward a product. Algorithms like <strong>OptKnock</strong> and <strong>OptForce</strong> formalize the engineering question: which deletions force coupling between growth and target production?</p><p>FBA's blind spots are well-known: it assumes steady state, ignores kinetics and regulation, and uses arbitrary objective functions. The complementary methods — <strong>13C metabolic flux analysis</strong> (measure actual fluxes by tracking labeled carbon), <strong>kinetic models</strong>, and <strong>dynamic FBA</strong> — fill in the dynamics. Together they form the standard computational toolkit before you build a strain.</p>",
+        "mathExpressions": ["\\max \\; c^T v \\quad \\text{subject to} \\quad S \\cdot v = 0, \\; v_{\\min} \\leq v \\leq v_{\\max}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-05-c3",
+        "title": "Biofuels, Chemicals, and the Bio-Economy",
+        "contentHtml": "<p>Beyond pharmaceuticals, metabolic engineering targets bulk chemicals where biology beats petrochemistry. <strong>DuPont and Genencor's 1,3-propanediol</strong> (a polymer building block for Sorona fiber) was the first major commercial success — engineered <em>E. coli</em> converts corn-derived glucose to PDO at industrial scale, replacing petroleum feedstocks since 2006.</p><p>Biofuels were the big 2000s bet: cellulosic ethanol, algal biodiesel, butanol from <em>Clostridium</em>, isoprenoid drop-in fuels (Amyris's farnesene). Most struggled commercially because oil prices crashed and bioconversion economics required premiums consumers wouldn't pay. Surviving applications shifted to higher-value chemicals: <strong>squalane</strong> (cosmetics), <strong>cannabinoids</strong> (Demetrix), <strong>hyaluronic acid</strong>, <strong>collagen</strong> (Modern Meadow).</p><p>The current frontier is <strong>cell-factory automation</strong>. Companies like <strong>Ginkgo Bioworks</strong> and <strong>Zymergen</strong> built large robotic foundries that screen thousands of strain variants per week, treating strain engineering as a high-throughput optimization problem rather than a hand-crafted research project. Whether industrial biotech as a whole pays off the venture capital it absorbed in 2018-2021 remains an open question, but the foundry model is here to stay.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q33", "synb-q34", "synb-q35", "synb-q36", "synb-q37", "synb-q38", "synb-q39", "synb-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-06",
+    "topicId": "bio-synthetic",
+    "order": 6,
+    "title": "Directed Evolution and Continuous Evolution",
+    "description": "Letting natural selection do the protein engineering you can't",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "synb-06-c1",
+        "title": "Directed Evolution: Frances Arnold's Insight",
+        "contentHtml": "<p><strong>Frances Arnold</strong> won the 2018 Nobel Prize in Chemistry for showing that you can engineer enzymes by mimicking evolution: generate diversity, screen for the property you want, repeat. The original 1993 paper engineered subtilisin to function in dimethylformamide — a feat rational design couldn't approach in the 1990s because we didn't (and largely still don't) understand the sequence-function map well enough to design solvent tolerance from first principles.</p><p>The mutagenesis methods became standard. <strong>Error-prone PCR</strong> uses Mn²⁺-spiked Taq polymerase to introduce ~1-5 random mutations per gene per cycle. <strong>DNA shuffling</strong> (Willem Stemmer, 1994) fragments a family of homologous genes with DNase I and reassembles them by overlap PCR — recombination between related sequences mimics meiotic crossover and produces functional chimeras. <strong>Site-saturation mutagenesis</strong> (NNK or NNS codons) targets specific residues with all 20 amino acids.</p><p>The screening side is often harder than the diversity side. A screen must be high-throughput (10⁵-10⁹ variants), specific (catch the activity you want, reject everything else), and robust to noise. Cell-surface display, FACS sorting, droplet microfluidics, and selectable growth phenotypes are the workhorses.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-06-c2",
+        "title": "Phage Display, Ribosome Display, mRNA Display",
+        "contentHtml": "<p><strong>Display technologies</strong> physically link a protein variant to its encoding sequence so that selecting on the protein automatically retrieves the gene. <strong>Phage display</strong> (George Smith, 1985 Nobel Prize 2018) fuses peptides to the M13 phage coat protein pIII; affinity-pan a phage library against a target, amplify what binds, repeat. Phage display produced the antibody-derived drugs adalimumab (Humira) and many others.</p><p><strong>Ribosome display</strong> stalls translation so that the nascent protein, the ribosome, and the mRNA stay tethered as a ternary complex. There's no transformation step, so library sizes can reach 10¹²-10¹⁴ — orders of magnitude beyond phage. <strong>mRNA display</strong> covalently attaches the protein to its mRNA via puromycin, achieving similar library sizes with cleaner downstream selection.</p><p>The choice between technologies is application-driven. Phage is the workhorse for antibody fragments and short peptides. Ribosome and mRNA display dominate for non-natural amino acid libraries, in vitro selections without cellular toxicity, and selections requiring vast diversity. <strong>Yeast surface display</strong> is preferred for full-length antibodies because eukaryotic folding and glycosylation matter.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-06-c3",
+        "title": "PACE: Continuous Evolution in a Chemostat",
+        "contentHtml": "<p><strong>Phage-Assisted Continuous Evolution (PACE)</strong>, invented by <strong>David Liu</strong> at Harvard in 2011, runs directed evolution non-stop in a chemostat. The gene you want to evolve replaces gene III in an M13 phage; phage propagation requires that the encoded protein perform its desired activity (drive transcription, bind a target, etc.) in the host <em>E. coli</em>. A continuous mutagenesis plasmid keeps the mutation rate high.</p><p>The result: <strong>~30 generations per day</strong>, with selection pressure tuned by adjusting host strain composition and chemostat dilution rate. A typical PACE run does in a week what classical directed evolution does in months — Liu's group used PACE to evolve T7 RNA polymerase variants recognizing new promoters, novel base editors, and tighter Cas9 PAM specificities.</p><p>PACE works because it ruthlessly couples function to phage propagation. Variants that fail are diluted away within hours. The downside is the engineering setup itself — chemostats, automated control, AAV variants for in vivo PACE — but for problems where you need many rounds of evolution against a precisely tunable selection, nothing else comes close in throughput.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q41", "synb-q42", "synb-q43", "synb-q44", "synb-q45", "synb-q46", "synb-q47", "synb-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-07",
+    "topicId": "bio-synthetic",
+    "order": 7,
+    "title": "Genome Engineering and Minimal Genomes",
+    "description": "Synthia, recoded organisms, and the Sc2.0 yeast project",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "synb-07-c1",
+        "title": "Synthia and JCVI-syn3.0: Minimum Viable Cell",
+        "contentHtml": "<p>In 2010, <strong>Craig Venter's</strong> team announced the first <strong>synthetic genome</strong>: a chemically synthesized 1.08-Mb copy of <em>Mycoplasma mycoides</em> transplanted into a recipient <em>M. capricolum</em> cell, which then booted up controlled by the synthetic chromosome. The genome carried watermark sequences encoding quotes from Joyce, Feynman, and Oppenheimer — a literal signature on the work.</p><p>The bigger scientific question — what's the minimum gene set for a free-living cell? — drove the 2016 follow-up <strong>JCVI-syn3.0</strong>. Through transposon mutagenesis and rational design, Venter's team trimmed the genome to <strong>473 genes</strong> on 531 kb, the smallest known free-living cell. Roughly <strong>149 genes (32%) had unknown function</strong> — they're essential, but we don't know what they do. That fraction is a humbling measure of how poorly we understand even the simplest life.</p><p>JCVI-syn3.0 cells grew slowly and divided into pleomorphic (oddly shaped) clumps; later <strong>syn3A</strong> added 19 genes back to restore normal division. The lesson: even \"non-essential\" genes contribute to robustness. A minimal genome is not a useful genome — it's an extremely fragile one.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-07-c2",
+        "title": "Recoded Organisms and Genetic Firewalls",
+        "contentHtml": "<p>The standard genetic code uses 64 codons for 20 amino acids plus stop — heavily redundant. <strong>Recoding</strong> systematically reassigns codons across an entire genome, freeing up codons for non-canonical use and creating a <strong>genetic firewall</strong> against horizontal gene transfer.</p><p><strong>George Church's group</strong> at Harvard built <strong>rE.coli-57</strong>, an <em>E. coli</em> with seven sense codons reassigned across 62,000+ codon sites in the genome. The 2019 <strong>Syn61</strong> strain from Jason Chin's MRC-LMB group went further: it uses only 61 of the 64 codons, freeing TCA, TCG (Ser) and TAG (stop) for non-canonical amino acids. Syn61 grows at near-wild-type rates — a triumph of synthetic genome assembly using the REXER technique.</p><p>Why bother? Three reasons. <strong>Biocontainment</strong>: a recoded strain can't easily exchange functional DNA with wild bacteria. <strong>Virus resistance</strong>: phages depend on the host's translation system, so reassigning codons makes the host immune to many phages. And <strong>expanded chemistry</strong>: freed codons can encode unnatural amino acids, building proteins beyond what nature evolved.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-07-c3",
+        "title": "Sc2.0: Rewriting a Eukaryote",
+        "contentHtml": "<p>The <strong>Synthetic Yeast Genome Project (Sc2.0)</strong>, led by <strong>Jef Boeke</strong> at NYU/Johns Hopkins with international partners, aims to replace all 16 chromosomes of <em>Saccharomyces cerevisiae</em> with designed synthetic versions. Each chromosome is redesigned: introns and transposons removed, stop codons standardized, recombination sites added (loxPsym), and tRNA genes consolidated to a separate \"neochromosome.\"</p><p>The redesign includes <strong>SCRaMbLE</strong> (Synthetic Chromosome Rearrangement and Modification by LoxP-mediated Evolution): inducing Cre recombinase scrambles the loxPsym sites, randomly inverting, deleting, and rearranging genome segments. SCRaMbLE turns a synthetic genome into a hyper-evolvable substrate: select for any phenotype and recover the rearrangement that delivered it.</p><p>By 2023, all 16 chromosomes were synthesized; debugging and combination into a single complete synthetic strain is ongoing. Sc2.0 matters as proof that complex eukaryotic genomes can be redesigned and built, and as a test of how much \"junk\" (or context) eukaryotic genomes need. It's also the largest distributed DNA-synthesis project ever attempted in academia, with chromosomes built by labs in the US, UK, China, Singapore, France, and Australia.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q49", "synb-q50", "synb-q51", "synb-q52", "synb-q53", "synb-q54", "synb-q55", "synb-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-08",
+    "topicId": "bio-synthetic",
+    "order": 8,
+    "title": "Xenobiology and Expanded Genetic Codes",
+    "description": "Unnatural base pairs, the 21st amino acid, and life with new chemistry",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "synb-08-c1",
+        "title": "Romesberg's Unnatural Base Pair",
+        "contentHtml": "<p><strong>Floyd Romesberg's</strong> group at Scripps spent two decades evolving a <strong>third base pair</strong>: the hydrophobic <strong>dNaM-d5SICS</strong> pair (and successors like dNaM-dTPT3). Unlike A-T and G-C, which use Watson-Crick hydrogen bonding, dNaM and dTPT3 pair through hydrophobic and shape-complementarity interactions, with no H-bonds.</p><p>In 2014, Romesberg showed an engineered <em>E. coli</em> could replicate plasmid DNA containing a single dNaM-dTPT3 pair indefinitely, given a nucleotide transporter from a microalga to import the unnatural triphosphates. The 2017 follow-up showed transcription and translation of unnatural codons into proteins containing non-canonical amino acids — the first <strong>semi-synthetic organism</strong> with a six-letter genetic alphabet.</p><p>The spinoff <strong>Synthorx</strong> (acquired by Sanofi for ~$2.5B in 2019) commercialized the platform for engineered cytokines: an unnatural amino acid at a precise site enables site-specific PEGylation, controlling drug pharmacokinetics with surgical precision. THOR-707, an IL-2 variant from this technology, was a Phase 2 oncology candidate. Xenobiology is no longer purely academic.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-08-c2",
+        "title": "The 21st Amino Acid and Beyond",
+        "contentHtml": "<p>Nature uses 20 standard amino acids plus two natural exceptions: <strong>selenocysteine</strong> (Sec, the \"21st\") and <strong>pyrrolysine</strong> (Pyl, the \"22nd\"), both encoded by recoded stop codons in specific organisms. Synthetic biology generalizes this: build orthogonal aminoacyl-tRNA synthetase / tRNA pairs that charge a tRNA with a non-canonical amino acid in response to a freed codon, typically the amber stop codon UAG.</p><p><strong>Peter Schultz's</strong> lab at Scripps built the toolkit: an evolved <em>Methanocaldococcus jannaschii</em> tyrosyl-tRNA synthetase / tRNA pair that ignores host translation machinery and incorporates non-canonical amino acids site-specifically. Over <strong>200 unnatural amino acids</strong> have been incorporated into proteins, including azido and alkynyl groups for click chemistry, photo-crosslinkers, fluorophores, and post-translational modification mimics.</p><p>The biggest challenge is yield: amber suppression competes with release factor 1 (RF1), capping efficiency. <strong>Genomically recoded organisms</strong> like Church's rE.coli-57 with TAG → TAA reassignment and RF1 deletion solve this: 100% of UAG codons can incorporate the non-canonical amino acid, with no truncations. Combining Schultz-style tRNAs with Chin-style recoded chassis is the modern frontier.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-08-c3",
+        "title": "XNA: DNA-like Polymers with Different Backbones",
+        "contentHtml": "<p>Going further, why use deoxyribose at all? <strong>Xeno-nucleic acids (XNA)</strong> replace DNA's sugar-phosphate backbone with chemically distinct alternatives — <strong>HNA</strong> (hexitol), <strong>TNA</strong> (threose), <strong>LNA</strong> (locked), <strong>FANA</strong> (2'-fluoro-arabino), <strong>PNA</strong> (peptide). Each preserves base pairing but uses a different sugar or linker.</p><p><strong>Philipp Holliger's</strong> MRC-LMB group, in a landmark 2012 <em>Science</em> paper, evolved polymerases that replicate XNA from DNA templates and reverse-transcribe XNA back to DNA. They went on to evolve XNA aptamers and even XNA-zymes (XNA enzymes that catalyze chemical reactions), proving heredity and catalysis aren't unique to DNA and RNA.</p><p>XNAs matter for three reasons. <strong>Therapeutic stability</strong>: they resist host nucleases, making them excellent aptamer drugs and antisense agents. <strong>Origin-of-life questions</strong>: TNA and PNA may be plausible RNA-world predecessors. And the most ambitious goal — <strong>orthogonal information systems</strong> that can't exchange genetic information with natural life, providing the strongest possible biocontainment for engineered organisms.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q57", "synb-q58", "synb-q59", "synb-q60", "synb-q61", "synb-q62", "synb-q63", "synb-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "synb-09",
+    "topicId": "bio-synthetic",
+    "order": 9,
+    "title": "Cell-Free Systems, Containment, and AI Design",
+    "description": "PURE, kill switches, RFdiffusion, and the dual-use debate",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "synb-09-c1",
+        "title": "Cell-Free Synthesis and the PURE System",
+        "contentHtml": "<p><strong>Cell-free protein synthesis (CFPS)</strong> runs transcription and translation in a tube — no living cells. Crude lysates from <em>E. coli</em>, wheat germ, or rabbit reticulocytes give 0.1-3 mg/mL protein yields in hours, supporting toxic proteins, non-canonical amino acids, and rapid prototyping of genetic circuits without cloning.</p><p>The <strong>PURE system</strong> (Protein synthesis Using Recombinant Elements), developed by <strong>Yoshihiro Shimizu</strong> and <strong>Takuya Ueda</strong> in 2001, takes this further: every component (~36 enzymes for translation, energy regeneration, tRNAs, ribosomes) is purified and reconstituted from defined parts. The result is the cleanest possible TX-TL system — no proteases, no nucleases, no unknown side reactions.</p><p>The killer applications are <strong>on-demand vaccine production</strong> (Jim Collins' lyophilized cell-free reactions stable for years; rehydrate and add a DNA template to produce vaccine antigens at the point of need) and <strong>field-deployable diagnostics</strong> (the SHERLOCK and Toehold Switch sensors detect Zika, Ebola, COVID with paper-strip readouts at sub-femtomolar sensitivity, demonstrated during the 2015 Zika outbreak).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-09-c2",
+        "title": "Biocontainment: Kill Switches and Auxotrophy",
+        "contentHtml": "<p>Releasing engineered organisms — even unintentionally — is a real risk. <strong>Biocontainment</strong> strategies fall into three layers. <strong>Auxotrophy</strong> deletes essential biosynthesis genes so the organism dies without an exogenous nutrient (a non-canonical amino acid in Church's recoded strains, for example). <strong>Kill switches</strong> activate toxic genes in the absence of a permissive signal (Collins' lab demonstrated CRISPR-based kill switches that excise essential genes when temperature or chemical inputs change).</p><p><strong>Semantic containment</strong> is the strongest layer: recode the organism so its genes can't function in wild bacteria even if transferred. Syn61 cannot easily express genes from a wild <em>E. coli</em> because of incompatible tRNA sets, and vice versa. Combine all three layers — recoded chassis + auxotrophy + kill switch — and the escape probability becomes very small (Church's group estimated < 10⁻¹² per cell per generation).</p><p>No system is perfect. Mutational escape rates set the floor: at 10⁹ cells per culture and a 10⁻⁹ mutation rate per locus, you reliably generate single-locus revertants. Multi-layered containment that requires several simultaneous mutations to escape is the practical standard for any organism intended for deliberate release.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "synb-09-c3",
+        "title": "AI-Driven Design: RFdiffusion, AlphaFold, Cello-style Compilers",
+        "contentHtml": "<p><strong>David Baker's</strong> group at the University of Washington built <strong>Rosetta</strong> over two decades into the dominant computational protein design platform. The 2023 <strong>RFdiffusion</strong> tool — a denoising diffusion model trained on protein structures, conditioned on RoseTTAFold features — designs novel protein backbones to specified shapes, binders, and binding sites. Hit rates for de novo binders against new targets jumped from a fraction of a percent (classical Rosetta) to tens of percent (RFdiffusion + ProteinMPNN sequence design).</p><p>Combined with <strong>AlphaFold2</strong> (DeepMind, 2021) for structure prediction and validation, the design loop is now: specify a target → diffuse a backbone → assign a sequence with ProteinMPNN → predict the structure with AlphaFold → order the gene → assay. <strong>Generate Biomedicines</strong> and <strong>Profluent</strong> have raised hundreds of millions on this stack. It's a genuine phase change for protein engineering.</p><p>For genetic circuits, parallel ML tools predict promoter strengths, design RBS sequences, and infer regulatory networks from RNA-seq. The discipline is converging on a workflow where the human specifies what they want and ML systems plus high-throughput foundries produce it. Whether this generalizes from \"designing a single binder\" to \"designing a 50-gene metabolic pathway\" is the open question of the decade.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["synb-q65", "synb-q66", "synb-q67", "synb-q68", "synb-q69", "synb-q70", "synb-q71", "synb-q72"],
+    "puzzleId": null
+  }
+]

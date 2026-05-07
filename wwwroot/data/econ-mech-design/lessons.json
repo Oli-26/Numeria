@@ -1,0 +1,314 @@
+[
+  {
+    "id": "econ-md-01",
+    "topicId": "econ-mech-design",
+    "order": 1,
+    "title": "Auction Formats",
+    "description": "First-price, second-price, English, Dutch — strategic equivalences and surprises",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "econ-md-01-c1",
+        "title": "Mechanism Design as Reverse Game Theory",
+        "contentHtml": "<p>Standard game theory takes the rules as given and asks: how will rational players behave?</p><p><strong>Mechanism design</strong> reverses the question: given the outcomes we want, how should we design the rules?</p><p>Hurwicz, Maskin, and Myerson shared the 2007 Nobel for foundational work in this area. The field has shaped real-world institutions: spectrum auctions, kidney exchange, school choice systems, online ad markets, matching for medical residencies.</p><p>The pillar of mechanism design is auction theory. Auctions are clean settings where rules can be precisely specified and outcomes precisely analyzed. Lessons from auctions extend to broader institutional design.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-01-c2",
+        "title": "The Four Standard Auctions",
+        "contentHtml": "<p>The classical formats:</p><p><strong>English (open ascending):</strong> price rises until only one bidder remains. Used for art, real estate, livestock.</p><p><strong>Dutch (open descending):</strong> price falls until someone accepts. Used for tulip bulbs, fish.</p><p><strong>First-price sealed bid:</strong> highest bid wins, pays own bid. Used for procurement.</p><p><strong>Second-price sealed bid (Vickrey):</strong> highest bid wins, pays the second-highest. Used for online ads, some asset sales.</p><p>These formats produce different bidding behavior and different outcomes — though some are strategically equivalent in surprising ways.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-01-c3",
+        "title": "Strategic Equivalences",
+        "contentHtml": "<p>Some auction pairs are <strong>strategically equivalent</strong> — they produce identical outcomes from rational play.</p><p><strong>English ≈ Second-price sealed bid:</strong> in either, you should bid up to your true value. The price you actually pay is essentially the second-highest valuation.</p><p><strong>Dutch ≈ First-price sealed bid:</strong> in a Dutch auction, you decide a price at which to accept. That decision is identical to choosing a sealed bid.</p><p>So the four 'different' auctions are really two: ascending/second-price (where truthful bidding is optimal) and descending/first-price (where bidders shade below their values).</p><p>The equivalence breaks down with risk-aversion, bidder asymmetries, or correlated values — all common in real auctions.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-01-c4",
+        "title": "Why Sealed-Bid Auctions Are Different",
+        "contentHtml": "<p>In a <strong>first-price sealed bid</strong>, you face a strategic tradeoff: bid high (more likely to win, but pay more if you do) or bid low (might lose to a smaller bidder).</p><p>Optimal bidding shades below your true value. If your value is $100 and there are five other bidders with values uniformly distributed up to $120, you should bid around $80-90, not $100.</p><p>The shading factor depends on the number of bidders, the distribution of values, and your risk preferences. With more bidders, you shade less (winning is less guaranteed). With more risk aversion, you shade less (you really want to avoid losing).</p><p>Real first-price auctions show consistent shading. Bidders aren't naive — most learn to bid below value, even without explicit theory.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-01-c5",
+        "title": "Common-Value Auctions",
+        "contentHtml": "<p><strong>Common-value</strong> auctions are different from private-value ones. The item has the same true value to all bidders, but each estimates it imperfectly.</p><p>Oil leases: how much oil is underground? Bidders' geologists estimate, with noise.</p><p>Acquisitions: what's a target firm really worth? Bidders' analysts estimate.</p><p>Government bond auctions: what's the bond's value? Bidders' models estimate.</p><p>The <strong>winner's curse</strong>: the winner is the bidder with the highest estimate, which is typically biased upward. Winning means you over-estimated.</p><p>Sophisticated bidders shade their bids further to account for this. The optimal shade depends on the number of bidders (more competition → more expected winner over-estimation).</p><p>Empirical implications: inexperienced bidders systematically overpay in common-value auctions; experienced ones learn caution. The classic 'curse' was documented in offshore oil leasing in the 1970s, where winning bids exceeded actual value on average.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-md-02",
+    "topicId": "econ-mech-design",
+    "order": 2,
+    "title": "Revenue Equivalence",
+    "description": "When auction format doesn't matter — and the assumptions that break the result",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "econ-md-02-c1",
+        "title": "The Revenue Equivalence Theorem",
+        "contentHtml": "<p>Vickrey (1961) and Myerson (1981) proved a remarkable result: under standard assumptions, all four standard auction formats produce the same expected revenue for the seller.</p><p>The conditions:</p><p>1. Bidders have private, independent values.</p><p>2. Bidders are risk-neutral.</p><p>3. The bidder with the highest value wins.</p><p>4. The bidder with the lowest possible value gets zero surplus.</p><p>Under these conditions, every auction format giving the item to the highest-value bidder generates the same expected revenue. Surprising — and at first counterintuitive.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-02-c2",
+        "title": "Why It Works",
+        "contentHtml": "<p>Intuition: the seller's expected revenue is determined by what the high-value bidder is willing to pay, which depends on what the second-highest bidder would do.</p><p>In a second-price auction, this is direct: the price IS the second-highest valuation.</p><p>In a first-price auction, bidders shade their bids based on the distribution of competitors' values. The optimal shade gives an expected price that, on average, matches the expected second-highest valuation.</p><p>The math: bidders' equilibrium strategies adjust to make expected revenue equal across formats. Different bidders pay different amounts in different formats, but the totals match in expectation.</p><p>This is why auction format choice often doesn't matter much for revenue — the strategic adjustments wash out the apparent differences.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-02-c3",
+        "title": "When Equivalence Breaks: Risk Aversion",
+        "contentHtml": "<p>Drop risk-neutrality, and equivalence breaks.</p><p>With <strong>risk-averse</strong> bidders, first-price auctions raise more revenue. Why? Risk-averse bidders dislike the chance of losing, so they bid more aggressively to ensure winning. The competition raises prices.</p><p>In second-price, you bid your true value (or close to it) regardless of risk attitude — there's no strategic shading. Risk aversion has no effect on bids.</p><p>So with risk-averse bidders: first-price > second-price in expected revenue. The opposite of what naive intuition might suggest.</p><p>Real bidders are typically somewhat risk-averse. This is part of why auctioneers often prefer first-price formats when they expect risk-averse competition.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-02-c4",
+        "title": "When Equivalence Breaks: Correlated Values",
+        "contentHtml": "<p>Drop independence, and equivalence breaks.</p><p>If bidders' values are <strong>correlated</strong> (they share information about the item's worth), open auctions do better.</p><p>In an English auction, bidders learn from each other's drop-out behavior. As bidders drop out, remaining bidders update their estimates of the item's value.</p><p>In sealed-bid formats, bidders don't get this information. They bid blind, more conservatively.</p><p>So with correlated values: English > second-price sealed bid > first-price sealed bid.</p><p>Real settings often involve correlated values — oil leases, art auctions, acquisitions all have shared underlying value with private signals about it. This is part of why English auctions are common in art and real estate.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-02-c5",
+        "title": "When Equivalence Breaks: Asymmetric Bidders",
+        "contentHtml": "<p>Drop symmetry, and equivalence breaks.</p><p>Real auctions often have <strong>asymmetric bidders</strong> — one with higher expected value than others. (An incumbent firm bidding against entrants; a sophisticated bidder against amateurs.)</p><p>In a first-price auction, the strong bidder shades aggressively because their main competition has lower values. They win cheaply.</p><p>In a second-price auction, bidders bid truthfully. The strong bidder wins but pays the second-highest value, which can be substantially less than their bid.</p><p>The result: first-price favors strong bidders (they win cheaply); second-price gives weaker bidders better odds (they sometimes win when the strong bidder hesitates).</p><p>Real spectrum auctions, government procurement, and asset sales often must navigate these asymmetries. Auction designers spend much effort tilting the rules to encourage broad participation and avoid foreclosure of competition.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-md-03",
+    "topicId": "econ-mech-design",
+    "order": 3,
+    "title": "VCG & Truthful Mechanisms",
+    "description": "Vickrey-Clarke-Groves — making honesty a dominant strategy",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "econ-md-03-c1",
+        "title": "The Truthfulness Property",
+        "contentHtml": "<p>A mechanism is <strong>strategy-proof</strong> (or <strong>truthful</strong>) if reporting honestly is a dominant strategy for every participant.</p><p>Why this matters: in non-truthful mechanisms, agents must strategize about what to report. They might lie, hedge, or game the system. The mechanism designer's intended outcome may not occur.</p><p>Truthful mechanisms produce predictable, manipulation-resistant outcomes. Their design has been a central research program since Vickrey's 1961 work.</p><p>The key examples: Vickrey's second-price auction (truthful for single-item sale), the VCG mechanism (truthful for many-item allocations), Gale-Shapley deferred acceptance (truthful for matching).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-03-c2",
+        "title": "VCG: The Generalization",
+        "contentHtml": "<p>The <strong>Vickrey-Clarke-Groves (VCG)</strong> mechanism extends second-price logic to multi-item allocations.</p><p>Each bidder reports their valuation of every possible bundle. The mechanism allocates items to maximize total reported value.</p><p>Each winner pays not their own bid but the <em>externality</em> they impose on others — the difference between maximum total value if they were absent and the total value of others under the actual allocation.</p><p>This 'pay your externality' rule makes truthful reporting a dominant strategy. Why? Because the price you pay doesn't depend directly on your own bid — only on how your participation displaces others.</p><p>VCG is theoretically beautiful. In practice, it has issues — vulnerability to bidder collusion, complex computation, sometimes-perverse revenue properties — but its truthfulness property remains unique among broad mechanism classes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-03-c3",
+        "title": "Why Truthfulness Matters",
+        "contentHtml": "<p>The case for truthful mechanisms goes beyond elegance.</p><p><strong>Predictability:</strong> mechanism designer knows agents will report honestly, so the outcome is predictable.</p><p><strong>Information:</strong> mechanism extracts true preferences. Useful information is generated as a byproduct.</p><p><strong>Equity:</strong> truthful mechanisms don't favor strategically sophisticated agents over naive ones.</p><p><strong>Auditability:</strong> easier to verify that outcomes match preferences when preferences are reliably reported.</p><p>Compare a non-truthful mechanism: school choice via 'rank schools strategically based on what others might do.' Sophisticated parents game the system; less-informed parents lose out. This is bad both as efficiency and as equity.</p><p>Truthful mechanisms eliminate this strategic burden. The system asks for preferences and uses them; users don't need to second-guess.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-03-c4",
+        "title": "Limits of Truthfulness",
+        "contentHtml": "<p>Truthful mechanisms have well-known limitations.</p><p><strong>Revenue:</strong> VCG often raises less revenue than first-price alternatives. The seller pays for truthfulness.</p><p><strong>Computational complexity:</strong> with many items, VCG requires solving complex optimization problems for both allocation and payments. Large-scale implementations are computationally expensive.</p><p><strong>Collusion vulnerability:</strong> coalitions of bidders can sometimes manipulate VCG outcomes by coordinating their bids, even when individual deviation isn't profitable.</p><p><strong>Bidding constraints:</strong> truthful mechanisms typically require bidders to report valuations on all possible bundles. This can be infeasible when there are many items.</p><p><strong>Outcome restrictions:</strong> Gibbard-Satterthwaite theorem (and related results) show that for general social-choice problems, the only truthful mechanisms are dictatorial. Truthfulness limits what we can achieve.</p><p>Practical mechanism design balances truthfulness with revenue, complexity, and other objectives. Pure VCG is rarer in practice than its theoretical importance suggests.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-03-c5",
+        "title": "VCG in Practice",
+        "contentHtml": "<p>Where does VCG actually appear in real mechanisms?</p><p><strong>Online ad auctions:</strong> Google's GSP (Generalized Second-Price) auction is similar to but not exactly VCG. Facebook ad auctions have used VCG variants. Some details differ from theoretical purity.</p><p><strong>Spectrum auctions:</strong> the FCC's combinatorial spectrum auctions use VCG-related rules to handle complementarities between licenses.</p><p><strong>Procurement:</strong> some government procurement uses VCG rules when buyers want assignments of multiple contracts to multiple bidders.</p><p><strong>Combinatorial exchange platforms:</strong> systems where firms exchange bundled goods often use VCG-style mechanisms.</p><p><strong>Educational placement:</strong> some school-assignment systems use VCG-related ideas, though pure VCG is rare.</p><p>The practical limits — complexity and revenue — explain why VCG is used in modified form rather than purely. But the truthfulness insight has been highly influential, even where the exact mechanism isn't deployed.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-md-04",
+    "topicId": "econ-mech-design",
+    "order": 4,
+    "title": "Matching Markets",
+    "description": "Gale-Shapley, deferred acceptance, kidney exchange, school choice",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "econ-md-04-c1",
+        "title": "When Money Doesn't Apply",
+        "contentHtml": "<p>Many important resource allocations happen without prices. Marriage, school admissions, organ transplants, medical residency placements — all involve matching people to outcomes without monetary trade.</p><p>The economics of these markets is <strong>matching theory</strong>. The central question: how can we organize matching to achieve good outcomes?</p><p>Without prices to clear markets, you need a different mechanism. The Gale-Shapley algorithm, developed in 1962, is the foundation of modern matching design.</p><p>Roth and Shapley shared the 2012 Nobel for matching theory and its applications to real-world institutions like medical residency matching, school choice, and kidney exchange.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-04-c2",
+        "title": "Gale-Shapley Deferred Acceptance",
+        "contentHtml": "<p>The classic algorithm for two-sided matching (e.g., medical residents to hospitals).</p><p>Each side ranks the other. The algorithm proceeds in rounds:</p><p>1. Each resident proposes to their top-choice hospital.</p><p>2. Each hospital tentatively accepts its preferred residents and rejects others.</p><p>3. Rejected residents propose to their next-best hospital.</p><p>4. Hospitals re-evaluate and may displace previously-accepted residents in favor of newly-proposed ones.</p><p>5. Continue until no one wants to propose anymore.</p><p>The result has remarkable properties:</p><p><strong>Stability:</strong> no resident-hospital pair would prefer each other to their assigned partners. (No 'blocking' deals.)</p><p><strong>Optimality for proposers:</strong> the algorithm produces the resident-optimal stable match.</p><p><strong>Strategy-proofness for proposers:</strong> residents have a dominant strategy to report preferences truthfully.</p><p>These properties make the algorithm robust: outcomes are predictable, fair, and resistant to manipulation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-04-c3",
+        "title": "Medical Residency Matching",
+        "contentHtml": "<p>Each year, ~40,000 US medical residents and ~6,000 hospitals are matched through the National Resident Matching Program (NRMP).</p><p>The system uses a variant of Gale-Shapley deferred acceptance. Residents rank hospitals; hospitals rank residents. The algorithm produces stable matches with very few re-matches needed.</p><p>This system replaced an earlier decentralized matching that had become chaotic — hospitals making 'exploding offers' (24-hour deadlines), residents accepting then breaking commitments, both sides constantly trying to game the timing.</p><p>The redesigned system, in place since the 1950s and improved over decades, illustrates how good mechanism design solves coordination problems that decentralized markets create.</p><p>Roth's role: in the 1990s, NRMP reforms incorporated his theoretical insights about couples' preferences and other features. Real-world matching applications have continued evolving with theoretical advances.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-04-c4",
+        "title": "Kidney Exchange",
+        "contentHtml": "<p>Most kidney transplants come from family members, but ~30% of would-be donors are blood-type or tissue incompatible with their loved one.</p><p>Solution: <strong>kidney exchange</strong>. If donor A is incompatible with recipient A but compatible with recipient B, and donor B is compatible with recipient A — they can swap.</p><p>The mechanism: a centralized clearinghouse collects donor-recipient pairs and finds compatible matches. Some matches are simple two-way swaps; others involve longer chains (kidney chains, sometimes 30+ patients long).</p><p>Roth, Sönmez, and Ünver (2004) designed the matching algorithms that now power kidney exchange in the US, UK, and elsewhere. The systems have facilitated thousands of transplants that would otherwise have been impossible.</p><p>Live, donor, and chain-based exchanges have become routine medical practice — a direct application of theoretical matching economics to real-world life-saving outcomes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-04-c5",
+        "title": "School Choice",
+        "contentHtml": "<p>Many cities allocate students to public schools through choice systems.</p><p>The wrong way: <strong>Boston mechanism</strong> (used 1999-2005 by Boston Public Schools). Students rank schools; the algorithm gives each student their highest-listed school where seats remain. Sounds reasonable.</p><p>Problem: it's not strategy-proof. Listing your favorite school first is risky if it's likely to fill — you might miss your second-best option too. Sophisticated parents game the system; less-informed families get hurt.</p><p>The fix: <strong>Deferred Acceptance</strong> (Gale-Shapley). Boston switched in 2005 after Roth and others demonstrated the manipulation problems. New York, Chicago, Denver, and many other districts use Gale-Shapley variants.</p><p>The shift has both efficiency and equity benefits. Sophisticated families lose their gaming advantage. Families can list true preferences without strategic risk. Outcomes match what students actually want.</p><p>The reform demonstrates how mechanism design directly improves real institutions — not just theory but lived welfare for thousands of families.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-md-05",
+    "topicId": "econ-mech-design",
+    "order": 5,
+    "title": "Optimal Auctions",
+    "description": "Myerson's theorem — virtual valuations, reserve prices, revenue maximization",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "econ-md-05-c1",
+        "title": "What's the Best Auction?",
+        "contentHtml": "<p>If a seller wants to maximize expected revenue, what auction format should they choose?</p><p>The standard formats (English, second-price, etc.) all award the item to the highest-value bidder. But that's not always revenue-maximizing — sometimes you'd rather not sell at all than sell cheaply.</p><p>Roger Myerson (Nobel 2007) characterized the <strong>optimal auction</strong> for a seller facing risk-neutral bidders with independent private values.</p><p>The result reveals deep insights about pricing under uncertainty.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-05-c2",
+        "title": "Virtual Valuations",
+        "contentHtml": "<p>Myerson's key tool: the <strong>virtual valuation</strong>.</p><p>For a bidder with value v drawn from distribution F with density f:</p><p>ψ(v) = v − (1 − F(v))/f(v)</p><p>The virtual valuation reflects both the bidder's value and the surplus the seller can extract from them.</p><p>For uniform distributions on [0, 1], the virtual valuation is 2v − 1. Negative when v < 1/2.</p><p>Myerson's theorem: the optimal auction allocates the item to the bidder with the highest virtual valuation, provided that virtual valuation is positive.</p><p>This isn't the same as allocating to the highest actual value. Sometimes the highest-value bidder doesn't win. Sometimes nobody wins.</p>",
+        "mathExpressions": ["\\psi(v) = v - \\frac{1 - F(v)}{f(v)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-05-c3",
+        "title": "Reserve Prices",
+        "contentHtml": "<p>The condition 'virtual valuation positive' translates to a <strong>reserve price</strong> in real auctions.</p><p>The seller refuses to sell below the reserve. If no bid exceeds it, no transaction occurs.</p><p>Why is this revenue-maximizing? Because pushing the marginal bidder slightly higher in price often raises revenue more than risking a missed sale.</p><p>Optimal reserve prices can be substantial. For uniform distribution on [0, 1], the optimal reserve is 1/2 — keeping out half the possible bidders. The seller would rather risk an empty auction than accept a low price.</p><p>Real auctioneers use reserves widely. eBay's 'reserve auctions,' Christie's auction reserves, government bond auctions all build in reserves to protect against lowball outcomes.</p><p>Myerson's framework rationalizes the practice and quantifies how high reserves should be.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-05-c4",
+        "title": "Revenue Equivalence Generalized",
+        "contentHtml": "<p>Myerson's framework generalizes revenue equivalence.</p><p>Among auctions that produce the same allocation rule and give zero surplus to the lowest type, expected revenue is the same.</p><p>So format matters less than allocation rule. First-price, second-price, English, and Dutch all allocate to the highest-value bidder, so they're equivalent in revenue terms.</p><p>If you want different allocation rules — favoring weaker bidders, restricting some bidders, requiring reserves — you change the revenue.</p><p>The deep lesson: <em>which bidder wins</em> matters more than <em>how much they pay</em> for revenue purposes. Format details (first vs second-price, sealed vs open) generate strategic equivalents in equilibrium.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-05-c5",
+        "title": "Practical Implications",
+        "contentHtml": "<p>Myerson's optimal auction theory has shaped practice in several ways.</p><p><strong>Reserve prices are widely used</strong> in real auctions, often calibrated to rough versions of optimal reserves.</p><p><strong>Asymmetric treatment of bidders:</strong> when some bidders have systematically higher expected values, some real auctions favor others to extract more revenue. Government procurement sometimes does this.</p><p><strong>Bidder-specific reserves:</strong> in advertising auctions, click-through estimates produce bidder-specific 'reserves' that approximate optimal-auction logic.</p><p><strong>Auction information design:</strong> what to reveal during the auction (other bids, market conditions) shapes outcomes — Myerson-style analysis informs these choices.</p><p>The framework's most important contribution may be conceptual: it clarifies that revenue maximization, allocation efficiency, and bidder welfare are different objectives. Auction designers must choose what they're optimizing — and Myerson's framework reveals what's possible.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-md-06",
+    "topicId": "econ-mech-design",
+    "order": 6,
+    "title": "Algorithmic Mechanism Design",
+    "description": "Computational constraints, ad auctions, approximation and price of anarchy",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "econ-md-06-c1",
+        "title": "Computational Reality",
+        "contentHtml": "<p>Classical mechanism design assumes optimal solutions are computable. In modern markets — Google's ad auction, Amazon's pricing, eBay matching — millions of decisions happen in milliseconds.</p><p>Pure VCG would require solving NP-hard optimization for every transaction. Infeasible.</p><p><strong>Algorithmic mechanism design</strong> integrates computational constraints with mechanism design. The questions: what mechanisms are computationally efficient? How much do we lose if we use approximate (rather than exact) optimization?</p><p>Nisan and Ronen (1999) launched the field, motivated partly by emerging internet applications.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-06-c2",
+        "title": "Online Ad Auctions",
+        "contentHtml": "<p>Google's ad auction is the largest mechanism design implementation in history. Hundreds of billions of dollars flow through it annually.</p><p>The mechanism: when a user searches, Google ranks ads by 'expected revenue' — bid times click-through-rate. The top-ranked ad gets shown most prominently.</p><p>Pricing: <strong>Generalized Second-Price (GSP)</strong>. Each advertiser pays just enough to outbid the next-ranked ad, divided by their CTR ratio.</p><p>GSP isn't quite VCG. It's not strategy-proof — bidders may sometimes benefit from shading bids. But it's simpler, faster to compute, and more transparent than VCG.</p><p>Edelman, Ostrovsky, and Schwarz (2007) analyzed GSP equilibria. Most of the time, GSP and VCG produce similar outcomes. The real-world deviations are small enough that GSP's simplicity wins.</p><p>The lesson: pure theoretical optimality often gives way to computational and operational simplicity in real markets.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-06-c3",
+        "title": "Approximation",
+        "contentHtml": "<p>When optimal solutions are computationally infeasible, we accept approximations. <strong>Approximation algorithms</strong> guarantee solutions within some factor of optimal.</p><p>For mechanism design, approximation introduces a tradeoff. Approximate optimization is faster but loses revenue. Whether the tradeoff is worth it depends on speed and revenue priorities.</p><p>Many real auction mechanisms use approximation:</p><p>– Greedy algorithms in spectrum auctions.</p><p>– Local search in combinatorial exchanges.</p><p>– Heuristic ranking in ad auctions.</p><p>The 'price of approximation' is the revenue lost by using a near-optimal rather than exact mechanism. Recent work has shown this is often surprisingly small — well-designed approximations can achieve 90%+ of optimal revenue in many settings.</p><p>This affects designs choices: investing in computational sophistication has diminishing returns once the mechanism is well-approximating.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-06-c4",
+        "title": "Price of Anarchy",
+        "contentHtml": "<p>What's the cost of <em>not</em> coordinating?</p><p><strong>Price of anarchy (PoA)</strong>: ratio of social welfare in the best Nash equilibrium versus the best central planner's outcome.</p><p>If PoA = 1, decentralized coordination is as good as central planning. If PoA = 2, decentralized loses half the welfare. If PoA → ∞, decentralized fails entirely.</p><p>Examples:</p><p>– <strong>Routing games:</strong> in some networks, selfish routing achieves PoA = 4/3 (Roughgarden). Surprisingly close to optimal.</p><p>– <strong>Auction equilibria:</strong> in many auction settings, even non-optimal mechanisms achieve PoA close to 1.</p><p>– <strong>Public goods provision:</strong> PoA can be very large; markets often fail entirely without intervention.</p><p>The PoA framework helps decide when to invest in coordination. Where PoA is small, decentralization is fine. Where it's large, central design or regulation pays off.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-md-06-c5",
+        "title": "The Future of Mechanism Design",
+        "contentHtml": "<p>Mechanism design has had remarkable practical impact: spectrum auctions, kidney exchange, school choice, ad auctions, online matching.</p><p>Active research directions:</p><p><strong>Machine learning + mechanism design:</strong> using ML to estimate distributions, predict behavior, and adapt mechanisms over time.</p><p><strong>Behavioral mechanism design:</strong> incorporating bounded rationality, fairness preferences, and reference-dependence into mechanism design.</p><p><strong>Privacy and information:</strong> how should mechanisms respect privacy? Can encrypted computation enable trustless allocation?</p><p><strong>Decentralized mechanisms:</strong> blockchain-based mechanisms without central operators. Cryptography-meets-mechanism-design.</p><p><strong>Large-scale matching:</strong> mechanisms with millions of agents, dynamic preferences, complex constraints.</p><p>The field has shifted from theoretical foundations toward practical deployment, computational design, and integration with adjacent fields. The next decade will likely see deeper integration with AI, expanded role in platform economies, and new applications in areas like climate policy and public goods provision.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  }
+]

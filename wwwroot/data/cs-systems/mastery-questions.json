@@ -1,0 +1,128 @@
+[
+  {
+    "id": "mastery-sys-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why is making consumers idempotent more robust than chasing exactly-once delivery from a message broker?",
+    "options": ["Brokers don't support exactly-once at all", "End-to-end exactly-once across systems is generally impossible; idempotent consumers handle duplicates safely without depending on the broker", "Idempotent consumers run faster", "Idempotency requires no code changes"],
+    "correctAnswer": "End-to-end exactly-once across systems is generally impossible; idempotent consumers handle duplicates safely without depending on the broker",
+    "explanation": "Network failures and retries between broker and consumer (or consumer and downstream service) can always cause duplicates. Building idempotent consumers makes the system robust regardless of broker guarantees.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sys-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "A circuit breaker pattern stops sending requests to a failing dependency to give it time to recover and prevent cascading failures.",
+    "correctAnswer": "True",
+    "explanation": "Circuit breakers detect a high failure rate and trip open, returning errors fast for a window. This protects the calling service from being dragged down by slow or failing downstream services.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sys-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What practice deliberately injects failures into production to verify resilience, popularized by Netflix?",
+    "correctAnswer": "chaos engineering",
+    "acceptableAnswers": ["chaos engineering", "Chaos Engineering", "chaos testing", "Chaos Monkey"],
+    "explanation": "Chaos engineering (Chaos Monkey at Netflix) intentionally injects failures to find weak spots before customers do. Now a standard SRE practice in many large organizations.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sys-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each scaling pattern to its description:",
+    "pairs": [
+      {"left": "Vertical scaling", "right": "Bigger machine"},
+      {"left": "Horizontal scaling", "right": "More machines"},
+      {"left": "Read replicas", "right": "Replicate read load across many DB copies"},
+      {"left": "Sharding", "right": "Split data across multiple databases by key"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Each pattern addresses different scaling bottlenecks. Most large systems use combinations of all four.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-sys-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why does a 99.99% SLO cost dramatically more to achieve than a 99.9% SLO?",
+    "options": ["Engineers are paid more", "Each additional nine cuts the error budget by 10×, requiring increasingly redundant infrastructure and disciplined operations", "Cloud providers charge by SLO", "Higher SLOs use more memory"],
+    "correctAnswer": "Each additional nine cuts the error budget by 10×, requiring increasingly redundant infrastructure and disciplined operations",
+    "explanation": "99.9% allows ~9 hours of downtime/year; 99.99% allows ~52 minutes. Achieving each additional nine usually costs much more than the previous one. Pick SLOs based on what users genuinely need, not aspirational marketing.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sys-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this resilience strategy:",
+    "steps": [
+      "I add automatic retries with no backoff for failing downstream calls",
+      "Each retry attempts immediately after the previous failure",
+      "If a downstream service is overloaded, my retries hit it harder",
+      "All my services retry similarly",
+      "This must improve overall reliability"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is wrong. Aggressive retries without backoff create RETRY STORMS — when something fails, every caller hammers it relentlessly, preventing recovery. Best practice: exponential backoff with jitter, retry budgets, and circuit breakers. Naive retries can take a small failure and amplify it into total outage.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-sys-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Sharding by user ID lets each request go to exactly one shard, but makes cross-user analytic queries expensive.",
+    "correctAnswer": "True",
+    "explanation": "Per-user operations stay local to one shard (great for OLTP). Aggregations across users (analytics) must scatter-gather across all shards or use a separate analytics store. The hot-key vs analytics trade-off is fundamental.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sys-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why is request tail latency (P99) often a more useful SLI than average latency?",
+    "options": ["Average is always 0", "Tail latency captures the experience of the worst-served users; averages hide bad outliers", "Tail latency is faster to compute", "Average latency is illegal"],
+    "correctAnswer": "Tail latency captures the experience of the worst-served users; averages hide bad outliers",
+    "explanation": "A few slow requests can ruin user experience and signal real problems (GC pauses, queue buildups). Mean latency can look fine while P99 is terrible. Track and SLO on percentiles.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sys-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of healthy incident response:",
+    "steps": [
+      "Detect the incident via monitoring or user report",
+      "Page the on-call engineer; declare the incident",
+      "Mitigate to restore service (rollback, traffic shift, etc.)",
+      "Communicate status updates to stakeholders",
+      "Once resolved, write a blameless post-mortem",
+      "Track and complete remediation actions identified in the post-mortem"
+    ],
+    "correctAnswer": null,
+    "explanation": "Mitigation comes before root-cause analysis: stop the bleeding first. Post-mortems and remediation are essential for long-term reliability gains.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-sys-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the unifying open standard for instrumenting metrics, logs, and traces in modern systems?",
+    "correctAnswer": "OpenTelemetry",
+    "acceptableAnswers": ["OpenTelemetry", "OTel", "otel", "opentelemetry"],
+    "explanation": "OpenTelemetry (born from OpenTracing + OpenCensus) is the standard for vendor-neutral instrumentation. Most modern observability tools accept OTel data.",
+    "xpReward": 40
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "js-01",
+    "topicId": "cs-lang-js",
+    "order": 1,
+    "title": "Types, Coercion, and Scoping",
+    "description": "JavaScript's quirky type system and the rise of let/const",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "js-01-c1",
+        "title": "Seven Primitives and One Object",
+        "contentHtml": "<p>JavaScript has seven primitive types: <strong>string</strong>, <strong>number</strong>, <strong>bigint</strong>, <strong>boolean</strong>, <strong>undefined</strong>, <strong>null</strong>, <strong>symbol</strong>. Everything else — arrays, functions, dates, regex — is an <strong>object</strong>.</p><p>The <strong>number</strong> type is a 64-bit IEEE 754 float. There are no separate integer and float types — <code>1</code> and <code>1.0</code> are the same value. This is why <code>0.1 + 0.2 === 0.3</code> is famously false (it's 0.30000000000000004). For exact integer arithmetic beyond 2⁵³, use <strong>bigint</strong> (<code>1n</code>, <code>123n</code>).</p><p><strong>undefined</strong> means \"never assigned\"; <strong>null</strong> means \"deliberately empty.\" Both exist for historical reasons. <code>typeof null</code> returns <code>'object'</code>, a famous bug from JavaScript's first 10 days that can never be fixed without breaking the web. Use <code>x == null</code> to check for either undefined or null in one step.</p>",
+        "mathExpressions": ["\\text{primitives: 7} + \\text{Object} \\quad \\text{number = 64-bit IEEE 754 float}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-01-c2",
+        "title": "== vs ===, and Type Coercion",
+        "contentHtml": "<p>JavaScript's <strong>type coercion</strong> rules are the language's most-mocked feature. <code>'5' + 3 === '53'</code> (string concat). <code>'5' - 3 === 2</code> (numeric coercion). <code>[] + {} === '[object Object]'</code>. <code>{} + [] === 0</code> in some contexts. These rules are real, learnable, but counter-intuitive enough that the universal advice is <strong>just don't rely on them</strong>.</p><p>The <code>==</code> operator does coercion before comparison: <code>'5' == 5</code> is true. The <code>===</code> operator (\"strict equality\") does no coercion: <code>'5' === 5</code> is false. Modern JavaScript style guides essentially forbid <code>==</code>; use <code>===</code> always. The one exception some advocate: <code>x == null</code> for null/undefined check.</p><p>The deeper lesson: JavaScript was designed in 10 days in 1995 and shipped before bad decisions could be reverted. Modern JS is a layer of better choices on top — \"use strict\", <code>===</code>, <code>let</code>/<code>const</code>, optional chaining (<code>?.</code>), nullish coalescing (<code>??</code>) — preserving backward compat while encouraging sane code.</p>",
+        "mathExpressions": ["\\text{===: no coercion, deterministic} \\quad \\text{==: coerces both sides, full of surprises}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-01-c3",
+        "title": "var, let, const, and Hoisting",
+        "contentHtml": "<p>Old JavaScript had <strong>var</strong>, with two infamous behaviors: <strong>function scope</strong> (not block scope) and <strong>hoisting</strong> (var declarations move to the top of their scope, initialized to undefined). <code>console.log(x); var x = 5;</code> doesn't crash — it prints <code>undefined</code>.</p><p>ES6 (2015) introduced <strong>let</strong> and <strong>const</strong>: block-scoped, no surprise hoisting (technically hoisted to a \"temporal dead zone\" where access throws). <code>const</code> means the binding can't be reassigned; the value can still be mutated (<code>const arr = []; arr.push(1)</code> is valid).</p><p>Modern JavaScript style: <strong>const by default, let when reassignment is needed, var never</strong>. The result is code that behaves predictably: variables exist where you'd expect, accidental reassignment is a compile error, scope is the curly braces you see.</p>",
+        "mathExpressions": ["\\text{var: function scope} \\quad \\text{let/const: block scope, TDZ}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["js-q01", "js-q02", "js-q03", "js-q04", "js-q05", "js-q06", "js-q07", "js-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "js-02",
+    "topicId": "cs-lang-js",
+    "order": 2,
+    "title": "Closures, Prototypes, and 'this'",
+    "description": "Functions as first-class citizens, prototype-based OOP, and the binding rules",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "js-02-c1",
+        "title": "Closures: Functions Carry Their Scope",
+        "contentHtml": "<p>A <strong>closure</strong> is a function that remembers the variables of the scope where it was defined, even after that scope has exited. JavaScript's first-class functions and lexical scoping make closures pervasive.</p><p>The classic example: <code>function makeCounter() { let n = 0; return () =&gt; ++n; }</code>. Each call to <code>makeCounter()</code> creates a fresh <code>n</code>; the returned arrow function closes over it. <code>const c = makeCounter(); c(); c(); c();</code> returns 1, 2, 3. Even though <code>makeCounter</code> has returned, its local <code>n</code> persists because the closure holds a reference.</p><p>Closures power much of JavaScript: module patterns, callbacks with retained state, partial application, memoization. They also create the famous <strong>loop variable bug</strong>: with <code>var</code>, all closures in a loop captured the same variable. With <code>let</code> (block-scoped), each iteration gets a fresh binding — usually what you wanted.</p>",
+        "mathExpressions": ["\\text{closure: } f \\text{ remembers } \\text{scope}(f) \\text{ even after scope exits}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-02-c2",
+        "title": "Prototypes: OOP Without Classes (Originally)",
+        "contentHtml": "<p>JavaScript's OOP is fundamentally <strong>prototype-based</strong>, not class-based. Each object has a hidden <strong>[[Prototype]]</strong> link to another object. Property lookups walk this prototype chain: if <code>obj.method</code> isn't found on obj, JavaScript checks obj's prototype, then that object's prototype, until null.</p><p>For decades, this was the primary OOP model. The <strong>class</strong> syntax (ES6, 2015) is sugar over the prototype mechanism — under the hood, <code>class Foo</code> still creates a function and sets up <code>Foo.prototype</code>. The class syntax is friendlier for developers from Java/C# backgrounds, but the prototype reality remains.</p><p>This affects how inheritance works. <code>class B extends A</code> sets <code>B.prototype.[[Prototype]] = A.prototype</code>. Methods defined on the prototype are shared by all instances; methods defined on the instance shadow them. Modern JavaScript usually uses <code>class</code>, but understanding prototypes still pays off when debugging or working with older codebases.</p>",
+        "mathExpressions": ["\\text{lookup}(o, p) = \\begin{cases} o[p] & \\text{if defined} \\\\ \\text{lookup}([[\\text{proto}]](o), p) & \\text{otherwise} \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-02-c3",
+        "title": "The 'this' Keyword: Binding Rules",
+        "contentHtml": "<p>JavaScript's <code>this</code> is famously confusing because its value depends on <strong>how the function is called</strong>, not where it's defined. The four binding rules, in order of precedence:</p><p><strong>new binding</strong>: <code>new Foo()</code> creates a new object and binds <code>this</code> to it. <strong>Explicit binding</strong>: <code>fn.call(obj, ...)</code>, <code>fn.apply(obj, ...)</code>, <code>fn.bind(obj)</code> set <code>this</code> directly. <strong>Implicit binding</strong>: <code>obj.method()</code> binds <code>this</code> to <code>obj</code>. <strong>Default binding</strong>: a plain <code>fn()</code> binds to <code>undefined</code> (in strict mode) or the global object.</p><p><strong>Arrow functions</strong> are different: they don't have their own <code>this</code>. They inherit it from the enclosing scope. This is why arrow functions are perfect for callbacks where you want <code>this</code> to mean what it meant in the surrounding code: <code>this.timer = setInterval(() =&gt; this.tick(), 1000)</code>. The arrow's <code>this</code> is the outer object, not the timer.</p>",
+        "mathExpressions": ["\\text{this} = \\text{f(call site rules)} \\quad \\text{except arrows: lexical this}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["js-q09", "js-q10", "js-q11", "js-q12", "js-q13", "js-q14", "js-q15", "js-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "js-03",
+    "topicId": "cs-lang-js",
+    "order": 3,
+    "title": "Async: Callbacks, Promises, async/await",
+    "description": "The event loop, microtasks, and how JavaScript stays responsive",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "js-03-c1",
+        "title": "The Event Loop",
+        "contentHtml": "<p>JavaScript is <strong>single-threaded</strong>. There is exactly one execution thread, and synchronous code runs to completion before anything else gets a turn. Yet a Node.js server handles 10,000 connections concurrently, and a browser stays responsive while loading megabytes. The trick is the <strong>event loop</strong>.</p><p>I/O operations (file reads, network requests, timers) are non-blocking. Calling <code>fetch(url)</code> doesn't pause the thread; it kicks off the request and returns immediately with a promise. When the response arrives, the runtime queues a callback to the event loop. The loop runs queued callbacks one at a time, never preempting.</p><p>Two queues: the <strong>task queue</strong> (timers, I/O) and the higher-priority <strong>microtask queue</strong> (promise callbacks, <code>queueMicrotask</code>). After each task, all pending microtasks drain before the next task runs. This is why <code>Promise.resolve().then(...)</code> runs before a <code>setTimeout(..., 0)</code> queued at the same moment.</p>",
+        "mathExpressions": ["\\text{event loop: drain microtasks; run one task; repeat}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-03-c2",
+        "title": "Callbacks → Promises → async/await",
+        "contentHtml": "<p>Early Node.js used <strong>callback-based</strong> async: <code>fs.readFile(path, (err, data) =&gt; { ... })</code>. Nesting many of these created the infamous <strong>callback hell</strong> — pyramid-shaped code that was painful to read and even harder to handle errors in.</p><p>ES6 introduced <strong>Promises</strong>. A promise is an object representing a future value: pending, fulfilled, or rejected. <code>fetch(url).then(r =&gt; r.json()).then(data =&gt; ...).catch(handleErr)</code>. Chains stay flat. Errors propagate to the nearest <code>catch</code>. <code>Promise.all</code> runs many promises in parallel.</p><p>ES2017 added <strong>async/await</strong>: syntactic sugar over Promises. <code>const data = await fetch(url).then(r =&gt; r.json());</code> looks synchronous but is async under the hood. <code>try/catch</code> works for errors. This is now the standard. Callback hell is essentially solved; entire codebases written in async/await read like sync code with awaits sprinkled in.</p>",
+        "mathExpressions": ["\\text{async/await: } \\text{Promise} + \\text{syntactic sugar} = \\text{sync-looking async}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-03-c3",
+        "title": "Concurrency Pitfalls and Patterns",
+        "contentHtml": "<p>Common patterns: <strong>Promise.all</strong> resolves when all inputs resolve (or rejects on the first failure). <strong>Promise.allSettled</strong> waits for every promise regardless of outcome. <strong>Promise.race</strong> resolves with the first to finish. <strong>Promise.any</strong> resolves with the first success.</p><p>Pitfalls: <strong>unhandled rejections</strong>. A promise rejection without <code>.catch</code> or surrounding <code>try/catch</code> in async/await crashes the process in modern Node. <strong>Floating promises</strong> (calling an async function without awaiting) continue running but errors are silent. <strong>Sequential vs parallel</strong>: <code>for (const url of urls) { await fetch(url) }</code> is sequential; <code>await Promise.all(urls.map(fetch))</code> is parallel. Big perf difference.</p><p>For long-lived async iteration, <strong>async iterators</strong> + <code>for await of</code> stream values one at a time. For CPU-bound work in browsers, <strong>Web Workers</strong> spawn separate threads. In Node, <strong>worker_threads</strong>. JavaScript's concurrency story is mature, expressive, and far better than people who last touched it in 2010 expect.</p>",
+        "mathExpressions": ["\\text{await in loop: sequential} \\quad \\text{Promise.all(map): parallel}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["js-q17", "js-q18", "js-q19", "js-q20", "js-q21", "js-q22", "js-q23", "js-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "js-04",
+    "topicId": "cs-lang-js",
+    "order": 4,
+    "title": "Modules, Bundlers, and the Ecosystem",
+    "description": "ESM vs CommonJS, npm, and the JavaScript build pipeline",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "js-04-c1",
+        "title": "CommonJS vs ES Modules",
+        "contentHtml": "<p>JavaScript famously had no module system for its first 15 years. Two competing systems emerged. <strong>CommonJS (CJS)</strong>, used by Node.js: <code>const x = require('mod'); module.exports = ...</code>. Synchronous, dynamic, server-friendly. <strong>ES Modules (ESM)</strong>, the modern standard: <code>import { x } from 'mod'; export ...</code>. Asynchronous, statically analyzable, browser-native.</p><p>For years the two ecosystems clashed. CJS files couldn't easily import ESM; ESM files needed file extensions, top-level <code>await</code> support, etc. Node now supports both, but <strong>interop</strong> remains tricky — particularly when a package exports both formats.</p><p>The trend is clearly toward ESM. Browsers natively support it. Modern bundlers default to it. Major libraries are dropping CJS support. New projects in 2025 should default to ESM (<code>\"type\": \"module\"</code> in package.json) unless you have a specific reason otherwise.</p>",
+        "mathExpressions": ["\\text{CJS: dynamic require()} \\quad \\text{ESM: static import/export}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-04-c2",
+        "title": "npm and the Package Ecosystem",
+        "contentHtml": "<p><strong>npm</strong> (Node Package Manager) is the registry and CLI. With over 2 million packages, it's the largest ecosystem of any language. <code>npm install</code> downloads packages into <code>node_modules</code> and records them in <code>package.json</code>. The <code>package-lock.json</code> pins exact versions for reproducibility.</p><p>Alternatives: <strong>yarn</strong> (Facebook's, with workspaces and zero-installs), <strong>pnpm</strong> (uses a content-addressed store to dedupe disk usage across projects), <strong>bun</strong> (an entirely new runtime + package manager, dramatically faster). Each has fans; npm remains the default for most projects.</p><p>The <strong>downsides of npm scale</strong>: massive <code>node_modules</code> directories (\"heaviest object in the universe\" memes), supply-chain risk (left-pad incident), version pinning fights. Modern best practices: lockfiles checked in, dependabot/renovate for updates, audit tools for vulnerabilities, minimal runtime dependencies.</p>",
+        "mathExpressions": ["\\text{npm: 2M+ packages} \\implies \\text{ecosystem advantage} + \\text{supply-chain risk}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-04-c3",
+        "title": "Bundlers, Transpilers, and the Build Pipeline",
+        "contentHtml": "<p>Browsers can't directly run TypeScript, JSX, modern import syntax with bare specifiers, or modular Sass. So a <strong>build pipeline</strong> transforms source code into browser-ready output: TypeScript → JavaScript via <strong>tsc</strong>; JSX → JavaScript via <strong>Babel</strong> or <strong>swc</strong>; many small ES modules → a bundle of optimized chunks via <strong>Webpack</strong>, <strong>Rollup</strong>, <strong>esbuild</strong>, <strong>Parcel</strong>, <strong>Vite</strong>.</p><p>The 2020s revolution is <strong>esbuild</strong> and <strong>swc</strong>: bundlers/transpilers in Go and Rust that are 10-100× faster than their JS-based predecessors. <strong>Vite</strong> uses esbuild for dev and Rollup for production, making the dev experience instant on most projects. <strong>Bun</strong> bundles everything: runtime, package manager, bundler, test runner.</p><p>Modern frontend tooling has consolidated. <strong>Vite</strong> for most projects; <strong>Next.js</strong> / <strong>Remix</strong> / <strong>SvelteKit</strong> for full-stack frameworks; <strong>Turbopack</strong> for huge codebases. The era of hand-rolling 200-line webpack configs is mercifully over.</p>",
+        "mathExpressions": ["\\text{source} \\xrightarrow{\\text{transpile + bundle}} \\text{browser-ready chunks}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["js-q25", "js-q26", "js-q27", "js-q28", "js-q29", "js-q30", "js-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "js-05",
+    "topicId": "cs-lang-js",
+    "order": 5,
+    "title": "TypeScript: Types Without the JavaScript Tax",
+    "description": "Structural typing, generics, and why TS swallowed the JS world",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "js-05-c1",
+        "title": "Why TypeScript Won",
+        "contentHtml": "<p><strong>TypeScript</strong> (Microsoft, 2012) is JavaScript with a static type system. It compiles to plain JavaScript; types are erased at compile time. The pitch: catch bugs at edit time, get better IDE completion, document interfaces, refactor with confidence. By 2024, the majority of new JavaScript-ecosystem projects start in TypeScript.</p><p>The killer feature is <strong>structural typing</strong>. A type is just a description of what an object looks like; any object matching the description is compatible. No <code>implements Foo</code> declaration needed. This fits JavaScript's actual culture (duck typing, plain objects, late composition) far better than nominal type systems.</p><p>The success was driven by the gentle adoption path. You can sprinkle TS into a JS codebase, leave types loose with <code>any</code>, and tighten over time. <code>tsc --strict</code> turns the dial up. Combined with editor integration (VS Code is Microsoft's, after all), TypeScript made writing JavaScript dramatically more pleasant — without forcing developers to abandon the existing ecosystem.</p>",
+        "mathExpressions": ["\\text{TS} = \\text{JS} + \\text{compile-time types} \\quad \\text{(types erased at runtime)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-05-c2",
+        "title": "Generics, Unions, and Discriminated Unions",
+        "contentHtml": "<p>TypeScript's type system is among the most expressive in mainstream languages. <strong>Generics</strong> let you parameterize types: <code>function first&lt;T&gt;(arr: T[]): T | undefined { return arr[0]; }</code> works for any element type without losing type information.</p><p><strong>Union types</strong> express \"this is one of these\": <code>type Result = Success | Failure</code>. <strong>Discriminated unions</strong> add a tag for safe pattern matching: <code>type Shape = { kind: 'circle', r: number } | { kind: 'square', side: number }</code>. Inside a <code>switch (shape.kind)</code>, TypeScript narrows the type, and you get exhaustiveness checking.</p><p>Advanced features: <strong>conditional types</strong> (<code>T extends U ? X : Y</code>), <strong>mapped types</strong> (<code>{ [K in keyof T]: ... }</code>), <strong>template literal types</strong>, <strong>type predicates</strong>. The TS type system is itself Turing-complete, which is occasionally a feature and occasionally a horror. Library authors push these features hard; application developers rarely need them.</p>",
+        "mathExpressions": ["\\text{discriminated union: } \\text{type } T = A | B \\implies \\text{exhaustive checks via tag}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "js-05-c3",
+        "title": "Tooling, Frameworks, and the Future",
+        "contentHtml": "<p>Modern frontend development is overwhelmingly TypeScript. <strong>React</strong>, <strong>Vue</strong>, <strong>Svelte</strong>, <strong>Solid</strong>, <strong>Angular</strong> all have first-class TS support. Backend frameworks: <strong>NestJS</strong>, <strong>tRPC</strong>, <strong>Hono</strong>, modern Express. Even Deno and Bun assume TypeScript by default.</p><p>The toolchain has caught up to the type system. <strong>tsc</strong> is reliable but slow on big projects. <strong>swc</strong> and <strong>esbuild</strong> handle TS-to-JS transformation 10-100× faster (without type checking — they just strip types). <strong>tsx</strong> and <strong>ts-node</strong> let you run TS directly. Editor integration via the TS Language Server is the gold standard for refactoring and autocomplete.</p><p>The biggest open question for TS is <strong>type-checking performance on huge codebases</strong>. Microsoft is rewriting the TypeScript compiler in Go (<strong>tsgo</strong>, 2025) for a 5-10× speedup. There's also growing interest in <strong>JSDoc-based typing</strong> for libraries that want types without a build step. TypeScript isn't going anywhere — its grip on the ecosystem is permanent. The next decade is about making it faster, more ergonomic, and removing the last papercuts.</p>",
+        "mathExpressions": ["\\text{TS adoption} \\to \\text{near-universal in modern JS projects}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["js-q32", "js-q33", "js-q34", "js-q35", "js-q36", "js-q37"],
+    "puzzleId": null
+  }
+]

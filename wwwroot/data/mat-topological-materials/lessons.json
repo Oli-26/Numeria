@@ -1,0 +1,338 @@
+[
+  {
+    "id": "topm-01",
+    "topicId": "mat-topological-materials",
+    "order": 1,
+    "title": "From Theory to Crystals: What Counts as a Topological Material",
+    "description": "Translating Z₂, Chern, and crystalline invariants into measurable predictions on real solids",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "topm-01-c1",
+        "title": "The Operational Definition of a Topological Material",
+        "contentHtml": "<p>The mathematics of topological phases — Berry curvature, Chern numbers, the Z₂ invariant, the tenfold way — was developed largely in the abstract. <strong>Topological materials</strong> are the subset of real crystals where this mathematics produces falsifiable predictions you can check with a piece of equipment in a lab. Three signatures define the practical regime: a <strong>gapped (or semi-metallic) bulk</strong>, <strong>protected boundary states</strong> mandated by a nonzero topological invariant, and <strong>quantized (or anomalous) response coefficients</strong> tied to that invariant.</p><p>Concretely: a 3D topological insulator has an insulating bulk gap (~0.1-0.3 eV in Bi₂Se₃), a single Dirac cone on each surface (visible in ARPES), and a half-quantized surface Hall conductance σ<sub>xy</sub><sup>surf</sup> = e²/2h when TRS is broken at the surface. A Weyl semimetal has bulk band-touching nodes of definite chirality, Fermi-arc surface states connecting them, and a chiral-anomaly-driven negative longitudinal magnetoresistance. The <em>theoretical</em> claim — \"this Hamiltonian has invariant ν = 1\" — translates to <em>experimental</em> claims about ARPES, transport, and STM measurements.</p><p>Why does any of this work in real materials? Because the topological invariants are <em>integer-valued</em> and so robust under any continuous deformation of the Hamiltonian that does not close the bulk gap. Disorder, lattice imperfections, thermal fluctuations — all the messiness of real solids — cannot change an integer. Only a true gap-closing transition can. This rigidity is why topology is useful for materials science at all.</p>",
+        "mathExpressions": [
+          "\\sigma_{xy}^{\\text{surf}} = \\frac{1}{2} \\frac{e^2}{h} \\quad \\text{(3D TI surface, TRS broken)}",
+          "E_{\\text{gap}}(\\text{Bi}_2\\text{Se}_3) \\approx 0.3 \\text{ eV}",
+          "\\nu \\in \\mathbb{Z} \\text{ or } \\mathbb{Z}_2 \\Rightarrow \\text{robust under continuous deformations preserving the gap}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-01-c2",
+        "title": "Band Inversion: The Microscopic Engine",
+        "contentHtml": "<p>Almost every nontrivial topological material owes its invariant to a single microscopic feature: <strong>band inversion</strong>. In a normal insulator the conduction-band-bottom states have one orbital character (typically <em>s</em>-like) and the valence-band-top states have another (typically <em>p</em>-like), with the natural energy ordering preserved. <strong>Strong spin-orbit coupling</strong> — found in heavy elements like Bi, Te, Hg, Sb, W, Ta — can push the <em>p</em>-derived states <em>above</em> the <em>s</em>-derived states near a high-symmetry point, inverting the band order. Reopening the gap by spin-orbit then leaves the system in a topologically distinct phase.</p><p>The classic example is HgTe versus CdTe. Both are zincblende II-VI semiconductors with similar lattice constants, but in HgTe the Γ<sub>6</sub> (s-like) and Γ<sub>8</sub> (p-like) bands are inverted by spin-orbit coupling, while in CdTe they are not. A heterostructure of HgTe sandwiched between CdTe acts as a knob: thin wells inherit CdTe ordering (trivial), thick wells inherit HgTe ordering (topological), with a phase transition at d<sub>c</sub> ≈ 6.3 nm. In Bi₂Se₃, the band inversion is at the Γ point and involves Bi <em>p</em>-orbitals.</p><p>Band inversion is detectable. ARPES reveals the inverted orbital character via matrix-element analysis; orbital-projected DFT calculations show explicit <em>s</em>/<em>p</em> mixing across the gap; pressure or strain can tune systems through the inversion transition (BiTeI under pressure is a textbook example). Whenever someone says \"this material is topological,\" the underlying claim is almost always: <em>spin-orbit coupling has inverted these specific bands at this specific k-point</em>.</p>",
+        "mathExpressions": [
+          "H_{SO} = \\lambda \\, \\vec{L} \\cdot \\vec{S}, \\quad \\lambda \\propto Z^4 \\text{ for atomic SOC}",
+          "\\text{HgTe: } E(\\Gamma_8) > E(\\Gamma_6) \\quad \\text{(inverted)}",
+          "\\text{CdTe: } E(\\Gamma_6) > E(\\Gamma_8) \\quad \\text{(normal)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-01-c3",
+        "title": "The Toolkit: ARPES, STM, and Magnetotransport",
+        "contentHtml": "<p>Three experimental techniques carry most of the empirical weight in topological materials research. <strong>Angle-resolved photoemission spectroscopy (ARPES)</strong> shines monochromatic UV or X-ray photons on a sample, ejects photoelectrons, and measures their kinetic energy and angle. By energy-momentum conservation, this directly maps the occupied band structure E(<strong>k</strong>). For a 3D TI like Bi₂Se₃, ARPES sees the bulk gap and a single Dirac cone <em>inside</em> the gap, dispersing as E = ℏv<sub>F</sub>|<strong>k</strong>| with v<sub>F</sub> ≈ 5 × 10⁵ m/s — the unmistakable surface-state signature.</p><p><strong>Scanning tunneling microscopy / spectroscopy (STM/STS)</strong> probes the local density of states with atomic spatial resolution. On a TI surface, quasi-particle interference (QPI) patterns from impurity scattering reveal which inter-band transitions are allowed. The famous result is that <em>backscattering</em> on a TI surface — k → −k — is forbidden by spin-momentum locking, so no QPI vector connects opposite k-points on the Dirac cone. STS also detects vortex-localized zero-bias peaks (Majorana candidates in FeTe<sub>0.55</sub>Se<sub>0.45</sub>).</p><p><strong>Magnetotransport</strong> closes the loop. Quantized Hall plateaus diagnose Chern numbers; SdH oscillations measure Fermi-surface cross-sections and Berry phases (a π Berry phase is the smoking gun for a Dirac/Weyl band); negative longitudinal magnetoresistance with <strong>B</strong> ∥ <strong>I</strong> diagnoses the chiral anomaly in Weyl semimetals; weak antilocalization is the disorder-averaged signature of a single Dirac surface state. A claim of topology that survives all three of these is hard to dismiss.</p>",
+        "mathExpressions": [
+          "E_{\\text{kin}} = h\\nu - \\phi - E_B, \\quad \\vec{k}_\\parallel = \\frac{1}{\\hbar}\\sqrt{2 m E_{\\text{kin}}} \\sin\\theta \\quad \\text{(ARPES)}",
+          "F_{\\text{SdH}} = \\frac{\\hbar}{2\\pi e} A_F \\quad \\text{(Onsager: oscillation frequency} \\to \\text{Fermi-surface area)}",
+          "\\Delta\\rho_{xx}(B \\parallel I) < 0 \\quad \\text{(chiral-anomaly negative MR)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q01", "topm-q02", "topm-q03", "topm-q04", "topm-q05", "topm-q06", "topm-q07", "topm-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "topm-02",
+    "topicId": "mat-topological-materials",
+    "order": 2,
+    "title": "3D Z₂ Topological Insulators: The Bismuth Chalcogenides",
+    "description": "Bi₂Se₃, Bi₂Te₃, Sb₂Te₃ — strong vs weak invariants, ARPES of the surface Dirac cone, transport signatures",
+    "xpReward": 165,
+    "concepts": [
+      {
+        "id": "topm-02-c1",
+        "title": "The Four Z₂ Invariants in 3D",
+        "contentHtml": "<p>A 3D time-reversal-invariant insulator is classified by <strong>four Z₂ invariants</strong> (ν<sub>0</sub>; ν<sub>1</sub>ν<sub>2</sub>ν<sub>3</sub>), introduced by Fu, Kane, and Mele in 2007. The <strong>strong invariant</strong> ν<sub>0</sub> is the product of Z₂ parities at all eight time-reversal-invariant momenta (TRIM); the three <strong>weak invariants</strong> are products over the four TRIM in each k<sub>i</sub> = π plane.</p><p>The physical distinction: a <strong>strong topological insulator</strong> (ν<sub>0</sub> = 1) hosts an <em>odd</em> number of Dirac cones on every surface, robust against all TRS-preserving perturbations including disorder. A <strong>weak TI</strong> (ν<sub>0</sub> = 0 but some ν<sub>i</sub> = 1) can be visualized as stacked 2D QSH layers; its surface states exist only on side-faces parallel to the stacking and are vulnerable to dislocations, which act as line defects threading π-flux through the bulk. Bi₂Se₃, Bi₂Te₃, and Sb₂Te₃ are all strong TIs with (1; 000).</p><p>For systems with inversion symmetry, the Fu-Kane parity formula gives a dramatic shortcut: <code>(−1)<sup>ν₀</sup> = ∏<sub>TRIM</sub> ∏<sub>n∈occ</sub> ξ<sub>n</sub>(Λ<sub>i</sub>)</code>, where ξ<sub>n</sub>(Λ<sub>i</sub>) = ±1 is the parity eigenvalue of the n-th occupied Kramers pair at TRIM Λ<sub>i</sub>. You compute eight integer products of parity eigenvalues from a DFT calculation and read off the topological character. This is what made high-throughput materials discovery practical: ν<sub>0</sub> can be evaluated for tens of thousands of compounds.</p>",
+        "mathExpressions": [
+          "(\\nu_0; \\nu_1 \\nu_2 \\nu_3) \\in \\mathbb{Z}_2^4",
+          "(-1)^{\\nu_0} = \\prod_{i=1}^{8} \\delta_i, \\quad \\delta_i = \\prod_{n \\in \\text{occ}} \\xi_n(\\Lambda_i) \\quad \\text{(Fu-Kane parity)}",
+          "(-1)^{\\nu_k} = \\prod_{\\Lambda_i \\in k\\text{-plane}} \\delta_i \\quad \\text{(weak invariants)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-02-c2",
+        "title": "The Bi-Chalcogenide Family: Bi₂Se₃, Bi₂Te₃, Sb₂Te₃",
+        "contentHtml": "<p>The bismuth-selenide family — Bi₂Se₃, Bi₂Te₃, Sb₂Te₃ — became the workhorse of 3D-TI experiments after the 2009 prediction by Zhang, Liu, Qi, Dai, Fang, and Zhang. They share a layered tetradymite structure: quintuple layers Se-Bi-Se-Bi-Se (or analogues) stacked along c with weak van der Waals bonding. Cleaving exposes a clean (111) surface ideal for ARPES.</p><p>The headline result is a <strong>single Dirac cone</strong> on every surface, located at the Γ point with surface Hamiltonian <code>H<sub>surf</sub>(<strong>k</strong>) = ℏv<sub>F</sub>(σ<sub>x</sub>k<sub>y</sub> − σ<sub>y</sub>k<sub>x</sub>)</code>. Hsieh, Xia, and collaborators (2009) confirmed this by ARPES, mapping the linear dispersion and demonstrating <strong>spin-momentum locking</strong>: the spin lies in-plane and rotates by 2π around the Dirac point, giving a Berry phase of π. Bi₂Se₃ has the largest bulk gap (~0.3 eV) — large enough that the surface state dominates transport at room temperature in clean samples. Bi₂Te₃ has a smaller gap (~0.15 eV) but a more linear cone over a wider energy window. Sb₂Te₃ tends to be naturally p-type while Bi₂Se₃ is naturally n-type from selenium vacancies.</p><p>The chemistry is as important as the physics. Native defects (Se vacancies in Bi₂Se₃, Te antisites in Bi₂Te₃) dope the bulk metallic, swamping the surface conductance. The community spent years engineering compensated samples — (Bi,Sb)₂(Te,Se)₃ alloys (BSTS), Sn-doped Bi₂Te₂Se, ultrathin films, gated devices — to push the Fermi level into the bulk gap and isolate the topological surface contribution. Quantized π Berry-phase Shubnikov-de Haas oscillations and weak antilocalization are now routine on these compensated samples.</p>",
+        "mathExpressions": [
+          "H_{\\text{surf}}(\\mathbf{k}) = \\hbar v_F (\\sigma_x k_y - \\sigma_y k_x), \\quad v_F \\approx 5 \\times 10^5 \\text{ m/s}",
+          "\\langle \\vec{S}(\\mathbf{k}) \\rangle = \\frac{\\hbar}{2} \\hat{z} \\times \\hat{k} \\quad \\text{(spin-momentum locking)}",
+          "\\phi_B = \\oint_{FS} \\vec{A} \\cdot d\\vec{k} = \\pi \\quad \\text{(Dirac Berry phase)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-02-c3",
+        "title": "Transport Signatures and Their Pitfalls",
+        "contentHtml": "<p>Transport measurements on TIs offer four canonical signatures, each with a characteristic failure mode. (1) <strong>Weak antilocalization (WAL)</strong>: a magnetoconductance cusp at zero field, fit by the Hikami-Larkin-Nagaoka formula with prefactor α = −1/2 per Dirac surface. WAL is sensitive but not specific — strong-spin-orbit trivial materials like InSb show it too. (2) <strong>π Berry-phase SdH oscillations</strong>: the Landau-level fan diagram should extrapolate to γ = ½ for Dirac fermions, γ = 0 for trivial parabolic bands. Bulk contamination shifts the intercept ambiguously.</p><p>(3) The most quantitative signature is the <strong>quantum anomalous Hall effect</strong> in magnetically doped TIs: Cr- or V-doped (Bi,Sb)₂Te₃ thin films, with broken TRS and Fermi level in the magnetization-induced gap, show σ<sub>xy</sub> = e²/h plateaus. Chang et al. observed this first in 2013 at <em>T</em> ~ 30 mK; MnBi₂Te₄ now realizes intrinsic QAH at ~1.4 K. (4) The <strong>topological magnetoelectric effect</strong>: a TI surface gapped by TRS-breaking acquires a θ = π axion response. Faraday and Kerr rotation at the half-quantized angle <code>α<sub>FS</sub> = α<sub>fs</sub></code> have been claimed in strained HgTe and (Bi,Sb)₂Te₃.</p><p>The recurring lesson: <em>no single transport signature is conclusive</em>. The community requires at least two independent signatures (e.g., ARPES + WAL + π-phase SdH; or QAH plateau + zero longitudinal resistance) before declaring topological character. Theory predicts; ARPES verifies the band structure; transport verifies that those bands carry the predicted current. Topological materials science is fundamentally cross-checked.</p>",
+        "mathExpressions": [
+          "\\Delta\\sigma_{xx}(B) = \\alpha \\frac{e^2}{\\pi h} \\left[ \\Psi\\!\\left(\\tfrac{1}{2} + \\tfrac{B_\\phi}{B}\\right) - \\ln\\!\\frac{B_\\phi}{B} \\right], \\quad \\alpha = -\\tfrac{1}{2} \\text{ (single Dirac)}",
+          "\\sigma_{xy}^{\\text{QAH}} = \\frac{e^2}{h} \\quad \\text{(magnetically gapped TI surface)}",
+          "\\theta_{\\text{axion}} = \\pi \\Rightarrow \\sigma_{xy}^{\\text{surf}} = \\tfrac{1}{2} \\frac{e^2}{h}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q09", "topm-q10", "topm-q11", "topm-q12", "topm-q13", "topm-q14", "topm-q15", "topm-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "topm-03",
+    "topicId": "mat-topological-materials",
+    "order": 3,
+    "title": "HgTe/CdTe Quantum Wells and the BHZ Model",
+    "description": "Bernevig-Hughes-Zhang 2006, the 2007 Würzburg experiment, and the birth of the QSH state",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "topm-03-c1",
+        "title": "The BHZ Hamiltonian",
+        "contentHtml": "<p>In 2006 Bernevig, Hughes, and Zhang proposed a precise materials prediction: a HgTe layer of thickness above a critical value <em>d</em><sub>c</sub>, sandwiched between CdTe barriers, would realize the 2D quantum spin Hall state. Their derivation reduced the relevant low-energy physics to a four-band <strong>BHZ model</strong> built from the |E1, ±1/2⟩ and |H1, ±3/2⟩ subbands, capturing the inverted s-like and heavy-hole p-like character at the Γ point.</p><p>The Bloch Hamiltonian, after expansion around k = 0 and grouping into two TRS-related blocks, takes the celebrated form <code>H<sub>BHZ</sub>(<strong>k</strong>) = ε(k)·𝟙 + d<sub>a</sub>(k)·Γ<sup>a</sup></code> with d<sub>1</sub> = A k<sub>x</sub>, d<sub>2</sub> = A k<sub>y</sub>, d<sub>3</sub> = M − B(k<sub>x</sub>² + k<sub>y</sub>²). The <strong>mass parameter M</strong> changes sign at d = d<sub>c</sub>: M > 0 for thin wells (trivial ordering, like CdTe) and M < 0 for thick wells (inverted, like HgTe). The Z₂ invariant is determined by the relative sign of M and B, evaluating to ν = 1 in the inverted regime — a clean BHZ-style topological insulator.</p><p>The BHZ model has become the canonical pedagogical object for 2D TIs: simple enough to diagonalize on the back of an envelope, rich enough to exhibit band inversion, helical edges, the bulk-boundary correspondence, and a sharp Z₂ phase transition. Practically every paper on 2D TIs and their generalizations starts from H<sub>BHZ</sub>; even modern higher-order TI proposals add Wilson-mass terms to it.</p>",
+        "mathExpressions": [
+          "H_{\\text{BHZ}}(\\mathbf{k}) = \\epsilon(\\mathbf{k}) \\mathbb{1} + \\begin{pmatrix} h(\\mathbf{k}) & 0 \\\\ 0 & h^*(-\\mathbf{k}) \\end{pmatrix}",
+          "h(\\mathbf{k}) = A(k_x \\sigma_x - k_y \\sigma_y) + [M - B(k_x^2 + k_y^2)] \\sigma_z",
+          "\\nu = 1 \\Leftrightarrow \\mathrm{sgn}(M) \\neq \\mathrm{sgn}(B), \\quad d > d_c \\approx 6.3 \\text{ nm}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-03-c2",
+        "title": "The 2007 Würzburg Experiment",
+        "contentHtml": "<p>The BHZ prediction was tested within a year by the Würzburg group of Laurens Molenkamp. König and collaborators grew a series of HgTe/CdTe quantum wells with carefully calibrated thicknesses straddling <em>d</em><sub>c</sub>. They patterned them into Hall bars with electrostatic gates that could sweep the chemical potential through the bulk gap, then measured longitudinal and Hall resistance at temperatures down to 30 mK in zero magnetic field.</p><p>The result, published in <em>Science</em> in 2007, is one of the cleanest topology experiments ever performed. For thin wells (d &lt; 6.3 nm) the longitudinal resistance R<sub>xx</sub> diverged as the chemical potential crossed the gap — a normal insulator. For thick wells (d &gt; 6.3 nm) R<sub>xx</sub> plateaued at <strong>h/2e²</strong> ≈ 12.9 kΩ — exactly the Landauer-Büttiker prediction for two ballistic helical edge channels in series and parallel on a four-terminal device. The plateau value was independent of sample width over an order of magnitude (from 250 nm to 1 μm), confirming the edges-only nature of the transport.</p><p>Two confirming details sealed the case. First, applying an in-plane magnetic field — which breaks the TRS protecting the helical edge — opened a gap and destroyed the plateau. Second, the resistance scaled as expected with the number of edge segments, ruling out spurious bulk conduction. The 2007 result is now the canonical \"first observation\" of the QSH state and was the empirical anchor that launched the entire topological-materials field.</p>",
+        "mathExpressions": [
+          "R_{xx}^{\\text{QSH}} = \\frac{h}{2 e^2} \\approx 12.9 \\text{ k}\\Omega \\quad \\text{(K\\\"onig et al. 2007)}",
+          "G = \\frac{2 e^2}{h} \\quad \\text{(two helical edge channels, Landauer-B\\\"uttiker)}",
+          "T \\approx 30 \\text{ mK}, \\quad d \\in [5.5, 12]\\text{ nm} \\quad \\text{(W\\\"urzburg samples)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-03-c3",
+        "title": "Beyond HgTe: 2D TIs in the InAs/GaSb and WTe₂ Era",
+        "contentHtml": "<p>HgTe contains mercury and is environmentally and technologically inconvenient. Two important alternative 2D-TI platforms emerged. The first is the <strong>InAs/GaSb double quantum well</strong> proposed by Liu, Hughes, Qi, Wang, and Zhang (2008) and realized by Du and collaborators. The system uses a type-II broken-gap heterostructure: the conduction-band minimum of InAs lies <em>below</em> the valence-band maximum of GaSb, so charge transfer creates an inverted regime tunable by gate voltage. Helical edge transport was reported, but the bulk often conducts in parallel and disorder-driven non-quantization has been a persistent issue.</p><p>The second is <strong>monolayer WTe₂</strong> in the 1T' structure, predicted by Qian, Liu, Fu, and Li (2014) and confirmed by Wu and collaborators (2018). Monolayer WTe₂ has a clean inverted band structure from the W <em>d</em>-orbitals, helical edges visible in microwave impedance microscopy, and a quantized two-terminal conductance close to 2e²/h up to 100 K — the highest-temperature 2D-TI signature observed to date. The relatively large gap (~50 meV) and the absence of magnetic ions make it especially attractive.</p><p>Bismuthene (single-layer Bi on SiC), Jacutingaite (Pt₂HgSe₃), and stanene (Sn analog of graphene) are further candidates. The take-home: BHZ-like physics is generic — any system with an inverted gap from spin-orbit coupling and TRS can host 2D-TI edges. The challenge has shifted from existence to <em>device-quality</em> realization at experimentally convenient temperatures.</p>",
+        "mathExpressions": [
+          "G_{\\text{WTe}_2} \\approx \\frac{2 e^2}{h}, \\quad T \\lesssim 100 \\text{ K}",
+          "E_{\\text{gap}}(\\text{1T}'\\text{-WTe}_2) \\approx 50 \\text{ meV}",
+          "\\text{InAs/GaSb: } E_c^{\\text{InAs}} < E_v^{\\text{GaSb}} \\Rightarrow \\text{type-II broken gap}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q17", "topm-q18", "topm-q19", "topm-q20", "topm-q21", "topm-q22", "topm-q23", "topm-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "topm-04",
+    "topicId": "mat-topological-materials",
+    "order": 4,
+    "title": "Weyl and Dirac Semimetals: Fermi Arcs and the Chiral Anomaly",
+    "description": "TaAs, Cd₃As₂, Na₃Bi — bulk band touchings, surface Fermi arcs, and negative magnetoresistance",
+    "xpReward": 175,
+    "concepts": [
+      {
+        "id": "topm-04-c1",
+        "title": "Weyl Nodes as Monopoles in Momentum Space",
+        "contentHtml": "<p>A <strong>Weyl semimetal</strong> is a 3D bulk band-touching at which two non-degenerate bands meet linearly in all three momentum directions. The local Hamiltonian reads <code>H<sub>W</sub>(<strong>q</strong>) = χ ℏv (q<sub>x</sub>σ<sub>x</sub> + q<sub>y</sub>σ<sub>y</sub> + q<sub>z</sub>σ<sub>z</sub>)</code> with chirality χ = ±1. Each node carries an integer Berry-curvature monopole charge equal to χ; integrating Ω over any sphere enclosing the node gives ±2π, making Weyl nodes the momentum-space analogs of magnetic monopoles.</p><p>By Nielsen-Ninomiya, Weyl nodes must come in pairs of opposite chirality on a lattice. To stabilize a Weyl phase you need to break either inversion <em>P</em> (e.g., the noncentrosymmetric TaAs) or time reversal <em>T</em> (e.g., magnetic Weyls like Co₃Sn₂S₂). If both <em>P</em> and <em>T</em> are preserved, every band is doubly degenerate; one gets at most a <strong>Dirac semimetal</strong> — a four-fold touching equivalent to two superposed Weyl nodes of opposite chirality, separable by breaking either symmetry.</p><p>The materials that broke open the field are <strong>TaAs, NbAs, TaP, NbP</strong> — the inversion-broken \"TaAs family,\" predicted in 2015 by Weng-Fang and Huang-Xu and confirmed within months by Xu et al. (Princeton) and Lv et al. (IOP Beijing) using ARPES. Each crystal hosts 24 Weyl nodes related by C₄ rotation, chirally separated by ~0.05 Å⁻¹. The Dirac semimetals <strong>Na₃Bi</strong> (Liu et al. 2014) and <strong>Cd₃As₂</strong> (Wang 2013, Neupane 2014) preceded them, with bulk Dirac points along the rotational axis pinned by discrete crystalline symmetry.</p>",
+        "mathExpressions": [
+          "H_W(\\mathbf{q}) = \\chi \\hbar v \\, \\vec{\\sigma} \\cdot \\vec{q}, \\quad \\chi = \\pm 1",
+          "\\int_{S^2} \\vec{\\Omega} \\cdot d\\vec{S} = 2\\pi \\chi \\quad \\text{(Berry monopole charge)}",
+          "\\sum_{\\text{nodes}} \\chi_i = 0 \\quad \\text{(Nielsen-Ninomiya)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-04-c2",
+        "title": "Fermi Arcs: The Surface Smoking Gun",
+        "contentHtml": "<p>The bulk-boundary correspondence in a Weyl semimetal produces an unusual surface signature: the Fermi surface on a (001) face is not a closed loop but an <strong>open arc</strong> connecting the projections of two bulk Weyl nodes of opposite chirality. The dispersion along the arc is approximately <code>E<sub>arc</sub>(<strong>k</strong><sub>∥</sub>) ≈ ℏv<sub>arc</sub>(k<sub>x</sub> sin α − k<sub>y</sub> cos α)</code> for some surface-orientation-dependent angle α. Open Fermi surfaces are forbidden in any ordinary 2D system (Bloch's theorem requires closed Fermi loops in 2D); they exist on a Weyl-semimetal surface only because the surface is the boundary of a 3D system whose topology pumps Berry curvature between nodes through the bulk.</p><p>Xu, Hasan, and collaborators reported the first ARPES observation of Fermi arcs in TaAs in 2015, mapping the characteristic \"bowtie\" pattern at the Γ-projected and X-projected Weyl pairs. STM quasi-particle interference was added by Inoue, Yazdani, and others, showing the predicted scattering vectors that connect arc termini back to bulk nodes. ARPES + STM is now the standard composite test for a Weyl semimetal candidate.</p><p>Fermi arcs are <em>materially robust</em>: as long as the surface preserves the bulk symmetries that pin the Weyl-node positions (a much weaker condition than full TRS), the arcs persist. They are however <em>shape-dependent</em>: cleaving along different crystallographic planes rotates and rearranges the arc connectivity, sometimes producing dramatic open-orbit cyclotron motion (the Potter-Kim-Vishwanath quantum oscillation that traverses arc → bulk Weyl → opposite-surface arc → bulk Weyl back to start).</p>",
+        "mathExpressions": [
+          "E_{\\text{arc}}(\\mathbf{k}_\\parallel) \\approx \\hbar v_{\\text{arc}} (k_x \\sin\\alpha - k_y \\cos\\alpha)",
+          "\\partial \\text{(Fermi arc)} = \\{\\text{Weyl projections of opposite } \\chi\\}",
+          "\\text{TaAs: 24 Weyl nodes, 12 pairs, projected to (001) as arcs of length} \\approx 0.05 \\text{ \\AA}^{-1}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-04-c3",
+        "title": "The Chiral Anomaly and Negative Magnetoresistance",
+        "contentHtml": "<p>The most spectacular bulk signature of a Weyl semimetal is the <strong>chiral anomaly</strong>. The chiral charge n<sub>5</sub> = n<sub>R</sub> − n<sub>L</sub> is classically conserved but anomalously generated by parallel <strong>E</strong> and <strong>B</strong> through the Adler-Bell-Jackiw mechanism: <code>∂<sub>μ</sub>j<sup>μ</sup><sub>5</sub> = (e²/2π²ℏ²c) <strong>E</strong>·<strong>B</strong></code>. Charge is pumped between Weyl nodes through the lowest Landau level connecting the two cones via the bulk.</p><p>The transport consequence, derived by Son and Spivak (2013), is a <strong>negative longitudinal magnetoresistance</strong> when <strong>B</strong> ∥ <strong>I</strong>. The chiral imbalance n<sub>5</sub> ∝ <strong>E</strong>·<strong>B</strong> creates an extra conductance channel <code>Δσ<sub>zz</sub> ∝ B²·τ<sub>v</sub></code>, with τ<sub>v</sub> the inter-valley scattering time — typically much longer than the intra-valley momentum-relaxation time. The result is a striking ρ<sub>xx</sub>(B) that decreases (rather than increases as in normal metals) as the field is ramped up.</p><p>Xiong, Ong, and collaborators reported the first clean observation in Na₃Bi (2015), with ρ<sub>xx</sub>(B ∥ I) dropping by ~80% by 7 T. Observations in TaAs, NbP, GdPtBi, and ZrTe₅ followed — though the field had to navigate <em>artifactual</em> negative-MR from current jetting, where inhomogeneous current paths in non-uniformly contacted samples mimic the anomaly. The community now requires Hall-bar geometries with multiple voltage probes and angular ρ(θ) dependence. As of 2025, the chiral anomaly is regarded as confirmed in the cleanest TaAs, Na₃Bi, and Cd₃As₂ samples.</p>",
+        "mathExpressions": [
+          "\\partial_\\mu j^\\mu_5 = \\frac{e^2}{2\\pi^2 \\hbar^2 c} \\vec{E} \\cdot \\vec{B} \\quad \\text{(Adler-Bell-Jackiw / chiral anomaly)}",
+          "\\Delta\\sigma_{zz}(B) \\propto B^2 \\tau_v / (1 + B^2 \\tau_v / \\tau_{tr}) \\quad \\text{(Son-Spivak)}",
+          "\\rho_{xx}(B \\parallel I) \\to \\rho_{xx}(B \\parallel I) - C \\cdot B^2 \\quad \\text{(negative LMR)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q25", "topm-q26", "topm-q27", "topm-q28", "topm-q29", "topm-q30", "topm-q31", "topm-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "topm-05",
+    "topicId": "mat-topological-materials",
+    "order": 5,
+    "title": "Topological Crystalline and Higher-Order Insulators",
+    "description": "SnTe and mirror-protected states; corner and hinge modes from quantized multipoles",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "topm-05-c1",
+        "title": "Beyond TRS: Crystalline-Symmetry-Protected Topology",
+        "contentHtml": "<p>Time reversal is not the only symmetry that can protect topology. <strong>Topological crystalline insulators (TCIs)</strong>, introduced by Liang Fu in 2011, generalize the framework: any unitary or antiunitary spatial symmetry — mirror reflection, rotation, glide, screw — can pin band crossings and produce protected boundary states. The protecting symmetry can be much weaker and more material-specific than TRS, opening a whole new zoo of topological compounds.</p><p>The cleanest TCIs are <strong>mirror Chern insulators</strong>. If a mirror plane M̂ commutes with the Bloch Hamiltonian on the corresponding 2D mirror-invariant plane in the BZ, the Hamiltonian decomposes into +i and −i mirror sectors, each carrying its own Chern number C<sub>+</sub>, C<sub>−</sub>. The <strong>mirror Chern number</strong> n<sub>M</sub> = (C<sub>+</sub> − C<sub>−</sub>)/2 is integer-valued, and a nonzero n<sub>M</sub> mandates protected gapless states on any surface preserving the mirror.</p><p>The first experimental realization was the <strong>SnTe family</strong> — SnTe, Pb<sub>1−x</sub>Sn<sub>x</sub>Te, Pb<sub>1−x</sub>Sn<sub>x</sub>Se — predicted by Hsieh, Lin, Liu, Duan, Bansil, and Fu (2012) and confirmed by ARPES on (001) surfaces in 2012. SnTe has Z₂ ν₀ = 0 (it is <em>not</em> a Z₂ TI) but n<sub>M</sub> = 2 across the {110} mirror planes, producing two Dirac cones near the X̄ points of the (001) surface. Tuning the Pb/Sn ratio drives a TCI-to-trivial phase transition at exactly the composition where the bulk gap closes — the cleanest experimental demonstration of a topological phase transition controlled by chemistry alone.</p>",
+        "mathExpressions": [
+          "n_M = \\frac{C_{+i} - C_{-i}}{2} \\in \\mathbb{Z} \\quad \\text{(mirror Chern number)}",
+          "\\text{SnTe: } \\nu_0 = 0, \\quad n_M = 2 \\quad \\text{(TCI, not Z}_2\\text{ TI)}",
+          "\\text{(001) surface: 2 Dirac cones near } \\bar{X} \\text{ from } n_M = 2"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-05-c2",
+        "title": "Higher-Order Topological Insulators",
+        "contentHtml": "<p>The bulk-boundary correspondence in a d-dimensional first-order TI mandates gapless states on the (d−1)-dimensional boundary. A <strong>second-order topological insulator (SOTI)</strong> has gapped (d−1)-dimensional faces but gapless (d−2)-dimensional <em>hinges</em> (in 3D) or <em>corners</em> (in 2D). The boundary topology is one rung lower than usual, governed not by an ordinary topological invariant but by a <strong>quantized electric multipole moment</strong> protected by crystalline symmetry.</p><p>The framework — quantized quadrupole, octupole, and bulk multipole moments — was developed by Benalcazar, Bernevig, and Hughes (Science 2017). Their canonical model is a 2D square-lattice tight-binding Hamiltonian with π-flux per plaquette (mimicked by alternating bond signs) whose mirror-symmetry-protected quadrupole q<sub>xy</sub> is quantized to 0 or 1/2. The q<sub>xy</sub> = 1/2 phase has gapped edges but four <strong>charged corner states</strong> with fractional charge Q<sub>corner</sub> = e/2 — the higher-order analog of the Su-Schrieffer-Heeger end states.</p><p>Experimentally, second-order topology has been demonstrated in <strong>bismuth</strong> (Schindler et al., Nature 2018), where ARPES showed gapped (110) surfaces but STM revealed a 1D conducting hinge mode along the step edge. <strong>Bi₄Br₄</strong>, <strong>SnTe</strong> nanowires, and <strong>WTe₂</strong> have followed with various corner- and hinge-state signatures. The classification has been generalized to any space group, with hundreds of candidate higher-order materials now identified by symmetry-indicator analysis.</p>",
+        "mathExpressions": [
+          "q_{xy} = \\tfrac{1}{2\\pi i} \\mathrm{tr} \\ln U_{xy} \\in \\{0, \\tfrac{1}{2}\\} \\pmod 1 \\quad \\text{(quantized quadrupole, BBH 2017)}",
+          "Q_{\\text{corner}} = e \\cdot q_{xy} = \\frac{e}{2} \\quad \\text{(fractional corner charge)}",
+          "\\text{SOTI: bulk gap, surface gap, gapless hinges/corners}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-05-c3",
+        "title": "Topological Quantum Chemistry and Symmetry Indicators",
+        "contentHtml": "<p>The Z₂ + crystalline + higher-order zoo of invariants threatened to make materials prediction unmanageable — until two parallel breakthroughs unified the framework. <strong>Symmetry indicators</strong> (Po, Vishwanath, Watanabe 2017; Khalaf, Po, Vishwanath, Watanabe 2018) reduce the topological diagnosis of any band structure to a finite check on a small set of high-symmetry-momentum irreducible representations. Whether a given gapped band structure is topological in <em>any</em> sense — Z₂, mirror Chern, higher-order — can be read from the elementary representations at TRIM and rotation-invariant momenta.</p><p>In parallel, <strong>topological quantum chemistry</strong> (Bradlyn, Elcoro, Cano, Vergniory, Wang, Felser, Aroyo, Bernevig, Nature 2017) systematized the connection between symmetry-allowed atomic orbitals (\"elementary band representations,\" EBRs) and topology. A band that <em>cannot</em> be expressed as a symmetric sum of EBRs is necessarily topological. The 1651 magnetic space groups and their EBRs are now tabulated in the Bilbao Crystallographic Server.</p><p>The payoff was the <strong>topological materials database</strong>. Vergniory, Elcoro, Felser, Regnault, Bernevig, and Wang (Nature 2019) screened all ~37,000 stoichiometric ICSD entries: roughly <strong>30%</strong> were diagnosed as topologically nontrivial in some respect — strong TI, weak TI, TCI, higher-order, or topological semimetal. The 2022 update extended this to all 1651 magnetic space groups via the MAGNDATA crystal collection. What had been a search for a few exotic compounds became a routine diagnosis applied to the entire database of known crystals — and the headline number is that topology is a generic feature of band structures, not an exceptional one.</p>",
+        "mathExpressions": [
+          "\\text{Symmetry indicator: } \\mathbb{X}_{\\text{BS}} = \\{\\text{EBRs}\\} / \\sim, \\quad |X_{\\text{BS}}| \\text{ finite}",
+          "\\text{TQC: band rep. exists } \\Leftrightarrow \\text{ topologically trivial}",
+          "\\sim 30\\% \\text{ of ICSD compounds topological (Vergniory et al. 2019)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q33", "topm-q34", "topm-q35", "topm-q36", "topm-q37", "topm-q38", "topm-q39", "topm-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "topm-06",
+    "topicId": "mat-topological-materials",
+    "order": 6,
+    "title": "k-Theoretic Classification: The Tenfold Way and Its Refinements",
+    "description": "Altland-Zirnbauer classes, the Kitaev periodic table, and the K-theoretic structure of band topology",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "topm-06-c1",
+        "title": "Altland-Zirnbauer Classes and the Tenfold Way",
+        "contentHtml": "<p>Without crystalline symmetries, every gapped non-interacting fermion Hamiltonian belongs to one of <strong>ten Altland-Zirnbauer classes</strong>, classified by the presence and squaring of three antiunitary symmetries: time reversal <em>T</em> (with T² = ±1 or absent), particle-hole <em>C</em> (with C² = ±1 or absent), and the chiral combination <em>S</em> = TC. The ten resulting classes are A, AIII, AI, BDI, D, DIII, AII, CII, C, CI — a list familiar from the random-matrix theory of mesoscopic transport.</p><p>Kitaev (2009) and Schnyder, Ryu, Furusaki, Ludwig (2008) showed that for each class and each spatial dimension <em>d</em>, the topological invariant is one of {0, ℤ, ℤ₂}, with a periodicity in <em>d</em> dictated by Bott periodicity in K-theory: 2 for the complex classes (A, AIII), 8 for the real classes. The result is the celebrated <strong>periodic table of topological insulators and superconductors</strong>. Class A in d=2 gives the integer QHE (ℤ Chern); class AII in d=2 and d=3 gives the Z₂ topological insulators; class D in d=1 gives the Kitaev wire (ℤ₂ Majorana parity); class DIII in d=3 gives ³He-B and time-reversal-invariant topological superconductors.</p><p>The classification is mathematically elegant: the topological invariants are reduced K-theory groups <code>K̃(X) ≅ π<sub>0</sub>(\\mathcal{C}<sup>0</sup><sub>n</sub>)</code> of certain symmetric spaces, where n is the AZ class label. The Bott periodicity theorem in topology — π<sub>k</sub>(U) ≅ π<sub>k+2</sub>(U) for the unitary group, and the analogous 8-fold periodicity for orthogonal groups — translates directly into the periodicity of the topological table.</p>",
+        "mathExpressions": [
+          "T^2 = \\pm 1, \\; C^2 = \\pm 1, \\; S = TC \\Rightarrow 10 \\text{ AZ classes}",
+          "\\text{Class A, } d=2: \\mathbb{Z}; \\quad \\text{Class AII, } d=2,3: \\mathbb{Z}_2; \\quad \\text{Class D, } d=1: \\mathbb{Z}_2",
+          "\\pi_k(U) \\cong \\pi_{k+2}(U) \\quad \\text{(Bott periodicity, complex case)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-06-c2",
+        "title": "K-Theory of the Brillouin Zone",
+        "contentHtml": "<p>The K-theoretic interpretation gives the periodic table its rigor. Consider a gapped d-band insulator on a Brillouin torus T<sup>d</sup>. The set of valence-band Bloch bundles forms a vector bundle over T<sup>d</sup>; the topological classification of these bundles up to addition of trivial bundles (\"stable equivalence\") is the K-theory group <code>K(T<sup>d</sup>)</code>. Without symmetry, <code>K(T<sup>2</sup>) = ℤ ⊕ ℤ²</code> (one ℤ for the Chern number plus weak invariants), <code>K(T<sup>3</sup>) = ℤ³ ⊕ ℤ⁴</code>, and so on.</p><p>Imposing the AZ symmetries produces \"twisted\" K-theory groups <code>KR<sup>p,q</sup>(T<sup>d</sup>)</code>, whose computation gives the entries of the tenfold-way table. Freed and Moore (2013) gave the comprehensive twisted-equivariant K-theory framework for crystalline symmetries: the topological invariants of a gapped Hamiltonian symmetric under a magnetic space group <em>M</em> are the equivariant K-theory <code>K<sup>M</sup>(BZ)</code> of the Brillouin zone with <em>M</em>-action.</p><p>For practical purposes the K-theoretic structure underlies two crucial features. <em>Stability</em>: adding trivial bands (e.g., deep core levels) to either side of the gap does not change the topology — only the difference between bundles matters, hence the \"stable\" in stable equivalence. <em>Additivity</em>: the topological invariants form an abelian group under direct sum of band structures. Both properties are taken for granted in the materials literature but are nontrivial K-theoretic facts that justify treating topological invariants as additive integers in the first place.</p>",
+        "mathExpressions": [
+          "K(T^d) = \\bigoplus_{k=0}^{d} \\binom{d}{k} \\mathbb{Z} \\quad \\text{(complex K-theory of the d-torus)}",
+          "K^M(\\text{BZ}) \\to \\text{topological invariants of crystalline class } M",
+          "[E] \\sim [E'] \\Leftrightarrow E \\oplus \\mathbb{C}^N \\cong E' \\oplus \\mathbb{C}^N \\text{ for some } N \\quad \\text{(stable equivalence)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-06-c3",
+        "title": "Interaction Reductions and Beyond Free Fermions",
+        "contentHtml": "<p>The tenfold way assumes <em>non-interacting</em> fermions. With interactions the classification can <strong>collapse</strong>: distinct non-interacting phases become adiabatically connectable through a path with strong correlations but no closing gap. The first dramatic example was Fidkowski and Kitaev (2010): the <strong>BDI ℤ classification in 1D</strong> — counting Majorana zero modes at each end of a class-BDI superconducting wire — collapses to <strong>ℤ₈</strong> under generic four-fermion interactions. Eight Majoranas at one end can be gapped without breaking any symmetry; one, two, ..., seven cannot.</p><p>This pattern is now understood in cohomological terms. Interacting fermionic SPT phases in d dimensions with onsite symmetry G are classified by <strong>spin cobordism</strong>: <code>Ω<sub>d+1</sub><sup>Spin</sup>(BG)</code>, generalizing the bosonic <code>H<sup>d+1</sup>(G, U(1))</code> of Chen-Gu-Liu-Wen 2011. Kapustin et al. (2015) showed that the symmetry-protected fermionic invariants are computed by partition functions on closed (d+1)-manifolds with G-bundle data — a deeply mathematical reformulation that connects topological materials to TQFT and even to high-energy anomaly-matching.</p><p>For materials science the take-home is more pragmatic. The non-interacting classification is robust for the weakly-correlated band insulators and semimetals that dominate the experimental literature: Bi₂Se₃, TaAs, and friends. Interaction-driven collapse becomes relevant when correlations are strong — Mott-Hubbard physics, Kondo lattices, fractional Chern insulators in twisted bilayer graphene. For these the 2025 frontier is to extend symmetry-indicator and TQC methods to <em>interacting</em> band structures, with magnetic topological materials and Kondo insulators (SmB<sub>6</sub>, YbB<sub>6</sub>, FeSb<sub>2</sub>) as the proving ground.</p>",
+        "mathExpressions": [
+          "\\mathbb{Z} \\xrightarrow{\\text{interactions}} \\mathbb{Z}_8 \\quad \\text{(class BDI, } d=1\\text{; Fidkowski-Kitaev)}",
+          "\\text{Free fermion SPT}_{\\text{class, } d} \\twoheadrightarrow \\text{Interacting SPT}_{\\text{class, } d}",
+          "\\text{Interacting SPT}_{G, d} = \\Omega^{\\text{Spin}}_{d+1}(BG) \\quad \\text{(Kapustin et al. 2015)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q41", "topm-q42", "topm-q43", "topm-q44", "topm-q45", "topm-q46", "topm-q47", "topm-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "topm-07",
+    "topicId": "mat-topological-materials",
+    "order": 7,
+    "title": "Frontiers: Magnetic, Axion, and Superconducting Topological Materials",
+    "description": "MnBi₂Te₄, axion insulators, FeTe/Se Majoranas, and the 2025 experimental status",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "topm-07-c1",
+        "title": "Intrinsic Magnetic Topological Materials: MnBi₂Te₄",
+        "contentHtml": "<p>For a decade after Bi₂Se₃, magnetic topological materials were realized only by <em>doping</em> nonmagnetic TIs with Cr or V — a strategy that worked but produced sample-dependent transition temperatures and disordered ferromagnetism. The 2018-2019 emergence of <strong>MnBi₂Te₄</strong> changed the picture. It is the first <strong>intrinsic antiferromagnetic topological insulator</strong>: a layered van der Waals compound (Bi₂Te₃ blocks alternating with MnBi₂Te₄ septuple layers) with A-type AFM order below T<sub>N</sub> = 25 K and a 3D Z₂ ν₀ = 1 invariant.</p><p>The combination of magnetism and topology produces a wealth of phases controllable by sample thickness and field. Even-layer flakes are <strong>axion insulators</strong> with θ = π and quantized topological magnetoelectric response. Odd-layer flakes are <strong>quantum anomalous Hall</strong> insulators — Deng et al. (Science 2020) reported σ<sub>xy</sub> = e²/h plateaus at 1.4 K in five-layer MnBi₂Te₄, the highest QAH temperature observed. Strong field drives a Weyl-semimetal phase (the spin-flopped state). All in one material, tuned by Mn site occupation and stacking.</p><p>The intrinsic magnetic family has now expanded: <strong>MnSb₂Te₄, EuIn₂As₂, MnPtBi, NdSb, Mn(Bi,Sb)₂Te₄</strong>, and the closely related <strong>EuSn₂P₂</strong>. Tokura and collaborators have systematically mapped the QAH/axion/Weyl/magnetic-Dirac-semimetal landscape across these. Magnetic topological materials are now arguably the leading experimental frontier of the field — both for fundamental phases and for applications in spintronics, quantum metrology, and (with proximity superconductivity) fault-tolerant quantum computing.</p>",
+        "mathExpressions": [
+          "T_N(\\text{MnBi}_2\\text{Te}_4) \\approx 25 \\text{ K}, \\quad \\nu_0 = 1",
+          "\\sigma_{xy}^{\\text{QAH}} = \\frac{e^2}{h} \\text{ at } T \\lesssim 1.4 \\text{ K (5-layer MnBi}_2\\text{Te}_4)",
+          "\\text{even layers: axion insulator, } \\theta = \\pi; \\quad \\text{odd: QAH; high } B: \\text{ Weyl}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-07-c2",
+        "title": "Axion Insulators and the Topological Magnetoelectric Effect",
+        "contentHtml": "<p>The <strong>axion insulator</strong> is the response-theory cousin of the magnetic TI. A 3D TI with all surfaces gapped by TRS-breaking acquires a θ = π contribution to the electromagnetic action: <code>S<sub>θ</sub> = (θ/2π) (e²/h) ∫ <strong>E</strong>·<strong>B</strong> d⁴x</code>. Inversion or roto-inversion symmetry quantizes θ to 0 or π modulo 2π — exactly the kind of \"discrete θ\" originally invoked in Wilczek's 1987 axion electrodynamics, here realized in a band insulator.</p><p>The physical consequence is the <strong>topological magnetoelectric effect (TME)</strong>: applying an electric field <strong>E</strong> induces a magnetization <strong>M</strong> = (θe²/2πhc) <strong>E</strong>, with a quantized prefactor when θ = π. Equivalently, every surface acquires a <strong>half-quantized Hall conductance</strong> σ<sub>xy</sub><sup>surf</sup> = (e²/2h), with the half-integer compensated by integer-Hall ribbons running around the sample's hinges. Mogi, Tokura, and collaborators (Science 2017, Nature Physics 2022) measured the quantized TME in Cr-doped (Bi,Sb)₂Te₃/V-doped (Bi,Sb)₂Te₃ heterostructures via Faraday and Kerr rotation, finding the Faraday angle quantized at <code>α<sub>FS</sub> = α<sub>fs</sub> ≈ 1/137</code> — direct, dimensional confirmation of axion electrodynamics in a solid.</p><p>Axion insulators are now studied for two reasons. First, the quantized TME is a candidate for <em>resistance-free</em> magnetoelectric transduction: a frequency-doubling regime with no dissipation, of interest for low-power spintronics. Second, an axion insulator brought into proximity with an s-wave superconductor is theoretically the cleanest route to a <strong>chiral topological superconductor</strong> with chiral Majorana edge modes — a possible foundation for braiding-based qubits without the wire-geometry headaches of Lutchyn-Sau-Das Sarma platforms.</p>",
+        "mathExpressions": [
+          "S_\\theta = \\frac{\\theta}{2\\pi} \\frac{e^2}{h} \\int \\vec{E} \\cdot \\vec{B} \\, d^4 x, \\quad \\theta \\in \\{0, \\pi\\} \\pmod {2\\pi}",
+          "\\vec{M} = \\frac{\\theta e^2}{2\\pi h c} \\vec{E} \\quad \\text{(quantized TME)}",
+          "\\alpha_{FS} = \\alpha_{\\text{fs}} \\approx 1/137 \\quad \\text{(quantized Faraday rotation per surface)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "topm-07-c3",
+        "title": "Topological Superconductors and the 2025 Majorana Status",
+        "contentHtml": "<p>Topological superconductors are the third major class of topological materials, hosting <strong>Majorana zero modes</strong> at boundaries and vortex cores. Three classes of candidate materials are under active investigation. (i) <strong>Doped TIs</strong> — Cu<sub>x</sub>Bi₂Se₃, Sr<sub>x</sub>Bi₂Se₃, Nb<sub>x</sub>Bi₂Se₃ — show bulk SC below ~3 K with anisotropic gap structure suggestive of odd-parity (class DIII) pairing. (ii) <strong>Iron-based SCs with topological surface states</strong> — chiefly <strong>FeTe<sub>0.55</sub>Se<sub>0.45</sub></strong>, where Wang, Hasan, and collaborators (Science 2018, 2020) reported STS observations of vortex-localized zero-bias peaks consistent with the Fu-Kane proximity proposal.</p><p>(iii) <strong>Semiconductor-superconductor heterostructures</strong> based on the Lutchyn-Sau-Das Sarma proposal: an InAs or InSb wire coupled to s-wave Al under Zeeman field. Mourik et al. 2012 reported the original zero-bias peak; the field has had a complex history of retractions (notably Zhang et al. 2018, retracted 2021) when trivial Andreev bound states mimicked the same peak. The community now demands a quantized 2e²/h plateau, nonlocal correlations, and ideally fusion or braiding tests. <strong>Microsoft's Majorana 1</strong> chip (Feb 2025) claims an InAs/Al/HfO₂ \"topoconductor\" with eight topological qubits and measurement-based braiding; peer-reviewed validation is ongoing.</p><p>The frontier is moving toward 2D topological superconductors via twisted bilayer graphene and proximity-superconducted MnBi₂Te₄. The unifying picture: any 2D system with a single gapped Dirac cone and proximity-induced s-wave pairing is a chiral p+ip superconductor (Fu-Kane 2008), so the entire topological-material zoo becomes a candidate substrate. The 2025 question is which platform reaches the engineering finish-line for fault-tolerant Majorana qubits first.</p>",
+        "mathExpressions": [
+          "\\Delta_{\\text{TSC}} \\sim \\Delta_0 (\\hat{k}_x + i \\hat{k}_y) \\quad \\text{(chiral p+ip pairing)}",
+          "G_{\\text{ZBP}} = \\frac{2 e^2}{h} \\quad \\text{(quantized Majorana hallmark)}",
+          "T_c(\\text{Cu}_x \\text{Bi}_2\\text{Se}_3) \\approx 3 \\text{ K}, \\quad T_c(\\text{FeTe}_{0.55}\\text{Se}_{0.45}) \\approx 14 \\text{ K}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["topm-q49", "topm-q50", "topm-q51", "topm-q52", "topm-q53", "topm-q54", "topm-q55", "topm-q56"],
+    "puzzleId": null
+  }
+]

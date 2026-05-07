@@ -1,0 +1,182 @@
+[
+  {
+    "id": "algo-01",
+    "topicId": "cs-algorithms",
+    "order": 1,
+    "title": "Big-O and Asymptotic Analysis",
+    "description": "How algorithms scale, and why one constant factor seldom matters",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "algo-01-c1",
+        "title": "What Big-O Actually Means",
+        "contentHtml": "<p><strong>Big-O notation</strong> describes how an algorithm's resource usage (time or space) grows as input size grows. It throws away constants and lower-order terms because, for large inputs, only the dominant term matters.</p><p>Formally, <code>f(n) = O(g(n))</code> means there exist constants <code>c</code> and <code>n₀</code> such that <code>f(n) ≤ c·g(n)</code> for all <code>n ≥ n₀</code>. Informally: f grows no faster than g, ignoring constant factors. <code>3n² + 5n + 100</code> is <code>O(n²)</code>; the lower-order terms vanish as n gets huge.</p><p>Why this matters: an O(n²) algorithm and an O(n) algorithm look similar at n = 10. At n = 1,000,000, the O(n²) takes a million times longer. Constant-factor optimizations are nice; algorithm choice is everything. The number-one performance lesson is: pick the right complexity class, then worry about constants.</p>",
+        "mathExpressions": ["f(n) = O(g(n)) \\iff \\exists c, n_0 :\\; \\forall n \\geq n_0,\\; f(n) \\leq c \\cdot g(n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-01-c2",
+        "title": "The Common Complexity Classes",
+        "contentHtml": "<p>Roughly in increasing order: <strong>O(1)</strong> constant, <strong>O(log n)</strong> logarithmic, <strong>O(n)</strong> linear, <strong>O(n log n)</strong> linearithmic, <strong>O(n²)</strong> quadratic, <strong>O(n³)</strong> cubic, <strong>O(2ⁿ)</strong> exponential, <strong>O(n!)</strong> factorial.</p><p>Concrete intuitions: O(1) is hash table lookup (no matter the size). O(log n) is binary search — doubling the data adds one step. O(n) is a loop through the array. O(n log n) is the best a comparison sort can do. O(n²) is checking every pair. O(2ⁿ) explodes immediately — viable only for tiny inputs. O(n!) is permutations — viable only for laughably tiny inputs.</p><p>The boundary between practical and impractical sits around O(n log n). For n = 10⁶: O(n log n) is 2·10⁷ operations, fast on any laptop. O(n²) is 10¹², minutes to hours. O(2ⁿ) is more than the number of atoms in the universe. Beyond a certain size, exponential algorithms are essentially uncomputable.</p>",
+        "mathExpressions": ["O(1) < O(\\log n) < O(n) < O(n \\log n) < O(n^2) < O(2^n) < O(n!)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-01-c3",
+        "title": "Best, Average, Worst, and Amortized",
+        "contentHtml": "<p>Big-O usually describes the <strong>worst case</strong>: the maximum time over all inputs of size n. The <strong>average case</strong> assumes some input distribution. The <strong>best case</strong> is the smallest possible time (often misleading — best-case quicksort is O(n log n), but worst-case is O(n²)).</p><p>Worst-case is conservative and often the right thing to optimize for: an adversarial input shouldn't cripple your system. But worst-case analysis can also be too pessimistic. Quicksort's worst case is O(n²) yet it's faster than mergesort in practice because the average case is good and constants are tiny.</p><p><strong>Amortized analysis</strong> tracks the average cost over a sequence of operations. A single dynamic array <code>append</code> is usually O(1) but occasionally triggers an O(n) resize. The amortized cost — total cost / number of operations — works out to O(1). Amortized bounds let you reason about algorithms with rare expensive steps as if they were uniformly cheap, which they effectively are over time.</p>",
+        "mathExpressions": ["\\text{amortized cost} = \\frac{\\text{total cost over n operations}}{n}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["algo-q01", "algo-q02", "algo-q03", "algo-q04", "algo-q05", "algo-q06", "algo-q07", "algo-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "algo-02",
+    "topicId": "cs-algorithms",
+    "order": 2,
+    "title": "Sorting Algorithms",
+    "description": "Bubble, merge, quick, heap, and the special-case sorters",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "algo-02-c1",
+        "title": "Comparison Sorts and the n log n Limit",
+        "contentHtml": "<p>A <strong>comparison sort</strong> orders elements using only pairwise comparisons. Quicksort, mergesort, heapsort, and timsort all qualify. There's a beautiful theoretical result: <strong>any comparison sort takes at least Ω(n log n) comparisons in the worst case</strong>. The proof uses the fact that there are n! possible orderings and each comparison only halves the candidate set.</p><p><strong>Mergesort</strong> achieves the optimal O(n log n) in worst case. Recursively split the array in half, sort each half, merge them. Stable, predictable, but uses O(n) extra space for the merge.</p><p><strong>Quicksort</strong> picks a pivot, partitions the array around it, recurses on both sides. Average O(n log n), worst case O(n²) (for already-sorted input with naive pivot choice). In practice, modern quicksort variants (with good pivot selection) are the fastest comparison sort on most workloads, despite the worse worst case. Constants matter.</p>",
+        "mathExpressions": ["\\Omega(n \\log n) \\quad \\text{lower bound for any comparison-based sorting algorithm}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-02-c2",
+        "title": "Heapsort, Timsort, and Stability",
+        "contentHtml": "<p><strong>Heapsort</strong> uses a binary heap data structure. Build a max-heap in O(n), then repeatedly extract the maximum, taking O(log n) per extraction. Total: O(n log n) worst case, in-place, no extra memory. The downside: cache-unfriendly access patterns make it slower in practice than quicksort despite identical asymptotics.</p><p><strong>Timsort</strong> is what Python's <code>sort()</code> and Java's <code>Arrays.sort</code> actually use. It's a hybrid of mergesort and insertion sort, optimized for real-world data that often has runs of already-sorted elements. Worst case O(n log n), best case O(n) for nearly-sorted input. It's stable and very fast on real data.</p><p>A sort is <strong>stable</strong> if equal elements keep their original order. Mergesort is stable; quicksort and heapsort generally aren't. Stability matters when you sort by multiple keys: sorting by name and then by age in a stable sort gives age-then-name order; in an unstable sort, equal-age groups have unpredictable name order.</p>",
+        "mathExpressions": ["\\text{stable: } a = b \\text{ in input order} \\implies a \\text{ before } b \\text{ in output}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-02-c3",
+        "title": "Linear-Time Sorts: Counting and Radix",
+        "contentHtml": "<p>The Ω(n log n) lower bound applies to <em>comparison-based</em> sorts. If you can exploit structure in the data, you can do better.</p><p><strong>Counting sort</strong> works when input values are integers in a small range [0, k]. Count the occurrences of each value, then output values in order. Time O(n + k), space O(k). For sorting a million 8-bit integers, counting sort is far faster than any comparison sort.</p><p><strong>Radix sort</strong> generalizes by sorting digit-by-digit, typically using counting sort as a subroutine. For n integers with d digits each in base b, time is O(d(n + b)). Radix sort beats comparison sorts when keys are short integers or fixed-length strings — common in real-world systems handling IDs, timestamps, or sensor data. The hidden cost is space for the buckets and the assumption that keys fit a small alphabet.</p>",
+        "mathExpressions": ["\\text{counting sort: } O(n + k) \\quad \\text{radix sort: } O(d(n + b))"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["algo-q09", "algo-q10", "algo-q11", "algo-q12", "algo-q13", "algo-q14", "algo-q15", "algo-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "algo-03",
+    "topicId": "cs-algorithms",
+    "order": 3,
+    "title": "Searching and Graph Traversal",
+    "description": "Linear, binary, BFS, DFS, and Dijkstra's algorithm",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "algo-03-c1",
+        "title": "Binary Search: The Power of Halving",
+        "contentHtml": "<p><strong>Linear search</strong> checks elements one by one — O(n). Easy, often correct, but slow on large data.</p><p><strong>Binary search</strong> requires sorted input but achieves O(log n). Pick the middle element. If it equals the target, done. If smaller, search the right half; if larger, search the left half. Each comparison halves the remaining search space. For 10⁹ elements, you find any value in 30 comparisons.</p><p>Binary search generalizes far beyond array lookup. Any monotonic predicate over an integer range can be binary-searched. \"What is the largest x such that f(x) is still acceptable?\" — if f is monotonic, binary search finds it in O(log range). This pattern shows up in hyperparameter tuning, capacity planning, and competitive programming. Implementing binary search correctly is famously tricky (the &lt; vs ≤ vs ≥ boundary cases bit even Joshua Bloch in the Java Collections framework — broken for nine years).</p>",
+        "mathExpressions": ["\\log_2(10^9) \\approx 30 \\quad \\text{a billion-element search in 30 comparisons}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-03-c2",
+        "title": "BFS and DFS: Two Ways to Walk a Graph",
+        "contentHtml": "<p><strong>Breadth-First Search (BFS)</strong> explores a graph layer by layer. Start at the source, visit all neighbors, then their neighbors, and so on. Implementation: a queue. BFS finds the shortest path in unweighted graphs and is the basis for level-order tree traversal.</p><p><strong>Depth-First Search (DFS)</strong> dives down one path as far as possible before backtracking. Implementation: a stack (or recursion, which uses the call stack). DFS is the foundation for cycle detection, topological sort, finding connected components, and many graph algorithms.</p><p>Both run in O(V + E) — visit each vertex and edge once. The choice between them depends on what you need: BFS for shortest paths and level-order properties; DFS for explicit ordering, recursion-friendly problems, and structural decomposition. They're often the first move when modeling a problem as a graph.</p>",
+        "mathExpressions": ["\\text{BFS, DFS: } O(V + E) \\quad \\text{visit each vertex and edge once}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-03-c3",
+        "title": "Dijkstra and Weighted Shortest Paths",
+        "contentHtml": "<p>Plain BFS finds shortest paths in unweighted graphs. For weighted graphs (where edges have non-negative weights), you need <strong>Dijkstra's algorithm</strong>. The idea: maintain a priority queue of (vertex, tentative distance). Repeatedly extract the closest unvisited vertex and relax its outgoing edges.</p><p>With a binary heap, Dijkstra runs in O((V + E) log V). With a Fibonacci heap, O(V log V + E). It's the workhorse of routing — Google Maps, network routing protocols, and game pathfinding all build on it.</p><p>Dijkstra fails on graphs with <em>negative</em> edge weights. For those, use <strong>Bellman-Ford</strong> (O(VE), handles negative edges and detects negative cycles). For all-pairs shortest paths on dense graphs, use <strong>Floyd-Warshall</strong> (O(V³), beautifully short DP). For pathfinding with a heuristic, use <strong>A*</strong> — Dijkstra biased toward the goal, dramatically faster in practice when the heuristic is good.</p>",
+        "mathExpressions": ["\\text{Dijkstra: } O((V + E) \\log V) \\quad \\text{requires non-negative edge weights}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["algo-q17", "algo-q18", "algo-q19", "algo-q20", "algo-q21", "algo-q22", "algo-q23", "algo-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "algo-04",
+    "topicId": "cs-algorithms",
+    "order": 4,
+    "title": "Recursion and Divide-and-Conquer",
+    "description": "Self-reference, base cases, recurrences, and the master theorem",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "algo-04-c1",
+        "title": "Recursion: A Function Calls Itself",
+        "contentHtml": "<p><strong>Recursion</strong> solves a problem by reducing it to smaller instances of the same problem. The two non-negotiable parts: a <strong>base case</strong> (a small input solved directly) and a <strong>recursive case</strong> (the function calls itself on smaller input).</p><p>Classic examples: factorial (<code>n! = n · (n-1)!</code>), Fibonacci, tree traversal, the Towers of Hanoi. Recursion shines when a problem's structure is itself recursive — trees, fractals, divide-and-conquer algorithms.</p><p>Two practical concerns. <strong>Stack depth</strong>: each recursive call uses stack space; deep recursion can overflow. Some languages (Scheme, OCaml, Scala) optimize <strong>tail recursion</strong> into loops, eliminating the stack cost; others (Python, Java) don't. <strong>Repeated work</strong>: naive Fibonacci recurses exponentially, recomputing fib(3) over and over. The fix is <strong>memoization</strong> — cache subproblem results — which leads naturally into dynamic programming.</p>",
+        "mathExpressions": ["\\text{fact}(n) = \\begin{cases} 1 & n = 0 \\\\ n \\cdot \\text{fact}(n-1) & n > 0 \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-04-c2",
+        "title": "Divide and Conquer",
+        "contentHtml": "<p><strong>Divide-and-conquer</strong> is recursion's most influential pattern: split a problem into independent subproblems, solve them recursively, combine the results. Mergesort splits the array, sorts halves, merges. Quicksort partitions around a pivot. Strassen's matrix multiplication splits matrices into blocks.</p><p>The runtime of a divide-and-conquer algorithm is described by a <strong>recurrence</strong>: <code>T(n) = a · T(n/b) + f(n)</code>, where you make a recursive calls on size-n/b subproblems and do f(n) work to combine. The <strong>Master Theorem</strong> solves common forms of this recurrence directly: comparing log_b(a) to the polynomial degree of f(n) tells you the asymptotic running time.</p><p>Mergesort: <code>T(n) = 2T(n/2) + n</code>, gives O(n log n). Binary search: <code>T(n) = T(n/2) + 1</code>, gives O(log n). Strassen: <code>T(n) = 7T(n/2) + n²</code>, gives O(n^log₂7) ≈ O(n^2.81), beating naive matrix multiplication. The Master Theorem is the cheat sheet that turns recurrences into asymptotic bounds in seconds.</p>",
+        "mathExpressions": ["T(n) = a \\cdot T(n/b) + f(n) \\quad \\text{(divide-and-conquer recurrence)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-04-c3",
+        "title": "Backtracking and Combinatorial Search",
+        "contentHtml": "<p><strong>Backtracking</strong> is recursion's tool for combinatorial search: explore choices, recurse, undo on dead ends. The skeleton: try a partial solution; if it can extend to a complete one, recurse; otherwise undo (\"backtrack\") and try the next option.</p><p>Sudoku, the N-queens problem, parsing, generating permutations, solving constraint puzzles — all classic backtracking territory. The technique can also be the engine behind constraint solvers and SAT solvers, augmented with smarter pruning.</p><p>Pure backtracking can be exponential because the search tree is huge. The art is <strong>pruning</strong>: detecting that a partial solution can't possibly lead to a valid full solution and abandoning that branch immediately. Constraint propagation, lower-bound heuristics, and clever ordering of choices can take a worst-case exponential algorithm to practical-on-real-inputs. Most successful constraint solvers (modern SAT, CP, Sudoku solvers) are backtracking with very aggressive pruning.</p>",
+        "mathExpressions": ["\\text{backtrack(state)} = \\begin{cases} \\text{accept} & \\text{state is solution} \\\\ \\text{prune} & \\text{state is dead end} \\\\ \\bigvee_c \\text{backtrack(extend(state, c))} & \\text{otherwise} \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["algo-q25", "algo-q26", "algo-q27", "algo-q28", "algo-q29", "algo-q30", "algo-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "algo-05",
+    "topicId": "cs-algorithms",
+    "order": 5,
+    "title": "Dynamic Programming and Greedy",
+    "description": "Optimal substructure, memoization, and when greed wins",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "algo-05-c1",
+        "title": "Dynamic Programming: Memo or Tabulate",
+        "contentHtml": "<p><strong>Dynamic programming (DP)</strong> exploits two properties: <strong>optimal substructure</strong> (the optimal solution contains optimal sub-solutions) and <strong>overlapping subproblems</strong> (the same sub-solutions appear repeatedly). When both hold, you can solve once, store, reuse — turning exponential brute force into polynomial.</p><p>Two implementation styles. <strong>Memoization</strong>: write the recursion naturally, then add a cache that skips recomputation. <strong>Tabulation</strong>: build a table from the smallest subproblems up to the answer, bottom-up. Memoization is easier to write; tabulation usually has lower constants and better cache behavior. Both achieve the same complexity.</p><p>Canonical examples: Fibonacci (O(n) instead of O(2ⁿ)), longest common subsequence (O(mn)), knapsack (O(nW)), edit distance (O(mn)), matrix chain multiplication (O(n³)). The DP unlock is recognizing that a problem decomposes nicely. \"What is the optimal solution that ends here / uses this much / has this property?\" is the framing that often reveals the recurrence.</p>",
+        "mathExpressions": ["\\text{Fib}(n) = \\text{Fib}(n-1) + \\text{Fib}(n-2) \\quad \\text{naive: } O(2^n) \\text{; with memo: } O(n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-05-c2",
+        "title": "Greedy Algorithms: Local Choice, Global Optimum",
+        "contentHtml": "<p><strong>Greedy algorithms</strong> make the locally best choice at each step, hoping the result is globally optimal. Pick the closest city next in TSP. Pick the highest-value-per-weight item in the fractional knapsack. Pick the smallest available coin in change-making.</p><p>Sometimes this works perfectly. Dijkstra is greedy and optimal. Kruskal's and Prim's algorithms for minimum spanning trees are greedy and optimal. Huffman coding is greedy and optimal. Each works because the problem has a <strong>matroid structure</strong> or another mathematical property that guarantees local choices align with global optima.</p><p>Sometimes greedy fails badly. The 0/1 knapsack problem (items can't be split) requires DP, not greed; greedy gives a wrong answer. Coin change with arbitrary denominations needs DP; greedy works for US coins but breaks on, say, {1, 3, 4} for value 6 (greedy says 4+1+1, but 3+3 is better). Recognizing when greedy is correct (and when it isn't) is the harder skill — proving optimality usually requires an exchange argument or matroid theory.</p>",
+        "mathExpressions": ["\\text{greedy: } \\text{at each step, choose} \\arg\\max_x f(x) \\quad \\text{(may or may not be globally optimal)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "algo-05-c3",
+        "title": "P, NP, and the Limits of Polynomial Algorithms",
+        "contentHtml": "<p>Some problems just don't have known polynomial-time algorithms. The <strong>traveling salesman problem (TSP)</strong>, <strong>boolean satisfiability (SAT)</strong>, <strong>graph coloring</strong>, <strong>knapsack (0/1 integer)</strong>, and many others sit in <strong>NP-complete</strong> — solvable in polynomial time only if P = NP, which most researchers believe is false.</p><p>For NP-complete problems, three pragmatic strategies. <strong>Approximation algorithms</strong> guarantee a solution within some factor of optimal in polynomial time (e.g., Christofides for TSP guarantees 1.5x optimal). <strong>Heuristics</strong> work well in practice without provable bounds (simulated annealing, genetic algorithms, local search). <strong>Exact solvers</strong> use exponential algorithms with aggressive pruning that handle most real instances despite worst-case explosion (modern SAT and ILP solvers routinely solve problems with millions of variables).</p><p>The real-world lesson: knowing a problem is NP-complete tells you to stop looking for a perfect polynomial algorithm and pick the right approximation strategy. Some of the most important algorithmic engineering happens here — squeezing practical performance out of problems that are theoretically intractable.</p>",
+        "mathExpressions": ["P \\subseteq NP \\quad P \\stackrel{?}{=} NP \\quad \\text{(open since 1971)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["algo-q32", "algo-q33", "algo-q34", "algo-q35", "algo-q36", "algo-q37"],
+    "puzzleId": null
+  }
+]

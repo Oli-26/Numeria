@@ -1,0 +1,362 @@
+[
+  {
+    "id": "dl-01",
+    "topicId": "cs-deep-learning",
+    "order": 1,
+    "title": "Backpropagation and Automatic Differentiation",
+    "description": "The chain rule, computation graphs, and reverse-mode autodiff",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "dl-01-c1",
+        "title": "The Chain Rule on a Computation Graph",
+        "contentHtml": "<p><strong>Backpropagation</strong> is just the multivariate chain rule applied to a directed acyclic <strong>computation graph</strong>. Every neural network — a 70-billion-parameter LLaMA, a small MLP — is, mechanically, a graph of primitive operations (matmul, add, GELU, softmax) with a scalar loss at the root. Training requires the gradient of that loss with respect to every parameter.</p><p>For a node <code>z = f(x, y)</code> where <code>x</code> and <code>y</code> themselves depend on parameters <code>θ</code>, the chain rule says <code>∂L/∂θ = ∂L/∂z · ∂z/∂x · ∂x/∂θ + ∂L/∂z · ∂z/∂y · ∂y/∂θ</code>. The gradient flowing into a node is the sum of contributions from all paths it influences.</p><p>The key insight is that you compute gradients by walking the graph <em>backwards</em>. Each node knows how to compute its local Jacobian; the chain rule glues these locals into a global gradient. Crucially, you don't materialize Jacobians explicitly — you compute Jacobian-vector products. This is why training a transformer with billions of parameters is feasible at all: gradients propagate as compactly as the activations themselves.</p>",
+        "mathExpressions": ["\\frac{\\partial L}{\\partial \\theta} = \\sum_{\\text{paths } p} \\prod_{e \\in p} \\frac{\\partial \\text{out}(e)}{\\partial \\text{in}(e)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-01-c2",
+        "title": "Reverse-Mode vs Forward-Mode Autodiff",
+        "contentHtml": "<p>There are two ways to apply the chain rule. <strong>Forward-mode</strong> computes <code>∂y/∂x</code> by propagating tangents forward alongside the values. Cost is proportional to the number of <em>inputs</em>. <strong>Reverse-mode</strong> propagates adjoints backward from the output. Cost is proportional to the number of <em>outputs</em>.</p><p>Neural network training has one scalar output (the loss) and millions to billions of inputs (the parameters). Reverse-mode wins by a factor of <em>n</em> — running forward-mode on a 175B-parameter model would require 175B forward passes. Reverse-mode requires one forward and one backward, so two passes total. This asymmetry is why <strong>reverse-mode autodiff</strong> dominates deep learning.</p><p>The cost: you must store all intermediate activations during the forward pass to compute local gradients during the backward pass. For a transformer, activations dominate memory. <strong>Gradient checkpointing</strong> trades compute for memory: don't store every activation, recompute some during the backward pass. Modern frameworks (PyTorch's <code>autograd</code>, JAX's <code>grad</code>, TensorFlow's <code>GradientTape</code>) implement reverse-mode autodiff transparently — you write the forward pass, the framework derives the backward pass.</p>",
+        "mathExpressions": ["\\text{forward-mode cost} \\propto \\dim(\\text{input}), \\quad \\text{reverse-mode cost} \\propto \\dim(\\text{output})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-01-c3",
+        "title": "Vanishing and Exploding Gradients",
+        "contentHtml": "<p>Backprop multiplies Jacobians along the depth of the network. If those Jacobians have singular values consistently below 1, gradients shrink exponentially toward zero — <strong>vanishing gradients</strong>. If singular values exceed 1, gradients blow up — <strong>exploding gradients</strong>. Both cripple training.</p><p>This was the core obstacle for deep RNNs in the 1990s and 2000s. Sigmoid and tanh activations saturate at the tails (derivative near zero), guaranteeing vanishing gradients in deep stacks. The 2012-onwards deep learning revolution depended on three fixes: <strong>ReLU</strong> activations (derivative is 0 or 1, no saturation in positive regime), <strong>residual connections</strong> (ResNet, 2015 — the gradient has an identity path that bypasses depth), and <strong>careful initialization</strong> (Xavier, He) that keeps activations and gradients well-scaled at depth.</p><p>For exploding gradients, the standard fix is <strong>gradient clipping</strong>: rescale the gradient vector to have norm at most some threshold (typically 1.0). Transformers use all of these tools. A modern 96-layer transformer trains stably only because residual streams keep gradients flowing, LayerNorm/RMSNorm keep activations scaled, and gradient clipping handles the occasional spike.</p>",
+        "mathExpressions": ["\\nabla_x L = \\prod_{\\ell=1}^{L} J_\\ell^\\top \\nabla_{x_L} L \\quad \\implies \\quad \\|\\nabla_x L\\| \\sim \\sigma^L"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q01", "dl-q02", "dl-q03", "dl-q04", "dl-q05", "dl-q06", "dl-q07", "dl-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-02",
+    "topicId": "cs-deep-learning",
+    "order": 2,
+    "title": "Initialization and Normalization",
+    "description": "Xavier/He init, BatchNorm vs LayerNorm vs RMSNorm",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "dl-02-c1",
+        "title": "Why Initialization Matters: Xavier and He",
+        "contentHtml": "<p>Initialize a deep network with weights drawn from <code>N(0, 1)</code> and the activation variance grows or shrinks by a factor of roughly <code>n_in</code> per layer. After 50 layers, activations are either zero or infinity. Training cannot start.</p><p><strong>Xavier (Glorot) initialization</strong> (2010) targets unit variance through linear/tanh layers: sample weights from <code>N(0, 2/(n_in + n_out))</code>. The math: variance of <code>Wx</code> equals <code>n_in · Var(W) · Var(x)</code>; pick <code>Var(W) = 1/n_in</code> to preserve forward variance, or use the harmonic mean to balance forward and backward.</p><p><strong>He initialization</strong> (2015) corrects Xavier for ReLU: because ReLU zeros out half the activations on average, you need twice the variance — <code>N(0, 2/n_in)</code>. He init was a key ingredient enabling networks deeper than ~30 layers to train at all. Modern transformers typically use a scaled variant: weights initialized with std around <code>0.02</code>, plus an additional <code>1/sqrt(2L)</code> scaling on residual-projection weights (GPT-2 onwards) to keep the residual stream variance bounded as depth grows.</p>",
+        "mathExpressions": ["\\text{Xavier: } W \\sim \\mathcal{N}\\!\\left(0, \\tfrac{2}{n_{\\text{in}} + n_{\\text{out}}}\\right) \\quad \\text{He: } W \\sim \\mathcal{N}\\!\\left(0, \\tfrac{2}{n_{\\text{in}}}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-02-c2",
+        "title": "BatchNorm, LayerNorm, RMSNorm",
+        "contentHtml": "<p>Normalization layers re-center and re-scale activations during training. <strong>BatchNorm</strong> (Ioffe &amp; Szegedy, 2015) normalizes across the <em>batch</em> dimension for each feature: <code>x_hat = (x - μ_batch) / σ_batch</code>, then applies a learned affine. It dramatically accelerated CNN training and was a default in vision for years.</p><p>BatchNorm has problems for sequence models: it depends on batch statistics, which makes it brittle for small batches, online inference, and variable-length sequences. <strong>LayerNorm</strong> (Ba et al., 2016) normalizes across the feature dimension <em>per token</em>: each token's hidden vector gets its own mean and variance. No batch coupling, works perfectly for sequences. Every transformer from the original 2017 paper through GPT-4 uses LayerNorm or a variant.</p><p><strong>RMSNorm</strong> (2019) drops the mean-centering: divide by the root-mean-square only, no subtraction. Slightly faster, no measurable loss in quality. LLaMA, LLaMA 2, Mistral, and most modern open-weight LLMs use RMSNorm. They also typically use <strong>pre-norm</strong> placement (norm before attention/MLP, not after) — this stabilizes deep training and is now standard.</p>",
+        "mathExpressions": ["\\text{LN}(x) = \\gamma \\odot \\frac{x - \\mu}{\\sqrt{\\sigma^2 + \\epsilon}} + \\beta, \\quad \\text{RMSNorm}(x) = \\gamma \\odot \\frac{x}{\\sqrt{\\tfrac{1}{d}\\sum_i x_i^2 + \\epsilon}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-02-c3",
+        "title": "The Internal Covariate Shift Critique",
+        "contentHtml": "<p>The original BatchNorm paper claimed it worked by reducing <strong>internal covariate shift</strong> — the changing distribution of activations at each layer as earlier layers update. This explanation became standard textbook material.</p><p>It's mostly wrong. Santurkar et al. (2018, <em>How Does Batch Normalization Help Optimization?</em>) showed that BatchNorm's actual benefit is <strong>smoothing the loss landscape</strong>: it makes the loss surface have a smaller, more predictable Lipschitz constant. Gradient steps land where you expect, so larger learning rates become safe. Adding noise to layer inputs to deliberately <em>increase</em> covariate shift didn't hurt training, falsifying the original story.</p><p>This matters because the corrected understanding generalizes. LayerNorm and RMSNorm work for the same reason: they keep activations and their gradients in a well-conditioned regime, making optimization friendlier. The takeaway is bigger than any one technique: deep learning benefits when you separate the <em>what</em> (it works) from the <em>why</em> (your initial mechanism story may be a just-so story). Several other neural-network folk explanations have been similarly debunked over the years — adversarial examples, double descent, lottery tickets each have richer stories than first proposed.</p>",
+        "mathExpressions": ["\\text{Lipschitz: } \\|\\nabla L(x_1) - \\nabla L(x_2)\\| \\leq \\beta \\|x_1 - x_2\\|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q09", "dl-q10", "dl-q11", "dl-q12", "dl-q13", "dl-q14", "dl-q15", "dl-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-03",
+    "topicId": "cs-deep-learning",
+    "order": 3,
+    "title": "Optimizers and Learning Rate Schedules",
+    "description": "SGD, momentum, Adam, AdamW, Lion, and warmup-cosine schedules",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "dl-03-c1",
+        "title": "SGD, Momentum, and Nesterov",
+        "contentHtml": "<p><strong>Stochastic gradient descent (SGD)</strong> updates parameters with <code>θ ← θ - η ∇L</code> using the gradient on a minibatch. With a well-tuned learning rate, plain SGD trains many CNNs effectively (e.g., ResNets on ImageNet — most published baselines used SGD).</p><p><strong>Momentum</strong> (Polyak, 1964) adds a velocity term: <code>v ← β v + ∇L; θ ← θ - η v</code>. The optimizer accumulates a running average of gradients, dampening noise from minibatch variance and accelerating motion through long flat directions. Typical β = 0.9. Momentum is what makes SGD competitive on hard problems.</p><p><strong>Nesterov accelerated gradient</strong> evaluates the gradient at the look-ahead point <code>θ - η β v</code> rather than at <code>θ</code>. The intuition: take the velocity into account before computing the gradient, like a forward-looking correction. For convex problems, Nesterov has provably better convergence rate (<code>O(1/k²)</code> vs <code>O(1/k)</code> for plain GD). For deep nets, the practical advantage is small but real on some problems.</p>",
+        "mathExpressions": ["v_t = \\beta v_{t-1} + \\nabla L(\\theta_{t-1}), \\quad \\theta_t = \\theta_{t-1} - \\eta v_t"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-03-c2",
+        "title": "Adam, AdamW, and Lion",
+        "contentHtml": "<p><strong>Adam</strong> (Kingma &amp; Ba, 2014) maintains running averages of both the gradient (first moment <code>m</code>) and squared gradient (second moment <code>v</code>), and updates with <code>θ ← θ - η · m̂ / (√v̂ + ε)</code>. The per-parameter adaptive scaling makes Adam robust to scale variation across parameters. It's the default for transformers and most NLP work.</p><p><strong>AdamW</strong> (Loshchilov &amp; Hutter, 2019) decouples weight decay from the gradient update. In Adam, L2 regularization gets warped by the adaptive step size, weakening regularization on parameters with large gradients. AdamW applies decay directly to the weights (<code>θ ← θ(1 - ηλ) - η · m̂/(√v̂ + ε)</code>), which generalizes better. Every modern LLM trained from scratch — GPT-3, GPT-4, LLaMA, Mistral, Gemini — uses AdamW.</p><p><strong>Lion</strong> (Chen et al., 2023, discovered via symbolic search) uses only the sign of the momentum-tracked gradient: <code>θ ← θ - η · sign(β m + (1-β) ∇L)</code>. Two-thirds the memory of AdamW (no second-moment buffer) and competitive or better results on transformers up to multi-billion parameters. The trade-off: requires smaller learning rates and stronger weight decay than AdamW.</p>",
+        "mathExpressions": ["\\text{Adam: } \\theta_t = \\theta_{t-1} - \\eta \\cdot \\frac{\\hat{m}_t}{\\sqrt{\\hat{v}_t} + \\epsilon}, \\quad \\hat{m}_t = \\frac{m_t}{1 - \\beta_1^t}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-03-c3",
+        "title": "Schedules: Warmup and Cosine Decay",
+        "contentHtml": "<p>Constant learning rates underperform almost everything else for deep models. The two pieces of a modern schedule:</p><p><strong>Linear warmup</strong> ramps the learning rate from 0 to its peak over the first few thousand steps (typically 1-10% of training). Without warmup, large learning rates early in training, when activations and gradients are still unstable, cause divergence. With warmup, training stays in a regime where the loss landscape is locally well-behaved while the model finds its footing.</p><p><strong>Cosine decay</strong> smoothly anneals the learning rate from peak to a small fraction of peak (often 10%) over the remaining training, following a cosine curve. The smooth decay outperforms step decays in practice; it lets the model take large updates while there's structure to learn, then progressively smaller updates as the loss flattens.</p><p>The combined <strong>warmup-cosine</strong> schedule is the de facto standard for training transformers — used in BERT, GPT, T5, LLaMA, Chinchilla, PaLM. Together with AdamW, weight decay around 0.1, gradient clipping at 1.0, this triple is the unglamorous backbone of modern deep learning. Hyperparameters that look fragile in isolation become robust together.</p>",
+        "mathExpressions": ["\\eta_t = \\eta_{\\min} + \\tfrac{1}{2}(\\eta_{\\max} - \\eta_{\\min})\\!\\left(1 + \\cos\\!\\frac{\\pi t}{T}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q17", "dl-q18", "dl-q19", "dl-q20", "dl-q21", "dl-q22", "dl-q23", "dl-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-04",
+    "topicId": "cs-deep-learning",
+    "order": 4,
+    "title": "Activations and Modern Architectures",
+    "description": "ReLU variants, GELU, SwiGLU, and the architectures that defined eras",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "dl-04-c1",
+        "title": "From Sigmoid to ReLU to GELU",
+        "contentHtml": "<p><strong>Sigmoid</strong> (<code>σ(x) = 1/(1+e^(-x))</code>) and <strong>tanh</strong> were the original activations. They saturate: for <code>|x| > 5</code>, the derivative is essentially zero. Stack 10 of them with backprop and gradients vanish. Networks deeper than a few layers wouldn't train.</p><p><strong>ReLU</strong> (<code>max(0, x)</code>) was the breakthrough that enabled deep CNNs (AlexNet, 2012). The derivative is 1 in the active half, eliminating the saturation problem. Downside: \"dying ReLU\" — once a neuron's pre-activation goes consistently negative, it outputs 0 forever and stops learning. <strong>Leaky ReLU</strong> (small negative slope, e.g., 0.01x) and <strong>ELU</strong> address this with smooth or non-zero negative regions.</p><p><strong>GELU</strong> (<code>x · Φ(x)</code>, where Φ is the standard normal CDF) became the transformer default. Smooth (so gradients flow well even near zero), non-monotonic (slight dip below zero, then climbs), and mathematically motivated as a stochastic regularizer (a smooth approximation of <code>x · Bernoulli(Φ(x))</code>). BERT, GPT-2, GPT-3 all use GELU. The exact form (with or without the tanh approximation) is a minor implementation detail; both work.</p>",
+        "mathExpressions": ["\\text{GELU}(x) = x \\cdot \\Phi(x) = x \\cdot \\tfrac{1}{2}\\!\\left[1 + \\operatorname{erf}\\!\\left(\\tfrac{x}{\\sqrt{2}}\\right)\\right]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-04-c2",
+        "title": "SwiGLU and Gated Activations",
+        "contentHtml": "<p>The MLP block in a transformer is normally <code>up_proj → activation → down_proj</code>. <strong>Gated Linear Units (GLU)</strong> replace this with two parallel projections, one of which gates the other: <code>(W_1 x) ⊙ activation(W_2 x)</code>, then <code>down_proj</code>. The element-wise gate gives the network a learned multiplicative interaction.</p><p><strong>SwiGLU</strong> (Shazeer, 2020) uses Swish (<code>x · σ(x)</code>) as the gate's activation. Empirically, SwiGLU MLPs significantly outperform GELU MLPs at the same parameter count when comparing equivalent compute budgets. PaLM used SwiGLU; LLaMA, LLaMA 2, Mistral, Mixtral, and most modern open-weight LLMs use SwiGLU. To keep parameter counts fair, the SwiGLU MLP intermediate dimension is typically scaled by 2/3 (so two matmuls instead of one).</p><p>The lesson: the activation in the FFN isn't a tiny detail. Going from GELU to SwiGLU is one of the few architectural changes since the original Transformer paper that consistently appeared in every state-of-the-art model. Other gated variants (GeGLU, ReGLU) work too; SwiGLU happens to be the one that won.</p>",
+        "mathExpressions": ["\\text{SwiGLU}(x) = (xW_1) \\odot \\operatorname{Swish}(xW_2), \\quad \\operatorname{Swish}(z) = z \\cdot \\sigma(z)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-04-c3",
+        "title": "Softmax: Temperature, Numerical Stability",
+        "contentHtml": "<p><strong>Softmax</strong> turns a vector of logits into a probability distribution: <code>softmax(z)_i = e^(z_i) / Σ_j e^(z_j)</code>. It appears at the output of classifiers and inside attention.</p><p><strong>Numerical stability</strong>: for logits like <code>[1000, 1001, 1002]</code>, naive softmax overflows in float32. Standard trick: subtract the max before exponentiating. <code>softmax(z) = softmax(z - max(z))</code>, since the constant cancels in numerator and denominator. Every framework's softmax does this. The <strong>log-softmax</strong> for cross-entropy is even better — fold log and exp together to compute <code>z_i - max(z) - log(Σ_j e^(z_j - max(z)))</code> in one numerically stable pass.</p><p><strong>Temperature</strong> (<code>softmax(z/T)</code>) controls sharpness. <code>T → 0</code> approaches argmax (greedy decoding). <code>T = 1</code> is the natural distribution. <code>T > 1</code> flattens the distribution toward uniform, used during sampling for creative LLM outputs. Distillation also uses high temperature on the teacher to expose more of its uncertainty as soft labels for the student. The same operation, three roles: classifier output, attention weighting, sampling temperature — softmax shows up everywhere in deep learning.</p>",
+        "mathExpressions": ["\\operatorname{softmax}(z)_i = \\frac{e^{z_i / T}}{\\sum_j e^{z_j / T}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q25", "dl-q26", "dl-q27", "dl-q28", "dl-q29", "dl-q30", "dl-q31", "dl-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-05",
+    "topicId": "cs-deep-learning",
+    "order": 5,
+    "title": "Convolutional Networks and Vision Transformers",
+    "description": "ResNet skip connections, ViT, and self-supervised pretraining",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "dl-05-c1",
+        "title": "Convolutions: Locality and Weight Sharing",
+        "contentHtml": "<p>A <strong>convolutional layer</strong> applies the same small filter (e.g., 3×3) across every spatial location of the input feature map. Two strong inductive biases: <strong>locality</strong> (neighboring pixels are related) and <strong>translation equivariance</strong> (a feature in the top-left should be detected the same way as in the bottom-right). For images, both are usually true.</p><p>A 3×3 convolution with 64 input channels and 64 output channels has 36,864 parameters — independent of image size. By contrast, a fully connected layer between two 224×224 feature maps would have billions. This <strong>weight sharing</strong> across spatial positions is what made CNNs computationally tractable for images in the first place (LeCun's LeNet, 1989).</p><p>Stacking convolutions builds a <strong>receptive field</strong>: each layer sees a slightly larger neighborhood of the input. By layer 50, individual neurons can be sensitive to large image regions. Combined with pooling or strided convolutions for downsampling, classic CNNs (VGG, ResNet, EfficientNet) progressively turn pixel grids into compact semantic feature maps. CNNs were dominant in computer vision from 2012 (AlexNet) through roughly 2020.</p>",
+        "mathExpressions": ["y[i, j] = \\sum_{u, v} W[u, v] \\cdot x[i + u, j + v]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-05-c2",
+        "title": "ResNet: Skip Connections That Changed Everything",
+        "contentHtml": "<p>Before <strong>ResNet</strong> (He et al., 2015), deeper networks consistently performed <em>worse</em> than shallower ones, even though they could in principle represent any shallower network as a special case. The bottleneck was optimization: deep stacks were impossible to train.</p><p>ResNet's idea is one line: <code>y = x + F(x)</code>. Each block computes a <em>residual</em>, then adds it to the input. The identity path means gradients flow back through the network unattenuated, no matter how deep. Suddenly 152-layer networks were trainable; later variants reached 1000+ layers.</p><p>Every modern architecture uses skip connections. A transformer block is also fundamentally a residual block: <code>x ← x + Attn(LN(x))</code>, then <code>x ← x + MLP(LN(x))</code>. The <strong>residual stream</strong> abstraction (popularized by Anthropic's interpretability work) treats this skip path as a shared communication channel that every layer reads from and writes to. Without skip connections, GPT-4 would not be trainable. \"Add the input back to the output\" is one of the most consequential architectural ideas in the history of deep learning.</p>",
+        "mathExpressions": ["x_{\\ell+1} = x_\\ell + F_\\ell(x_\\ell; \\theta_\\ell)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-05-c3",
+        "title": "Vision Transformers and MAE",
+        "contentHtml": "<p><strong>ViT</strong> (Dosovitskiy et al., 2020) showed that the convolutional inductive bias isn't necessary for image recognition. Split the image into 16×16 patches, flatten each, project to a hidden vector, add positional embeddings, feed into a standard transformer. With enough data (JFT-300M scale), ViT matches or beats the best CNNs.</p><p>The catch: ViT needs vastly more data than CNNs because it lacks the spatial inductive bias. On ImageNet alone, CNNs win; on JFT-300M pretraining followed by ImageNet fine-tuning, ViT wins. This made ViT a poster child for the scaling-trumps-bias hypothesis: with enough data and compute, learned representations beat hand-designed ones.</p><p><strong>MAE (Masked Autoencoders)</strong> (He et al., 2021) added self-supervised pretraining: mask 75% of patches randomly, reconstruct them. Decoder is small; only the visible 25% goes through the heavy encoder. This makes MAE pretraining 3-4x faster than full-image pretraining at equal final accuracy. The recipe — patches, transformers, mask-and-reconstruct — generalizes beyond images. CLIP, DINO, SAM, and modern vision-language models are all variations on the same theme: large transformers eating large amounts of weakly labeled data.</p>",
+        "mathExpressions": ["x_{\\text{tokens}} = \\operatorname{PatchEmbed}(\\text{Image}) + \\text{PosEmb}, \\quad N = (H \\cdot W) / P^2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q33", "dl-q34", "dl-q35", "dl-q36", "dl-q37", "dl-q38", "dl-q39", "dl-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-06",
+    "topicId": "cs-deep-learning",
+    "order": 6,
+    "title": "Attention and the Transformer",
+    "description": "Scaled dot-product attention, multi-head, RoPE, ALiBi",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "dl-06-c1",
+        "title": "Scaled Dot-Product Attention",
+        "contentHtml": "<p>The core operation of every transformer. Given query <code>Q</code>, key <code>K</code>, value <code>V</code> matrices (rows are tokens), attention computes weighted sums of values where the weights come from query-key similarity:</p><p>For each query token, dot-product it with every key. Scale by <code>√d_k</code> to prevent softmax saturation when <code>d_k</code> is large (without scaling, dot products grow like <code>√d_k</code> and softmax becomes essentially one-hot). Apply softmax along the key axis to get attention weights. Multiply by V.</p><p><strong>Causal (autoregressive)</strong> attention adds a mask before the softmax that sets future positions to <code>-∞</code>, so each position only attends to previous tokens. Used in GPT-style decoders. <strong>Bidirectional</strong> attention has no mask; used in BERT-style encoders. Attention is permutation-equivariant by itself — without positional information, shuffling the input shuffles the output. That's why all transformers need positional encodings. The attention operation is <code>O(n²)</code> in sequence length both in memory and compute, which is the central scaling bottleneck of transformers.</p>",
+        "mathExpressions": ["\\operatorname{Attn}(Q, K, V) = \\operatorname{softmax}\\!\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right) V"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-06-c2",
+        "title": "Multi-Head Attention and FlashAttention",
+        "contentHtml": "<p><strong>Multi-Head Attention (MHA)</strong> runs <code>h</code> attention computations in parallel with smaller per-head dimensions (<code>d_k = d_model / h</code>). Each head learns to attend to different things: one head might focus on syntactic dependencies, another on coreference, another on next-token prediction. The outputs are concatenated and projected. Typical: <code>d_model = 4096, h = 32, d_k = 128</code>.</p><p>Variants reduce KV memory. <strong>Multi-Query Attention (MQA)</strong> shares one K and V across all heads, with <code>h</code> different Q heads. <strong>Grouped-Query Attention (GQA)</strong> sits between, sharing K/V across groups (LLaMA 2 70B uses 8 KV groups for 64 query heads). These massively reduce KV cache memory at inference, with minimal quality loss.</p><p><strong>FlashAttention</strong> (Dao et al., 2022) doesn't change the math but rewrites the kernel to be IO-aware. Standard attention materializes the <code>n × n</code> attention matrix in HBM (high-bandwidth memory). FlashAttention tiles the computation, keeps blocks in fast on-chip SRAM, and never writes the full matrix. Result: 2-4x speedup, dramatically lower memory, and it's the reason 32k+ context windows became feasible on single GPUs. FlashAttention-2 and 3 push further. Every modern training and inference stack uses it.</p>",
+        "mathExpressions": ["\\operatorname{MHA}(X) = \\operatorname{Concat}(\\operatorname{head}_1, \\dots, \\operatorname{head}_h) W^O, \\quad \\operatorname{head}_i = \\operatorname{Attn}(XW_i^Q, XW_i^K, XW_i^V)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-06-c3",
+        "title": "Positional Encodings: Sinusoidal, RoPE, ALiBi",
+        "contentHtml": "<p>Attention has no notion of position. Positional encodings inject it. The original Transformer used <strong>sinusoidal</strong> encodings: <code>PE(pos, 2i) = sin(pos/10000^(2i/d))</code>, learned to be added to the token embedding. Works, but extrapolates poorly to lengths longer than seen in training.</p><p><strong>RoPE (Rotary Position Embedding)</strong> (Su et al., 2021) takes a different approach. Treat consecutive pairs of dimensions as 2D vectors; rotate them by an angle proportional to position. The dot product of two rotated vectors depends only on the <em>relative</em> angle (i.e., relative position). This makes RoPE relative-position-aware while preserving the dot-product attention math. LLaMA, LLaMA 2, Mistral, Qwen, DeepSeek — essentially every modern LLM — uses RoPE. RoPE also enables length extrapolation tricks like <strong>YaRN</strong> and <strong>NTK scaling</strong> that extend context windows from training-time lengths up to 100k+ tokens with minimal fine-tuning.</p><p><strong>ALiBi (Attention with Linear Biases)</strong> (Press et al., 2021) skips positional embeddings entirely and adds a linear penalty to attention scores based on token distance. Simple, fast, extrapolates well, used in BLOOM and MPT. The trade-off space (sinusoidal vs RoPE vs ALiBi vs learned absolute) is one of the active design dimensions in modern transformer architecture.</p>",
+        "mathExpressions": ["\\operatorname{RoPE}(x, m) = R_{m} x, \\quad R_{m,i} = \\begin{pmatrix} \\cos m\\theta_i & -\\sin m\\theta_i \\\\ \\sin m\\theta_i & \\cos m\\theta_i \\end{pmatrix}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q41", "dl-q42", "dl-q43", "dl-q44", "dl-q45", "dl-q46", "dl-q47", "dl-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-07",
+    "topicId": "cs-deep-learning",
+    "order": 7,
+    "title": "Tokenization and Scaling Laws",
+    "description": "BPE, SentencePiece, Chinchilla, and the recipes of large model training",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "dl-07-c1",
+        "title": "BPE, WordPiece, SentencePiece",
+        "contentHtml": "<p>Transformers operate on <strong>tokens</strong>, not characters or words. Tokenization sits between the raw text and the model and matters more than people expect — it determines what the model can represent efficiently and how multilingual it can be.</p><p><strong>Byte-Pair Encoding (BPE)</strong> starts with characters and iteratively merges the most frequent adjacent pair into a new token. Continue until the vocabulary reaches a target size (50,257 for GPT-2, 100,277 for GPT-4, 128,256 for LLaMA 3). Common words become single tokens; rare words get split into subwords. <strong>WordPiece</strong> (BERT) is similar but uses likelihood improvement instead of frequency for the merge choice.</p><p><strong>SentencePiece</strong> (Kudo, 2018) treats whitespace as a regular character (the underline <code>▁</code>), making the tokenizer language-agnostic and reversible. It's used by LLaMA and most multilingual models. <strong>Byte-level BPE</strong> (GPT-2 onwards) operates on UTF-8 bytes rather than Unicode, guaranteeing any string can be tokenized — no out-of-vocabulary errors ever, at the cost of less efficient tokenization for non-Latin scripts. The choice has real consequences: tokenizers tuned for English give Chinese or Burmese 2-3x more tokens per word, costing both context and compute.</p>",
+        "mathExpressions": ["\\text{merge}(t_1, t_2) = \\arg\\max_{(a, b)} \\operatorname{count}(a, b) \\text{ in corpus}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-07-c2",
+        "title": "Chinchilla Scaling Laws",
+        "contentHtml": "<p><strong>Scaling laws</strong> describe how loss decreases as you scale model size <code>N</code>, dataset size <code>D</code>, and compute <code>C</code>. Kaplan et al. (2020) derived early laws and concluded that, given a compute budget, you should mostly scale model size and let data lag.</p><p><strong>Chinchilla</strong> (Hoffmann et al., 2022) re-ran the analysis with better training methodology and found the opposite: at equal compute, you should train smaller models on more tokens. The optimal ratio is roughly <strong>20 tokens per parameter</strong>. Gopher (280B params, 300B tokens) was severely undertrained; Chinchilla (70B params, 1.4T tokens) outperformed it at equal compute. This single result reshaped LLM training plans across the industry.</p><p>Modern open models pushed the ratio further. LLaMA 2 used about 28 tokens/param; LLaMA 3 70B used roughly 215 tokens/param (15T tokens). The reason: at inference time, smaller-but-trained-longer models are far cheaper to serve than larger-but-undertrained ones. The Chinchilla ratio is compute-optimal for training; for total lifetime cost (training + serving), undertraining is even worse. Scaling laws also predict where transitions occur — emergence of capabilities, where loss curves bend — and inform decisions worth millions of dollars per training run.</p>",
+        "mathExpressions": ["L(N, D) \\approx \\frac{A}{N^\\alpha} + \\frac{B}{D^\\beta} + L_\\infty, \\quad N_{\\text{opt}} : D_{\\text{opt}} \\approx 1 : 20"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-07-c3",
+        "title": "Mixed Precision, Gradient Clipping, ZeRO/FSDP",
+        "contentHtml": "<p>Training large models requires every memory and stability trick available. <strong>Mixed precision</strong> stores most computations in 16-bit (FP16 or BF16) and keeps a master copy of weights in FP32. BF16 became dominant for LLMs because its 8-bit exponent matches FP32's range, eliminating loss-scaling complications that FP16 requires. Mixed precision is roughly 2-3x faster on modern accelerators with no quality loss when done correctly.</p><p><strong>Gradient clipping</strong> rescales the gradient when its global norm exceeds a threshold (typically 1.0). Without it, occasional gradient spikes from rare batches can destabilize training, especially at large batch sizes. Every large model run uses clipping; without it, an LLM training run can diverge after weeks of stable training.</p><p><strong>ZeRO</strong> (Rajbhandari et al., 2019) and its successor <strong>FSDP (Fully Sharded Data Parallel)</strong> shard the optimizer state, gradients, and parameters across data-parallel workers. ZeRO-1 shards optimizer state, ZeRO-2 also shards gradients, ZeRO-3 / FSDP shards parameters too — each layer's weights are gathered just-in-time for forward/backward. This made training models with hundreds of billions of parameters feasible across thousands of GPUs without each device needing to fit the whole model. Combined with tensor parallelism (splitting individual matmuls across devices) and pipeline parallelism (splitting layers across devices), modern systems train models that no single GPU could hold.</p>",
+        "mathExpressions": ["g \\leftarrow g \\cdot \\min\\!\\left(1, \\frac{\\tau}{\\|g\\|_2}\\right), \\quad \\tau = \\text{clip threshold}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q49", "dl-q50", "dl-q51", "dl-q52", "dl-q53", "dl-q54", "dl-q55", "dl-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-08",
+    "topicId": "cs-deep-learning",
+    "order": 8,
+    "title": "Mixture of Experts",
+    "description": "Sparse models, top-k routing, and capacity factors",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "dl-08-c1",
+        "title": "Sparse Routing: Top-k MoE",
+        "contentHtml": "<p>A <strong>Mixture of Experts (MoE)</strong> layer replaces a single MLP with <code>E</code> experts (each its own MLP). A small <strong>router</strong> network outputs scores for each expert; only the top-<code>k</code> experts (typically <code>k = 1</code> or <code>2</code>) are run for each token. The token's output is a weighted combination of those <code>k</code> expert outputs.</p><p>The economics are striking. A model with 64 experts and <code>k = 2</code> routing has 64 experts' worth of <em>parameters</em> but only computes 2 experts' worth of FLOPs per token. Mixtral 8x7B has 47B total parameters but uses about 13B per token. This decouples capacity from compute: huge models that are cheap to run.</p><p>Switch Transformer (Fedus et al., 2021) demonstrated <code>k = 1</code> at trillion-parameter scale. GLaM (1.2T params, used 96.6B per token) hit GPT-3 quality at 1/3 the inference compute. GShard, ST-MoE, DeepSeekMoE pushed the techniques further. Modern open MoE models (Mixtral 8x7B, Mixtral 8x22B, DeepSeek-V3 with 256 experts and shared experts) have made MoE mainstream. The widespread (though unconfirmed) belief is that GPT-4 and Claude 3 Opus are MoEs.</p>",
+        "mathExpressions": ["y = \\sum_{i \\in \\operatorname{TopK}(g(x), k)} \\frac{\\exp(g(x)_i)}{\\sum_{j \\in \\operatorname{TopK}} \\exp(g(x)_j)} E_i(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-08-c2",
+        "title": "Load Balancing and Expert Capacity",
+        "contentHtml": "<p>Naive routing collapses: gradient descent learns to route everything to a few experts that train faster, leaving most experts dead. The router needs explicit pressure to use all experts.</p><p><strong>Auxiliary load-balancing loss</strong> penalizes the router for unequal expert assignment. Switch Transformer's loss multiplies the fraction of tokens routed to each expert by the average router probability for that expert; minimizing this drives the product toward uniform <code>1/E</code>. Typical weight: 0.01 of the main loss. Without it, training collapses to expert death within thousands of steps.</p><p><strong>Expert capacity</strong> caps how many tokens each expert can handle per batch. Capacity = (tokens / experts) × <em>capacity factor</em> (typical 1.0-1.5). Excess tokens are <em>dropped</em> (skip the expert) or routed to a fallback. This is necessary for efficient batched computation: GPUs need fixed-size tensors. The capacity factor trades off memory vs token-drop rate. DeepSeek-V3 popularized <strong>shared experts</strong> (always-active) plus routed experts, reducing the cost of routing decisions and stabilizing training. The full art of MoE training is balancing routing entropy, expert utilization, drop rate, and stability across thousands of devices.</p>",
+        "mathExpressions": ["\\mathcal{L}_{\\text{aux}} = \\alpha \\cdot E \\cdot \\sum_{i=1}^{E} f_i \\cdot P_i, \\quad f_i = \\text{frac to expert } i, \\quad P_i = \\text{avg router prob for } i"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-08-c3",
+        "title": "Why MoE Works (and When It Doesn't)",
+        "contentHtml": "<p>The promise of MoE: <em>more parameters at the same FLOP cost</em>. The cost: more memory (all experts must be in memory), more communication (all-to-all routing across devices), more complexity (load balancing, drop rates, training stability).</p><p>MoE wins in regimes where memory bandwidth and parameter count are cheap relative to FLOPs — large training clusters, large datacenter inference. It struggles where memory is precious — single-GPU inference, edge devices, mobile. A 47B-parameter Mixtral runs about as fast as a 13B-parameter dense model on a multi-GPU server, but you need all 47B parameters in (V)RAM, so it fits poorly on a single 24GB GPU.</p><p>Quality-wise, well-trained MoEs at constant <em>active</em> parameter count beat dense models, sometimes by a lot. The catch: they need more training data and more careful tuning than dense models, and finetuning them is harder (the routing tends to drift). State-of-the-art open models in 2024-2025 (DeepSeek-V3, Mixtral 8x22B, Qwen2.5-MoE) lean heavily on MoE, suggesting the trade-offs lean favorable at the frontier. Whether closed frontier models are dense or MoE is one of the more interesting unanswered questions in current AI.</p>",
+        "mathExpressions": ["\\text{FLOPs}_{\\text{active}} \\approx 2 \\cdot D \\cdot N_{\\text{active}}, \\quad N_{\\text{active}} = N_{\\text{shared}} + k \\cdot N_{\\text{per expert}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q57", "dl-q58", "dl-q59", "dl-q60", "dl-q61", "dl-q62", "dl-q63", "dl-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-09",
+    "topicId": "cs-deep-learning",
+    "order": 9,
+    "title": "Alignment: RLHF, DPO, and Distillation",
+    "description": "How a base model becomes a helpful assistant",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "dl-09-c1",
+        "title": "RLHF: Reward Models and PPO",
+        "contentHtml": "<p>A pretrained LLM is a base model — good at predicting next tokens, bad at being helpful. <strong>RLHF (Reinforcement Learning from Human Feedback)</strong> turns it into an assistant. The InstructGPT paper (2022) and ChatGPT made this the dominant alignment technique.</p><p>Three stages. <strong>Stage 1 (SFT)</strong>: supervised fine-tuning on human-written demonstrations of good responses. <strong>Stage 2 (Reward Model)</strong>: collect comparison data — humans rank pairs of responses. Train a reward model <code>r_φ(prompt, response)</code> using a Bradley-Terry pairwise loss to predict which response a human would prefer. <strong>Stage 3 (RL)</strong>: optimize the policy (LLM) with a policy-gradient algorithm (typically PPO) against the reward model, plus a KL penalty to a reference policy to prevent reward hacking.</p><p>The KL penalty is crucial. Without it, the policy drifts to outputs that score high on the reward model but are gibberish or repetitive — the reward model is itself a learned proxy and is exploitable. The KL constraint <code>β · KL(π || π_ref)</code> keeps the new policy close to the SFT model. Tuning <code>β</code>, controlling reward hacking, mitigating mode collapse, and managing the cost of PPO (which requires many forward passes) are central engineering problems.</p>",
+        "mathExpressions": ["\\mathcal{J}(\\theta) = \\mathbb{E}_{x \\sim \\mathcal{D}, y \\sim \\pi_\\theta} \\!\\left[ r_\\phi(x, y) - \\beta \\log \\frac{\\pi_\\theta(y \\mid x)}{\\pi_{\\text{ref}}(y \\mid x)} \\right]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-09-c2",
+        "title": "DPO: Skipping the Reward Model",
+        "contentHtml": "<p><strong>Direct Preference Optimization (DPO)</strong> (Rafailov et al., 2023) is the most influential alignment paper after the original RLHF work. It shows that you can derive a closed-form mapping between the optimal policy and a reward function, and use it to train directly on preference pairs without a separate reward model or RL.</p><p>The DPO loss is just a binary cross-entropy on the <em>log-ratio of policy probabilities</em>: for a preferred response <code>y_w</code> and dispreferred response <code>y_l</code>, you maximize <code>log σ(β log(π(y_w)/π_ref(y_w)) - β log(π(y_l)/π_ref(y_l)))</code>. No reward model. No PPO. No reward hacking. Standard supervised training infrastructure works.</p><p>DPO is dramatically simpler to implement and tune than PPO-RLHF, and works well for single-turn preference tuning. It's the default alignment method in many open-weight projects (Zephyr, Tulu, Llama 3 Instruct used DPO in some stages). Limitations: it's offline (you need pre-collected preference data), and on more complex objectives — multi-turn conversation, agentic tasks, reasoning — full RL approaches (PPO, GRPO, online DPO variants) often still win. The frontier currently mixes both: SFT, then DPO or KTO, then RL with sophisticated reward models for the hardest improvements.</p>",
+        "mathExpressions": ["\\mathcal{L}_{\\text{DPO}} = -\\mathbb{E}\\!\\left[ \\log \\sigma\\!\\left( \\beta \\log\\frac{\\pi_\\theta(y_w | x)}{\\pi_{\\text{ref}}(y_w | x)} - \\beta \\log\\frac{\\pi_\\theta(y_l | x)}{\\pi_{\\text{ref}}(y_l | x)} \\right) \\right]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-09-c3",
+        "title": "Distillation: Compressing a Teacher",
+        "contentHtml": "<p><strong>Knowledge distillation</strong> (Hinton, Vinyals, Dean, 2015) trains a smaller <em>student</em> model to mimic a larger <em>teacher</em>. Instead of training on hard labels, the student matches the teacher's output distribution — typically the softmax probabilities at high temperature, which exposes the teacher's uncertainty over wrong classes (the \"dark knowledge\").</p><p>For LLMs, the most common form is <strong>SFT distillation</strong>: have the teacher generate responses to prompts, then fine-tune the student to imitate them. Alpaca (2023) was an early demonstration: 52k responses from <code>text-davinci-003</code> turned LLaMA 7B into something approximating ChatGPT-quality on simple instructions for almost no cost. Vicuna, WizardLM, and dozens of others followed.</p><p>More sophisticated forms include <strong>logit distillation</strong> (match the full vocabulary distribution token-by-token, only feasible with white-box access to the teacher) and <strong>preference distillation</strong> (use the teacher to construct preference pairs for DPO). Distillation is the bridge from frontier-scale models to deployable smaller ones: GPT-3.5 distilled into 7B-parameter open models, Claude/GPT-4 quality distilled into 70B open models. The fundamental result — small models can punch far above their weight when trained on outputs from a much larger model — is one of the major efficiency tools in production deployments.</p>",
+        "mathExpressions": ["\\mathcal{L}_{\\text{distill}} = T^2 \\cdot \\operatorname{KL}\\!\\left(\\operatorname{softmax}(z_T / T) \\,\\Vert\\, \\operatorname{softmax}(z_S / T)\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q65", "dl-q66", "dl-q67", "dl-q68", "dl-q69", "dl-q70", "dl-q71", "dl-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "dl-10",
+    "topicId": "cs-deep-learning",
+    "order": 10,
+    "title": "Inference Optimization and Interpretability",
+    "description": "KV cache, paged attention, quantization, and looking inside the model",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "dl-10-c1",
+        "title": "KV Cache, Paged Attention, Speculative Decoding",
+        "contentHtml": "<p>Naive autoregressive inference is wasteful. To generate token <code>t+1</code>, the standard transformer recomputes attention over all previous tokens — quadratic in sequence length, and embarrassingly redundant. The <strong>KV cache</strong> stores keys and values for past tokens, so each new token requires only one new K and V vector and one attention pass over the cache. Inference becomes linear in sequence length per generated token.</p><p>The KV cache is huge: for LLaMA 2 70B at 4k context, the per-request cache is roughly 20GB. <strong>PagedAttention</strong> (vLLM, 2023) solves the resulting memory fragmentation by treating the KV cache like virtual memory in an OS: allocate fixed-size pages, share pages across requests with the same prefix, swap pages as needed. PagedAttention enabled an order-of-magnitude throughput improvement for serving LLMs.</p><p><strong>Speculative decoding</strong> (Leviathan et al., 2023) uses a small draft model to generate <code>k</code> candidate tokens, then verifies them in a single forward pass of the large model. If all <code>k</code> are accepted, you got <code>k</code> tokens at the cost of one big-model pass plus <code>k</code> small-model passes. <strong>Medusa</strong> heads, EAGLE, and self-speculative variants extend this to 2-3x decode speedup with no quality loss. Production LLM serving stacks combine all three: KV cache, paged memory, and speculation.</p>",
+        "mathExpressions": ["\\text{KV cache size} = 2 \\cdot L \\cdot n \\cdot h \\cdot d_h \\cdot \\text{bytes}, \\quad \\text{(layers, tokens, heads, head dim)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-10-c2",
+        "title": "Quantization: INT8, GPTQ, AWQ",
+        "contentHtml": "<p>Modern LLMs train in BF16/FP16 (16 bits per parameter) but don't need that precision for inference. <strong>Quantization</strong> compresses weights to fewer bits — INT8, INT4, even INT2 — trading a small quality loss for large memory and bandwidth wins. A 70B model in FP16 needs 140GB of VRAM; in INT4, about 35GB.</p><p><strong>Naive round-to-nearest INT8 quantization</strong> (RTN) works surprisingly well for most weights but degrades with outlier activations. <strong>GPTQ</strong> (Frantar et al., 2022) does data-aware quantization: minimize the squared error of the layer's output on a small calibration set by greedily choosing quantization for each row, using second-order information. <strong>AWQ (Activation-Aware Quantization)</strong> (Lin et al., 2023) keeps the most activation-sensitive 1% of weight channels in higher precision. Both are post-training methods; both achieve INT4 quality close to FP16.</p><p><strong>QLoRA</strong> (2023) combined 4-bit quantized base models with low-rank adapter fine-tuning, making 65B-parameter fine-tuning possible on a single 48GB GPU. The combination of quantized inference (running a 70B model on a consumer GPU is now routine via tools like llama.cpp, ExLlama, vLLM with AWQ) plus efficient serving stacks democratized large-model deployment in 2023-2024.</p>",
+        "mathExpressions": ["w_{\\text{int}} = \\operatorname{round}\\!\\left(\\frac{w}{s}\\right) + z, \\quad s = \\frac{\\max(w) - \\min(w)}{2^b - 1}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dl-10-c3",
+        "title": "Mechanistic Interpretability: Probing, Circuits, SAEs",
+        "contentHtml": "<p>Models are not black boxes — at least not entirely. <strong>Mechanistic interpretability</strong> tries to reverse-engineer the algorithms that neural networks implement.</p><p><strong>Probing</strong> trains a small classifier on intermediate activations: can a linear probe on layer 12 of GPT-2 detect whether the next token is a verb? If yes, that information is linearly represented at that layer. Probes establish what is encoded where, but not how it's used.</p><p><strong>Circuits</strong> are small subgraphs of attention heads and MLP neurons that together implement an interpretable function. Anthropic's circuits work identified <strong>induction heads</strong> in small transformers — pairs of heads that implement \"if you see <code>[A][B]...[A]</code>, predict <code>[B]</code>\" — explaining a specific component of in-context learning. Other identified circuits include <strong>indirect object identification</strong> in GPT-2 small, modular arithmetic, and copy/transcription heads.</p><p><strong>Sparse autoencoders (SAEs)</strong> (Bricken et al., 2023; Templeton et al., 2024) decompose dense activations into a much larger basis of sparse, interpretable <strong>features</strong>. A 4096-dim activation expands into millions of sparse features, each often corresponding to a recognizable concept (a specific celebrity, the Golden Gate Bridge, code that handles errors). Anthropic's Claude 3 Sonnet SAE work scaled this to a frontier model and identified safety-relevant features that can be steered. This is the most promising current direction for understanding what's happening inside a working LLM.</p>",
+        "mathExpressions": ["x \\approx \\sum_{i} f_i(x) \\cdot d_i, \\quad f_i(x) \\geq 0, \\quad \\|f(x)\\|_0 \\ll \\dim(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["dl-q73", "dl-q74", "dl-q75", "dl-q76", "dl-q77", "dl-q78", "dl-q79", "dl-q80"],
+    "puzzleId": null
+  }
+]

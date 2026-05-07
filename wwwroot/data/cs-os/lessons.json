@@ -1,0 +1,182 @@
+[
+  {
+    "id": "os-01",
+    "topicId": "cs-os",
+    "order": 1,
+    "title": "Processes, Threads, and Scheduling",
+    "description": "Units of execution and how the OS shares CPU time",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "os-01-c1",
+        "title": "Processes: Isolated Containers of Execution",
+        "contentHtml": "<p>A <strong>process</strong> is a running program plus everything it owns: memory, file descriptors, environment, security identity. Processes are the operating system's primary <strong>isolation boundary</strong>. One process cannot read another's memory, see its open files, or signal it without permission.</p><p>Each process runs as if it owned the machine. The OS gives it a <strong>virtual address space</strong> (usually 64-bit on modern systems) that the process can read and write freely. The kernel maps virtual addresses to physical RAM lazily — pages are allocated on first use, swapped to disk when memory is tight.</p><p>Process creation on Unix uses <strong>fork()</strong>, which clones the calling process; <strong>exec()</strong> then replaces the cloned process's memory with a new program. Windows uses CreateProcess directly. Either way, the cost is non-trivial — modern fork relies on <strong>copy-on-write</strong> tricks to make it tolerable, but still slow compared to creating a thread.</p>",
+        "mathExpressions": ["\\text{process} = \\text{program} + \\text{state} + \\text{isolation boundary}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-01-c2",
+        "title": "Threads: Lightweight Concurrency Within a Process",
+        "contentHtml": "<p>A <strong>thread</strong> is a unit of execution within a process. Multiple threads in one process share <strong>everything except the stack and CPU registers</strong>: they share memory, file descriptors, code, and security identity. Creating a thread is much cheaper than creating a process — typically 10-100x faster.</p><p>Threads are how a single program uses multiple CPU cores in parallel. A web server might spawn one thread per incoming request. A video encoder might split frames across cores. Modern hardware has dozens of cores, and exploiting them generally requires threads (or thread-like abstractions like async tasks).</p><p>The cost: shared memory makes coordination dangerous. Two threads writing the same variable at once is a <strong>data race</strong>, an undefined-behavior nightmare. Programmers must use locks, atomics, or message passing to coordinate. Most concurrency bugs (deadlocks, race conditions, memory ordering issues) live at this layer. Threads give power and footguns in equal measure.</p>",
+        "mathExpressions": ["\\text{thread: shared memory, separate stack/registers} \\quad \\text{process: separate everything}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-01-c3",
+        "title": "Scheduling: How the OS Picks What Runs Next",
+        "contentHtml": "<p>An OS typically has more runnable threads than CPU cores. The <strong>scheduler</strong> decides which thread runs on which core, for how long, and in what order. Modern schedulers run a thread for a short <strong>time slice</strong> (typically a few milliseconds), then preempt it and pick another.</p><p>The classic algorithms: <strong>FCFS</strong> (first-come-first-served), <strong>SJF</strong> (shortest job first), <strong>round-robin</strong> (rotate through ready threads), <strong>priority scheduling</strong> (high-priority first). Real schedulers combine these. Linux's <strong>CFS</strong> (Completely Fair Scheduler) treats CPU time as a resource to be allocated proportionally based on priority. Windows uses a multilevel priority queue with feedback.</p><p>Scheduling matters enormously for latency. A web server with hundreds of threads needs the scheduler to wake the right one quickly when a request arrives. Real-time systems (audio, control loops) need <strong>bounded scheduling latency</strong> — guarantees that a thread will run within a fixed time. Game engines, hard real-time systems, and modern audio frameworks all push hard on scheduler behavior.</p>",
+        "mathExpressions": ["\\text{scheduling: } R(t) \\to T(t) \\quad \\text{ready queue} \\to \\text{thread to run on core}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["os-q01", "os-q02", "os-q03", "os-q04", "os-q05", "os-q06", "os-q07", "os-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "os-02",
+    "topicId": "cs-os",
+    "order": 2,
+    "title": "Memory Management",
+    "description": "Virtual memory, paging, allocators, and the kernel-userspace divide",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "os-02-c1",
+        "title": "Virtual Memory: Each Process Sees Its Own Address Space",
+        "contentHtml": "<p>Modern operating systems give each process the illusion of <strong>private, contiguous, vast memory</strong>. On a 64-bit system, every process has a 256 TiB virtual address space. Two processes can both use address 0x1000 without conflict — they map to different physical RAM.</p><p>The CPU's <strong>memory management unit (MMU)</strong> translates virtual addresses to physical addresses on every memory access. The translation table is the <strong>page table</strong>: maps from virtual page (typically 4 KiB) to physical frame. The translation lookaside buffer (TLB) caches recent lookups so the MMU isn't doing a full table walk every cycle.</p><p>Beyond isolation, virtual memory enables <strong>swap</strong> (move cold pages to disk when RAM fills), <strong>memory-mapped files</strong> (load files into address space lazily), and <strong>demand paging</strong> (allocate pages only when first accessed). The latter is why <code>malloc(1GB)</code> is essentially free — the OS hands you addresses but doesn't actually allocate physical pages until you write to them.</p>",
+        "mathExpressions": ["\\text{virtual addr} \\xrightarrow{\\text{MMU}} \\text{physical addr} \\quad \\text{(via page table, cached in TLB)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-02-c2",
+        "title": "Heap, Stack, and the Allocator",
+        "contentHtml": "<p>Process memory is divided into regions: <strong>code</strong> (read-only), <strong>data</strong> (initialized globals), <strong>BSS</strong> (zero-initialized globals), <strong>heap</strong> (dynamic allocations), and <strong>stack</strong> (per-thread). Heap and stack typically grow toward each other from opposite ends.</p><p>The <strong>stack</strong> is fast and automatic: every function call pushes a frame; every return pops it. Allocation is just a register decrement. The cost of speed is structure — stack-allocated values can't outlive their function. Stack overflow happens when recursion or huge local arrays exceed the stack's limit.</p><p>The <strong>heap</strong> handles dynamic allocations: <code>malloc</code>/<code>free</code> in C, <code>new</code> in C++/Java, garbage collection in higher-level languages. Modern allocators (jemalloc, tcmalloc, mimalloc) are intricate beasts: thread-local caches, size classes, multiple arenas, decommit policies. Bad allocator behavior is a common performance bottleneck in long-running services.</p>",
+        "mathExpressions": ["\\text{stack alloc: } O(1) \\text{ register op} \\quad \\text{heap alloc: depends on allocator (typically small constant)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-02-c3",
+        "title": "User Space vs Kernel Space",
+        "contentHtml": "<p>The OS divides memory and execution into two privilege levels. <strong>Kernel space</strong> contains the kernel itself — drivers, filesystem code, network stack, scheduler. It runs with full hardware access. <strong>User space</strong> contains applications — they have restricted access and must call into the kernel for privileged operations.</p><p>The transition between the two is a <strong>system call (syscall)</strong>. When a user program calls <code>read()</code>, <code>write()</code>, <code>open()</code>, etc., the CPU traps into kernel mode, the kernel performs the operation, then returns to user mode. Each syscall costs hundreds of nanoseconds — a noticeable expense.</p><p>This boundary is why I/O-heavy programs are often syscall-bottlenecked. Modern designs minimize crossings: <strong>io_uring</strong> on Linux batches I/O operations to reduce syscalls; <strong>memory-mapped files</strong> let the kernel handle I/O in the background; <strong>eBPF</strong> lets user programs ship code into the kernel for in-kernel filtering and processing. Reducing user-kernel crossings is a recurring performance theme.</p>",
+        "mathExpressions": ["\\text{syscall cost} \\sim 100\\text{-}1000 \\text{ ns} \\quad \\text{(reduce crossings for performance)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["os-q09", "os-q10", "os-q11", "os-q12", "os-q13", "os-q14", "os-q15", "os-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "os-03",
+    "topicId": "cs-os",
+    "order": 3,
+    "title": "Filesystems and I/O",
+    "description": "Inodes, block devices, blocking vs async, and modern I/O models",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "os-03-c1",
+        "title": "Filesystems: Files, Inodes, and Directory Trees",
+        "contentHtml": "<p>A <strong>filesystem</strong> organizes a block device's storage into named files and directories. The classic Unix abstraction: a <strong>file</strong> is a sequence of bytes, accessed via integer <strong>file descriptors</strong>. <code>open</code>, <code>read</code>, <code>write</code>, <code>seek</code>, <code>close</code> — five syscalls to manipulate any kind of storage.</p><p>Behind each file is an <strong>inode</strong>: a fixed-size record holding metadata (size, permissions, timestamps, ownership) and pointers to the data blocks. Directory entries map names to inode numbers. A file is the inode + its blocks; a name is just a directory entry pointing to an inode. This is why hard links are cheap — multiple names share one inode.</p><p>Filesystems differ wildly in implementation. <strong>ext4</strong> (Linux default), <strong>XFS</strong> (high-throughput), <strong>btrfs</strong> and <strong>ZFS</strong> (copy-on-write with snapshots), <strong>NTFS</strong> (Windows), <strong>APFS</strong> (macOS). Each balances reliability, performance, and features. Modern filesystems use journaling (record changes to a journal first, replay on crash) to survive power loss without corruption.</p>",
+        "mathExpressions": ["\\text{file = inode + blocks} \\quad \\text{name = dir-entry} \\to \\text{inode}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-03-c2",
+        "title": "Blocking, Non-blocking, and Async I/O",
+        "contentHtml": "<p>The simplest I/O model is <strong>blocking</strong>: when you call <code>read()</code>, your thread waits until data is available. Easy to write, painful for concurrency — one slow disk read or network call can block an entire thread.</p><p><strong>Non-blocking I/O</strong>: the syscall returns immediately, even if no data is ready, with an indication of \"would block.\" Programs poll or use <code>select</code>/<code>poll</code>/<code>epoll</code>/<code>kqueue</code> to multiplex many I/O operations on one thread. This is how Node.js, nginx, and most modern servers handle thousands of simultaneous connections without thousands of threads.</p><p><strong>Async I/O</strong>: the syscall returns immediately and the kernel notifies you via a callback or future when complete. The newest model on Linux is <strong>io_uring</strong>, which uses two ring buffers (submission and completion) shared between userspace and kernel — no syscall per I/O operation. For high-throughput servers, io_uring can dramatically outperform epoll.</p>",
+        "mathExpressions": ["\\text{blocking < non-blocking < async (io\\_uring)} \\quad \\text{progressively less overhead per I/O}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-03-c3",
+        "title": "Buffers, Caches, and the Page Cache",
+        "contentHtml": "<p>Disk is slow. RAM is fast. The OS bridges this with the <strong>page cache</strong>: an in-memory cache of file system data. A <code>read()</code> often returns from the page cache without touching disk; a <code>write()</code> often returns immediately, with the kernel writing to disk later.</p><p>This is why the second time you read a file is much faster than the first. The first read populates the cache; subsequent reads are RAM speed. <code>cat largefile &gt; /dev/null</code> is the classic way to \"warm\" the cache before benchmarking.</p><p>The trade-off is durability. <code>write()</code> returning doesn't mean the data is on disk. A power failure can lose buffered writes. Programs that need durability call <code>fsync()</code> to flush — slow, but the data survives crashes. Database engines (which obsess over durability) make heavy use of fsync; this is a major reason databases are slower than naive file-write throughput might suggest.</p>",
+        "mathExpressions": ["\\text{disk write throughput w/o fsync} \\gg \\text{durable throughput w/ fsync}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["os-q17", "os-q18", "os-q19", "os-q20", "os-q21", "os-q22", "os-q23", "os-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "os-04",
+    "topicId": "cs-os",
+    "order": 4,
+    "title": "Synchronization and Concurrency",
+    "description": "Locks, atomics, deadlocks, and the dining philosophers",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "os-04-c1",
+        "title": "Mutexes, Locks, and Critical Sections",
+        "contentHtml": "<p>When multiple threads access shared data, you need <strong>mutual exclusion</strong>. The classic primitive is the <strong>mutex</strong>: a lock that only one thread can hold at a time. Code between <code>lock()</code> and <code>unlock()</code> is a <strong>critical section</strong> — only one thread executes it at any moment.</p><p>Mutexes work but have costs. Acquiring an uncontended mutex is fast (atomic compare-and-swap, ~10-20 ns). A contended one is slow — the OS may put the waiting thread to sleep and wake it later, costing microseconds. Excessive locking creates a serial bottleneck even on a 32-core CPU.</p><p>Beyond plain mutexes: <strong>read-write locks</strong> (many readers OR one writer), <strong>spinlocks</strong> (busy-wait instead of sleeping; good for very short critical sections), <strong>recursive locks</strong> (same thread can re-acquire). Each has a niche. Get the choice wrong and you pay either in latency, throughput, or deadlock risk.</p>",
+        "mathExpressions": ["\\text{critical section: } \\forall t_1 \\neq t_2 :\\; \\neg (\\text{in}(t_1) \\wedge \\text{in}(t_2))"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-04-c2",
+        "title": "Deadlock and Livelock",
+        "contentHtml": "<p><strong>Deadlock</strong>: a state where threads wait for each other forever. Classic example — two threads, each holding one lock, each trying to acquire the other's. Neither can proceed. Coffman's four conditions characterize deadlock: <strong>mutual exclusion</strong>, <strong>hold and wait</strong>, <strong>no preemption</strong>, <strong>circular wait</strong>. Break any one, no deadlock.</p><p>The <strong>dining philosophers problem</strong> (Dijkstra, 1965) is the canonical illustration. Five philosophers around a table, each needing two forks to eat. If everyone grabs their left fork simultaneously, all wait for the right fork — perfect deadlock. The classic fix: enforce a global lock ordering (always grab lower-numbered fork first), breaking the circular wait.</p><p><strong>Livelock</strong> is deadlock's cousin: threads aren't blocked, but their work doesn't progress because they keep responding to each other. Two people in a hallway, each politely sidestepping in the same direction, repeatedly. Less common than deadlock but harder to debug because it looks like work is happening. Real systems use timeouts and randomized backoff to break out of livelock.</p>",
+        "mathExpressions": ["\\text{deadlock} \\Leftrightarrow \\text{mutex} \\wedge \\text{hold-and-wait} \\wedge \\text{no preemption} \\wedge \\text{circular wait}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-04-c3",
+        "title": "Atomics, Lock-Free Programming, and Memory Models",
+        "contentHtml": "<p><strong>Atomic operations</strong> are indivisible CPU instructions on shared memory. <code>compare-and-swap (CAS)</code>, <code>fetch-and-add</code>, atomic loads/stores. Atomics are the building blocks of mutexes themselves and of <strong>lock-free</strong> data structures — concurrent queues, stacks, and counters that work without explicit locking.</p><p>Lock-free programming is real and used in production (kernel data structures, high-frequency trading, runtime systems) but it's notoriously hard. The pitfalls go beyond races into <strong>memory ordering</strong>: modern CPUs and compilers reorder reads and writes for performance. Two threads can see a different order of events without explicit synchronization. Programming languages define <strong>memory models</strong> (Java JMM, C++11 memory model) specifying what reorderings are allowed.</p><p>The practical advice: <em>use mutexes by default</em>. Lock-free code looks beautiful and runs fast in benchmarks but produces decade-long bug hunts in production. The cost of a fast, correct mutex is small. The cost of a subtly broken lock-free queue is endless. Reach for atomics and lock-free structures only when measurements demand it and reviewers agree.</p>",
+        "mathExpressions": ["\\text{CAS: if mem == old, swap to new (atomic)} \\quad \\text{building block of lock-free structures}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["os-q25", "os-q26", "os-q27", "os-q28", "os-q29", "os-q30", "os-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "os-05",
+    "topicId": "cs-os",
+    "order": 5,
+    "title": "Kernel, Containers, and Virtualization",
+    "description": "Monolithic vs microkernel, syscalls, containers, and hypervisors",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "os-05-c1",
+        "title": "Monolithic Kernels vs Microkernels",
+        "contentHtml": "<p>A <strong>monolithic kernel</strong> runs all OS services (filesystem, network stack, device drivers, scheduler) in one big address space at full privilege. Linux is the most famous example. The advantage: fast — calling between subsystems is a function call, not an IPC round trip.</p><p>A <strong>microkernel</strong> moves most services into user space, with the kernel providing only the minimum (scheduling, IPC, basic memory management). Mach, MINIX, QNX, L4, and seL4 are microkernels. The advantage: smaller trusted code base, modular, more crash-resistant. The disadvantage: more IPC overhead.</p><p>The microkernel debate (Tanenbaum vs Torvalds, 1992) was philosophically lively but practically settled: Linux's monolithic design won the desktop and server markets. Microkernels persist in embedded systems (QNX in cars), high-assurance environments (seL4 — formally verified), and as part of hybrid designs (Windows NT, macOS XNU, which combine microkernel and monolithic ideas).</p>",
+        "mathExpressions": ["\\text{monolithic: speed via shared space} \\quad \\text{microkernel: safety via isolation}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-05-c2",
+        "title": "Containers: Process Isolation Without VMs",
+        "contentHtml": "<p>A <strong>container</strong> is a process (or process group) running in an isolated namespace on the host kernel. Linux containers use kernel features like <strong>cgroups</strong> (resource limits), <strong>namespaces</strong> (isolated views of PIDs, network, mounts, users), and <strong>seccomp</strong> (syscall filtering) to make a process feel like it's running on its own machine.</p><p>Compared to virtual machines, containers are dramatically lighter — milliseconds to start, megabytes of overhead per container, identical kernel performance to the host. This is why <strong>Docker</strong> and the broader container ecosystem (Kubernetes, containerd, runC) reshaped the industry: ship a tarball of dependencies, run it identically anywhere, scale to thousands of instances.</p><p>The trade-off: weaker isolation than VMs. A container shares the host kernel, so a kernel-level vulnerability can escape one container into others. For high-trust workloads, sandboxes like <strong>gVisor</strong> (Google) and <strong>Firecracker</strong> (AWS Lambda) add VM-like isolation while keeping container-like ergonomics. The container vs VM debate continues at the security boundary.</p>",
+        "mathExpressions": ["\\text{containers: namespaces + cgroups + seccomp} \\quad \\text{(isolation without VM overhead)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "os-05-c3",
+        "title": "Hypervisors and Virtual Machines",
+        "contentHtml": "<p>A <strong>hypervisor</strong> creates virtual machines, each running its own kernel. <strong>Type-1 (bare-metal)</strong> hypervisors (KVM, Xen, ESXi, Hyper-V) run directly on hardware. <strong>Type-2</strong> hypervisors (VirtualBox, VMware Workstation) run as applications on top of an existing OS.</p><p>Modern CPUs include <strong>hardware virtualization</strong> extensions (Intel VT-x, AMD-V) that let guest OSes execute most instructions directly on the CPU. The hypervisor only intervenes for privileged operations. This makes virtualization fast — within a few percent of bare-metal performance for CPU-bound work.</p><p>VMs provide stronger isolation than containers (each guest has its own kernel) at the cost of higher overhead. The cloud was built on VMs: AWS EC2, Azure VMs, GCP Compute Engine all sell VMs as units. <strong>Nested virtualization</strong> (VMs inside VMs), <strong>SR-IOV</strong> (direct hardware access for VMs), and <strong>microVMs</strong> (Firecracker, Cloud Hypervisor) push the model toward better performance and faster start times. The line between VMs and containers continues to blur.</p>",
+        "mathExpressions": ["\\text{VM isolation} > \\text{container isolation} \\quad \\text{VM startup} > \\text{container startup}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["os-q32", "os-q33", "os-q34", "os-q35", "os-q36", "os-q37"],
+    "puzzleId": null
+  }
+]

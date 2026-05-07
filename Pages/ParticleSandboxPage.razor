@@ -1,0 +1,505 @@
+@page "/particle-sandbox"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Particle Sandbox</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Particle Sandbox" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Particle Sandbox</h1>
+</div>
+
+<p class="ps-intro">Configure a beam, a target, and an energy. Smash them together and see what comes out.</p>
+
+<div class="ps-layout">
+    <div class="ps-main">
+        <div class="card ps-config">
+            <div class="ps-row">
+                <label class="ps-label"><Icon Name="zap" Size="16" /> Beam</label>
+                <div class="ps-chips">
+                    @foreach (var p in beamOptions)
+                    {
+                        var pp = p;
+                        <button class="ps-chip @(beam == pp.Id ? "ps-chip-active" : "")"
+                                style="@(beam == pp.Id ? $"border-color:{pp.Color};color:{pp.Color}" : "")"
+                                @onclick="() => { beam = pp.Id; result = null; }">
+                            <span class="ps-dot" style="background:@pp.Color"></span>@pp.Label
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="ps-row">
+                <label class="ps-label"><Icon Name="target" Size="16" /> Target</label>
+                <div class="ps-chips">
+                    @foreach (var t in targetOptions)
+                    {
+                        var tt = t;
+                        <button class="ps-chip @(target == tt.Id ? "ps-chip-active" : "")"
+                                style="@(target == tt.Id ? $"border-color:{tt.Color};color:{tt.Color}" : "")"
+                                @onclick="() => { target = tt.Id; result = null; }">
+                            <span class="ps-dot" style="background:@tt.Color"></span>@tt.Label
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="ps-row">
+                <label class="ps-label"><Icon Name="rocket" Size="16" /> Energy</label>
+                <div class="ps-chips">
+                    @foreach (var e in energyOptions)
+                    {
+                        var ee = e;
+                        <button class="ps-chip @(energy == ee.Id ? "ps-chip-active" : "")"
+                                @onclick="() => { energy = ee.Id; result = null; }">
+                            @ee.Label
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg ps-collide-btn" @onclick="Collide">
+                <Icon Name="fire" Size="18" /> Collide!
+            </button>
+        </div>
+
+        @if (result != null)
+        {
+            <div class="card ps-result" @key="resultKey">
+                <h3 class="ps-result-title">@result.Title</h3>
+
+                <div class="ps-svg-wrap">
+                    <svg viewBox="0 0 400 200" class="ps-svg" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <radialGradient id="vertexGlow">
+                                <stop offset="0%" stop-color="var(--accent)" stop-opacity="1" />
+                                <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+                            </radialGradient>
+                        </defs>
+
+                        <line class="ps-axis" x1="0" y1="100" x2="400" y2="100" />
+
+                        <!-- Incoming beam (left) -->
+                        <line class="ps-incoming-left" x1="0" y1="100" x2="200" y2="100"
+                              stroke="@BeamColor" stroke-width="2" />
+                        <circle class="ps-incoming-particle ps-in-left" cx="0" cy="100" r="7" fill="@BeamColor" />
+
+                        <!-- Incoming target (right) -->
+                        <line class="ps-incoming-right" x1="400" y1="100" x2="200" y2="100"
+                              stroke="@TargetColor" stroke-width="2" />
+                        <circle class="ps-incoming-particle ps-in-right" cx="400" cy="100" r="7" fill="@TargetColor" />
+
+                        <!-- Vertex flash -->
+                        <circle class="ps-vertex" cx="200" cy="100" r="30" fill="url(#vertexGlow)" />
+                        <circle class="ps-vertex-core" cx="200" cy="100" r="6" fill="var(--accent)" />
+
+                        <!-- Outgoing tracks -->
+                        @{
+                            var n = result.Tracks.Count;
+                        }
+                        @for (int i = 0; i < n; i++)
+                        {
+                            var tr = result.Tracks[i];
+                            var angle = (-60.0 + (120.0 * i / Math.Max(1, n - 1))) * Math.PI / 180.0;
+                            var ex = 200 + 200 * Math.Cos(angle);
+                            var ey = 100 + 200 * Math.Sin(angle);
+                            if (tr.Charged)
+                            {
+                                // curved path: quadratic bezier with offset control point
+                                var cx = (200 + ex) / 2 + 30 * Math.Sin(angle);
+                                var cy = (100 + ey) / 2 - 30 * Math.Cos(angle);
+                                <path class="ps-out-track" d="@($"M200,100 Q{cx.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)},{cy.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)} {ex.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)},{ey.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}")"
+                                      stroke="@tr.Color" stroke-width="2" fill="none"
+                                      style="@($"animation-delay:{1.0 + i*0.08:F2}s")" />
+                            }
+                            else
+                            {
+                                <line class="ps-out-track-straight"
+                                      x1="200" y1="100"
+                                      x2="@ex.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)"
+                                      y2="@ey.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)"
+                                      stroke="@tr.Color" stroke-width="2" stroke-dasharray="4 3"
+                                      style="@($"animation-delay:{1.0 + i*0.08:F2}s")" />
+                            }
+                        }
+                    </svg>
+                </div>
+
+                <h4 class="ps-section-h">Products</h4>
+                <ul class="ps-products">
+                    @foreach (var prod in result.Products)
+                    {
+                        <li>
+                            <span class="ps-prod-dot" style="background:@prod.Color"></span>
+                            <strong>@prod.Name</strong>
+                            <span class="ps-prod-desc">@prod.Description</span>
+                        </li>
+                    }
+                </ul>
+
+                <h4 class="ps-section-h">What Happened</h4>
+                <p class="ps-explain">@result.Explanation</p>
+            </div>
+        }
+        else
+        {
+            <div class="card ps-placeholder">
+                <Icon Name="brain" Size="32" Stroke="var(--text-muted)" />
+                <p>Pick a beam, target and energy, then press Collide.</p>
+            </div>
+        }
+    </div>
+
+    <aside class="ps-side">
+        <div class="card ps-history">
+            <h4 class="ps-section-h"><Icon Name="dice" Size="14" /> Recent Collisions</h4>
+            @if (history.Count == 0)
+            {
+                <p class="ps-history-empty">No collisions yet.</p>
+            }
+            else
+            {
+                <ul class="ps-history-list">
+                    @foreach (var h in history)
+                    {
+                        <li>
+                            <strong>@h.Title</strong>
+                            <small>@h.Setup</small>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </aside>
+</div>
+
+}
+
+@code {
+    private bool unlocked;
+
+    private string beam = "electron";
+    private string target = "electron";
+    private string energy = "low";
+
+    private CollisionResult? result;
+    private int resultKey;
+    private List<HistoryEntry> history = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-particle-sandbox");
+            StateHasChanged();
+        }
+    }
+
+    private string BeamColor => beamOptions.First(o => o.Id == beam).Color;
+    private string TargetColor => targetOptions.First(o => o.Id == target).Color;
+
+    private void Collide()
+    {
+        var key = $"{beam}|{target}|{energy}";
+        result = LookupCollision(key) ?? GenericElastic();
+        resultKey++;
+
+        var setup = $"{Cap(beam)} + {Cap(target)} @ {EnergyLabel(energy)}";
+        history.Insert(0, new HistoryEntry(result.Title, setup));
+        if (history.Count > 5) history.RemoveAt(history.Count - 1);
+    }
+
+    private static string Cap(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s.Substring(1);
+    private string EnergyLabel(string id) => energyOptions.First(o => o.Id == id).Label;
+
+    private CollisionResult? LookupCollision(string key) => key switch
+    {
+        "electron|electron|medium" => new CollisionResult(
+            "Electron-Positron Annihilation (Bhabha-like)",
+            new() {
+                new Track("var(--accent)", false),
+                new Track("var(--accent)", false)
+            },
+            new() {
+                new Product("Two photons", "Pure electromagnetic radiation. Momentum conservation forces back-to-back gammas.", "var(--accent)")
+            },
+            "At ~MeV scale, an electron meeting its antiparticle annihilates into two gamma rays. The total rest energy (1.022 MeV) becomes pure light. This is the basis of PET medical scans."
+        ),
+        "electron|electron|high" => new CollisionResult(
+            "High-Energy e+e- to Hadrons",
+            new() {
+                new Track("#E74C3C", true),
+                new Track("#2ECC71", true),
+                new Track("#F39C12", true),
+                new Track("var(--accent)", false)
+            },
+            new() {
+                new Product("Quark jets", "A virtual photon or Z boson decays into a quark-antiquark pair that hadronize into sprays of pions and kaons.", "#E74C3C"),
+                new Product("Gluon radiation", "Hard gluon emission produces a third jet -- the original LEP discovery of the gluon.", "#2ECC71"),
+                new Product("Gamma rays", "Initial-state radiation accompanies the collision.", "var(--accent)")
+            },
+            "At TeV energies the electron and positron annihilate into a virtual photon (or Z) which materialises into quarks. Color confinement turns the bare quarks into collimated jets of hadrons."
+        ),
+        "proton|proton|high" => new CollisionResult(
+            "LHC-Style p-p to Higgs",
+            new() {
+                new Track("#9B59B6", false),
+                new Track("#9B59B6", false),
+                new Track("#E74C3C", true),
+                new Track("#2ECC71", true),
+                new Track("#F39C12", true)
+            },
+            new() {
+                new Product("Higgs boson", "Produced via gluon-gluon fusion through a top-quark loop, then decays almost instantly.", "#9B59B6"),
+                new Product("Two photons", "A clean Higgs to gamma-gamma decay -- the channel ATLAS and CMS used in 2012.", "var(--accent)"),
+                new Product("Quark / gluon jets", "Beam remnants and underlying event spray hadrons in every direction.", "#E74C3C")
+            },
+            "At LHC energies (~13 TeV) gluons inside the protons fuse into a Higgs boson. The Higgs lives for ~10^-22 seconds before decaying; the di-photon channel was the smoking-gun signature in the 2012 discovery."
+        ),
+        "proton|proton|medium" => new CollisionResult(
+            "Inelastic p-p Scattering",
+            new() {
+                new Track("#E74C3C", true),
+                new Track("#2ECC71", true),
+                new Track("#F39C12", true),
+                new Track("#4A90D9", true)
+            },
+            new() {
+                new Product("Pion shower", "Charged and neutral pions -- the lightest mesons -- dominate the debris.", "#E74C3C"),
+                new Product("Kaons", "Strange-quark mesons appear when the energy crosses their production threshold.", "#2ECC71"),
+                new Product("Proton remnants", "The original protons usually break up into a forward-going hadronic mess.", "#F39C12")
+            },
+            "Above ~GeV the protons no longer bounce elastically. The strong force converts kinetic energy into new quark-antiquark pairs that immediately bind into mesons -- mostly pions."
+        ),
+        "neutrino|electron|medium" => new CollisionResult(
+            "Neutrino-Electron Charged-Current Scattering",
+            new() {
+                new Track("#9B59B6", false),
+                new Track("#4A90D9", true),
+                new Track("var(--text-muted)", false)
+            },
+            new() {
+                new Product("W boson (virtual)", "Mediates the charged-current interaction; never observed directly here, only its effect.", "#9B59B6"),
+                new Product("Outgoing electron", "Recoils with most of the visible energy -- the experimentally observed track.", "#4A90D9"),
+                new Product("Outgoing neutrino", "Carries energy away invisibly; inferred from missing momentum.", "var(--text-muted)")
+            },
+            "An electron-neutrino can swap a W boson with an electron, turning into an electron and producing a neutrino. This is exactly the reaction Super-Kamiokande and SNO used to confirm neutrino oscillation."
+        ),
+        "photon|photon|high" => new CollisionResult(
+            "Photon-Photon Fusion (Light by Light)",
+            new() {
+                new Track("#4A90D9", true),
+                new Track("#E74C3C", true)
+            },
+            new() {
+                new Product("Electron-positron pair", "Two real photons can produce a matter-antimatter pair if their combined energy exceeds 2*m_e*c^2 -- the Breit-Wheeler process.", "#4A90D9"),
+                new Product("Recoiling lepton", "Charged tracks curl in any surrounding magnetic field.", "#E74C3C")
+            },
+            "Two photons can briefly act as virtual electron loops and scatter off each other -- a purely quantum-electrodynamic effect predicted in 1934 and finally observed at the LHC in lead-lead collisions."
+        ),
+        "photon|atom|low" => new CollisionResult(
+            "Photoelectric Effect",
+            new() {
+                new Track("#4A90D9", true)
+            },
+            new() {
+                new Product("Ejected electron", "A bound atomic electron absorbs the whole photon and is kicked free with kinetic energy E_gamma - W.", "#4A90D9"),
+                new Product("Ionised atom", "What remains has a hole in its inner shell and will fluoresce or Auger-decay.", "#F39C12")
+            },
+            "A single photon transfers all its energy to a bound electron, ejecting it from the atom. Einstein's 1905 explanation -- which won him the Nobel -- showed light comes in quanta and launched quantum mechanics."
+        ),
+        "proton|atom|low" => new CollisionResult(
+            "Rutherford Scattering",
+            new() {
+                new Track("#F39C12", true),
+                new Track("#4A90D9", true)
+            },
+            new() {
+                new Product("Deflected proton", "Most pass through; a tiny fraction bounce back from the dense nucleus.", "#F39C12"),
+                new Product("Recoiling nucleus", "The atom barely budges if it is heavy.", "#4A90D9")
+            },
+            "Rutherford fired alpha particles at gold foil in 1909 and watched some bounce straight back. That single experiment proved the atom is mostly empty space with a tiny dense nucleus -- and killed the plum-pudding model."
+        ),
+        _ => null
+    };
+
+    private CollisionResult GenericElastic() => new CollisionResult(
+        "Elastic Scattering",
+        new() {
+            new Track(BeamColor, true),
+            new Track(TargetColor, true)
+        },
+        new() {
+            new Product(Cap(beam), "Bounces off with the same identity, just a different direction.", BeamColor),
+            new Product(Cap(target), "Recoils to conserve momentum.", TargetColor)
+        },
+        "At this energy the projectile does not have enough oomph to create new particles, so it simply scatters off the target like billiard balls. Identities are preserved; only momentum is exchanged."
+    );
+
+    private record ParticleOption(string Id, string Label, string Color);
+    private record EnergyOption(string Id, string Label);
+    private record Track(string Color, bool Charged);
+    private record Product(string Name, string Description, string Color);
+    private record CollisionResult(string Title, List<Track> Tracks, List<Product> Products, string Explanation);
+    private record HistoryEntry(string Title, string Setup);
+
+    private static readonly List<ParticleOption> beamOptions = new()
+    {
+        new("electron", "Electron", "#4A90D9"),
+        new("proton", "Proton", "#E74C3C"),
+        new("photon", "Photon", "#F1C40F"),
+        new("neutrino", "Neutrino", "#9B59B6"),
+    };
+
+    private static readonly List<ParticleOption> targetOptions = new()
+    {
+        new("electron", "Electron", "#4A90D9"),
+        new("proton", "Proton", "#E74C3C"),
+        new("atom", "Atom", "#1ABC9C"),
+    };
+
+    private static readonly List<EnergyOption> energyOptions = new()
+    {
+        new("low", "Low (MeV)"),
+        new("medium", "Medium (GeV)"),
+        new("high", "High (TeV)"),
+    };
+}
+
+<style>
+    .ps-intro { color: var(--text-secondary); font-size: 0.9rem; margin: 0 0 14px; }
+
+    .ps-layout { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @@media (min-width: 760px) {
+        .ps-layout { grid-template-columns: 1fr 240px; }
+    }
+
+    .ps-main { display: flex; flex-direction: column; gap: 14px; }
+    .ps-side { display: flex; flex-direction: column; gap: 14px; }
+
+    .ps-config { padding: 14px 16px; }
+    .ps-row { margin-bottom: 12px; }
+    .ps-label {
+        display: flex; align-items: center; gap: 6px; font-size: 0.78rem;
+        text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted);
+        font-weight: 700; margin-bottom: 6px;
+    }
+    .ps-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ps-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; border: 1px solid var(--border); background: var(--bg-card);
+        color: var(--text-secondary); border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+        cursor: pointer; transition: all 0.15s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .ps-chip:active { transform: scale(0.96); }
+    .ps-chip-active { background: var(--bg-surface); }
+    .ps-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    .ps-collide-btn { width: 100%; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .ps-placeholder {
+        text-align: center; padding: 30px 16px; color: var(--text-muted);
+    }
+    .ps-placeholder p { margin: 10px 0 0; font-size: 0.88rem; }
+
+    .ps-result { padding: 14px 16px; animation: psFadeIn 0.3s ease; }
+    .ps-result-title { margin: 0 0 10px; font-size: 1.05rem; color: var(--text-primary); }
+
+    .ps-svg-wrap {
+        background: var(--bg-surface); border-radius: var(--radius-sm);
+        padding: 6px; margin-bottom: 12px; overflow: hidden;
+    }
+    .ps-svg { width: 100%; height: auto; display: block; }
+
+    .ps-axis { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 4; }
+
+    .ps-incoming-left { stroke-dasharray: 200; stroke-dashoffset: 200; animation: psDraw 0.7s ease forwards; }
+    .ps-incoming-right { stroke-dasharray: 200; stroke-dashoffset: 200; animation: psDraw 0.7s ease forwards; }
+
+    .ps-incoming-particle { opacity: 0; }
+    .ps-in-left { animation: psFlyRight 0.7s linear forwards; }
+    .ps-in-right { animation: psFlyLeft 0.7s linear forwards; }
+
+    .ps-vertex { opacity: 0; transform-origin: 200px 100px; animation: psFlash 0.6s ease 0.7s forwards; }
+    .ps-vertex-core { opacity: 0; animation: psCore 0.6s ease 0.7s forwards; }
+
+    .ps-out-track {
+        stroke-dasharray: 260; stroke-dashoffset: 260;
+        animation: psDraw 0.8s ease forwards;
+    }
+    .ps-out-track-straight {
+        stroke-dasharray: 260; stroke-dashoffset: 260;
+        animation: psDrawStraight 0.8s ease forwards;
+    }
+
+    .ps-section-h {
+        font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;
+        letter-spacing: 0.6px; margin: 14px 0 6px; display: flex; align-items: center; gap: 6px;
+    }
+
+    .ps-products { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .ps-products li {
+        background: var(--bg-surface); border-radius: var(--radius-sm); padding: 8px 10px;
+        font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;
+    }
+    .ps-products strong { color: var(--text-primary); margin-right: 6px; }
+    .ps-prod-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+    .ps-prod-desc { display: block; margin-top: 2px; font-size: 0.82rem; }
+
+    .ps-explain {
+        margin: 0; padding: 10px 12px; background: var(--bg-surface);
+        border-left: 3px solid var(--primary); border-radius: var(--radius-sm);
+        font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55;
+    }
+
+    .ps-history { padding: 12px 14px; }
+    .ps-history-empty { color: var(--text-muted); font-size: 0.82rem; margin: 4px 0 0; }
+    .ps-history-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .ps-history-list li {
+        padding: 6px 8px; background: var(--bg-surface); border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+    }
+    .ps-history-list strong { display: block; color: var(--text-primary); font-size: 0.83rem; }
+    .ps-history-list small { color: var(--text-muted); font-size: 0.74rem; }
+
+    @@keyframes psDraw { to { stroke-dashoffset: 0; } }
+    @@keyframes psDrawStraight { to { stroke-dashoffset: 0; } }
+    @@keyframes psFlyRight {
+        0% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 1; transform: translateX(200px); }
+    }
+    @@keyframes psFlyLeft {
+        0% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 1; transform: translateX(-200px); }
+    }
+    @@keyframes psFlash {
+        0% { opacity: 0; transform: scale(0.2); }
+        40% { opacity: 1; transform: scale(1.4); }
+        100% { opacity: 0; transform: scale(2); }
+    }
+    @@keyframes psCore {
+        0% { opacity: 0; r: 2; }
+        40% { opacity: 1; r: 8; }
+        100% { opacity: 0; r: 4; }
+    }
+    @@keyframes psFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: none; }
+    }
+</style>

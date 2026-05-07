@@ -1,0 +1,289 @@
+@page "/power-map"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Power Map</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Power Map" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Power Map</h1>
+    </div>
+
+    <div class="card pm-intro">
+        <Icon Name="balance-scale" Size="22" Stroke="var(--accent)" />
+        <p>Move candidates along a 1D ideological axis. Voters pick the closest. Watch the median voter theorem stop being theory.</p>
+    </div>
+
+    <div class="card pm-controls">
+        <div class="pm-row">
+            <label>Voters</label>
+            <select @bind="distribution">
+                <option value="normal">Bell-curve electorate</option>
+                <option value="bimodal">Polarized (bimodal)</option>
+                <option value="left-skew">Left-skewed</option>
+                <option value="uniform">Uniform</option>
+            </select>
+        </div>
+        <div class="pm-row">
+            <label>Candidates</label>
+            <select @bind="numCandidates" @bind:after="RefreshCandidates">
+                <option value="2">2 (US-style)</option>
+                <option value="3">3</option>
+                <option value="5">5 (PR-ish)</option>
+            </select>
+        </div>
+        <div class="pm-row">
+            <label>System</label>
+            <select @bind="system">
+                <option value="plurality">First past the post</option>
+                <option value="approval">Approval (within 25%)</option>
+                <option value="proportional">Proportional</option>
+            </select>
+        </div>
+        <button class="btn btn-outline pm-resetbtn" @onclick="Resimulate">Resimulate voters</button>
+    </div>
+
+    <div class="card pm-stage">
+        <div class="pm-axis-labels">
+            <span>← Left</span><span>Center</span><span>Right →</span>
+        </div>
+        <svg viewBox="0 0 320 200" class="pm-svg">
+            @{
+                var bins = 32;
+                var hist = Histogram(bins);
+                var maxBin = hist.Max();
+            }
+            @for (int i = 0; i < bins; i++)
+            {
+                var x = 20 + i * (280.0 / bins);
+                var w = 280.0 / bins - 1;
+                var h = (hist[i] * 90.0 / Math.Max(1, maxBin));
+                var col = WinningColorAtBin(i, bins);
+                <rect x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="@((130 - h).ToString(System.Globalization.CultureInfo.InvariantCulture))" width="@w.ToString(System.Globalization.CultureInfo.InvariantCulture)" height="@h.ToString(System.Globalization.CultureInfo.InvariantCulture)" fill="@col" opacity="0.55"/>
+            }
+            <line x1="20" y1="130" x2="300" y2="130" stroke="var(--text-muted)" stroke-width="1"/>
+
+            @foreach (var c in candidates)
+            {
+                var cx = 20 + c.Position * 280;
+                <g style="cursor:pointer" @onclick="() => Selected(c)">
+                    <circle cx="@cx.ToString(System.Globalization.CultureInfo.InvariantCulture)" cy="160" r="11" fill="@c.Color" stroke="white" stroke-width="2"/>
+                    <text x="@cx.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="184" font-size="9" text-anchor="middle" fill="var(--text-secondary)">@c.Label</text>
+                </g>
+            }
+        </svg>
+
+        <label class="pm-slider-label">@(selected?.Label ?? "Select a candidate"): @((selected?.Position * 100).GetValueOrDefault().ToString("0"))</label>
+        <input type="range" min="0" max="1" step="0.01" disabled="@(selected == null)"
+               @bind="SelectedPos" @bind:event="oninput" />
+    </div>
+
+    <div class="card pm-results">
+        <h3>Vote share</h3>
+        @{ var shares = ComputeShares(); }
+        <div class="pm-bars">
+            @foreach (var c in candidates)
+            {
+                var pct = shares.GetValueOrDefault(c.Label, 0.0);
+                <div class="pm-bar-row">
+                    <span style="@($"color:{c.Color}")">●</span>
+                    <span class="pm-bar-name">@c.Label</span>
+                    <div class="pm-bar"><div class="pm-bar-fill" style="@($"background:{c.Color};width:{pct * 100:0.#}%")"></div></div>
+                    <strong>@($"{pct * 100:0.#}%")</strong>
+                </div>
+            }
+        </div>
+        <div class="pm-readout">
+            <strong>Winner under @SystemLabel: @WinnerLabel</strong>
+            <p>@SystemBlurb</p>
+        </div>
+    </div>
+}
+
+@code {
+    private bool unlocked;
+    private string distribution = "normal";
+    private int numCandidates = 2;
+    private string system = "plurality";
+    private List<Candidate> candidates = new();
+    private Candidate? selected;
+    private double[] voters = Array.Empty<double>();
+    private Random rng = new(7);
+
+    private double SelectedPos
+    {
+        get => selected?.Position ?? 0.5;
+        set { if (selected != null) selected.Position = Math.Clamp(value, 0, 1); }
+    }
+
+    private string SystemLabel => system switch { "approval" => "approval voting", "proportional" => "proportional rep", _ => "first past the post" };
+    private string SystemBlurb => system switch
+    {
+        "approval" => "Each voter approves any candidate within 25 percent of them. Multiple winners possible; system rewards centrists.",
+        "proportional" => "Seats split by share. Small parties survive. Coalition governments become normal.",
+        _ => "Whoever gets the most votes wins. Duverger's Law: this collapses to 2-party competition over time."
+    };
+
+    private string WinnerLabel
+    {
+        get
+        {
+            var shares = ComputeShares();
+            if (system == "proportional") return string.Join(" / ", shares.Where(s => s.Value > 0.05).OrderByDescending(s => s.Value).Select(s => $"{s.Key} ({s.Value * 100:0}%)"));
+            return shares.OrderByDescending(s => s.Value).First().Key;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-power-map");
+            if (unlocked)
+            {
+                Resimulate();
+                RefreshCandidates();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void Resimulate()
+    {
+        voters = new double[600];
+        for (int i = 0; i < voters.Length; i++) voters[i] = SamplePosition();
+    }
+
+    private double SamplePosition()
+    {
+        switch (distribution)
+        {
+            case "bimodal":
+                return rng.NextDouble() < 0.5
+                    ? Math.Clamp(0.25 + Gauss(0.08), 0, 1)
+                    : Math.Clamp(0.75 + Gauss(0.08), 0, 1);
+            case "left-skew":
+                return Math.Clamp(0.4 + Gauss(0.18) - 0.12, 0, 1);
+            case "uniform":
+                return rng.NextDouble();
+            default:
+                return Math.Clamp(0.5 + Gauss(0.16), 0, 1);
+        }
+    }
+
+    private double Gauss(double sigma)
+    {
+        var u1 = 1 - rng.NextDouble();
+        var u2 = 1 - rng.NextDouble();
+        return Math.Sqrt(-2 * Math.Log(u1)) * Math.Cos(2 * Math.PI * u2) * sigma;
+    }
+
+    private void RefreshCandidates()
+    {
+        var palette = new[] { "#4A5FE0", "#E74C3C", "#2ECC71", "#F39C12", "#9B59B6" };
+        var labels = new[] { "Blue", "Red", "Green", "Yellow", "Purple" };
+        candidates = new();
+        for (int i = 0; i < numCandidates; i++)
+        {
+            var pos = (i + 1.0) / (numCandidates + 1.0);
+            candidates.Add(new Candidate(labels[i], palette[i], pos));
+        }
+        selected = candidates.FirstOrDefault();
+    }
+
+    private void Selected(Candidate c) => selected = c;
+
+    private int[] Histogram(int bins)
+    {
+        var h = new int[bins];
+        foreach (var v in voters)
+        {
+            var b = Math.Min(bins - 1, (int)(v * bins));
+            h[b]++;
+        }
+        return h;
+    }
+
+    private string WinningColorAtBin(int bin, int bins)
+    {
+        var pos = (bin + 0.5) / bins;
+        Candidate? best = null; double bestD = double.MaxValue;
+        foreach (var c in candidates) { var d = Math.Abs(pos - c.Position); if (d < bestD) { bestD = d; best = c; } }
+        return best?.Color ?? "var(--bg-card)";
+    }
+
+    private Dictionary<string, double> ComputeShares()
+    {
+        var dict = candidates.ToDictionary(c => c.Label, _ => 0);
+        if (system == "approval")
+        {
+            foreach (var v in voters)
+                foreach (var c in candidates)
+                    if (Math.Abs(c.Position - v) < 0.25) dict[c.Label]++;
+        }
+        else
+        {
+            foreach (var v in voters)
+            {
+                Candidate? best = null; double bestD = double.MaxValue;
+                foreach (var c in candidates) { var d = Math.Abs(c.Position - v); if (d < bestD) { bestD = d; best = c; } }
+                if (best != null) dict[best.Label]++;
+            }
+        }
+        var total = dict.Values.Sum();
+        return dict.ToDictionary(kv => kv.Key, kv => total == 0 ? 0.0 : (double)kv.Value / total);
+    }
+
+    private class Candidate
+    {
+        public string Label { get; }
+        public string Color { get; }
+        public double Position { get; set; }
+        public Candidate(string l, string c, double p) { Label = l; Color = c; Position = p; }
+    }
+}
+
+<style>
+    .pm-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .pm-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .pm-controls { padding: 14px; }
+    .pm-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+    .pm-row label { width: 110px; color: var(--text-muted); font-weight: 600; }
+    .pm-row select { flex: 1; padding: 4px 8px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); }
+    .pm-resetbtn { width: 100%; }
+
+    .pm-stage { padding: 14px; }
+    .pm-axis-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); padding: 0 14px; margin-bottom: 4px; }
+    .pm-svg { width: 100%; height: auto; max-height: 240px; display: block; }
+
+    .pm-slider-label { display: block; margin-top: 6px; font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; }
+    input[type=range] { width: 100%; accent-color: var(--primary); }
+
+    .pm-results { padding: 14px; }
+    .pm-results h3 { margin: 0 0 10px; font-size: 0.95rem; }
+    .pm-bars { display: flex; flex-direction: column; gap: 6px; }
+    .pm-bar-row { display: grid; grid-template-columns: 14px 60px 1fr 50px; align-items: center; gap: 6px; font-size: 0.78rem; }
+    .pm-bar-name { color: var(--text-secondary); font-weight: 600; }
+    .pm-bar { height: 8px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; }
+    .pm-bar-fill { height: 100%; transition: width 0.3s ease; }
+    .pm-bar-row strong { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .pm-readout { margin-top: 12px; padding: 10px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); }
+    .pm-readout strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+    .pm-readout p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+</style>

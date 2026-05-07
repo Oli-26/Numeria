@@ -1,0 +1,338 @@
+[
+  {
+    "id": "lqft-01",
+    "topicId": "physics-lattice-qft",
+    "order": 1,
+    "title": "Why Discretize? The Lattice as a Nonperturbative Regulator",
+    "description": "Wick rotation, the Euclidean path integral, and why a finite-spacing grid is the only fully defined regulator of QFT we have",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "lqft-01-c1",
+        "title": "Perturbation Theory's Blind Spots",
+        "contentHtml": "<p>Continuum perturbative QFT works beautifully where couplings are small: QED at low energies, electroweak processes near the <code>M_Z</code> scale, QCD at high momentum transfer. It fails wherever the relevant coupling is order one. Hadron masses, the chiral condensate, glueball spectra, the deconfinement transition, the topological structure of the QCD vacuum — none of these can be computed by summing Feynman diagrams. The series is asymptotic and, for <code>α_s ~ 1</code>, the first few terms already disagree with truth.</p><p>Worse, perturbation theory cannot even define what the strong-coupling theory <em>is</em>. A regulator that exists only inside Feynman diagrams (dimensional regularization, Pauli–Villars) gives no nonperturbative content. We need a definition of the path integral that holds independently of any expansion — one where <code>Z = ∫𝒟φ e^{-S}</code> is a literal, computable integral.</p><p>Wilson's 1974 paper made the answer concrete: replace continuous spacetime by a finite hypercubic <strong>lattice</strong> of spacing <code>a</code>. The path integral becomes finite-dimensional, the action becomes a sum, and <code>e^{-S}</code> is a positive Boltzmann weight. With this single move, QFT becomes statistical mechanics in four dimensions — and Monte Carlo simulation becomes possible.</p>",
+        "mathExpressions": [
+          "Z_{\\text{cont}} = \\int \\mathcal{D}\\phi \\, e^{-S_E[\\phi]} \\quad \\xrightarrow{\\text{lattice}} \\quad Z_a = \\prod_{x \\in a\\mathbb{Z}^4} \\int d\\phi(x) \\, e^{-S_a[\\phi]}",
+          "\\alpha_s(\\mu = 1\\,\\text{GeV}) \\sim 0.5 \\implies \\text{perturbative series fails}",
+          "a \\to 0 \\quad \\text{recovers the continuum theory}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-01-c2",
+        "title": "Wick Rotation and Statistical Mechanics in 4D",
+        "contentHtml": "<p>The Tier-3 prerequisite established that <code>t → -iτ</code> turns <code>e^{iS}</code> into <code>e^{-S_E}</code>. On the lattice this rotation is not a calculational convenience — it is a <strong>structural requirement</strong>. Monte Carlo importance sampling needs a positive probability weight, and only the Euclidean action gives one. A Lorentzian lattice would have phase oscillations <code>e^{iS}</code> that no current algorithm can sample efficiently (this is the famous sign problem for real-time dynamics, addressed in lesson 4).</p><p>Once Euclidean, the d=4 lattice path integral is mathematically identical to the partition function of a 4D classical statistical system. Field configurations <code>φ(x)</code> become microstates. The action <code>S_E</code> plays the role of <code>βH</code>. Correlation functions <code>⟨φ(x)φ(y)⟩</code> become spin-spin correlators. The continuum limit <code>a → 0</code> corresponds to a <strong>second-order critical point</strong> where the correlation length in lattice units diverges.</p><p>This identification is not metaphor — it underwrites every lattice algorithm. The Metropolis update, heat-bath sampling, Wolff clusters, and the Hybrid Monte Carlo of lesson 4 are all imported wholesale from condensed-matter Monte Carlo. Wilson's deepest contribution was recognizing that <strong>renormalization in QFT and critical phenomena in stat mech are the same subject</strong>, expressed in two languages.</p>",
+        "mathExpressions": [
+          "S_E[\\phi] \\geq 0 \\implies e^{-S_E} > 0 \\quad \\text{(probability weight)}",
+          "\\langle \\mathcal{O} \\rangle = \\frac{1}{Z}\\int \\mathcal{D}\\phi \\, \\mathcal{O}[\\phi]\\, e^{-S_E[\\phi]} \\equiv \\langle \\mathcal{O} \\rangle_{\\text{stat-mech}}",
+          "\\xi/a \\to \\infty \\iff a \\to 0 \\text{ at fixed physical } \\xi"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-01-c3",
+        "title": "The Lattice as Ultraviolet and Infrared Regulator",
+        "contentHtml": "<p>A finite-volume lattice with spacing <code>a</code> and <code>L^4 = (Na)^4</code> sites regulates both ends of the integral. Momenta <code>p_μ</code> live in the first Brillouin zone, <code>p_μ ∈ (-π/a, π/a]</code>, so there is a hard ultraviolet cutoff <code>Λ = π/a</code>. The total number of degrees of freedom is finite, so <code>Z</code> is a literal, finite-dimensional integral with no divergences anywhere — no need for dim reg, no anomalous logs to subtract, no 1/ε poles.</p><p>The infrared is regulated by the box. Periodic boundary conditions in space and (for bosons) time discretize momenta in steps of <code>2π/L</code>. This is essential: lattice QCD is genuinely a <em>finite-volume</em> computation, and observables at infinite volume are extracted by extrapolation. The Lüscher formalism (lesson 7) turns finite-volume energy levels into continuum scattering phase shifts — making finite-V a feature, not a bug.</p><p>Crucially, this regulator is <strong>nonperturbative and gauge-invariant</strong>. Gauge symmetry is preserved exactly at finite <code>a</code> (lesson 2), unlike most continuum regulators that break it explicitly and require painful BRST restoration. Lattice QCD is the only regulator we have for which a complete proof of confinement and a measurement of <code>m_p/m_π</code> from the bare Lagrangian alone are simultaneously available.</p>",
+        "mathExpressions": [
+          "p_\\mu \\in \\left(-\\frac{\\pi}{a}, \\frac{\\pi}{a}\\right] \\quad \\Lambda_{\\text{UV}} = \\frac{\\pi}{a}",
+          "p_\\mu = \\frac{2\\pi n_\\mu}{L}, \\quad n_\\mu \\in \\{0, 1, \\ldots, N-1\\}",
+          "Z = \\prod_{x,\\mu} \\int dU_\\mu(x) \\prod_x \\int d\\phi(x) \\, e^{-S_a} \\quad \\text{(literal finite integral)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q01", "lqft-q02", "lqft-q03", "lqft-q04", "lqft-q05", "lqft-q06", "lqft-q07", "lqft-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "lqft-02",
+    "topicId": "physics-lattice-qft",
+    "order": 2,
+    "title": "Wilson Gauge Action and Lattice Gauge Invariance",
+    "description": "Link variables, the plaquette, and how to discretize Yang-Mills while preserving exact local SU(N) gauge symmetry",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "lqft-02-c1",
+        "title": "Link Variables: The Right Object Is the Wilson Line",
+        "contentHtml": "<p>The naive instinct is to discretize the gauge field <code>A_μ(x)</code> directly: store an <code>su(N)</code>-valued vector at each site. This wrecks gauge invariance — under <code>A_μ → ΩA_μΩ^† + iΩ∂_μΩ^†</code>, a finite-difference derivative is not gauge-covariant. Wilson's insight is that the natural object on a lattice is not the algebra-valued field but the <strong>group-valued parallel transporter</strong> along an edge:</p><p><code>U_μ(x) = 𝒫 exp(ig ∫_x^{x+aμ̂} A_μ dx) ∈ SU(N)</code></p><p>These <strong>link variables</strong> live on edges, not sites. Under a gauge transformation <code>Ω(x)</code>, they transform locally as <code>U_μ(x) → Ω(x) U_μ(x) Ω^†(x+aμ̂)</code>. In the limit <code>a → 0</code>, <code>U_μ(x) ≈ 𝟙 + iagA_μ(x)</code> recovers the continuum gauge potential, but at finite <code>a</code> the <code>U_μ</code> are exact group elements with no need for small-coupling expansion.</p><p>The path integral measure becomes the <strong>Haar measure</strong> <code>∏_{x,μ} dU_μ(x)</code> over the compact group SU(N). Compactness is decisive: integrals are finite without gauge fixing, the volume of the gauge orbit is bounded, and there is no Gribov ambiguity. Faddeev–Popov ghosts are unnecessary in the lattice formulation — gauge fixing is something you do for analytical convenience, not algorithmic need.</p>",
+        "mathExpressions": [
+          "U_\\mu(x) = \\exp(iagA_\\mu(x)) \\in SU(N)",
+          "U_\\mu(x) \\to \\Omega(x)\\, U_\\mu(x)\\, \\Omega^\\dagger(x + a\\hat{\\mu})",
+          "\\int dU_\\mu(x) = \\text{Haar measure on } SU(N), \\quad \\int dU = 1"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-02-c2",
+        "title": "The Plaquette and the Wilson Action",
+        "contentHtml": "<p>A gauge-invariant quantity must be a <strong>closed loop</strong> of link variables. The smallest closed loop on a hypercubic lattice is the <strong>plaquette</strong> — the product of four links around an elementary square in the <code>μν</code>-plane:</p><p><code>U_{μν}(x) = U_μ(x) U_ν(x+aμ̂) U_μ^†(x+aν̂) U_ν^†(x)</code></p><p>This product transforms as <code>U_{μν} → Ω(x) U_{μν} Ω^†(x)</code>. Taking the trace (cyclic) makes it gauge invariant. Wilson's <strong>plaquette action</strong> is the simplest sum of such traces that reproduces Yang–Mills in the continuum limit:</p><p><code>S_W = β Σ_{x,μ&lt;ν} (1 − (1/N) Re Tr U_{μν}(x))</code></p><p>where <code>β = 2N/g²</code> is the inverse coupling. Expanding to leading order in <code>a</code>: <code>U_{μν} ≈ exp(ia²g F_{μν})</code>, so <code>Re Tr U_{μν} ≈ N − (a⁴g²/2) Tr F_{μν}²</code>, and <code>S_W → (1/2g²)∫d⁴x Tr F²</code> — exactly the Yang–Mills action. Discretization errors are <code>O(a²)</code>; the Symanzik improvement program (Iwasaki, DBW2, tree-level Lüscher–Weisz) systematically removes them by adding <code>1×2</code> rectangles and other gauge-invariant terms.</p>",
+        "mathExpressions": [
+          "U_{\\mu\\nu}(x) = U_\\mu(x)\\, U_\\nu(x+a\\hat{\\mu})\\, U_\\mu^\\dagger(x+a\\hat{\\nu})\\, U_\\nu^\\dagger(x)",
+          "S_W[U] = \\beta \\sum_{x,\\mu<\\nu} \\left(1 - \\frac{1}{N}\\, \\mathrm{Re}\\,\\mathrm{Tr}\\, U_{\\mu\\nu}(x)\\right), \\quad \\beta = \\frac{2N}{g^2}",
+          "S_W \\xrightarrow{a\\to 0} \\frac{1}{2g^2}\\int d^4x\\, \\mathrm{Tr}\\, F_{\\mu\\nu}F^{\\mu\\nu} + \\mathcal{O}(a^2)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-02-c3",
+        "title": "Confinement, Wilson Loops, and Pure-Gauge Successes",
+        "contentHtml": "<p>The <strong>Wilson loop</strong> <code>W(C) = Tr ∏_{ℓ ∈ C} U_ℓ</code> around a rectangular contour of size <code>R × T</code> measures the static quark–antiquark potential: <code>⟨W(R,T)⟩ ∼ exp(-V(R) T)</code> at large <code>T</code>. In a confining theory, <code>V(R) ≈ σR + …</code> grows linearly with <code>R</code>, giving <code>⟨W⟩ ∼ exp(-σ · area)</code> — the famous <strong>area law</strong>. In a deconfined phase the falloff is perimeter-only.</p><p>Wilson proved analytically that the strong-coupling expansion of <code>S_W</code> at <code>β → 0</code> yields the area law trivially. The deep, nontrivial question — does the area law survive to weak coupling, where Yang–Mills meets continuum perturbation theory? — is answered Yes by Monte Carlo simulation, with <code>√σ ≈ 440 MeV</code> consistent across formulations. Pure SU(3) gauge theory exhibits a deconfinement phase transition at <code>T_c ≈ 270 MeV</code> (first order), and supports a glueball spectrum with the lightest scalar at <code>m_{0++} ≈ 1.7 GeV</code>.</p><p>None of these results have ever been derived from continuum methods alone. The pure-gauge sector — without dynamical quarks — is one of the cleanest demonstrations of what the lattice can do that nothing else can: <strong>a first-principles computation of confinement</strong>, decades before any rigorous mathematical proof exists. (Yang–Mills mass gap is still a Clay Millennium Problem.)</p>",
+        "mathExpressions": [
+          "W(C) = \\mathrm{Tr}\\, \\prod_{\\ell \\in C} U_\\ell",
+          "\\langle W(R,T) \\rangle \\sim e^{-\\sigma R T} \\quad \\text{(area law } \\Leftrightarrow \\text{ confinement)}",
+          "\\sqrt{\\sigma} \\approx 440\\,\\text{MeV}, \\quad T_c^{SU(3)} \\approx 270\\,\\text{MeV}, \\quad m_{0^{++}} \\approx 1.7\\,\\text{GeV}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q09", "lqft-q10", "lqft-q11", "lqft-q12", "lqft-q13", "lqft-q14", "lqft-q15", "lqft-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "lqft-03",
+    "topicId": "physics-lattice-qft",
+    "order": 3,
+    "title": "Fermions on the Lattice: Doublers, Wilson, Staggered, and Chiral Solutions",
+    "description": "Why naive lattice fermions give 16 species, and the Wilson, staggered, domain-wall, and overlap formulations that fix it",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "lqft-03-c1",
+        "title": "The Doubling Problem and the Nielsen-Ninomiya Theorem",
+        "contentHtml": "<p>The naive central-difference Dirac operator <code>D_{naive} = (1/2a) Σ_μ γ_μ (T_μ - T_{-μ})</code>, where <code>T_μ</code> shifts by one site, has free propagator <code>1/(i Σ_μ γ_μ sin(p_μ a)/a)</code>. In the Brillouin zone <code>p_μ ∈ (-π/a, π/a]</code>, <code>sin(p_μ a)</code> vanishes not only at <code>p_μ = 0</code> but also at <code>p_μ = π/a</code>. In four dimensions, this gives <strong>2⁴ = 16 fermion species</strong> (one physical and 15 ghosts) for every fermion you tried to put down. This is fermion doubling.</p><p>The Nielsen–Ninomiya theorem (1981) proves the disease is fundamental. It states that <strong>no lattice Dirac operator can simultaneously satisfy</strong>: (i) locality, (ii) translation invariance and Hermiticity, (iii) chiral symmetry <code>{D, γ_5} = 0</code>, and (iv) describe a single Weyl fermion (no doublers). A topological argument on the torus <code>T⁴</code> forces the spectrum's signed crossings to cancel, producing pairs.</p><p>Every practical lattice-fermion formulation breaks one of the assumptions. Wilson breaks chiral symmetry explicitly. Staggered keeps a remnant chiral symmetry but only for four-fold flavor multiplets. Domain-wall and overlap fermions break locality of the Dirac operator just enough — and chiral symmetry only by an exponentially small amount in a hidden fifth dimension or by a clever projection. Every choice has tradeoffs that drive the architecture of every lattice-QCD code.</p>",
+        "mathExpressions": [
+          "D_{\\text{naive}}\\psi(x) = \\frac{1}{2a}\\sum_\\mu \\gamma_\\mu \\left(U_\\mu(x)\\psi(x+a\\hat{\\mu}) - U_{-\\mu}(x)\\psi(x-a\\hat{\\mu})\\right)",
+          "\\det(i\\gamma^\\mu \\sin(p_\\mu a)/a + m) = 0 \\implies p_\\mu \\in \\{0, \\pi/a\\}^4 \\Rightarrow 2^4 = 16 \\text{ species}",
+          "\\textbf{Nielsen-Ninomiya: } \\nexists\\, D \\text{ with locality} + \\text{translation inv.} + \\{D,\\gamma_5\\}=0 + \\text{single Weyl}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-03-c2",
+        "title": "Wilson and Staggered Fermions",
+        "contentHtml": "<p><strong>Wilson fermions</strong> add an irrelevant operator <code>-(ar/2) Σ_μ Δ_μ</code> (a discrete Laplacian) to the naive action. The Wilson term gives the 15 doublers a mass <code>~1/a</code>, decoupling them in the continuum limit while leaving the physical fermion at <code>m_q</code>. Cost: the term breaks chiral symmetry explicitly even at <code>m_q = 0</code>. There is no chiral limit at finite <code>a</code> — instead one finds a <strong>critical hopping parameter</strong> <code>κ_c</code> at which the pion becomes massless. Operator mixing under renormalization is correspondingly worse, and additive mass renormalization complicates the chiral extrapolation. <strong>Clover-improved</strong> Wilson (Sheikholeslami–Wohlert) reduces leading discretization errors from <code>O(a)</code> to <code>O(a²)</code> and is the workhorse of MILC-style charm and bottom physics.</p><p><strong>Staggered (Kogut–Susskind) fermions</strong> spin-diagonalize the naive action and keep one component per site, reducing 16 doublers to 4 'tastes' that mix among themselves under a <code>U(4)</code>-like symmetry broken weakly at finite <code>a</code>. A remnant chiral symmetry survives, making them ideal for chiral physics, but the four tastes are physical: to describe one quark flavor one takes the <strong>fourth root</strong> of the staggered fermion determinant. The validity of rooting is empirically vindicated and theoretically defended (Sharpe, Bernard) but remains a source of debate. The HISQ (highly improved staggered quark) action used by MILC, Fermilab/MILC, and HPQCD is the leading high-precision charm/bottom platform.</p>",
+        "mathExpressions": [
+          "S_W^{\\text{ferm}} = \\sum_x \\bar{\\psi}(x)\\left(D_{\\text{naive}} + m + \\frac{r}{2a}\\sum_\\mu \\Delta_\\mu\\right)\\psi(x)",
+          "S_{\\text{clover}} = S_W^{\\text{ferm}} - c_{SW}\\frac{ar}{4}\\sum_x \\bar{\\psi}(x)\\sigma_{\\mu\\nu}\\hat{F}_{\\mu\\nu}\\psi(x)",
+          "Z_{\\text{1 flavor}}^{\\text{stag}} = (\\det M_{\\text{stag}})^{1/4} \\quad \\text{(rooting trick)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-03-c3",
+        "title": "Domain-Wall and Overlap: Chiral Symmetry on the Lattice",
+        "contentHtml": "<p>Kaplan's <strong>domain-wall fermions</strong> (1992) embed 4D physics on the boundary of a 5D slab. Five-dimensional Wilson fermions with a position-dependent mass that flips sign at one wall trap a chiral zero mode bound to that wall. With a finite extent <code>L_5</code> and an opposite-chirality mode on the far wall, the residual chiral symmetry breaking falls off exponentially in <code>L_5</code>. The RBC and UKQCD collaborations have pushed <code>L_5 ≈ 16-32</code> with a Möbius accelerator to reach residual masses below 1 MeV — chiral fermions with engineering precision.</p><p>Neuberger's <strong>overlap fermions</strong> (1998) realize the same physics in a single 4D operator: <code>D_{ov} = (1/a)(1 + γ_5 sign(H_W))</code>, where <code>H_W</code> is the Hermitian Wilson operator. This satisfies the <strong>Ginsparg–Wilson relation</strong> <code>{D, γ_5} = a D γ_5 D</code>, which is the lattice analogue of exact chiral symmetry: under a modified chiral transformation, the action is invariant. Overlap fermions have exact topology, no additive mass renormalization, and clean chiral extrapolations. Cost: the matrix sign function requires hundreds of inner-product applications per Dirac solve, making overlap simulations 100-1000× more expensive than Wilson. They remain the gold standard for chiral physics where lower-cost approximations cannot be trusted.</p>",
+        "mathExpressions": [
+          "D_{\\text{ov}} = \\frac{1}{a}\\left(\\mathbb{1} + \\gamma_5\\, \\mathrm{sign}(H_W)\\right), \\quad H_W = \\gamma_5(D_W - m_0/a)",
+          "\\{D_{\\text{ov}}, \\gamma_5\\} = a\\, D_{\\text{ov}}\\, \\gamma_5\\, D_{\\text{ov}} \\quad \\text{(Ginsparg-Wilson)}",
+          "m_{\\text{res}}^{\\text{DWF}} \\propto e^{-\\alpha L_5} \\xrightarrow{L_5 \\to \\infty} 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q17", "lqft-q18", "lqft-q19", "lqft-q20", "lqft-q21", "lqft-q22", "lqft-q23", "lqft-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "lqft-04",
+    "topicId": "physics-lattice-qft",
+    "order": 4,
+    "title": "Monte Carlo, Hybrid MC, and the Sign Problem",
+    "description": "Importance sampling, the leapfrog HMC update, autocorrelation, and why finite chemical potential is still intractable",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "lqft-04-c1",
+        "title": "Importance Sampling and Markov-Chain Monte Carlo",
+        "contentHtml": "<p>For a 16⁴ lattice with SU(3) link variables, the path integral is roughly a <code>10⁶</code>-dimensional ordinary integral over the SU(3) manifold. No quadrature scheme survives this; only stochastic estimation does. The basic identity is <strong>importance sampling</strong>: choose a Markov chain whose stationary distribution is the Boltzmann weight <code>p[U] = e^{-S[U]}/Z</code>, evolve it, and average observables along the chain.</p><p>The Metropolis–Hastings acceptance, applied site-by-site or link-by-link, is the original prescription. Update <code>U → U'</code>; accept with probability <code>min(1, e^{-(S[U'] - S[U])})</code>. <strong>Detailed balance</strong> guarantees that the equilibrium distribution is exactly <code>e^{-S}</code>. <strong>Ergodicity</strong> guarantees the chain visits every configuration with the right frequency.</p><p>The catch is integrating out fermions. The fermion determinant <code>det M[U]</code> is a 'pseudofermion' factor that, after integrating out <code>ψ, ψ̄</code>, multiplies the gauge weight: <code>p[U] ∝ det M[U] e^{-S_g[U]}</code>. Computing <code>det M</code> for a million-by-million sparse matrix is the dominant cost of any modern lattice simulation. Pure Metropolis updates on dense fermion determinants are hopeless — and this is what motivated Hybrid Monte Carlo.</p>",
+        "mathExpressions": [
+          "\\langle \\mathcal{O}\\rangle = \\frac{1}{Z}\\int \\mathcal{D}U\\, \\mathcal{O}[U]\\, e^{-S[U]} \\approx \\frac{1}{N}\\sum_{i=1}^{N} \\mathcal{O}[U^{(i)}]",
+          "P_{\\text{accept}}(U \\to U') = \\min\\left(1,\\, e^{-(S[U'] - S[U])}\\right)",
+          "Z_{\\text{full}} = \\int \\mathcal{D}U\\, \\det M[U]\\, e^{-S_g[U]} = \\int \\mathcal{D}U \\mathcal{D}\\phi^* \\mathcal{D}\\phi\\, e^{-S_g[U] - \\phi^\\dagger (M^\\dagger M)^{-1}\\phi}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-04-c2",
+        "title": "Hybrid Monte Carlo: The Standard Algorithm",
+        "contentHtml": "<p><strong>Hybrid Monte Carlo</strong> (Duane, Kennedy, Pendleton, Roweth 1987) is the universally adopted algorithm for dynamical fermion simulations. Introduce auxiliary momenta <code>π</code> conjugate to the link variables and a fictitious Hamiltonian <code>H[U, π] = ½ Σ Tr π² + S_{eff}[U]</code>, where <code>S_{eff}</code> includes the gauge action and the pseudofermion bilinear <code>φ^†(M^†M)^{-1}φ</code>. The chain proceeds in three steps.</p><p><strong>(1) Refresh momenta</strong> from a Gaussian distribution <code>e^{-π²/2}</code>. <strong>(2) Molecular dynamics</strong>: evolve <code>(U, π)</code> for time <code>τ</code> by a symplectic integrator (leapfrog or higher-order Omelyan), preserving the symplectic 2-form and <em>nearly</em> conserving <code>H</code>. <strong>(3) Metropolis accept/reject</strong> with <code>min(1, e^{-ΔH})</code>: a perfect integrator gives <code>ΔH = 0</code> and 100% acceptance; a finite step size gives small <code>ΔH</code> errors that are corrected by the Metropolis step, yielding a chain with <em>exact</em> stationary distribution <code>e^{-S}</code>.</p><p>The Sexton–Weingarten multi-time-step trick separates cheap (gauge) and expensive (fermion) forces onto different timesteps. RHMC handles non-degenerate quark masses by writing <code>(det M)^{1/2}</code> as a rational approximation of <code>(M^†M)^{-1/4}</code>. Modern productions (CLS, BMW, RBC/UKQCD) run trajectories of length <code>τ ≈ 1-2</code> with acceptance ~80% on lattices up to 144⁴.</p>",
+        "mathExpressions": [
+          "H[U, \\pi] = \\tfrac{1}{2}\\sum_{x,\\mu} \\mathrm{Tr}\\,\\pi_\\mu(x)^2 + S_g[U] + \\phi^\\dagger (M^\\dagger M)^{-1}\\phi",
+          "\\dot{U}_\\mu = i\\pi_\\mu U_\\mu, \\quad \\dot{\\pi}_\\mu = -\\frac{\\delta S_{\\text{eff}}}{\\delta U_\\mu}\\bigg|_{\\text{traceless, anti-Hermitian}}",
+          "P_{\\text{accept}} = \\min\\left(1, e^{-\\Delta H}\\right), \\quad \\langle \\Delta H\\rangle \\to 0 \\text{ as } \\Delta\\tau \\to 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-04-c3",
+        "title": "Autocorrelation, Topology Freezing, and the Sign Problem",
+        "contentHtml": "<p>HMC produces a <em>correlated</em> sequence. The integrated autocorrelation time <code>τ_int(O)</code> measures how many trajectories pass before the observable <code>O</code> decorrelates, and the <strong>effective number of independent samples</strong> is <code>N_{eff} = N_{traj}/(2τ_{int})</code>. Statistical errors scale as <code>1/√N_{eff}</code>, so a critical-slowing-down problem can be devastating.</p><p>The notorious example is <strong>topological freezing</strong>: the topological charge <code>Q = (1/32π²) ∫ Tr F F̃</code> exhibits <code>τ_int ∝ a^{-5}</code> as <code>a → 0</code>, because changing <code>Q</code> requires the gauge field to traverse a barrier whose height grows. At <code>a ≲ 0.05</code> fm, <code>Q</code> can stay fixed for thousands of trajectories, biasing observables. Open boundary conditions (Lüscher–Schaefer 2011) and metadynamics-flavored algorithms have partially addressed this; it remains the leading systematic for fine-spacing ensembles.</p><p>The deeper algorithmic wall is the <strong>sign problem</strong>. At nonzero quark chemical potential <code>μ</code>, the Dirac matrix loses its <code>γ_5</code>-Hermiticity property and <code>det M[U, μ]</code> becomes complex. The Boltzmann weight <code>e^{-S_g} det M</code> is no longer positive — it cannot be sampled by any local Markov chain in polynomial time. This blocks first-principles study of <strong>cold dense QCD</strong>: neutron-star equations of state, the QCD critical endpoint, color superconductivity. Reweighting, Taylor expansion in <code>μ</code>, imaginary-<code>μ</code> analytic continuation, and complex Langevin all extend the reach modestly. A general solution would qualify as algorithmically transformative; it is widely believed to be NP-hard (Troyer–Wiese 2005).</p>",
+        "mathExpressions": [
+          "\\tau_{\\text{int}}(\\mathcal{O}) = \\tfrac{1}{2} + \\sum_{t=1}^{\\infty} \\rho_{\\mathcal{O}}(t), \\quad \\rho_{\\mathcal{O}}(t) = \\frac{\\langle \\mathcal{O}_i \\mathcal{O}_{i+t}\\rangle - \\langle\\mathcal{O}\\rangle^2}{\\langle\\mathcal{O}^2\\rangle - \\langle\\mathcal{O}\\rangle^2}",
+          "\\tau_{\\text{int}}(Q) \\propto a^{-5} \\quad \\text{(topological freezing)}",
+          "\\det M[U, \\mu] \\in \\mathbb{C} \\implies \\text{sign problem at } \\mu \\neq 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q25", "lqft-q26", "lqft-q27", "lqft-q28", "lqft-q29", "lqft-q30", "lqft-q31", "lqft-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "lqft-05",
+    "topicId": "physics-lattice-qft",
+    "order": 5,
+    "title": "The Continuum Limit and Renormalization on the Lattice",
+    "description": "Asymptotic freedom as the road to a → 0, scale setting, and matching lattice schemes to MS-bar",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "lqft-05-c1",
+        "title": "Asymptotic Freedom and the UV Fixed Point",
+        "contentHtml": "<p>Renormalization on the lattice has an unusual character: the bare coupling <code>g_0(a)</code> is the coupling that appears in <code>β = 6/g_0²</code> (for SU(3)), and the continuum limit corresponds to <code>g_0 → 0</code>, i.e. <code>β → ∞</code>. The two-loop QCD beta function <code>β(g_0) = -b_0 g_0³ - b_1 g_0⁵ + …</code> with <code>b_0 = (11N - 2N_f)/(48π²) > 0</code> guarantees this: as <code>a → 0</code>, asymptotic freedom drives <code>g_0</code> to zero. The continuum limit is a <strong>UV-attractive Gaussian fixed point</strong>.</p><p>Inverting the RG equation gives the lattice spacing as a function of bare coupling: <code>a Λ_L = (b_0 g_0²)^{-b_1/(2b_0²)} exp(-1/(2b_0 g_0²)) [1 + O(g_0²)]</code>. This is the famous <strong>two-loop scaling</strong> formula, identical in form to <code>Λ_{QCD}</code>'s definition in the continuum, with a numerical scheme conversion <code>Λ_{MS} / Λ_L ≈ 28.8</code> for SU(3). It tells you exactly how <code>a</code> shrinks as you crank up <code>β</code>.</p><p>Modern productions take 4-5 values of <code>β</code>, corresponding to <code>a ≈ 0.05-0.12 fm</code>, and extrapolate observables to <code>a → 0</code>. With Wilson fermions the leading error is <code>O(a)</code> (or <code>O(a²)</code> after clover improvement). With staggered or chiral fermions the leading error is already <code>O(a²)</code>. The functional form of the extrapolation is dictated by Symanzik effective theory; deviations from it would signal an artifact, not new physics.</p>",
+        "mathExpressions": [
+          "\\beta(g_0) = -b_0 g_0^3 - b_1 g_0^5 + \\mathcal{O}(g_0^7), \\quad b_0 = \\frac{11N - 2N_f}{48\\pi^2}",
+          "a\\Lambda_L = \\left(b_0 g_0^2\\right)^{-b_1/(2b_0^2)} e^{-1/(2b_0 g_0^2)}\\left[1 + \\mathcal{O}(g_0^2)\\right]",
+          "\\mathcal{O}(a) = \\mathcal{O}^{\\text{cont}} + c_1 a + c_2 a^2 + \\ldots \\xrightarrow{a\\to 0} \\mathcal{O}^{\\text{cont}}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-05-c2",
+        "title": "Setting the Scale: Sommer Parameter and Gradient Flow",
+        "contentHtml": "<p>The lattice gives dimensionless ratios. To convert <code>m_p a</code> into <code>m_p</code> in MeV one needs an absolute scale. The first wave used <code>m_ρ</code> or <code>f_π</code>, but those are ill-defined or noisy. Sommer's <code>r_0</code> parameter (1993) extracts a length from the static quark potential by demanding <code>r² F(r)|_{r=r_0} = 1.65</code>, giving <code>r_0 ≈ 0.49 fm</code>. It's clean because the heavy-quark potential has small statistical noise. <code>r_1</code> uses <code>r²F(r) = 1.0</code> and gives <code>r_1 ≈ 0.31 fm</code>.</p><p>Lüscher's <strong>gradient flow</strong> (Yang–Mills flow, 2010) is the modern standard. Evolve <code>U_μ(x)</code> by <code>∂_t U_μ = -g_0² (∂_{x,μ} S_W) U_μ</code> in a fictitious flow time <code>t</code>. Define <code>t_0</code> by <code>t² ⟨E(t)⟩ |_{t=t_0} = 0.3</code>, where <code>E</code> is the Yang–Mills action density. The result is a precise length <code>√(8t_0) ≈ 0.41 fm</code> with very small statistical error and clean continuum extrapolation. Flow methods now anchor virtually all FLAG averages.</p><p>Different scale-setting choices must agree at the percent level once continuum-extrapolated and chiral-extrapolated. Disagreements among them have, in the past, exposed unrecognized systematics in fermion actions or chiral fits — a healthy methodological feedback loop. The 'Edinburgh plot' showing <code>m_N/m_Δ vs m_π/m_ρ</code> uses such ratios to compare ensembles at different lattice spacings at a glance.</p>",
+        "mathExpressions": [
+          "r_0^2\\, F(r_0) = 1.65 \\implies r_0 \\approx 0.49\\,\\text{fm}",
+          "\\partial_t B_\\mu = D_\\nu G_{\\nu\\mu}, \\quad B_\\mu(t=0) = A_\\mu",
+          "t^2\\,\\langle E(t)\\rangle\\big|_{t=t_0} = 0.3 \\implies \\sqrt{8 t_0} \\approx 0.41\\,\\text{fm}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-05-c3",
+        "title": "Matching Lattice to MS-bar",
+        "contentHtml": "<p>Most theoretical results are quoted in the <strong>MS-bar scheme</strong> at scale <code>μ = 2 GeV</code> (or <code>m_b</code> for heavy-flavor). To compare lattice computations against, say, the Wilson coefficients of the SMEFT or perturbative QCD predictions, one must <strong>match</strong> bare lattice operators to renormalized continuum operators. The matching is a multiplicative renormalization (operator-mixing matrix in general) of the form <code>O_R^{\\overline{MS}}(μ) = Z_O^{lat \\to \\overline{MS}}(g_0, μa) O_{bare}^{lat}(a)</code>.</p><p>Two strategies dominate. <strong>Lattice perturbation theory</strong> (Sharpe, Lepage–Mackenzie tadpole improvement) computes <code>Z</code> in a power series in <code>g_0²</code>; convergence is poor without re-summation of tadpoles. <strong>Nonperturbative renormalization</strong> in the RI/MOM or RI/SMOM schemes, originated by Martinelli et al. (1995), measures <code>Z</code> by imposing a renormalization condition on a quark Green's function at fixed momentum, then converts to MS-bar by continuum perturbation theory. The schemes have been refined to RI/SMOM (symmetric-momentum subtraction) for cleaner perturbative behavior.</p><p>The state of the art combines: nonperturbative RI/SMOM at multiple scales, step-scaling to evolve to the matching scale, and continuum perturbation theory only for the final RI → MS conversion. <strong>FLAG</strong> (Flavour Lattice Averaging Group) compiles world averages of <code>m_q</code>, <code>α_s</code>, <code>f_π</code>, <code>f_K</code>, <code>B_K</code>, and <code>V_{CKM}</code> elements, currently quoting <code>α_s(M_Z) = 0.1184(8)</code> and <code>m_s^{\\overline{MS}}(2 GeV) = 93.4(8)</code> MeV — both lattice-dominated.</p>",
+        "mathExpressions": [
+          "\\mathcal{O}_R^{\\overline{MS}}(\\mu) = Z_{\\mathcal{O}}^{\\text{lat}\\to\\overline{MS}}(g_0, \\mu a)\\, \\mathcal{O}_{\\text{bare}}^{\\text{lat}}(a)",
+          "Z_q^{\\text{RI/MOM}}(\\mu) = \\frac{1}{12}\\,\\mathrm{Tr}\\left[\\Lambda_q(p)\\,\\Lambda_q^{\\text{tree}}(p)^{-1}\\right]_{p^2 = \\mu^2}",
+          "\\alpha_s^{\\overline{MS}}(M_Z) = 0.1184 \\pm 0.0008 \\quad \\text{(FLAG 2024 lattice average)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q33", "lqft-q34", "lqft-q35", "lqft-q36", "lqft-q37", "lqft-q38", "lqft-q39", "lqft-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "lqft-06",
+    "topicId": "physics-lattice-qft",
+    "order": 6,
+    "title": "Hadron Spectroscopy: The Proton Mass from First Principles",
+    "description": "Two-point functions, BMW 2008, and where the modern light-hadron spectrum stands",
+    "xpReward": 190,
+    "concepts": [
+      {
+        "id": "lqft-06-c1",
+        "title": "Two-Point Functions and the Effective Mass Plateau",
+        "contentHtml": "<p>To extract a hadron mass, build an interpolating operator <code>O_H(x)</code> with the quantum numbers of the state: <code>O_π = ūγ_5 d</code> for the pion, <code>O_p = ε_{abc}(u_a^T C γ_5 d_b) u_c</code> for the proton. The Euclidean two-point function at zero spatial momentum <code>C(t) = ⟨O_H(t) O_H^†(0)⟩ = Σ_n |⟨0|O_H|n⟩|² e^{-E_n t}</code> is dominated at large <code>t</code> by the lightest state <code>|H⟩</code> with those quantum numbers: <code>C(t) → A e^{-m_H t}</code>.</p><p>The <strong>effective mass</strong> <code>m_{eff}(t) = log[C(t)/C(t+1)]</code> ought to plateau at <code>m_H</code> for <code>t</code> large enough that excited states have decayed but small enough that statistical noise (which grows as <code>e^{(m_H - m_{1/2}) t}</code> for baryons by the Lepage argument) hasn't drowned the signal. Identifying a clean plateau is the foundational craft of lattice spectroscopy.</p><p>Smearing the source and sink (Wuppertal, Gaussian, Jacobi) projects more efficiently onto the ground state, shortening the required time extent. <strong>Variational</strong> methods diagonalize a matrix of correlators built from a basis of operators (GEVP — generalized eigenvalue problem, Lüscher–Wolff) to extract excited states cleanly. With these tools modern simulations resolve the lowest 5-10 states in each isospin/parity channel.</p>",
+        "mathExpressions": [
+          "C_H(t) = \\langle 0 | \\mathcal{O}_H(t)\\, \\mathcal{O}_H^\\dagger(0) | 0 \\rangle = \\sum_n |\\langle 0|\\mathcal{O}_H|n\\rangle|^2\\, e^{-E_n t}",
+          "m_{\\text{eff}}(t) = \\log\\frac{C_H(t)}{C_H(t+1)} \\xrightarrow{t \\gg 0} m_H",
+          "\\mathrm{NoiseToSignal}(t) \\propto e^{(m_H - \\frac{3}{2}m_\\pi) t} \\quad \\text{(baryons; Lepage)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-06-c2",
+        "title": "The BMW 2008 Result: The Proton Mass to 4%",
+        "contentHtml": "<p>The Budapest–Marseille–Wuppertal collaboration's 2008 <em>Science</em> paper (Dürr, Fodor, Frison, Hoelbling, Hoffmann, Katz, Krieg, Kurth, Lellouch, Lippert, Szabo, Vulvert) was the first <strong>fully controlled</strong> ab-initio computation of the light-hadron spectrum. They simulated <code>N_f = 2+1</code> tree-level Symanzik-improved Wilson fermions on stout-smeared gauge ensembles, with three lattice spacings (<code>a ≈ 0.065, 0.085, 0.125 fm</code>), pion masses down to ~190 MeV, and box sizes <code>L m_π ≥ 4</code>.</p><p>They set the scale with <code>Ξ</code>, <code>Ω</code>, and <code>m_π/f_π</code>; extrapolated continuum, infinite-volume, and physical-pion-mass; and reported <code>m_p = 936(25) MeV</code>, <code>m_N = 953(29)</code>, <code>m_Δ = 1248(97)</code>, <code>m_Ω = 1670(20)</code> — all consistent with experiment, with all systematics accounted for and quoted. <strong>This was the moment lattice QCD became a precision science.</strong> A theory of the strong interaction written in 1973 (Gross, Wilczek, Politzer) had finally produced numbers from first principles agreeing with the proton at the 4% level using nothing but quark masses and the lattice spacing as input.</p><p>Most of the proton's mass is not from quark masses — even setting <code>m_u = m_d = 0</code> changes <code>m_p</code> by only ~10 MeV. The dominant contribution is the gluon-field energy associated with chiral symmetry breaking, the <strong>QCD trace anomaly</strong> <code>⟨T_μ^μ⟩ = (β(g)/2g) Tr F²</code>. Lattice QCD is the only tool that calculates this directly.</p>",
+        "mathExpressions": [
+          "m_p^{\\text{BMW 2008}} = 936(25)\\,\\text{MeV} \\quad \\text{vs.} \\quad m_p^{\\text{exp}} = 938.272\\,\\text{MeV}",
+          "m_p \\langle p | T_\\mu^\\mu | p\\rangle = m_p^2, \\quad T_\\mu^\\mu = \\frac{\\beta(g)}{2g}\\,\\mathrm{Tr}\\,F_{\\mu\\nu}F^{\\mu\\nu} + (1+\\gamma_m)\\sum_q m_q \\bar{q}q",
+          "\\Delta m_p^{\\text{QED+m_u-m_d}} = m_n - m_p = 1.51(16)(23)\\,\\text{MeV} \\quad \\text{(BMW 2015)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-06-c3",
+        "title": "Modern Precision: FLAG, Resonances, and the Muon g-2",
+        "contentHtml": "<p>Sixteen years on, the light-hadron sector is post-1% precision for masses. <strong>FLAG 2024</strong> averages give <code>f_π = 130.2(8)</code> MeV, <code>f_K = 155.7(7)</code> MeV, the <code>K → πℓν</code> form factor <code>f_+(0) = 0.9698(17)</code> determining <code>|V_{us}|</code>, and <code>B_K = 0.7625(97)</code> for kaon mixing. Charm and bottom are similar: <code>f_{D_s} = 249.9(5)</code> MeV, <code>f_{B_s} = 230.3(1.3)</code> MeV. Each of these enters the standard CKM unitarity triangle fit at experimental precision.</p><p>Resonances and scattering require Lüscher's finite-volume formalism: an avoided level-crossing between two-particle states in a finite box encodes the elastic scattering phase shift <code>δ(E)</code>. The <code>ρ → ππ</code>, <code>K* → Kπ</code>, and recently the <code>σ(500)</code> have all been computed; coupled-channel <code>ππ - KK̄</code> systems and three-body resonances (the <code>a₁(1260)</code>, <code>Roper N(1440)</code>) are active frontier problems.</p><p>The headline current application is the <strong>muon anomalous magnetic moment</strong>. The hadronic vacuum polarization (HVP), the dominant theory uncertainty in <code>g_μ - 2</code>, has been computed by BMW (2020 lattice intermediate window), CMD-3, Mainz/CLS, RBC/UKQCD, and ETMC. BMW's <code>a_μ^{HVP, LO} = 707.5(5.5) × 10^{-10}</code> agrees with the experimental Fermilab/BNL combined <code>a_μ</code> within ~1.5σ — pulling the Standard Model into agreement, while <code>R</code>-ratio (<code>e^+e^- → hadrons</code>) determinations show ~4σ tension with experiment. Resolving this is one of the central <strong>2025 lattice QCD priorities</strong>.</p>",
+        "mathExpressions": [
+          "f_\\pi = 130.2(8)\\,\\text{MeV}, \\quad f_K = 155.7(7)\\,\\text{MeV}, \\quad B_K^{\\overline{MS}}(2\\,\\text{GeV}) = 0.7625(97)",
+          "\\det\\!\\left[\\cot\\delta(k) + \\cot\\phi^{P}(k, L)\\right] = 0 \\quad \\text{(L\\\"uscher quantization)}",
+          "a_\\mu^{\\text{HVP, LO}}|_{\\text{BMW 2020}} = 707.5(5.5)\\times 10^{-10}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q41", "lqft-q42", "lqft-q43", "lqft-q44", "lqft-q45", "lqft-q46", "lqft-q47", "lqft-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "lqft-07",
+    "topicId": "physics-lattice-qft",
+    "order": 7,
+    "title": "Frontiers: Finite Temperature, BSM, and Exascale Computing",
+    "description": "QCD thermodynamics, beyond-Standard-Model lattice studies, and the software stack of modern lattice QCD",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "lqft-07-c1",
+        "title": "Lattice QCD at Finite Temperature and Chiral Perturbation Theory",
+        "contentHtml": "<p>Imaginary time as inverse temperature (<code>β = 1/T</code>) — the Tier-3 lesson — is realized by simulating on lattices with anisotropic geometry <code>N_τ × N_s³</code>, with <code>T = 1/(a N_τ)</code>. At physical quark masses, the QCD <strong>chiral crossover</strong> happens at <code>T_c ≈ 156.5(1.5) MeV</code> (HotQCD, Wuppertal–Budapest 2019, agreement at ~1%). It is a smooth crossover, not a phase transition — the chiral condensate's inflection point and susceptibility peak define <code>T_c</code> operationally.</p><p>Equation of state, transport coefficients (shear and bulk viscosity), and the QCD trace anomaly across the crossover are inputs to heavy-ion phenomenology at RHIC and the LHC. <strong>η/s</strong> at <code>T = 2 T_c</code> from lattice (with much labor extracting spectral functions from Euclidean correlators via Bayesian methods) is in the right ballpark of the <code>1/4π</code> AdS/CFT bound, supporting the 'perfect liquid' picture of the quark–gluon plasma.</p><p>For chiral physics, lattice QCD pairs naturally with <strong>chiral perturbation theory</strong> (ChPT). Compute correlators at unphysically heavy pion masses, then extrapolate to <code>m_π^{phys}</code> using ChPT's known functional forms — partially-quenched or rooted-staggered ChPT for the relevant action. Low-energy constants <code>L_i, l_i</code> are extracted with sub-percent precision, providing inputs to nuclear physics (chiral EFT for nuclei) that no other method can supply. The lattice + ChPT combination is now the standard pipeline for kaon physics, B → π form factors, and nuclear matrix elements relevant to <code>0νββ</code> decay.</p>",
+        "mathExpressions": [
+          "T = \\frac{1}{a N_\\tau}, \\quad N_\\tau \\in \\{8, 12, 16, 20, \\ldots\\}",
+          "T_c^{\\chi}|_{\\text{HotQCD 2019}} = 156.5(1.5)\\,\\text{MeV}",
+          "F_\\pi(m_\\pi^2) = f\\left[1 - \\frac{m_\\pi^2}{(4\\pi f)^2}\\log\\frac{m_\\pi^2}{\\mu^2} + \\bar{l}_4\\frac{m_\\pi^2}{(4\\pi f)^2} + \\ldots\\right]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-07-c2",
+        "title": "Beyond-the-Standard-Model Lattice Studies",
+        "contentHtml": "<p>The lattice's most ambitious frontier is using its <em>nonperturbative</em> machinery on theories beyond QCD. <strong>Composite Higgs / walking technicolor</strong> models replace the elementary Higgs with a strongly-coupled gauge sector whose spectrum should look 'walking' — many-flavor or higher-representation gauge theories with near-conformal infrared behavior. The Lattice Strong Dynamics (LSD) and TACoS collaborations have studied SU(3) with <code>N_f = 8, 10, 12</code> fundamental fermions and SU(2) with sextet fermions, mapping the conformal window edge.</p><p><strong>Supersymmetric gauge theories</strong> on the lattice are exotic — supersymmetry is broken by discretization at all but a handful of theories with twisted compactifications (orbifold-lattice, BMN matrix model). <strong>𝒩=4 super Yang-Mills</strong> on the lattice (Catterall, Schaich) is a serious testing ground for AdS/CFT predictions about <code>⟨W(C)⟩</code> at strong coupling and is a rare, controlled nonperturbative check on holography.</p><p>For Standard Model precision, <strong>nucleon matrix elements</strong> for new-physics searches are central: <code>⟨N | ūΓd | N⟩</code> for <code>0νββ</code> decay (probing Majorana neutrinos), <code>⟨N | s̄s | N⟩</code> for the spin-independent dark-matter cross section, <code>g_A</code> the axial coupling. The CalLat collaboration's <code>g_A = 1.271(13)</code> is at sub-percent precision, agreeing with the experimental value and feeding directly into solar-neutrino and reactor-antineutrino flux predictions. <strong>Without lattice nucleon ME, dark-matter direct-detection limits would have unquantifiable theory uncertainty.</strong></p>",
+        "mathExpressions": [
+          "\\beta(g_*) = 0,\\; \\gamma_m(g_*) \\neq 0 \\quad \\text{(IR fixed point } \\Leftrightarrow \\text{ conformal window)}",
+          "g_A^{\\text{CalLat 2018}} = 1.271(13) \\quad \\text{vs.} \\quad g_A^{\\text{exp}} = 1.2754(13)",
+          "M_{0\\nu\\beta\\beta} = \\langle ^{76}\\text{Se} | \\mathcal{O}_{\\text{LNV}} | ^{76}\\text{Ge} \\rangle \\quad \\text{(emerging lattice frontier)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "lqft-07-c3",
+        "title": "The Software Stack: CHROMA, Grid, QUDA, and Exascale",
+        "contentHtml": "<p>A modern <code>96⁴</code> ensemble with physical-mass domain-wall fermions costs <code>O(10^9)</code> core-hours. The performance-critical kernel is the sparse Dirac solve <code>D ψ = b</code>, dominated by the stencil <code>γ_μ U_μ(x) ψ(x ± μ̂)</code>. Three software pillars dominate the field. <strong>CHROMA</strong> (Edwards, Joó) is the USQCD-supported C++ framework with QDP/QDP++ data-parallel layers, the historical workhorse for production. <strong>Grid</strong> (Boyle) is a modern C++14 expression-template library exploiting SIMD vectorization (AVX-512, ARM SVE, NVIDIA Tensor Cores) and asynchronous halo exchange — now the default on Frontier, Aurora, and LUMI. <strong>QUDA</strong> (Clark, Babich) is the GPU-accelerated solver library underlying every NVIDIA-based lattice code today, with hand-tuned mixed-precision multi-grid achieving 80%+ of peak.</p><p>Solver innovations have been as important as hardware. <strong>Multigrid</strong> (Brannick, Brower, Clark, Strelchenko) reduces the iteration count of light-quark Dirac inversions from <code>O(10⁴)</code> to <code>O(50)</code> at physical pion mass, a 100× speedup that turned physical-point simulations from impossible to routine. Deflation, eigCG, low-mode averaging, and stochastic sources for disconnected diagrams are layered atop.</p><p>The 2022-25 Exascale era — Frontier (Oak Ridge, 1.7 EF), Aurora (Argonne, 2 EF), El Capitan (Livermore, 2.7 EF) — is enabling <code>(96 fm)³ × 192</code> ensembles at <code>a ≈ 0.05 fm</code> with physical pions. The next wave (BSM precision, lattice + ML for spectral reconstruction, real-time tensor-network methods bypassing the sign problem at small <code>μ</code>) is the active research front. Lattice QCD is among the largest consumers of US DOE leadership-class computing — and arguably its most precisely benchmarked.</p>",
+        "mathExpressions": [
+          "\\text{Dirac stencil cost} = N_{\\text{site}} \\times N_{\\text{spin}} \\times N_{\\text{color}} \\times 8 \\text{ neighbors} \\times \\text{flop/site}",
+          "(D_W \\psi)(x) = (4r + m)\\psi(x) - \\frac{1}{2}\\sum_{\\pm\\mu}(r - \\gamma_\\mu)\\, U_{\\pm\\mu}(x)\\, \\psi(x \\pm a\\hat{\\mu})",
+          "\\text{Cost}(96^3 \\times 192,\\; m_\\pi^{\\text{phys}}) \\sim 10^9\\,\\text{core-hr} \\sim 1\\,\\text{day on Frontier}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["lqft-q49", "lqft-q50", "lqft-q51", "lqft-q52", "lqft-q53", "lqft-q54", "lqft-q55", "lqft-q56"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,357 @@
+@page "/topic/{TopicId}/run"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject IRunService Run
+@inject IGamificationService Gamification
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to topic" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">Topic Run</h1>
+</div>
+
+@if (topic == null)
+{
+    <div class="loading">Loading...</div>
+}
+else if (state == ViewState.Picker)
+{
+    <div class="run-picker">
+        <div class="run-intro card">
+            <div class="run-intro-icon" style="background: @(topic?.Color ?? "var(--primary)")"><Icon Name="sword" Size="28" /></div>
+            <h2>Begin a Run</h2>
+            <p>8 floors. 3 lives. Pick one Artifact to carry. Slay the boss to earn a Run Seal.</p>
+            <div class="run-rules">
+                <div><Icon Name="heart" Size="14" /> Wrong answer = -1 life</div>
+                <div><Icon Name="bolt" Size="14" /> Boss = 3 mastery questions in a row</div>
+                <div><Icon Name="x-mark" Size="14" /> 0 lives = run ends, no rewards</div>
+            </div>
+        </div>
+
+        <h3 style="margin: 20px 0 10px">Choose your Artifact</h3>
+        <div class="artifact-grid">
+            @foreach (var a in offered)
+            {
+                var picked = chosenArtifactId == a.Id;
+                <div class="artifact-card @(picked ? "selected" : "")" @onclick="() => chosenArtifactId = a.Id">
+                    <div class="artifact-icon"><Icon Name="@a.Icon" Size="22" /></div>
+                    <div class="artifact-text">
+                        <strong>@a.Name</strong>
+                        <small>@a.Description</small>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px"
+                disabled="@(chosenArtifactId == null)"
+                @onclick="BeginRun">
+            Begin Run
+        </button>
+    </div>
+}
+else if (state == ViewState.Map && run != null)
+{
+    <div class="run-status-bar">
+        <div class="run-lives">
+            @for (int i = 0; i < run.MaxLives; i++)
+            {
+                var filled = i < run.Lives;
+                <span class="life @(filled ? "filled" : "lost")"><Icon Name="heart" Size="16" /></span>
+            }
+        </div>
+        <div class="run-floor">Floor @(run.CurrentFloor + 1) / 8</div>
+        <button class="btn btn-sm btn-outline" @onclick="ConfirmAbandon">Abandon</button>
+    </div>
+
+    @if (run.ArtifactIds.Count > 0)
+    {
+        <div class="run-artifact-bar">
+            @foreach (var aid in run.ArtifactIds)
+            {
+                var art = allArtifacts?.FirstOrDefault(x => x.Id == aid);
+                if (art != null)
+                {
+                    <div class="run-artifact-chip" title="@art.Description">
+                        <Icon Name="@art.Icon" Size="14" /> @art.Name
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    <div class="run-map">
+        @for (int f = run.Map.Count - 1; f >= 0; f--)
+        {
+            var floor = run.Map[f];
+            var floorNum = f;
+            var isCurrent = floorNum == run.CurrentFloor;
+            var isPast = floorNum < run.CurrentFloor;
+            <div class="run-map-row @(isCurrent ? "current" : "") @(isPast ? "past" : "")">
+                <div class="run-map-row-label">@(f == 7 ? "BOSS" : $"F{f + 1}")</div>
+                <div class="run-map-nodes">
+                    @foreach (var node in floor)
+                    {
+                        var nodeRef = node;
+                        var isSelectable = isCurrent && !nodeRef.Visited;
+                        var typeClass = nodeRef.Type.ToString().ToLower();
+                        <button class="run-node @typeClass @(nodeRef.Visited ? "visited" : "") @(isSelectable ? "selectable" : "")"
+                                disabled="@(!isSelectable)"
+                                @onclick="() => EnterNode(nodeRef)">
+                            <Icon Name="@GetNodeIcon(nodeRef.Type)" Size="20" />
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else if (state == ViewState.Won && run != null)
+{
+    <div class="run-end-card card count-up">
+        <div class="run-end-badge win">
+            <Icon Name="crown" Size="32" />
+        </div>
+        <h2>Run Complete</h2>
+        <p>You defeated the @(topic?.Name ?? "topic") boss.</p>
+        <div class="results-stats stagger-in">
+            <div class="stat-card correct-stat"><span class="stat-number">@run.TotalCorrect</span><span class="stat-label">Correct</span></div>
+            <div class="stat-card wrong-stat"><span class="stat-number">@run.TotalWrong</span><span class="stat-label">Wrong</span></div>
+            <div class="stat-card score-stat"><span class="stat-number">+@finalXp</span><span class="stat-label">XP</span></div>
+        </div>
+        @if (newSeal)
+        {
+            <div class="run-seal-banner pulse">⊛ New Run Seal earned</div>
+        }
+        <div style="display: flex; gap: 10px; margin-top: 16px">
+            <button class="btn btn-primary" style="flex:1" @onclick="RestartFresh">Run Again</button>
+            <button class="btn btn-outline" style="flex:1" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Back to Topic</button>
+        </div>
+    </div>
+}
+else if (state == ViewState.Lost && run != null)
+{
+    <div class="run-end-card card count-up">
+        <div class="run-end-badge loss">
+            <Icon Name="x-mark" Size="32" />
+        </div>
+        <h2>Run Ended</h2>
+        <p>You fell on Floor @(run.CurrentFloor + 1). No rewards this time.</p>
+        <div class="results-stats stagger-in">
+            <div class="stat-card correct-stat"><span class="stat-number">@run.TotalCorrect</span><span class="stat-label">Correct</span></div>
+            <div class="stat-card wrong-stat"><span class="stat-number">@run.TotalWrong</span><span class="stat-label">Wrong</span></div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 16px">
+            <button class="btn btn-primary" style="flex:1" @onclick="RestartFresh">Try Again</button>
+            <button class="btn btn-outline" style="flex:1" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Back to Topic</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+
+    enum ViewState { Picker, Map, Won, Lost }
+
+    private Topic? topic;
+    private RunState? run;
+    private List<Artifact> offered = new();
+    private List<Artifact>? allArtifacts;
+    private string? chosenArtifactId;
+    private ViewState state = ViewState.Picker;
+    private int finalXp;
+    private bool newSeal;
+
+    [Inject] private IArtifactRepository ArtifactRepo { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        topic = await Content.GetTopicAsync(TopicId);
+        allArtifacts = await ArtifactRepo.GetArtifactsAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        run = await Run.GetActiveRunAsync(TopicId);
+        if (run == null)
+        {
+            offered = await Run.RollStartingArtifactsAsync(3);
+            state = ViewState.Picker;
+            StateHasChanged();
+            return;
+        }
+
+        if (run.Status == RunStatus.Active)
+        {
+            state = ViewState.Map;
+        }
+        else if (run.Status == RunStatus.Won)
+        {
+            state = ViewState.Won;
+            await AwardWinOnce();
+        }
+        else
+        {
+            state = ViewState.Lost;
+            await Run.AbandonRunAsync(TopicId); // clear so revisit goes to picker
+        }
+        StateHasChanged();
+    }
+
+    private async Task AwardWinOnce()
+    {
+        if (run == null || run.Status != RunStatus.Won) return;
+        var profile = await Progress.GetProfileAsync();
+        var hadSealBefore = profile.RunSeals.Contains(TopicId);
+        finalXp = await Run.AwardRunRewardsAsync(run);
+        await Gamification.AwardXpAsync(finalXp);
+        newSeal = !hadSealBefore;
+        // Clear the finished run from storage so a revisit doesn't re-award
+        await Run.AbandonRunAsync(TopicId);
+        await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
+        await JS.TryInvokeVoidAsync("Confetti.launch", 80);
+    }
+
+    private async Task BeginRun()
+    {
+        if (chosenArtifactId == null) return;
+        run = await Run.StartRunAsync(TopicId, new List<string> { chosenArtifactId });
+        state = ViewState.Map;
+    }
+
+    private void EnterNode(RunNode node)
+    {
+        Nav.NavigateTo($"/topic/{TopicId}/run/encounter/{node.Floor}/{node.Col}");
+    }
+
+    private async Task ConfirmAbandon()
+    {
+        var ok = await JS.InvokeAsync<bool>("confirm", "Abandon this run? Progress will be lost.");
+        if (!ok) return;
+        await Run.AbandonRunAsync(TopicId);
+        run = null;
+        offered = await Run.RollStartingArtifactsAsync(3);
+        chosenArtifactId = null;
+        state = ViewState.Picker;
+        StateHasChanged();
+    }
+
+    private async Task RestartFresh()
+    {
+        await Run.AbandonRunAsync(TopicId);
+        run = null;
+        offered = await Run.RollStartingArtifactsAsync(3);
+        chosenArtifactId = null;
+        state = ViewState.Picker;
+        StateHasChanged();
+    }
+
+    private string GetNodeIcon(RunNodeType t) => t switch {
+        RunNodeType.Boss => "crown",
+        RunNodeType.Elite => "shield",
+        _ => "sword"
+    };
+
+}
+
+<style>
+    .run-picker { max-width: 560px; margin: 0 auto; }
+
+    .run-intro { padding: 20px; text-align: center; }
+    .run-intro:hover { transform: none; }
+    .run-intro-icon {
+        width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 8px;
+        display: flex; align-items: center; justify-content: center; color: white;
+    }
+    .run-intro p { color: var(--text-secondary); margin: 8px 0 12px; }
+    .run-rules { display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+                 background: var(--bg-surface); border-radius: var(--radius-sm); padding: 10px 14px;
+                 font-size: 0.85rem; color: var(--text-secondary); }
+    .run-rules > div { display: flex; gap: 8px; align-items: center; }
+
+    .artifact-grid { display: flex; flex-direction: column; gap: 10px; }
+    .artifact-card {
+        display: flex; gap: 12px; align-items: flex-start;
+        padding: 12px 14px; border-radius: var(--radius-sm);
+        border: 2px solid var(--border); background: var(--bg-card);
+        cursor: pointer; transition: all 0.15s ease;
+    }
+    .artifact-card:hover { border-color: var(--primary); }
+    .artifact-card.selected { border-color: var(--primary); background: rgba(91,106,191,0.08); }
+    .artifact-icon {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: rgba(91,106,191,0.12); color: var(--primary);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .artifact-text strong { display: block; font-size: 0.95rem; }
+    .artifact-text small { color: var(--text-muted); font-size: 0.82rem; }
+
+    .run-status-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 14px; background: var(--bg-card); border-radius: var(--radius-sm);
+        margin-bottom: 12px; border: 1px solid var(--border);
+    }
+    .run-lives { display: flex; gap: 4px; }
+    .life.filled { color: #e63946; }
+    .life.lost { color: var(--text-muted); opacity: 0.4; }
+    .run-floor { font-weight: 700; font-size: 0.9rem; color: var(--text-secondary); }
+
+    .run-artifact-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .run-artifact-chip {
+        display: inline-flex; gap: 6px; align-items: center;
+        background: rgba(91,106,191,0.08); border: 1px solid rgba(91,106,191,0.2);
+        padding: 4px 10px; border-radius: 999px; font-size: 0.78rem;
+        color: var(--primary);
+    }
+
+    .run-map { display: flex; flex-direction: column; gap: 14px; max-width: 600px; margin: 0 auto; }
+    .run-map-row { display: flex; gap: 12px; align-items: center; opacity: 0.45; transition: opacity 0.2s ease; }
+    .run-map-row.current { opacity: 1; }
+    .run-map-row.past { opacity: 0.6; }
+    .run-map-row-label {
+        width: 36px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+        text-align: right; letter-spacing: 0.05em;
+    }
+    .run-map-nodes { flex: 1; display: flex; gap: 12px; justify-content: center; }
+    .run-node {
+        width: 48px; height: 48px; border-radius: 50%;
+        background: var(--bg-surface); border: 2px solid var(--border);
+        color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+        cursor: not-allowed; transition: all 0.15s ease;
+    }
+    .run-node.enemy { border-color: rgba(91,106,191,0.4); }
+    .run-node.elite { border-color: rgba(255,165,0,0.6); color: #ff9500; }
+    .run-node.boss { border-color: rgba(230,57,70,0.7); color: #e63946; width: 64px; height: 64px; }
+    .run-node.visited { opacity: 0.35; background: var(--bg-card); }
+    .run-node.selectable {
+        cursor: pointer; box-shadow: 0 0 0 0 rgba(91,106,191,0.5);
+        animation: pulseNode 1.6s ease-in-out infinite;
+    }
+    .run-node.selectable:hover { transform: scale(1.08); }
+    .run-node.boss.selectable { animation: pulseBoss 1.4s ease-in-out infinite; }
+    @@keyframes pulseNode {
+        0%,100% { box-shadow: 0 0 0 0 rgba(91,106,191,0.5); }
+        50% { box-shadow: 0 0 0 8px rgba(91,106,191,0); }
+    }
+    @@keyframes pulseBoss {
+        0%,100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.6); }
+        50% { box-shadow: 0 0 0 12px rgba(230,57,70,0); }
+    }
+
+    .run-end-card { text-align: center; padding: 24px; max-width: 500px; margin: 0 auto; }
+    .run-end-card:hover { transform: none; }
+    .run-end-badge {
+        width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 8px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .run-end-badge.win { background: linear-gradient(135deg, #FFD700, #FF6B35); color: white; }
+    .run-end-badge.loss { background: var(--bg-surface); color: var(--text-muted); }
+    .run-seal-banner {
+        margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,107,53,0.18));
+        font-weight: 700; color: #FFD700;
+    }
+</style>

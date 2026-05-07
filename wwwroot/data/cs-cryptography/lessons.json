@@ -1,0 +1,362 @@
+[
+  {
+    "id": "crypt-01",
+    "topicId": "cs-cryptography",
+    "order": 1,
+    "title": "Symmetric Crypto and AES Internals",
+    "description": "Block ciphers, the AES round function, and why AES-NI changed the game",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "crypt-01-c1",
+        "title": "Block Ciphers and the AES Round Function",
+        "contentHtml": "<p><strong>AES (Rijndael)</strong> is a substitution-permutation network operating on a 128-bit state arranged as a 4x4 matrix of bytes. AES-128, AES-192, and AES-256 differ only in key length and round count (10, 12, 14). Each round applies four operations: <strong>SubBytes</strong> (a fixed nonlinear S-box on each byte, derived from inversion in GF(2^8)), <strong>ShiftRows</strong> (a byte-level row rotation), <strong>MixColumns</strong> (a linear mix in GF(2^8) using the matrix [[2,3,1,1],[1,2,3,1],[1,1,2,3],[3,1,1,2]]), and <strong>AddRoundKey</strong> (XOR with the round-specific subkey).</p><p>The S-box is the only nonlinear component. Its design — affine transform of the multiplicative inverse in GF(2^8) — gives high <strong>differential</strong> and <strong>linear branch number</strong>, the metrics that quantify resistance to differential and linear cryptanalysis. The MixColumns matrix is MDS (maximum distance separable): a single byte change in input flips all four output bytes, propagating diffusion across the state.</p><p>AES has weathered 25+ years of cryptanalysis. The best known attack on AES-128 (biclique, 2011) reduces complexity to 2^126.1 — barely better than brute force. For practical purposes, AES is unbroken and likely will remain so until large quantum computers exist.</p>",
+        "mathExpressions": ["S(x) = A \\cdot x^{-1} + b \\quad \\text{where } x^{-1} \\in GF(2^8)", "\\text{MixColumns: } c(x) = (03x^3 + 01x^2 + 01x + 02) \\cdot s(x) \\bmod (x^4 + 1)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-01-c2",
+        "title": "Modes of Operation: ECB, CBC, CTR",
+        "contentHtml": "<p>A block cipher only encrypts one fixed-size block. To encrypt arbitrary data you need a <strong>mode of operation</strong>. <strong>ECB (Electronic Codebook)</strong> encrypts each block independently and is essentially never safe — identical plaintext blocks produce identical ciphertext blocks, leaking structure. The famous <em>ECB Penguin</em> image (Tux encrypted block-by-block, still visibly Tux) is the canonical visual proof.</p><p><strong>CBC (Cipher Block Chaining)</strong> XORs each plaintext block with the previous ciphertext before encrypting; an <strong>IV</strong> (initialization vector) seeds the first block. CBC requires PKCS#7 padding, which led directly to the <strong>padding oracle</strong> attack: if a server reveals whether decryption produced valid padding, an attacker can decrypt arbitrary ciphertext byte-by-byte. POODLE (2014) and Lucky Thirteen (2013) exploited this in TLS.</p><p><strong>CTR (Counter mode)</strong> encrypts a counter and XORs with the plaintext, turning a block cipher into a stream cipher. CTR is parallelizable, doesn't need padding, and decrypts as easily as it encrypts. Its critical fragility: <strong>nonce reuse</strong>. Encrypt two messages under the same (key, counter) pair and you've leaked the XOR of the plaintexts — game over. CTR by itself provides no integrity, which motivates AEAD modes.</p>",
+        "mathExpressions": ["\\text{CBC: } C_i = E_K(P_i \\oplus C_{i-1}), \\quad C_0 = IV", "\\text{CTR: } C_i = P_i \\oplus E_K(\\text{nonce} \\| i)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-01-c3",
+        "title": "AEAD: Authenticated Encryption with GCM and ChaCha20-Poly1305",
+        "contentHtml": "<p>Encryption alone protects confidentiality but not integrity. An attacker who flips ciphertext bits can produce arbitrary plaintext changes (CBC bit-flipping attacks, CTR direct XOR attacks). <strong>AEAD (Authenticated Encryption with Associated Data)</strong> binds encryption and authentication into one primitive that fails closed if either is tampered with.</p><p><strong>AES-GCM</strong> combines CTR-mode encryption with a GHASH MAC computed in GF(2^128). It's the dominant AEAD in TLS 1.3 thanks to AES-NI hardware acceleration: modern x86 cores hit 5+ GB/s. GCM's Achilles heel is <strong>nonce reuse</strong>. Reuse a (key, nonce) pair and you not only leak plaintext XORs but also the GHASH authentication key H = E_K(0). With H, an attacker forges arbitrary ciphertexts. Forbes/Joux's 2006 \"forbidden attack\" formalized this; the 2016 study found numerous TLS implementations using random 96-bit nonces and finding collisions in practice.</p><p><strong>ChaCha20-Poly1305</strong> is the alternative: a stream cipher (ChaCha20, ARX-based, 20 rounds) plus the Poly1305 one-time MAC. It's faster than AES on hardware without AES-NI (mobile, embedded), runs in constant time without lookup tables, and is the default on platforms like WireGuard and signal-protocol. Both AEADs are mandatory in TLS 1.3.</p>",
+        "mathExpressions": ["\\text{GHASH}(H, A, C) = \\sum_{i} X_i \\cdot H^{n-i+1} \\in GF(2^{128})", "\\text{Poly1305}(M, r, s) = (\\sum c_i r^{n-i+1}) \\bmod (2^{130} - 5) + s \\bmod 2^{128}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q01", "crypt-q02", "crypt-q03", "crypt-q04", "crypt-q05", "crypt-q06", "crypt-q07", "crypt-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-02",
+    "topicId": "cs-cryptography",
+    "order": 2,
+    "title": "RSA: Math, Padding, and Pitfalls",
+    "description": "Modular exponentiation, key generation, and why textbook RSA is broken",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "crypt-02-c1",
+        "title": "RSA Key Generation and the Math",
+        "contentHtml": "<p><strong>RSA</strong> rests on the assumed hardness of factoring large composite integers. Key generation: pick two large primes p and q (typically each 1024 or 1536 bits for a 2048- or 3072-bit modulus), compute n = pq, choose a public exponent e (almost always 65537 = 2^16+1), and compute the private exponent d = e^(-1) mod \\u03c6(n) where \\u03c6(n) = (p-1)(q-1) is Euler's totient.</p><p>Encryption: c = m^e mod n. Decryption: m = c^d mod n. The correctness follows from Euler's theorem: m^(ed) = m^(1 + k\\u03c6(n)) = m mod n for any m coprime to n. Decryption uses the <strong>Chinese Remainder Theorem (CRT)</strong> for a 4x speedup: compute m mod p and m mod q separately and recombine. CRT is so universal that virtually all RSA implementations use it — and so opens a gaping fault-injection attack: a single bit flip during one CRT branch lets an attacker recover p via gcd(c^d - m_faulty, n). Boneh-DeMillo-Lipton (1997) formalized this.</p><p>RSA's security rests entirely on factoring being hard. The current factoring record (RSA-250, factored 2020) is 829 bits using GNFS. 2048-bit RSA is estimated to need ~10^9 core-years on a classical computer; for now, well out of reach. A sufficiently large quantum computer running Shor's algorithm would break it in polynomial time.</p>",
+        "mathExpressions": ["c \\equiv m^e \\pmod{n}, \\quad m \\equiv c^d \\pmod{n}", "ed \\equiv 1 \\pmod{\\varphi(n)}, \\quad \\varphi(n) = (p-1)(q-1)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-02-c2",
+        "title": "Why Textbook RSA Is Broken: Padding and OAEP",
+        "contentHtml": "<p>RSA without padding (\"textbook RSA\") is catastrophically insecure. It's deterministic (the same plaintext always encrypts to the same ciphertext, leaking equality), malleable (c \\u00b7 r^e encrypts m \\u00b7 r), and vulnerable to the small-message attack (if m^e &lt; n, decryption is just integer e-th root of c). For any real use you need a randomized padding scheme.</p><p><strong>PKCS#1 v1.5 padding</strong> prepends 0x00 0x02 RND 0x00 to the message. It looks innocuous and is still widespread in legacy systems. <strong>Bleichenbacher's 1998 attack</strong> showed that any system that reveals (via timing or error messages) whether a decrypted ciphertext has valid PKCS#1 v1.5 padding becomes a decryption oracle. The attacker submits adaptive variants of the target ciphertext and uses the oracle's yes/no responses to narrow down the plaintext interval — recovering the message in roughly 2^20 oracle queries. Variants of this attack (ROBOT 2017, Bleichenbacher's CAT 2018) keep finding it in the wild — Citrix, F5, IBM, Cisco gear all leaked oracles via timing or distinct error codes.</p><p><strong>OAEP (Optimal Asymmetric Encryption Padding)</strong> uses a Feistel-like construction with two hash-based mask generation functions to randomize and bind the message. OAEP is provably secure in the random oracle model and is the modern choice. The lesson: never invent your own padding, never deploy PKCS#1 v1.5 in new code, and never let your decryption code distinguish padding-error from MAC-error in any side channel — including timing.</p>",
+        "mathExpressions": ["\\text{PKCS\\#1 v1.5: } 00 \\| 02 \\| \\text{RND}_{\\geq 8} \\| 00 \\| M", "\\text{OAEP: } X = M \\| 0^k \\oplus G(r), \\quad Y = r \\oplus H(X)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-02-c3",
+        "title": "Diffie-Hellman and the Discrete Log Problem",
+        "contentHtml": "<p><strong>Diffie-Hellman key exchange (1976)</strong> was the first published public-key construction. Two parties agree on a prime p and generator g of a large subgroup. Alice picks secret a, sends g^a mod p; Bob picks secret b, sends g^b mod p. Each computes the shared secret g^(ab) mod p. An eavesdropper sees g, g^a, g^b but cannot extract g^(ab) without solving the <strong>discrete logarithm problem (DLP)</strong>: given g^x mod p, recover x.</p><p>DLP is believed hard for prime-order groups of sufficient size. Best classical attack on prime-field DH is the <strong>General Number Field Sieve (GNFS)</strong>, with sub-exponential complexity exp(O((log p)^(1/3) (log log p)^(2/3))). For p of 2048 bits this is roughly 2^110 work. The catch: GNFS's expensive precomputation step depends only on p, not on x. The 2015 <strong>Logjam</strong> paper showed that nation-state attackers could plausibly precompute against the small set of 1024-bit primes hardcoded into every major TLS server, then break individual sessions cheaply. Logjam led directly to the deprecation of 1024-bit DH groups and the mandate for 2048+ bits or elliptic-curve DH.</p><p>DH provides forward secrecy when keys are <em>ephemeral</em> (DHE rather than static DH). Compromise of a long-term certificate doesn't reveal past session keys. This is the cornerstone of TLS 1.3, which mandates ephemeral key exchange.</p>",
+        "mathExpressions": ["A = g^a \\bmod p, \\quad B = g^b \\bmod p, \\quad K = g^{ab} \\bmod p", "\\text{GNFS: } L_p[1/3, c] = \\exp((c + o(1))(\\log p)^{1/3}(\\log\\log p)^{2/3})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q09", "crypt-q10", "crypt-q11", "crypt-q12", "crypt-q13", "crypt-q14", "crypt-q15", "crypt-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-03",
+    "topicId": "cs-cryptography",
+    "order": 3,
+    "title": "Elliptic Curve Cryptography",
+    "description": "Curves, group laws, ECDH, ECDSA, and Curve25519",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "crypt-03-c1",
+        "title": "Elliptic Curve Group Laws",
+        "contentHtml": "<p>An <strong>elliptic curve</strong> over a field K is defined by the short Weierstrass equation y^2 = x^3 + ax + b (with 4a^3 + 27b^2 \\u2260 0 to avoid singular points). The set of points on the curve, plus a point at infinity O, forms an <strong>abelian group</strong> under a geometric addition law: to add P and Q, draw the line through them, find the third intersection with the curve, and reflect across the x-axis.</p><p>Cryptographic curves work over the finite field GF(p) for some large prime p (or GF(2^m) historically), giving a finite group of order n. Scalar multiplication kP = P + P + ... + P (k times) is efficient via double-and-add. The <strong>Elliptic Curve Discrete Log Problem (ECDLP)</strong>: given P and kP, recover k. Unlike prime-field DLP, ECDLP has no sub-exponential attack. The best general attacks are Pollard's rho and Pohlig-Hellman, both O(\\u221an). This is why a 256-bit elliptic curve gives roughly 128-bit security — comparable to a 3072-bit RSA key but with vastly smaller keys, signatures, and faster operations.</p><p>The curve must be chosen carefully. Singular curves and curves with small embedding degree (MOV/Frey-R\\u00fcck attacks reduce ECDLP to easier prime-field DLP via pairings) are unsafe. Anomalous curves (where #E(GF(p)) = p) are catastrophically broken — Smart's attack (1999) solves them in linear time. NIST P-curves and SECG curves are vetted to avoid these traps but rely on unexplained \"random\" seed values, which fueled later distrust.</p>",
+        "mathExpressions": ["y^2 = x^3 + ax + b \\quad \\text{over } GF(p)", "\\lambda = \\frac{y_2 - y_1}{x_2 - x_1}, \\quad x_3 = \\lambda^2 - x_1 - x_2, \\quad y_3 = \\lambda(x_1 - x_3) - y_1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-03-c2",
+        "title": "ECDH, ECDSA, and Nonce Catastrophes",
+        "contentHtml": "<p><strong>ECDH</strong> is Diffie-Hellman over an elliptic curve group. Each party generates a private scalar d and public point Q = dG (G is the standard generator); the shared secret is d_A d_B G. With 256-bit curves (P-256, Curve25519) you get 128-bit security with 32-byte private keys and 32-64 byte public keys. ECDH is the default key agreement in TLS 1.3 and underpins Signal, WireGuard, SSH, and most modern protocols.</p><p><strong>ECDSA</strong> is the elliptic-curve digital signature algorithm. To sign m: pick random nonce k, compute R = kG and r = R_x mod n, then s = k^(-1)(H(m) + rd) mod n. The signature is (r, s). The k must be uniformly random and never reused. <strong>If you reuse k across two signatures</strong>, the private key falls out instantly: d = (s_1 H(m_2) - s_2 H(m_1)) / (r(s_2 - s_1)). This is the <strong>fail0verflow attack</strong> that broke Sony's PS3 (2010) — they used a constant k and signed firmware. Once k was extracted, the world had Sony's signing key and could ship arbitrary signed code. Bitcoin wallets have been drained by the same bug from broken RNGs.</p><p>Even biased — not just constant — k is exploitable. Lattice attacks (Howgrave-Graham-Smart, Bleichenbacher) recover the key from a few hundred signatures with k slightly biased toward 0. The defensive move is <strong>RFC 6979</strong>: deterministic k = HMAC(d, H(m)). Same input gives same k, but it's never predictable to an attacker without d. Ed25519 (next concept) bakes determinism in by design.</p>",
+        "mathExpressions": ["s = k^{-1}(H(m) + r d) \\bmod n", "d = \\frac{s_1 H(m_2) - s_2 H(m_1)}{r(s_2 - s_1)} \\bmod n \\quad \\text{(if } k \\text{ reused)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-03-c3",
+        "title": "Curve25519, Ed25519, and Clamping",
+        "contentHtml": "<p><strong>Curve25519</strong> (Bernstein, 2005) is a Montgomery curve y^2 = x^3 + 486662x^2 + x over GF(2^255 - 19). It was designed for safety and speed: prime field 2^255 - 19 is fast on 32-bit and 64-bit CPUs; the Montgomery ladder gives constant-time, branch-free scalar multiplication; the curve has cofactor 8 (not 1) which a careful protocol absorbs cleanly; and the parameters were chosen by transparent rules, not unexplained random seeds.</p><p>Curve25519 keys are <strong>clamped</strong>: before scalar multiplication, the bottom three bits of the scalar are zeroed (forcing it to be a multiple of 8, killing small-subgroup attacks) and bit 254 is set (forcing constant bit-length to defeat timing-based scalar leakage). Clamping is what makes the spec robust against careless implementations. The output is the x-coordinate only (a 32-byte string), which is enough for ECDH and avoids the y-coordinate bookkeeping.</p><p><strong>Ed25519</strong> is the matching signature scheme on the twisted Edwards curve birationally equivalent to Curve25519. It's deterministic (k is HMAC-derived from the private key and message), constant-time, collision-resistant against weak hash assumptions, and gives 64-byte signatures with 32-byte public keys. SSH, Signal, GitHub commit signing, and modern certificate authorities now default to Ed25519. It's the gold standard for new code: if you can pick the curve, pick this one.</p>",
+        "mathExpressions": ["E: y^2 = x^3 + 486662x^2 + x \\quad \\text{over } GF(2^{255} - 19)", "\\text{Ed25519: } R = rB, \\quad S = r + H(R \\| A \\| M) \\cdot s \\bmod \\ell"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q17", "crypt-q18", "crypt-q19", "crypt-q20", "crypt-q21", "crypt-q22", "crypt-q23", "crypt-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-04",
+    "topicId": "cs-cryptography",
+    "order": 4,
+    "title": "Hash Functions, MACs, and Length Extension",
+    "description": "SHA-2, SHA-3, HMAC, and the Merkle-Damgard pitfall",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "crypt-04-c1",
+        "title": "Cryptographic Hash Functions: SHA-2 and SHA-3",
+        "contentHtml": "<p>A <strong>cryptographic hash function</strong> H: {0,1}* \\u2192 {0,1}^n must satisfy three properties: <strong>preimage resistance</strong> (given y, hard to find x with H(x) = y, ~2^n work), <strong>second-preimage resistance</strong> (given x, hard to find x' \\u2260 x with H(x') = H(x), ~2^n work), and <strong>collision resistance</strong> (hard to find any x \\u2260 x' with H(x) = H(x'), ~2^(n/2) work by birthday bound). The birthday bound is why 256-bit hashes give only ~128-bit collision security.</p><p><strong>SHA-1</strong> (160-bit) was broken in 2017 with the <strong>SHAttered</strong> collision: Google produced two PDFs with the same SHA-1 hash for under 200,000 USD of GPU time. <strong>MD5</strong> died earlier (2004 collisions, 2008 chosen-prefix Flame malware forging Microsoft's signature). Both should be considered cryptographically dead. <strong>SHA-2</strong> (SHA-256, SHA-384, SHA-512) is a Merkle-Damg\\u00e5rd construction with a Davies-Meyer-style compression function and remains unbroken. It's the workhorse — TLS, Bitcoin, Linux package signing all use SHA-256.</p><p><strong>SHA-3 (Keccak)</strong> is structurally different: a sponge construction operating on a 1600-bit state with the Keccak-f permutation. Sponges absorb input by XORing into part of the state and squeeze output by reading another part. SHA-3 was selected from the NIST competition (2007-2012) specifically as a hedge against any future structural break of SHA-2. It's slower than SHA-256 in software but faster in hardware and has a clean security proof (indifferentiability from a random oracle in the sponge model). It also gives free length extension resistance — see next concept.</p>",
+        "mathExpressions": ["\\text{collision: } 2^{n/2} \\text{ (birthday)}, \\quad \\text{preimage: } 2^n", "\\text{sponge: } S' = f(S \\oplus (M \\| 0^c)), \\text{ output} = S'_{[0:r]}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-04-c2",
+        "title": "MACs and the Length-Extension Trap",
+        "contentHtml": "<p>A <strong>MAC (Message Authentication Code)</strong> guarantees integrity and authenticity given a shared key. The naive construction MAC(k, m) = H(k \\| m) is intuitive but <strong>broken</strong> for any Merkle-Damg\\u00e5rd hash like MD5/SHA-1/SHA-2. The problem: H(k \\| m) is the internal state after processing k \\| m. An attacker who knows H(k \\| m) and len(k \\| m) can resume the hash computation from that state and append more data, producing H(k \\| m \\| pad \\| extension) without knowing k. This is the <strong>length-extension attack</strong>.</p><p>The Flickr API famously had this bug in 2009: their auth tokens were MD5(secret \\| params), and length extension let attackers append arbitrary parameters to legitimate signed requests. A whole class of REST APIs failed identically. SHA-3, by virtue of the sponge's capacity bits (which are never output), is naturally length-extension resistant — H(k \\| m) is a perfectly safe SHA-3 MAC.</p><p>The standard fix for SHA-2 is <strong>HMAC</strong>: HMAC(k, m) = H((k \\u2295 opad) \\| H((k \\u2295 ipad) \\| m)). The inner-then-outer hash structure foils length extension because the attacker doesn't see the inner hash's intermediate state. HMAC has been proven secure under modest assumptions (PRF) on the compression function and has resisted attacks for 25 years. Use HMAC-SHA-256 unless you have a specific reason to use a sponge MAC like KMAC.</p>",
+        "mathExpressions": ["\\text{HMAC}(k, m) = H((k \\oplus \\text{opad}) \\| H((k \\oplus \\text{ipad}) \\| m))", "\\text{ipad} = 0x36 \\text{ repeated}, \\quad \\text{opad} = 0x5c \\text{ repeated}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-04-c3",
+        "title": "Merkle Trees, Commitments, and Hash-Based Signatures",
+        "contentHtml": "<p>Hashes compose into powerful structures. A <strong>Merkle tree</strong> hashes a set of leaves pairwise up to a single root, giving an O(log n) inclusion proof: to prove leaf i is in the tree with root r, you reveal the log_2 n sibling hashes on the path from i to r. Verification: rehash up the path and compare with r. Bitcoin's block headers commit to all transactions via a Merkle root; Certificate Transparency logs are Merkle-tree append-only logs auditable by any third party; Git's content addressing is essentially a Merkle DAG.</p><p><strong>Commitments</strong>: a sender publishes c = H(m \\| r) (random salt r, message m). The commitment binds the sender to m (collision resistance) but hides it (preimage resistance). Later they reveal (m, r) for verification. Coin flipping over a network, sealed-bid auctions, and many ZK proofs build on commitments. The salt r is critical: H(m) alone leaks short or low-entropy messages via brute-force.</p><p><strong>Hash-based signatures</strong> are the oldest form of asymmetric signature, predating RSA. Lamport one-time signatures: the private key is 256 random pairs (k_i^0, k_i^1); the public key is their hashes; to sign a 256-bit message digest, reveal the k_i^{m_i} preimages. One-time only — reusing leaks the key. Merkle trees turn many one-time keys into one many-time public key. Modern stateless schemes like SPHINCS+ (NIST PQC standard, 2024 as SLH-DSA) are entirely hash-based and quantum-secure with only mild assumptions (collision and preimage resistance), at the cost of larger signatures (~8 KB).</p>",
+        "mathExpressions": ["\\text{Merkle root: } r = H(H(L_1 \\| L_2) \\| H(L_3 \\| L_4)) \\ldots", "\\text{Lamport: } pk = (H(k_1^0), H(k_1^1), \\ldots, H(k_n^0), H(k_n^1))"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q25", "crypt-q26", "crypt-q27", "crypt-q28", "crypt-q29", "crypt-q30", "crypt-q31", "crypt-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-05",
+    "topicId": "cs-cryptography",
+    "order": 5,
+    "title": "KDFs and Password Hashing",
+    "description": "PBKDF2, scrypt, Argon2, and the memory-hard arms race",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "crypt-05-c1",
+        "title": "Why Passwords Need More Than a Hash",
+        "contentHtml": "<p>Passwords are low-entropy secrets. A typical user password has maybe 30-40 bits of entropy; a strong one perhaps 60. A bare hash like SHA-256 can be computed at billions per second on a single GPU and trillions per second on ASICs — the entire RockYou breach (32M passwords) can be cracked end-to-end in minutes against unsalted SHA-256. A <strong>password hashing function (PHF)</strong> must therefore deliberately slow down attackers while remaining tolerable for the legitimate single login.</p><p>Two ingredients are non-negotiable. <strong>Salt</strong>: a per-user random value, stored alongside the hash, that prevents rainbow-table precomputation and makes each user's hash cost independent. Without salt, an attacker computes a table once and breaks everyone. With salt, they pay the full cost per user. <strong>Cost</strong>: a tunable work factor that scales the hashing time. Modern systems target around 100-500 ms per login on the server's hardware so that attackers face billions of hours per cracked account.</p><p><strong>PBKDF2</strong> (PKCS#5, 2000) is the simplest PHF: PBKDF2(password, salt, iter) iterates HMAC for `iter` rounds. It's standardized, FIPS-approved, and ubiquitous (TLS PSK, WPA2, LUKS). Its weakness: PBKDF2 is purely <em>compute-hard</em>, not memory-hard. GPUs and ASICs run it at billions of HMACs per second. Iteration count must be enormous (600k+ for SHA-256, per OWASP 2023) just to slow GPU attackers, and even then dedicated ASICs blow past it. PBKDF2 is the floor of acceptable, not the goal.</p>",
+        "mathExpressions": ["\\text{PBKDF2}(P, S, c, dkLen) = T_1 \\| T_2 \\| \\ldots \\| T_l", "T_i = F(P, S, c, i), \\quad F = U_1 \\oplus U_2 \\oplus \\ldots \\oplus U_c"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-05-c2",
+        "title": "Memory-Hard Functions: scrypt and Argon2",
+        "contentHtml": "<p>The breakthrough in password hashing was <strong>memory-hardness</strong>: design a function that requires not just CPU time but a large amount of memory, in such a way that an attacker who tries to parallelize on GPUs/ASICs faces a brutal area-time tradeoff. ASICs are good at compute, bad at large RAM-per-core. Force them to allocate gigabytes per parallel instance and the economic advantage collapses.</p><p><strong>scrypt</strong> (Percival, 2009) was the first widely-deployed memory-hard PHF. Its inner loop, ROMix, fills a buffer with N hash-derived blocks then reads them in a sequence determined by the values themselves — a <em>data-dependent</em> access pattern. This forces the attacker to keep the entire buffer or recompute from scratch, with the time-memory tradeoff TM \\u2265 N^2 / 2. scrypt is used by Litecoin, Tarsnap, and many web frameworks. Its data-dependent reads are also a side-channel risk: cache-timing attacks can leak the password.</p><p><strong>Argon2</strong> won the Password Hashing Competition (2015) and is the current default recommendation. Three variants: <strong>Argon2d</strong> (data-dependent, max GPU resistance, OK if no side-channel adversary), <strong>Argon2i</strong> (data-independent, side-channel safe, weaker GPU resistance), <strong>Argon2id</strong> (hybrid — first half independent, second half dependent — recommended default). Three knobs: time cost t, memory cost m, parallelism p. Typical: t=2, m=64 MiB, p=1 for a server. Argon2id is the modern answer: use it unless you have a specific reason to fall back.</p>",
+        "mathExpressions": ["\\text{scrypt: } T \\cdot M \\geq \\frac{N^2}{2} \\quad \\text{(time-memory tradeoff)}", "\\text{Argon2id}(P, S, t, m, p) \\to dk"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-05-c3",
+        "title": "HKDF and KDF Hygiene",
+        "contentHtml": "<p>Password hashing handles low-entropy human secrets. <strong>Key derivation functions (KDFs)</strong> handle the inverse: you have one high-entropy secret (e.g., a Diffie-Hellman shared secret, a master key) and need to derive several distinct subkeys for different purposes (encryption, MAC, IV generation, etc.). Reusing the same key across primitives is dangerous: encrypting and MACing with the same AES key, for instance, breaks composition theorems.</p><p><strong>HKDF</strong> (RFC 5869, Krawczyk's extract-and-expand paradigm) is the standard. <strong>Extract</strong>: PRK = HMAC-Hash(salt, IKM) compresses the input keying material into a uniformly pseudorandom key. <strong>Expand</strong>: OKM = HKDF-Expand(PRK, info, L) generates as many output bytes as needed via a counter mode. The <em>info</em> parameter is the contextual label: \"client-MAC-key\", \"session-nonce\", etc. Same PRK + different info = independent keys. TLS 1.3 derives all of its session keys via HKDF-SHA-256 from the handshake transcript.</p><p>Three rules. (1) Don't use a raw DH shared secret as a key — always run it through a KDF (HKDF-Extract). The output of g^(ab) mod p has structure that's not uniform; HKDF launders it. (2) Always use distinct context strings per key purpose. (3) Don't confuse password hashing with KDF: PBKDF2/Argon2 protect low-entropy inputs against brute force; HKDF assumes the input is already high-entropy and just derives subkeys cheaply. Mix them up and you either burn CPU pointlessly or deploy a fast KDF on a guessable secret.</p>",
+        "mathExpressions": ["\\text{HKDF-Extract}(salt, IKM) = \\text{HMAC}(salt, IKM) = PRK", "\\text{HKDF-Expand}(PRK, info, L): T_i = \\text{HMAC}(PRK, T_{i-1} \\| info \\| i)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q33", "crypt-q34", "crypt-q35", "crypt-q36", "crypt-q37", "crypt-q38", "crypt-q39", "crypt-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-06",
+    "topicId": "cs-cryptography",
+    "order": 6,
+    "title": "TLS 1.3: The Modern Handshake",
+    "description": "ECDHE, certificates, cipher suites, and 1-RTT",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "crypt-06-c1",
+        "title": "What TLS Actually Does",
+        "contentHtml": "<p><strong>TLS (Transport Layer Security)</strong> is the layer that makes HTTPS, secure SMTP, secure IMAP, QUIC, and most TCP-over-the-internet authentication work. Its goals: <strong>confidentiality</strong> (an eavesdropper learns nothing useful), <strong>integrity</strong> (an active attacker can't modify data without detection), and <strong>authenticity</strong> (the client knows it's actually talking to the named server, via a chain of trust to a root CA). TLS 1.0 (1999) inherited and extended SSL 3.0. TLS 1.2 (2008) added AEAD modes and modern ciphers. TLS 1.3 (2018, RFC 8446) was a top-to-bottom redesign.</p><p>TLS 1.3 ripped out everything broken: RSA key transport (no forward secrecy) is gone, only ECDHE/DHE remain. Static RSA, CBC modes, MD5/SHA-1, RC4, compression, renegotiation — all removed. The supported suites collapse from dozens to five AEAD options (AES-128-GCM, AES-256-GCM, ChaCha20-Poly1305, AES-128-CCM, AES-128-CCM-8). The handshake is one round-trip instead of two — the client sends its ECDHE key share immediately in ClientHello, guessing the server's preferred group. With <strong>0-RTT mode</strong>, returning clients can send application data on the very first packet, at the cost of replay risk.</p><p>The defensive lessons are encoded in the spec. POODLE (CBC), CRIME (compression), Lucky 13 (timing), Heartbleed (memory disclosure), DROWN (cross-version), and a decade of similar attacks each carved out an attack surface that TLS 1.3 deletes by design. The principle: minimize the protocol, prefer mandatory AEAD, mandate forward secrecy, simplify the state machine.</p>",
+        "mathExpressions": ["\\text{Handshake transcript: } H_n = H(H_{n-1} \\| \\text{message}_n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-06-c2",
+        "title": "The 1-RTT Handshake in Detail",
+        "contentHtml": "<p><strong>ClientHello</strong>: client sends a random nonce, supported cipher suites, supported groups (e.g., x25519, secp256r1), supported signature algorithms, and one or more <strong>key shares</strong> (ECDHE public keys for the groups it expects the server to choose). <strong>ServerHello</strong>: server picks a cipher suite and group, sends its own random nonce and matching key share. At this moment both sides can compute the ECDHE shared secret and run HKDF to derive handshake traffic keys.</p><p>Everything from this point is encrypted under the handshake keys. The server sends EncryptedExtensions, then its <strong>Certificate</strong> (the X.509 chain), <strong>CertificateVerify</strong> (a signature over the handshake transcript using the certificate's private key — proving liveness, not just possession of a static cert), and <strong>Finished</strong> (an HMAC over the transcript binding the entire handshake). The client verifies the chain, verifies CertificateVerify, sends its own Finished, and switches to application traffic keys. One round trip, application data flowing.</p><p>The transcript hash binds everything. Any downgrade — a man-in-the-middle stripping cipher suites, dropping extensions, swapping certificates — changes the transcript and breaks Finished verification. This is the structural defense against the Logjam/FREAK family of downgrade attacks that plagued TLS 1.0-1.2 (where transcript hashing was incomplete or used MD5+SHA-1 in ways that broke under chosen-prefix collisions).</p>",
+        "mathExpressions": ["DHE\\_secret = ECDH(d_{client}, Q_{server})", "MS = \\text{HKDF-Extract}(0, DHE\\_secret), \\quad \\text{keys} = \\text{HKDF-Expand}(MS, \\text{label} \\| \\text{transcript})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-06-c3",
+        "title": "Certificates, X.509, and Trust",
+        "contentHtml": "<p>The server's <strong>X.509 certificate</strong> is a signed assertion: \"Public key K belongs to domain example.com, valid from D1 to D2.\" The signature is from a Certificate Authority (CA), itself authorized by a chain of certificates ending at a root CA pre-installed in the client's trust store. The client verifies the signature chain, the validity period, the SAN/CN match, and revocation status (CRL or OCSP).</p><p>The trust store is the weakest link. There are ~150 root CAs trusted by major browsers; any one of them can sign a certificate for any domain. DigiNotar (2011) was breached and issued forged certificates for *.google.com — used to spy on Iranian Gmail users. Symantec mis-issued thousands of certificates and was forcibly distrusted by Chrome (2018). The systemic response: <strong>Certificate Transparency (CT)</strong>, mandated since 2018 in Chrome — every issued cert must be logged in append-only public Merkle-tree logs, and clients reject certs lacking CT proofs. Domain owners can monitor CT logs for unauthorized issuance.</p><p>Modern best practices: <strong>HSTS</strong> (HTTP Strict Transport Security) with preload to forbid HTTP fallback, <strong>CAA records</strong> in DNS to restrict which CAs can issue for your domain, short certificate lifetimes (Let's Encrypt 90 days, Apple pushing for 47 days from 2027), automated renewal via ACME, and Ed25519 or ECDSA P-256 keys instead of legacy 2048-bit RSA. The whole web PKI is a fragile and constantly-evolving social-technical system that nonetheless underpins virtually all internet trust.</p>",
+        "mathExpressions": ["\\text{Verify}(pk_{CA}, \\sigma, \\text{cert\\_body}) \\stackrel{?}{=} 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q41", "crypt-q42", "crypt-q43", "crypt-q44", "crypt-q45", "crypt-q46", "crypt-q47", "crypt-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-07",
+    "topicId": "cs-cryptography",
+    "order": 7,
+    "title": "Zero-Knowledge Proofs",
+    "description": "Schnorr, Sigma-protocols, SNARKs, and STARKs",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "crypt-07-c1",
+        "title": "Zero-Knowledge: Proving Without Revealing",
+        "contentHtml": "<p>A <strong>zero-knowledge proof (ZKP)</strong> lets a prover convince a verifier that a statement is true while revealing nothing beyond the truth of the statement itself. Three properties: <strong>completeness</strong> (honest prover convinces honest verifier), <strong>soundness</strong> (cheating prover can't convince verifier of a false statement except with negligible probability), <strong>zero-knowledge</strong> (verifier learns nothing they couldn't have computed alone — formalized via a simulator that produces transcripts indistinguishable from real ones, without knowing the secret).</p><p>The classic intuition is Goldreich's <em>cave with the magic door</em>: prover P claims to know the password to a door at the back of a cave with two paths. Verifier V watches P enter, then shouts which path to come out from. If P knows the password, they always come out the requested side. If they don't, they're right 50% of the time. Repeat 40 times, cheating probability is 2^(-40). V is convinced P knows the password without ever learning it.</p><p>ZKPs underpin modern privacy-preserving systems: <strong>Zcash</strong> hides transaction amounts and parties via zk-SNARKs; <strong>identity systems</strong> like World ID prove uniqueness without revealing biometrics; <strong>rollups</strong> like StarkNet and zkSync compress thousands of Ethereum transactions into a single succinct proof. The field has gone from theoretical curiosity (1985, Goldwasser-Micali-Rackoff) to production cryptography in 35 years.</p>",
+        "mathExpressions": ["\\Pr[\\text{V accepts} | x \\in L] = 1, \\quad \\Pr[\\text{V accepts} | x \\notin L] \\leq \\epsilon"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-07-c2",
+        "title": "Schnorr Identification and Sigma Protocols",
+        "contentHtml": "<p><strong>Schnorr's protocol</strong> (1989) is the canonical ZK proof of knowledge of a discrete log: prover knows x such that y = g^x. The protocol has three messages, the <strong>Sigma (\\u03a3) structure</strong>: <strong>commit</strong> — prover picks random r, sends R = g^r; <strong>challenge</strong> — verifier sends random c; <strong>response</strong> — prover sends s = r + cx. Verifier checks g^s = R \\u00b7 y^c. Completeness is direct; soundness uses the rewinding extractor (two valid transcripts on the same R with different c yield x = (s_1 - s_2)/(c_1 - c_2)); zero-knowledge follows because a simulator can pick c first then back-derive a valid (R, s).</p><p>Sigma protocols are the building blocks for a large family of ZKPs. They compose nicely: AND-composition (prove statement A AND B), OR-composition (prove A or B without revealing which), and witness-encryption variants. <strong>Schnorr signatures</strong> (and EdDSA, which is essentially Schnorr on a twisted Edwards curve) are the <strong>Fiat-Shamir transform</strong> of Schnorr's protocol — replace the verifier's random challenge with a hash of the transcript, making the proof non-interactive. Bitcoin Taproot (2021) adopted Schnorr signatures for their linearity (signature aggregation) and clean ZK story.</p><p>Sigma protocols are the right tool when the statement is algebraic — discrete logs, equality of logs, knowledge of a Pedersen commitment opening. For arbitrary computation (\"I ran this program correctly\"), you need the much heavier machinery of SNARKs and STARKs.</p>",
+        "mathExpressions": ["R = g^r, \\quad s = r + c x, \\quad g^s \\stackrel{?}{=} R \\cdot y^c", "\\text{Fiat-Shamir: } c = H(g, y, R)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-07-c3",
+        "title": "zk-SNARKs and zk-STARKs: Succinct Proofs",
+        "contentHtml": "<p>A <strong>zk-SNARK</strong> (Succinct Non-interactive ARgument of Knowledge) is a ZK proof that's <em>tiny</em> (Groth16: ~200 bytes) and <em>fast to verify</em> (a few milliseconds), regardless of how complex the statement is. The pipeline: express the computation as an <strong>arithmetic circuit</strong> over a large prime field; convert to a <strong>R1CS (Rank-1 Constraint System)</strong> or PLONK-style gates; turn that into a polynomial identity; commit to the polynomials with a polynomial commitment scheme (KZG, FRI); prove via a Schwartz-Zippel-style random-evaluation challenge.</p><p>Most pre-2020 SNARKs (Groth16, used by Zcash) require a <strong>trusted setup</strong>: a multi-party ceremony generates a structured reference string. If everyone in the ceremony was honest, security holds; if they all colluded, they can forge proofs. Zcash's first ceremony in 2016 went so far as to physically destroy the laptops used. <strong>PLONK</strong> (2019) introduced universal updatable trusted setups; <strong>Halo2</strong> and <strong>Nova</strong> introduced recursive SNARKs without per-circuit setup; <strong>FRI-based STARKs</strong> eliminate trusted setup entirely.</p><p><strong>zk-STARKs</strong> (Ben-Sasson et al., 2018) are larger (50-200 KB proofs) but use only collision-resistant hashes — making them <strong>post-quantum secure</strong> and avoiding trusted setup entirely. They're the basis of StarkNet. The trade-off: SNARKs win on proof size and verification gas; STARKs win on transparent setup, prover speed, and quantum resistance. Both are now production cryptography running billions of dollars in value.</p>",
+        "mathExpressions": ["\\pi = \\text{Prove}(crs, x, w), \\quad \\text{Verify}(crs, x, \\pi) \\in \\{0, 1\\}", "|\\pi| = O(\\lambda) \\text{ (SNARK)}, \\quad O(\\log^2 |C|) \\text{ (STARK)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q49", "crypt-q50", "crypt-q51", "crypt-q52", "crypt-q53", "crypt-q54", "crypt-q55", "crypt-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-08",
+    "topicId": "cs-cryptography",
+    "order": 8,
+    "title": "Post-Quantum Cryptography",
+    "description": "Lattices, codes, hashes, and the SIKE break",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "crypt-08-c1",
+        "title": "The Quantum Threat and the NIST Competition",
+        "contentHtml": "<p><strong>Shor's algorithm (1994)</strong> solves integer factorization and discrete logarithm in polynomial time on a quantum computer. A sufficiently large fault-tolerant quantum computer would break RSA, DH, ECDH, ECDSA, and Ed25519 — every public-key system in current internet infrastructure. Estimates for the required machine vary (4000+ logical qubits, millions of physical qubits with error correction); current devices are at most ~1000 noisy qubits. But the timeline matters less than the <strong>harvest-now, decrypt-later</strong> threat: encrypted traffic captured today (TLS sessions, encrypted email) is vulnerable to retroactive decryption when quantum machines arrive. Long-confidentiality data needs PQC migration <em>now</em>.</p><p>Symmetric primitives are mostly safe. Grover's algorithm gives a quadratic speedup for brute-force key search, so AES-128 effectively offers 64-bit security against a quantum adversary — uncomfortable. AES-256 stays at ~128-bit. Hash functions similarly halve the collision-resistance bit-length. The fix: double the key sizes for symmetric crypto. Public-key requires entirely new mathematical foundations.</p><p>The <strong>NIST Post-Quantum Cryptography competition</strong> (2016-2024) selected new standards. The 2024 winners: <strong>ML-KEM (Kyber)</strong> for key encapsulation, <strong>ML-DSA (Dilithium)</strong> and <strong>FN-DSA (Falcon)</strong> for lattice-based signatures, <strong>SLH-DSA (SPHINCS+)</strong> for hash-based signatures. NSA's CNSA 2.0 mandates ML-KEM and ML-DSA in US national security systems by 2033. Cloudflare, Google, Apple have already deployed hybrid X25519+Kyber in production TLS.</p>",
+        "mathExpressions": ["\\text{Shor: factor } n \\text{ in } O((\\log n)^3) \\text{ quantum time}", "\\text{Grover: search in } O(\\sqrt{N}) \\text{ vs. classical } O(N)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-08-c2",
+        "title": "Lattice-Based Crypto: LWE and Kyber",
+        "contentHtml": "<p>Lattice-based cryptography is the leading PQC family, built on the assumed hardness of finding short vectors in high-dimensional integer lattices. The <strong>Learning With Errors (LWE)</strong> problem (Regev, 2005): given a random matrix A in (Z_q)^(m\\u00d7n) and b = As + e mod q (where e is small Gaussian noise), recover s. Without noise this is just linear algebra; with noise, it's as hard as worst-case lattice problems (Regev's quantum reduction). <strong>Module-LWE</strong> uses structured matrices over polynomial rings to shrink keys and speed up operations.</p><p><strong>ML-KEM (Kyber)</strong> is a Module-LWE key encapsulation mechanism (KEM). Public key ~800 bytes, ciphertext ~768 bytes (Kyber512); ~1500 bytes for Kyber768. Encapsulation produces a 32-byte symmetric key. The operations are matrix-vector products and NTT-based polynomial multiplication — fast on modern CPUs (faster than ECDH on x86 with AVX2). The Fujisaki-Okamoto transform gives IND-CCA security from the underlying IND-CPA scheme.</p><p>Lattice signatures come in two flavors. <strong>ML-DSA (Dilithium)</strong> uses Fiat-Shamir with aborts on Module-LWE/SIS — public keys ~1.3 KB, signatures ~2.4 KB. <strong>FN-DSA (Falcon)</strong> uses NTRU lattices and produces smaller signatures (~700 bytes) at the cost of needing floating-point Gaussian sampling, which is hard to implement in constant time. Falcon's gpv-style trapdoor sampling has been the target of timing attacks (KyberSlash, FALCON timing leak 2024); deployment requires careful side-channel hardening.</p>",
+        "mathExpressions": ["\\text{LWE: given } (A, b = As + e \\bmod q), \\text{ find } s", "b - A \\hat s \\approx e \\quad \\text{if } \\hat s = s"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-08-c3",
+        "title": "Code-Based, Hash-Based, and the SIKE Catastrophe",
+        "contentHtml": "<p>Beyond lattices, three other PQC families. <strong>Code-based</strong>: McEliece (1978) encrypts via random-linear-code decoding, NP-hard. Classic McEliece has 1+ MB public keys but 47 years of unbroken cryptanalysis — the most conservative option. NIST advanced it as a fourth standard for ultra-conservative deployments. <strong>Hash-based signatures</strong>: SLH-DSA (SPHINCS+) gives stateless quantum-secure signatures from collision-resistant hashes alone, the fewest assumptions of any signature scheme, at the cost of ~8 KB signatures. Stateful variants (XMSS, LMS) are smaller but require careful state management; reusing a state-leaf breaks security catastrophically.</p><p><strong>Isogeny-based</strong> crypto promised tiny keys (~330 bytes) and was a NIST finalist as <strong>SIKE (Supersingular Isogeny Key Encapsulation)</strong>. In July 2022, Castryck and Decru broke SIKE in about an hour on a single CPU core. The attack used SIKE's published auxiliary points to apply a 1997 theorem of Kani in genus 2, recovering the secret isogeny. SIKE was withdrawn from NIST round 4 within days. The lesson is sobering: a primitive can be a NIST finalist and still fall to a clever observation. Diversification across families is the only defense against single-family breaks.</p><p>The current deployment posture: <strong>hybrid</strong> classical+PQC. TLS uses X25519+Kyber so a break in either still leaves the other intact. Signal's PQXDH (2023) wraps Curve25519 ECDH inside Kyber. Anything you cannot easily upgrade later — long-lived signatures, root CA keys — should be moving to hybrid or pure-PQC now.</p>",
+        "mathExpressions": ["\\text{Kani: } |\\Phi(P)|^2 = \\deg(\\phi_1) \\cdot \\deg(\\phi_2)", "\\text{Hybrid: } K = \\text{KDF}(K_{\\text{ECDH}} \\| K_{\\text{Kyber}})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q57", "crypt-q58", "crypt-q59", "crypt-q60", "crypt-q61", "crypt-q62", "crypt-q63", "crypt-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-09",
+    "topicId": "cs-cryptography",
+    "order": 9,
+    "title": "Side-Channel Resistance",
+    "description": "Constant time, blinding, and fault attacks",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "crypt-09-c1",
+        "title": "Timing Attacks and Constant-Time Code",
+        "contentHtml": "<p>Mathematically secure crypto becomes insecure when its <em>implementation</em> leaks. <strong>Timing attacks</strong> exploit the fact that branches, table lookups, and variable-time arithmetic produce execution times that depend on secret data. Kocher's seminal 1996 paper extracted RSA private keys by timing modular exponentiation. <strong>Lucky Thirteen</strong> (2013) extracted plaintext from TLS by timing how long the server took to verify CBC-MAC across padding boundaries. <strong>CacheBleed</strong> (2016) extracted RSA keys from OpenSSL via cache-bank timing on Intel Sandy Bridge.</p><p><strong>Constant-time code</strong> means the execution time and memory access pattern are independent of secret data. Concretely: no branches that depend on secrets (no <code>if (secret_byte == 0)</code>), no table indices that depend on secrets (no AES with secret-key-dependent S-box lookups in the L1), no variable-time instructions (no integer division, no early-exit memcmp). The standard tools: bitmask tricks (<code>mask = -(byte == 0)</code>), constant-time selection (<code>r = (a &amp; mask) | (b &amp; ~mask)</code>), constant-time memcmp that XORs every byte.</p><p>Real-world cautionary tales abound. The Java <code>String.equals</code> short-circuits on first mismatch — never use it on secrets. Python's bytes equality similarly short-circuits — use <code>hmac.compare_digest</code>. Go's <code>crypto/subtle</code> package exists precisely for this. NaCl/libsodium and BoringSSL are written entirely in constant-time style as a deliberate hygiene practice. Verifying it is hard: tools like ct-verif, dudect, and Microwalk attempt to prove or detect timing leaks but coverage is incomplete. The pragmatic rule: assume any branch on a secret is a leak until proven otherwise.</p>",
+        "mathExpressions": ["t(input) = t_0 \\quad \\forall \\text{ secret-equivalent inputs}", "\\text{select}(b, x, y) = (b \\cdot x) \\oplus ((1-b) \\cdot y)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-09-c2",
+        "title": "Power, EM, and Differential Side Channels",
+        "contentHtml": "<p>Beyond timing, physical side channels leak through other emanations. <strong>Power analysis</strong> (Kocher-Jaffe-Jun 1999): a CMOS gate consumes more power when transitioning than when idle, so the power trace of an encrypting chip depends on the data being processed. <strong>Simple Power Analysis (SPA)</strong> reads the trace directly to distinguish square vs. multiply in modular exponentiation. <strong>Differential Power Analysis (DPA)</strong> averages many traces under different inputs and uses statistical correlation to extract individual bits of the key. DPA broke virtually every smart card in the late 1990s; the entire industry had to redesign.</p><p><strong>Electromagnetic (EM) side channels</strong> are the wireless cousin: a chip's EM emissions encode the same information as the power trace. TEMPEST programs (NSA, since 1960s) classify and shield against EM leakage. <strong>TempestSDR</strong> demonstrated reading display contents from cheap SDR receivers across rooms. <strong>Acoustic</strong> attacks (Genkin-Shamir-Tromer 2014) extracted RSA keys from a laptop's coil whine recorded on a phone microphone several feet away.</p><p>Defenses combine <strong>hiding</strong> (reducing the SNR via balanced logic, dual-rail circuits, noise injection) and <strong>masking</strong> (splitting secrets into shares so no intermediate value depends on the unmasked secret). Boolean masking computes on x \\u2295 r and r separately. First-order masking blocks first-order DPA but loses to second-order combined attacks. Threshold implementations and higher-order masking push the defense further but multiply the implementation cost. For high-assurance hardware (HSMs, payment terminals, secure elements), Common Criteria EAL4+/EAL6 evaluation includes formal side-channel testing.</p>",
+        "mathExpressions": ["\\text{CPA correlation: } \\rho(P_t, H(d, k^*)) > \\rho(P_t, H(d, k)) \\text{ for } k \\neq k^*"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-09-c3",
+        "title": "Fault Injection and Blinding",
+        "contentHtml": "<p>Active attacks <em>perturb</em> the device to coax it into incorrect computation that leaks secrets. <strong>Voltage glitching, clock glitching, EM injection, and laser fault injection</strong> can flip individual bits during execution. Boneh-DeMillo-Lipton (1997) showed that a single bit flip during one branch of CRT-RSA decryption lets an attacker recover the prime factor: gcd(c^d_correct - c^d_faulty, n) = p with high probability. The Bellcore attack devastated smart-card RSA in the late 1990s.</p><p><strong>Rowhammer</strong> (Kim et al. 2014) is the same idea against DRAM: rapidly toggling adjacent rows induces bit flips in the target row. Variants (RAMBleed, Half-Double) extract crypto keys from neighboring memory. <strong>CLKscrew</strong> and <strong>Plundervolt</strong> exploited CPU dynamic voltage/frequency scaling to fault Intel SGX enclaves into leaking keys — the attacker doesn't need physical access, just root on the host.</p><p>Defensive techniques. <strong>Verification</strong>: re-compute the output and check before releasing it (CRT-RSA: verify s^e \\u2261 m mod n before returning). <strong>Redundancy</strong>: triple modular redundancy with majority voting in critical sections. <strong>Blinding</strong>: randomize sensitive operations so a successful fault on one trace can't be combined with knowledge of the input. RSA blinding masks the message m \\u00b7 r^e mod n before exponentiation (Kocher 1996); ECDSA scalar blinding adds a random multiple of the group order to the nonce. Modern crypto libraries (BoringSSL, libsodium, mbedTLS) bake all of these into core code paths by default. The collective lesson: cryptographic security is an end-to-end property of the implementation, not just the algorithm.</p>",
+        "mathExpressions": ["\\text{CRT-RSA fault: } p = \\gcd(s_{\\text{good}} - s_{\\text{fault}}, n)", "\\text{RSA blinding: } s = (m r^e)^d r^{-1} \\bmod n"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q65", "crypt-q66", "crypt-q67", "crypt-q68", "crypt-q69", "crypt-q70", "crypt-q71", "crypt-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "crypt-10",
+    "topicId": "cs-cryptography",
+    "order": 10,
+    "title": "Real-World Failures",
+    "description": "Heartbleed, ROCA, Logjam, and the lessons they taught",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "crypt-10-c1",
+        "title": "Heartbleed: The Memory Disclosure That Shook the Web",
+        "contentHtml": "<p>In April 2014, Neel Mehta of Google and Codenomicon independently discovered <strong>CVE-2014-0160 (Heartbleed)</strong>: a buffer over-read in OpenSSL's TLS heartbeat. The heartbeat extension (RFC 6520) lets a peer send a payload with a length field; the receiver echoes it back. OpenSSL 1.0.1 trusted the length field without verifying it against the actual payload size. An attacker sent a heartbeat claiming a 64 KB payload while supplying one byte. OpenSSL copied 64 KB of its memory — private keys, session cookies, plaintext passwords — and sent it to the attacker.</p><p>The bug was three lines of missing bounds-checking C code, in production for two years, in roughly two-thirds of all HTTPS servers when discovered. The fallout: Yahoo Mail, GitHub, Bitcoin exchanges, the Canadian Revenue Agency (which leaked 900 SINs in the first arrest), Mumsnet, Stripe, and Cloudflare were all confirmed exploited. The CRA case proved key extraction was practical at internet speed. Reissuing every TLS certificate on the public web took weeks.</p><p>Lessons: (1) memory-unsafe languages multiply crypto bugs into catastrophes — Rust rewrites (rustls) and hardened C (BoringSSL, libsodium) are part of the ongoing response; (2) bounds-check everything, even \"trivial\" length fields; (3) lack of public funding for OpenSSL (a one-person operation maintaining the world's HTTPS) led to the Linux Foundation's Core Infrastructure Initiative; (4) widespread monoculture amplifies a single bug into a global one.</p>",
+        "mathExpressions": ["\\text{leaked\\_bytes} = \\text{min}(\\text{claimed\\_len}, \\text{remaining\\_heap})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-10-c2",
+        "title": "ROCA: When the RNG Lies",
+        "contentHtml": "<p><strong>ROCA (CVE-2017-15361)</strong> is the 2017 break of Infineon's RSALib, used in millions of smart cards, TPMs, and electronic ID cards including Estonian and Slovak national IDs. To speed up RSA key generation, Infineon used a structured prime-generation algorithm: candidate primes had the form p = k \\u00b7 M + (65537^a mod M) for fixed M (a large primorial). This made primes orders of magnitude faster to find on smartcard hardware but left a giveaway in the public modulus.</p><p>The Czech researchers (Nemec et al.) showed that the structure made factoring possible via a Coppersmith-style lattice attack. For 1024-bit moduli, recovery cost ~100 hours of CPU time per key — infeasible at scale, feasible per target. For 2048-bit moduli, ~140 CPU-years per key. Crucially, the attack works <em>only on the public key</em> — no side channels needed. Estonia revoked 760,000 e-IDs and re-issued them; Slovakia, Spain, and several enterprise PKIs followed. Microsoft pushed Windows updates that detected and warned about ROCA-vulnerable TPMs.</p><p>The root cause was a <em>performance optimization</em> that fundamentally weakened the cryptographic assumption (uniform random primes). The same pattern recurs: <strong>Debian OpenSSL CVE-2008-0166</strong> (a Valgrind-cleanup commit reduced the entropy of OpenSSL's RNG to 32,767 possible seeds — every Debian SSH key from 2006-2008 was guessable), <strong>Sony PS3 ECDSA</strong> (constant nonce), <strong>NSA Dual_EC_DRBG</strong> (suspected backdoor in elliptic-curve seeds via undisclosed multiplier). The lesson: random number generation is the soft underbelly of any crypto system; entropy starvation, biased samplers, or backdoored constants destroy security regardless of the algorithm.</p>",
+        "mathExpressions": ["p = k \\cdot M + (65537^a \\bmod M)", "\\text{Coppersmith: find small roots of } f(x) \\equiv 0 \\pmod{N}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "crypt-10-c3",
+        "title": "Logjam, FREAK, and Protocol Downgrades",
+        "contentHtml": "<p><strong>Logjam (May 2015)</strong> showed that a man-in-the-middle could downgrade TLS to <em>export-grade</em> Diffie-Hellman (512-bit primes), then break the resulting key exchange in real-time. Export-grade ciphers were a 1990s US export-control compromise — explicitly weakened crypto — that lingered in OpenSSL/NSS for decades. A MITM stripping cipher suites in ClientHello could force the downgrade. The 512-bit precomputation took ~7 days on academic hardware; per-connection breaks ~70 seconds. The same paper estimated nation-states could precompute against the small set of 1024-bit DH groups hardcoded into Apache, nginx, and OpenSSH defaults.</p><p><strong>FREAK (March 2015)</strong> was the same disease: clients accepted export-grade RSA when offered. <strong>DROWN (2016)</strong> exploited servers still allowing SSLv2 sharing keys with TLS, breaking modern connections via cross-protocol attack. <strong>BEAST, CRIME, BREACH, POODLE, SLOTH, SWEET32</strong> — every year since 2011 turned up another break of TLS 1.0/1.1.</p><p>The collective lesson drove TLS 1.3's philosophy: <em>delete</em> rather than <em>fix</em>. Export ciphers, MD5, SHA-1, RC4, CBC, RSA key transport, compression, renegotiation, custom DH groups — all gone. The cipher suite list shrank from dozens to five. The handshake hash now binds every byte; attackers can no longer downgrade what isn't there. The meta-lesson: backward compatibility with deprecated cryptography is a permanent attack surface. <strong>Cryptographic agility paired with aggressive deprecation</strong> is now standard practice.</p>",
+        "mathExpressions": ["\\text{Logjam: precompute on } p \\text{ once, break } g^a \\bmod p \\text{ per session}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["crypt-q73", "crypt-q74", "crypt-q75", "crypt-q76", "crypt-q77", "crypt-q78", "crypt-q79", "crypt-q80"],
+    "puzzleId": null
+  }
+]

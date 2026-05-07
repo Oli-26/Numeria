@@ -1,0 +1,182 @@
+[
+  {
+    "id": "clean-01",
+    "topicId": "cs-clean-code",
+    "order": 1,
+    "title": "Naming, Comments, and Formatting",
+    "description": "The micro-aesthetics of readable code",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "clean-01-c1",
+        "title": "Names Are the Most Important Comments",
+        "contentHtml": "<p>The single highest-leverage move for readable code is <strong>good names</strong>. Phil Karlton's famous quip — \"there are only two hard things in computer science: cache invalidation and naming things\" — is only half a joke. A well-named variable, function, or class is self-documenting. A badly named one is a permanent source of confusion.</p><p>Concrete guidance: prefer <strong>descriptive over short</strong> (<code>elapsedSeconds</code> over <code>t</code>), <strong>positive over negated</strong> (<code>isReady</code> over <code>isNotPending</code>), <strong>specific over generic</strong> (<code>userIds</code> over <code>data</code>). Names should reveal intent: <code>fetchActiveUsers()</code> is better than <code>getStuff()</code>. Booleans should read like questions: <code>isExpired</code>, <code>hasPermission</code>.</p><p>The great enemy of naming is <strong>premature abbreviation</strong>. <code>usrCnt</code> saves four characters and costs every future reader a moment of translation. Modern editors auto-complete; you pay nothing for clarity. Length is fine when it earns clarity; the goal is meaning, not brevity.</p>",
+        "mathExpressions": ["\\text{name}: \\text{intent} \\to \\text{readable\\_identifier} \\quad \\text{(an act of communication)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-01-c2",
+        "title": "Comments: A Sign of Failure (Mostly)",
+        "contentHtml": "<p>Comments have a paradoxical reputation. Junior developers are told to comment everything; senior developers tend to delete comments. Both are reacting to the same underlying truth: <strong>most comments are evidence the code wasn't clear enough</strong>.</p><p>If you find yourself writing <code>// increment counter</code> above <code>counter++</code>, the comment is noise. If you write <code>// HACK: works around bug 1234 in legacy parser</code>, that's gold — the comment captures information not derivable from the code itself. Good comments explain <strong>why</strong>, not what; they cover constraints, history, intent, or warnings; they are rare and load-bearing.</p><p>The corollary: comments must stay accurate. Code drifts; comments don't. A stale comment is worse than no comment because future readers trust it. The safest move is to write fewer comments but maintain them as carefully as code. When a comment can be replaced by a better name or a refactored function, do that instead.</p>",
+        "mathExpressions": ["\\text{comment value} \\propto \\text{(non-obvious info)} - \\text{(rot risk)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-01-c3",
+        "title": "Formatting and Style: Consistency Over Beauty",
+        "contentHtml": "<p>Formatting wars (tabs vs spaces, brace placement, line length) consume astonishing amounts of engineering time and produce no value. The actual answer: <strong>pick a style and enforce it automatically</strong>. Whether you indent with 2, 4, or 8 spaces matters less than whether everyone in the codebase agrees.</p><p>Modern languages ship with <strong>auto-formatters</strong>: <code>gofmt</code> for Go, <code>rustfmt</code> for Rust, <code>black</code> for Python, <code>prettier</code> for JS/TS, <code>dotnet format</code> for C#. These tools rewrite source to a canonical style. Once you commit to one, formatting debates evaporate. Code reviewers can focus on logic instead of style nits.</p><p>Beyond mechanical formatting, the deeper rule is <strong>consistency</strong>. If your codebase uses <code>get_user</code> in 95% of places and <code>fetchUser</code> in 5%, fix the 5%. If exceptions are thrown in some modules and error codes returned in others, pick one and migrate. Consistency lets readers form expectations; inconsistency forces them to read every line carefully because every line might break the pattern.</p>",
+        "mathExpressions": ["\\text{readability} \\propto \\text{consistency} \\quad \\text{(one convention beats two preferences)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["clean-q01", "clean-q02", "clean-q03", "clean-q04", "clean-q05", "clean-q06", "clean-q07", "clean-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "clean-02",
+    "topicId": "cs-clean-code",
+    "order": 2,
+    "title": "Functions and Abstraction",
+    "description": "Single responsibility, small functions, and the right level of abstraction",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "clean-02-c1",
+        "title": "Functions Should Do One Thing",
+        "contentHtml": "<p>A function should have one clear purpose, expressible in a sentence: \"validate and save the user\", \"compute the discounted price\", \"render the grid as HTML\". If your description requires multiple <em>and</em>s, the function is doing too much.</p><p>The classic guideline from Bob Martin's <em>Clean Code</em>: \"Functions should be small. Then they should be smaller than that.\" Twenty lines is plenty for most functions; one screen is a sensible upper limit. Long functions are hard to test, hard to reuse, and hard to read because the reader has to hold many concerns in their head simultaneously.</p><p>The technique is called <strong>extract function</strong>: when a piece of logic forms a coherent step, give it a name and pull it out. The original function becomes a sequence of well-named calls that reads like prose: <code>validate(input); enrich(record); save(record); notify(record);</code>. The implementation lives in the smaller functions; the high-level intent lives in the orchestrator.</p>",
+        "mathExpressions": ["\\text{good function: } \\text{name} \\Leftrightarrow \\text{behavior} \\quad \\text{(one job, one name)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-02-c2",
+        "title": "Levels of Abstraction in One Function",
+        "contentHtml": "<p>A subtle quality of well-written code: each function operates at <strong>one level of abstraction</strong>. A function that mixes high-level orchestration with low-level byte fiddling forces the reader to constantly shift mental gears.</p><p>For example, this is mixed-level: <code>function processOrder(o) { validateAddress(o.address); o.tax = o.subtotal * 0.08; sendConfirmation(o); }</code>. Two of those lines are high-level operations; one is implementation detail. The fix: extract the tax calculation into <code>computeTax(o)</code>. Now the orchestrator reads cleanly: <code>validate, computeTax, sendConfirmation</code>.</p><p>The signal that this is wrong: when reading a function, you find yourself thinking \"why are we suddenly worrying about decimal precision?\" or \"where did this magic number come from?\" Those thoughts mean a level mismatch. Extract until each level reads coherently.</p>",
+        "mathExpressions": ["\\text{call: } f \\to g \\implies \\text{abs}(g) \\leq \\text{abs}(f) \\quad \\text{(callees are at lower or equal abstraction)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-02-c3",
+        "title": "Parameters, Side Effects, and Pure Cores",
+        "contentHtml": "<p>Function signatures matter. A function with seven parameters is a code smell; the parameters likely belong together as a struct, or some are flags that should be separate functions. <strong>Boolean flag parameters</strong> are particularly bad: <code>save(user, true, false, true)</code> is unreadable. Two functions <code>saveDraft</code> and <code>publishUser</code> beat one parametrized monster.</p><p><strong>Side effects</strong> should be obvious from the function name. A function called <code>getUser</code> should not also write to the database. A function called <code>save</code> should not also send an email. Hidden side effects are a primary source of bugs because callers don't expect them.</p><p>The strongest pattern is the <strong>pure core, imperative shell</strong>: keep business logic in pure functions (no side effects, deterministic), and confine I/O to a thin outer layer. Pure cores are trivially testable, easy to reason about, and easy to refactor. Most of what makes code feel \"clean\" is having a clearly identifiable pure core.</p>",
+        "mathExpressions": ["f(x_1, \\ldots, x_7) \\implies \\text{too many params; group them or split the function}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["clean-q09", "clean-q10", "clean-q11", "clean-q12", "clean-q13", "clean-q14", "clean-q15", "clean-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "clean-03",
+    "topicId": "cs-clean-code",
+    "order": 3,
+    "title": "SOLID, DRY, and Other Principles",
+    "description": "Time-tested rules of thumb for software design",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "clean-03-c1",
+        "title": "The SOLID Principles",
+        "contentHtml": "<p><strong>SOLID</strong> is Robert Martin's 2000 collection of five OOP design principles. The acronym has stuck for a reason — they capture genuine wisdom about modular design.</p><p><strong>S</strong> — Single Responsibility: a class should have one reason to change. <strong>O</strong> — Open/Closed: open for extension, closed for modification (add new behavior by adding new types, not editing old ones). <strong>L</strong> — Liskov Substitution: subtypes must be usable wherever their parents are. <strong>I</strong> — Interface Segregation: many small interfaces beat one fat interface. <strong>D</strong> — Dependency Inversion: depend on abstractions, not concrete implementations.</p><p>Modern practitioners apply SOLID more loosely. The principles were forged in the era of deep class hierarchies; their original framing presumes lots of inheritance. In modern, more functional codebases, the spirit of SOLID survives but the mechanics differ. \"Single responsibility\" still matters; how you achieve it might be a struct + free functions instead of a class.</p>",
+        "mathExpressions": ["\\text{SOLID} = \\{ \\text{SRP}, \\text{OCP}, \\text{LSP}, \\text{ISP}, \\text{DIP} \\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-03-c2",
+        "title": "DRY, WET, and the Rule of Three",
+        "contentHtml": "<p><strong>DRY (Don't Repeat Yourself)</strong>: every piece of knowledge should have a single, authoritative representation. Copy-pasted business logic in three places means future changes must be applied in three places, and every divergence is a future bug.</p><p>But DRY is often misapplied. Two pieces of code can <em>look</em> identical and represent <em>different</em> concepts that just happen to coincide today. Forcibly merging them creates an abstraction that fights any change to either side. Sandi Metz's saying: \"duplication is far cheaper than the wrong abstraction.\"</p><p>The pragmatic guideline is the <strong>Rule of Three</strong>: when you see the same code three times, consider extracting an abstraction. Two times is coincidence; three times is a pattern. <strong>WET</strong> (\"Write Everything Twice\" or \"We Enjoy Typing\") is the joke counter-acronym, but it captures something real: tolerate a little duplication while you wait to see what the right abstraction is.</p>",
+        "mathExpressions": ["\\text{DRY: knowledge} \\to \\text{1 location} \\quad \\text{but only when it's the same knowledge}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-03-c3",
+        "title": "YAGNI, KISS, and Other Sanity Checks",
+        "contentHtml": "<p><strong>YAGNI (You Aren't Gonna Need It)</strong>: don't build things until you actually need them. Speculative generality — adding flexibility for hypothetical future requirements — is one of the great sources of complexity. The future is different from what you predict, and the abstractions you preemptively build rarely fit the requirements that actually arrive.</p><p><strong>KISS (Keep It Simple, Stupid)</strong>: prefer the simplest solution that works. Complexity should be earned, not added by default. Every piece of cleverness costs cognitive load forever; only add it when the alternative is worse.</p><p><strong>Principle of Least Astonishment</strong>: software should behave the way users (and other developers) reasonably expect. A function called <code>get</code> shouldn't have side effects. A class called <code>List</code> shouldn't be unordered. A configuration setting that says <code>retries: 3</code> shouldn't actually mean four attempts. Surprises are bugs in disguise.</p><p>None of these are absolute. They're heuristics that work in most cases. The senior skill is knowing when to break them — and being able to articulate why.</p>",
+        "mathExpressions": ["\\text{YAGNI: } P(\\text{actually need}) \\cdot \\text{benefit} < \\text{cost of complexity}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["clean-q17", "clean-q18", "clean-q19", "clean-q20", "clean-q21", "clean-q22", "clean-q23", "clean-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "clean-04",
+    "topicId": "cs-clean-code",
+    "order": 4,
+    "title": "Refactoring & Code Smells",
+    "description": "Recognizing rot, and the safe moves that fix it",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "clean-04-c1",
+        "title": "What Refactoring Means",
+        "contentHtml": "<p><strong>Refactoring</strong> is changing the structure of code without changing its observable behavior. Renaming a variable, extracting a function, splitting a class — all refactorings. Adding a feature is <em>not</em> refactoring. Fixing a bug is <em>not</em> refactoring. The discipline is to do them separately so you can verify behavior didn't change.</p><p>The classic reference is Martin Fowler's <em>Refactoring</em> (1999), cataloging dozens of named moves: <em>Extract Function</em>, <em>Inline Variable</em>, <em>Replace Conditional with Polymorphism</em>, <em>Introduce Parameter Object</em>. Each comes with a recipe: small, safe, behavior-preserving steps. Modern IDEs automate many of them: rename across a project, extract method, change signature.</p><p>The rhythm Fowler advocates: refactor in small steps, run tests between each step, commit when green. If you break something, you broke it in the last 30 seconds, not somewhere over the past hour. This is the only discipline that makes refactoring safe in real codebases.</p>",
+        "mathExpressions": ["\\text{refactor: } \\text{behavior}(\\text{old}) = \\text{behavior}(\\text{new}) \\quad \\text{but structure improved}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-04-c2",
+        "title": "Code Smells: Names for Common Rot",
+        "contentHtml": "<p>A <strong>code smell</strong> is a surface symptom of deeper trouble. Smells aren't bugs — the code might work fine — but they signal that something is off. Common smells:</p><p><em>Long Method</em>: a function that goes on for hundreds of lines. <em>Large Class</em>: a class that does too many things. <em>Long Parameter List</em>: many arguments suggest hidden grouping. <em>Duplicated Code</em>: the same logic in multiple places. <em>Feature Envy</em>: a method that reaches deep into another object's data. <em>Shotgun Surgery</em>: making one logical change requires editing twenty unrelated places. <em>Primitive Obsession</em>: using strings and ints where a domain type would be clearer. <em>Comments</em>: ironically, lots of explanatory comments suggest the code itself isn't expressive enough.</p><p>The smells aren't laws. Sometimes a class genuinely needs to be large; sometimes duplication is the right call. But each smell triggers a question: \"is there a cleaner shape here?\" Often the answer is yes, and the appropriate refactoring move is in Fowler's catalog. Smell awareness is the developer skill of noticing entropy before it grows critical.</p>",
+        "mathExpressions": ["\\text{smell} \\implies \\text{?refactor} \\quad \\text{not always, but always worth checking}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-04-c3",
+        "title": "Technical Debt and the Boy Scout Rule",
+        "contentHtml": "<p>Ward Cunningham coined <strong>technical debt</strong> as a metaphor: short-term shortcuts that you'll pay back later, with interest. Like financial debt, some is healthy (ship now, refactor later); too much, and you can no longer change anything.</p><p>The danger is that debt is invisible to anyone who doesn't read the code. Stakeholders see features; engineers see the spaghetti underneath. This makes debt easy to accumulate and hard to justify paying down. The fix is making it visible: tracking known debt as tickets, calling it out in design docs, dedicating fixed time to cleanup.</p><p>The <strong>Boy Scout Rule</strong>, popularized by Bob Martin, captures a sustainable maintenance discipline: <em>leave the campground cleaner than you found it</em>. Whenever you touch a file, make a small improvement: rename a confusing variable, extract a clearer function, add a missing test. The improvements compound. Codebases that follow this rule for years tend to feel younger than their age; codebases that don't tend to feel ancient by year three.</p>",
+        "mathExpressions": ["\\text{debt}(t) = \\text{debt}(0) + \\int_0^t (\\text{accrual} - \\text{repayment})\\, dt"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["clean-q25", "clean-q26", "clean-q27", "clean-q28", "clean-q29", "clean-q30", "clean-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "clean-05",
+    "topicId": "cs-clean-code",
+    "order": 5,
+    "title": "Testing & Quality",
+    "description": "Unit tests, the pyramid, TDD, and the limits of testing",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "clean-05-c1",
+        "title": "Why We Test",
+        "contentHtml": "<p>Tests do three things at once. They <strong>verify correctness</strong>: this code does what we think. They <strong>prevent regression</strong>: future changes don't accidentally break this behavior. They <strong>document intent</strong>: a well-named test is the clearest possible spec for a function's contract.</p><p>The cheapest mistake to fix is one caught by a test before merge. The next cheapest is one caught by a test in CI. The most expensive is one a customer hits in production at 3am. Testing shifts cost left — finding bugs earlier, when they're cheap and the surrounding context is fresh.</p><p>The frequent counter-argument — \"writing tests slows me down\" — measures the wrong thing. Tests don't speed up your initial code; they speed up everything you do <em>after</em>. With tests, you can refactor fearlessly, deploy confidently, and onboard newcomers quickly. Without them, every change is a roll of the dice.</p>",
+        "mathExpressions": ["\\text{cost of bug}(t) \\propto e^{kt} \\quad \\text{exponentially worse the later it's caught}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-05-c2",
+        "title": "The Test Pyramid",
+        "contentHtml": "<p>The <strong>test pyramid</strong> (Mike Cohn) prescribes a healthy mix of test types. <strong>Unit tests</strong> at the base — many, fast, narrow. <strong>Integration tests</strong> in the middle — fewer, slower, covering interactions between components. <strong>End-to-end tests</strong> at the top — few, slowest, simulating real user flows.</p><p>The pyramid shape reflects cost. A unit test runs in milliseconds; an E2E test runs in seconds or minutes. A unit test is easy to debug (one component); an E2E failure could be anywhere. So you write many unit tests for fine-grained correctness, fewer integration tests for component contracts, and a small number of E2E tests for the most critical user journeys.</p><p>The anti-pattern is the <strong>ice cream cone</strong>: lots of slow E2E tests, few or no unit tests. This is what happens when teams test only through the UI. The result is brittle, slow, hard-to-debug test suites that everyone hates. Inverting to a pyramid shape is one of the highest-ROI moves a codebase can make.</p>",
+        "mathExpressions": ["\\text{count}(\\text{unit}) \\gg \\text{count}(\\text{integration}) \\gg \\text{count}(\\text{e2e})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "clean-05-c3",
+        "title": "TDD, Coverage, and the Limits of Testing",
+        "contentHtml": "<p><strong>Test-Driven Development (TDD)</strong>, popularized by Kent Beck, follows a tight cycle: <strong>red</strong> (write a failing test), <strong>green</strong> (write the simplest code that passes), <strong>refactor</strong> (clean up while tests stay green). The discipline forces you to design from the user's perspective and produces high test coverage by construction.</p><p>TDD is contentious. Devotees say it produces better designs and fewer bugs. Critics argue it shapes code around what's testable rather than what's clean. The honest answer: TDD is one tool among several. It works well for pure logic, less well for UI, infrastructure, or exploratory work. Many strong engineers test-after rather than test-first.</p><p><strong>Code coverage</strong> measures what fraction of code is exercised by tests. It's a useful diagnostic but a terrible target. 100% coverage doesn't mean correct — you can cover every line with tests that assert nothing. Aim for tests that verify <em>meaningful behavior</em>, not tests that hit every line. Goodhart's law applies brutally: when coverage becomes a target, it ceases to be a useful measure.</p>",
+        "mathExpressions": ["\\text{TDD: red} \\to \\text{green} \\to \\text{refactor} \\to \\text{red} \\to \\ldots"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["clean-q32", "clean-q33", "clean-q34", "clean-q35", "clean-q36", "clean-q37"],
+    "puzzleId": null
+  }
+]

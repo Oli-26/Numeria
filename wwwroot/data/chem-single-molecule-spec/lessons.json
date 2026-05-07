@@ -1,0 +1,341 @@
+[
+  {
+    "id": "smol-01",
+    "topicId": "chem-single-molecule-spec",
+    "order": 1,
+    "title": "Why Single-Molecule? Hidden Heterogeneity and the Ergodic Question",
+    "description": "Why bulk averages can lie, what intermediates and rare states bulk experiments hide, and how Moerner and Yanagida cracked the door open in 1989-95",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "smol-01-c1",
+        "title": "Bulk Averages Hide Sub-Populations",
+        "contentHtml": "<p>An ensemble measurement reports a single number per observable, the population mean. If a sample contains two sub-populations, an enzyme half active and half inactive, an mRNA half folded and half misfolded, a kinetic mixture with two parallel rate constants, the bulk experiment averages them out. A monoexponential fit to a biexponential decay can produce a clean line through the data and an entirely fictional rate constant. This is not a contrived edge case: it is the default for biomolecules at physiological conditions, where conformational landscapes are rough and intermediates populate transiently.</p><p>Single-molecule observation removes the average. You watch one molecule at a time and build histograms of its observables. Static heterogeneity (different molecules having different intrinsic properties) and dynamic heterogeneity (one molecule switching between states over time) show up directly as multimodal distributions or as transitions in time traces. The famous example: Lu, Xun, and Xie's 1998 single-molecule cholesterol oxidase study revealed memory effects in catalytic turnover that were invisible in bulk steady-state kinetics, because each enzyme molecule kept its conformational identity for many turnovers.</p><p>The cost is severe sensitivity demands: from Avogadro's number down to <strong>N = 1</strong>, the SNR must come entirely from a few thousand photons. The next two centuries of fluorescence-microscopy engineering, from Minsky's 1957 confocal patent through TIRF, photon-counting APDs, and EMCCDs, exist almost entirely to serve this requirement.</p>",
+        "mathExpressions": [
+          "\\langle k \\rangle_{\\text{bulk}} = \\frac{\\sum_i N_i k_i}{\\sum_i N_i} \\quad \\text{(mean only)}",
+          "P(k) = \\sum_i \\frac{N_i}{N}\\, \\delta(k - k_i) \\quad \\text{(distribution from sm)}",
+          "\\sigma_{\\text{shot}} = \\sqrt{N_{\\text{ph}}}, \\quad \\text{SNR}_{\\text{sm}} \\propto \\sqrt{N_{\\text{ph}}}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-01-c2",
+        "title": "The Ergodic-Time Question",
+        "contentHtml": "<p>Statistical mechanics rests on the <strong>ergodic hypothesis</strong>: the time average of an observable on a single trajectory equals the ensemble average over the equilibrium distribution. For a quickly-equilibrating, well-behaved system the two are interchangeable and bulk and single-molecule data must agree. For glassy, kinetically trapped, or intrinsically disordered systems, time and ensemble averages diverge over experimentally accessible windows. Single-molecule trajectories let you measure both averages independently and ask whether they match.</p><p>For an enzyme like cholesterol oxidase, individual molecules show non-Markovian fluctuations on the seconds-to-minutes scale. Catalytic turnover times within one molecule's trajectory are correlated: a slow turnover is followed by another slow turnover, suggesting the conformation persists. Averaging over time within one molecule (long enough) recovers the ensemble mean, but only after a correlation time τ<sub>c</sub> that may exceed any individual experiment.</p><p>Conceptually this opens a third axis. Bulk experiments give you the distribution moments. Single-molecule experiments give you the distribution itself plus the dynamics on it. The trade is that you must record many molecules to make the histograms statistically reliable, exactly the opposite of the bulk regime where one tube gives you N = 10<sup>20</sup> for free. Modern smFRET instruments routinely log 10<sup>3</sup>-10<sup>5</sup> molecules per dataset, with each molecule's trajectory dissected by hidden Markov modelling.</p>",
+        "mathExpressions": [
+          "\\overline{A}_T = \\frac{1}{T}\\int_0^T A(t)\\, dt \\xrightarrow{T \\to \\infty} \\langle A \\rangle_{\\text{eq}} \\quad \\text{(ergodicity)}",
+          "C(\\tau) = \\langle \\delta A(0)\\, \\delta A(\\tau) \\rangle, \\quad \\tau_c = \\int_0^\\infty C(\\tau)/C(0)\\, d\\tau",
+          "\\text{ergodic if } T \\gg \\tau_c"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-01-c3",
+        "title": "First Single-Molecule Measurements: Moerner, Orrit, Yanagida, Funatsu",
+        "contentHtml": "<p>Three landmarks bracket the founding decade. <strong>W.E. Moerner and Lothar Kador</strong> (1989, IBM Almaden) achieved the first detection of a single absorbing molecule, pentacene in a p-terphenyl host crystal at 1.5 K, by frequency-modulated absorption with a tunable dye laser. Two years later <strong>Michel Orrit</strong> (1990, Bordeaux) detected single pentacene molecules by their fluorescence excitation spectrum, with vastly higher SNR. The 2014 Nobel cited Moerner alongside Hell and Betzig for opening this regime.</p><p>The biological breakthrough came in <strong>1995</strong>: <strong>Toshio Yanagida and Takashi Funatsu</strong> reported the first single-molecule fluorescence imaging of <em>functioning</em> molecules in aqueous solution at room temperature, watching individual ATP binding and turnover events on myosin motors. They used <strong>total internal reflection fluorescence (TIRF)</strong> excitation, which suppresses the bulk-solution background by exciting only molecules within ~100 nm of a glass-water interface, the only way to reach single-molecule SNR with micromolar fluorescent ligand in solution.</p><p>By 1996, <strong>Steven Chu and Shimon Weiss</strong> had demonstrated <strong>single-pair FRET</strong> on freely diffusing DNA, and <strong>Taekjip Ha</strong> in the Selvin/Weiss lab took it to surface-immobilised molecules with continuous trajectories, the format that defines smFRET to this day. The instrumentation now is highly standardised: a 532 nm and 640 nm laser pair on a TIRF microscope, an EMCCD or sCMOS camera, dye-labelled biomolecule on a streptavidin-PEG passivated glass slide, and an oxygen scavenger system to prolong dye lifetime.</p>",
+        "mathExpressions": [
+          "I_{\\text{TIRF}}(z) = I_0 \\exp(-z/d), \\quad d = \\frac{\\lambda}{4\\pi}\\left(n_1^2 \\sin^2\\theta - n_2^2\\right)^{-1/2}",
+          "d \\approx 100\\text{ nm at } \\lambda = 500\\text{ nm}, \\theta = 70^\\circ"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q01", "smol-q02", "smol-q03", "smol-q04", "smol-q05", "smol-q06", "smol-q07", "smol-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "smol-02",
+    "topicId": "chem-single-molecule-spec",
+    "order": 2,
+    "title": "Single-Molecule Fluorescence: Photons, Dyes, Photobleaching",
+    "description": "Where the photon budget comes from, what cyanine and JF dyes deliver, and how TIRF + photon counting make N = 1 detectable",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "smol-02-c1",
+        "title": "The Photon Budget and Shot Noise",
+        "contentHtml": "<p>Every single-molecule fluorescence measurement is a photon-budget calculation. A dye absorbs <code>σ ≈ 10<sup>-16</sup> cm<sup>2</sup></code> at saturating intensity I, cycles between ground and excited state at rate <code>k<sub>exc</sub> = σI/hν</code>, and emits with quantum yield <code>Φ<sub>F</sub></code> (typically 0.3-0.95 for good dyes). At I ≈ 1 kW/cm<sup>2</sup>, the emission rate of an unsaturated Cy3 dye is roughly <code>10<sup>4</sup>-10<sup>5</sup> photons/s</code>. Subtract collection efficiency (numerical aperture, optics, detector QE), realistically 5-15 %, and you get <strong>10<sup>3</sup>-10<sup>4</sup> detected photons/s</strong> per dye.</p><p>Detection is limited by shot noise: the photon arrival is Poisson-distributed, so <code>σ<sub>N</sub> = √N</code> for N detected photons. To resolve a state with relative variance <code>(σ/N)<sup>2</sup> = 1/N = 0.01</code>, you need 100 photons; for 1% precision in a FRET efficiency, you need ~10<sup>4</sup>. Frame integration time and dye total photon yield (typically 10<sup>5</sup>-10<sup>7</sup> photons before photobleaching) set the time resolution and trajectory length the experiment can achieve.</p><p>The other constant headache is <strong>background</strong>: scattered laser light (Rayleigh and Raman), autofluorescence from solvent, contaminating fluorophores on glass. SNR scales as <code>S/√(S+B)</code> where S is signal and B is background. TIRF suppresses background by ~100× by exciting only the 100 nm evanescent layer. Confocal pinhole filtering does the same trick in the axial direction. Both are required to push N = 1 above the noise floor.</p>",
+        "mathExpressions": [
+          "k_{\\text{exc}} = \\sigma I / h\\nu",
+          "k_{\\text{em}} = \\Phi_F \\cdot k_{\\text{exc}} / (1 + k_{\\text{exc}} \\tau_F)",
+          "\\text{SNR} = \\frac{S}{\\sqrt{S + B + N_{\\text{dark}}}}",
+          "\\sigma_E^2 \\approx \\frac{E(1-E)}{N_{\\text{ph}}} \\quad \\text{(FRET efficiency uncertainty)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-02-c2",
+        "title": "The Dye Catalogue: Cy3/Cy5, Alexa, ATTO, Janelia Fluor",
+        "contentHtml": "<p>Single-molecule biology runs on a small zoo of organic dyes. <strong>Cy3</strong> (λ<sub>ex</sub> 550 nm, λ<sub>em</sub> 570 nm, Φ<sub>F</sub> ≈ 0.04 free, ~0.4 on DNA) and <strong>Cy5</strong> (650/670 nm, Φ<sub>F</sub> ≈ 0.27) are the original smFRET pair: Cy3 sees protein-induced fluorescence enhancement when its <em>cis-trans</em> isomerisation slows on labelled DNA, an unintended bonus that makes them robust on nucleic acids. <strong>Alexa Fluor 488/555/568/647</strong> (Molecular Probes/Invitrogen) replace cyanines with sulfonated rhodamines, giving better photostability and pH insensitivity at the cost of slightly higher cost.</p><p><strong>ATTO 532, 550, 647N</strong> (ATTO-TEC, Siegen) are workhorses for confocal smFRET on freely diffusing molecules: very high quantum yield, narrow emission. <strong>Janelia Fluor (JF) dyes</strong> from the Lavis lab at HHMI Janelia (JF549, JF646, JF635i) use azetidine-substituted rhodamines that suppress non-fluorescent twisted intramolecular charge-transfer (TICT) states, achieving Φ<sub>F</sub> &gt; 0.9 and dramatically extended bleach lifetimes. <strong>HaloTag and SNAP-tag</strong> covalent ligands (HaloTag-JF549, BG-JF635) attach these dyes to genetically-fused proteins inside living cells, enabling live-cell smFRET and single-particle tracking on receptors and motors.</p><p>For the deepest red and infrared, <strong>silicon-rhodamine (SiR)</strong> dyes (Lukinavičius and Johnsson, 2013) are far-red, fluorogenic on binding to HaloTag, and cell-permeable, the dye class behind PA-JF646 used in MINFLUX and PALM. <strong>Quantum dots</strong> (CdSe/ZnS) deliver bleach-resistant signals over hours but blink and are 10-15 nm in diameter, too large for FRET work but excellent for single-particle tracking.</p>",
+        "mathExpressions": [
+          "N_{\\text{photons}}^{\\text{total}} = \\frac{\\Phi_F}{\\Phi_{\\text{bleach}}}",
+          "\\Phi_{\\text{bleach}}(\\text{Cy5}) \\approx 10^{-5} \\to N_{\\text{tot}} \\sim 10^4 \\text{--} 10^5",
+          "\\Phi_{\\text{bleach}}(\\text{JF}) \\approx 10^{-7} \\to N_{\\text{tot}} \\sim 10^6 \\text{--} 10^7"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-02-c3",
+        "title": "Photobleaching, Blinking, and Triplet Quenchers",
+        "contentHtml": "<p>Every dye eventually photobleaches. The dominant pathway is intersystem crossing into the long-lived (~µs to ms) <strong>triplet state</strong> T<sub>1</sub>, which then reacts with dissolved O<sub>2</sub> to generate singlet oxygen <sup>1</sup>O<sub>2</sub> that destroys the chromophore. Per-photon bleach probability runs from <code>Φ<sub>bleach</sub> ≈ 10<sup>-5</sup></code> for Cy5 to <code>10<sup>-7</sup></code> for the best JF dyes, capping single-molecule trajectory length at ~10<sup>5</sup>-10<sup>7</sup> photons.</p><p>The standard remedies in solution are <strong>oxygen scavenger systems</strong> and <strong>triplet quenchers</strong>. The <strong>GLOX system</strong> (glucose + glucose oxidase + catalase) consumes O<sub>2</sub>; modern alternatives include PCA/PCD (protocatechuic acid/protocatechuate-3,4-dioxygenase, faster onset) and pyranose oxidase. Removing O<sub>2</sub> alone makes the dye blink because the triplet now lives for ms. Adding <strong>Trolox (2 mM)</strong> or methylviologen + ascorbate (ROXS) reduces the triplet back to ground state in microseconds, simultaneously suppressing blinking and slowing bleaching. The Joo and Ha labs codified the modern smFRET buffer recipe around 2008.</p><p>Blinking on the millisecond scale is exploited rather than suppressed in <strong>STORM/PALM</strong> super-resolution: each frame, only a small fraction of dyes are 'on', so individual emitters are spatially isolated and can be localised to ~10 nm precision. The same triplet/redox photophysics that ruins continuous trajectories powers super-resolution imaging.</p>",
+        "mathExpressions": [
+          "\\Phi_{\\text{bleach}} = k_{\\text{bleach}} / (k_{\\text{bleach}} + k_{\\text{em}} + k_{\\text{nr}})",
+          "\\tau_{\\text{T}}^{-1} = k_{\\text{phos}} + k_{\\text{O}_2}[\\text{O}_2] + k_{\\text{Q}}[\\text{Trolox}]",
+          "k_{\\text{ISC}} \\approx 10^6 \\text{--} 10^7 \\text{ s}^{-1} \\quad \\text{(typical organic dye)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q09", "smol-q10", "smol-q11", "smol-q12", "smol-q13", "smol-q14", "smol-q15", "smol-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "smol-03",
+    "topicId": "chem-single-molecule-spec",
+    "order": 3,
+    "title": "smFRET: Distance Ruler and Hidden Markov Trajectories",
+    "description": "Forster's r⁻⁶ dependence, the donor-acceptor smFRET pair, and HMM segmentation of noisy time-traces",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "smol-03-c1",
+        "title": "Forster Resonance Energy Transfer: r⁻⁶ Distance",
+        "contentHtml": "<p>Theodor Forster's 1948 dipole-dipole transfer mechanism is the ruler. Two chromophores, donor D excited and acceptor A in its ground state, exchange energy non-radiatively at rate <code>k<sub>FRET</sub> = (1/τ<sub>D</sub>)(R<sub>0</sub>/r)<sup>6</sup></code>, where τ<sub>D</sub> is the donor's intrinsic lifetime, r the inter-dye centre-to-centre distance, and <strong>R<sub>0</sub> the Forster radius</strong>, the distance at which transfer efficiency equals 50%. The <strong>FRET efficiency</strong> is <code>E = 1/(1 + (r/R<sub>0</sub>)<sup>6</sup>)</code>, which slopes most steeply between roughly 0.5 R<sub>0</sub> and 1.5 R<sub>0</sub>, the useful 2-8 nm range for most biological work.</p><p>R<sub>0</sub> depends on the spectral overlap integral J(λ), donor quantum yield Φ<sub>D</sub>, refractive index n, and the <strong>orientation factor κ<sup>2</sup></strong>. For the canonical <strong>Cy3-Cy5</strong> pair, R<sub>0</sub> ≈ 5.4 nm in aqueous buffer. For Atto550-Atto647N, R<sub>0</sub> ≈ 6.5 nm. Choosing a pair with R<sub>0</sub> matched to the expected biology is the first design decision.</p><p>The <strong>κ<sup>2</sup> headache</strong>: the orientation factor depends on the relative angles of the two transition dipoles and ranges from 0 (perpendicular) to 4 (collinear). Most measurements assume κ<sup>2</sup> = 2/3, the dynamic isotropic average, valid only if both dyes rotate freely on the ns timescale of energy transfer. Rotational anisotropy measurements (lifetime polarisation r<sub>D</sub>, r<sub>A</sub>) confirm or correct this assumption. Modern publications report κ<sup>2</sup> uncertainty alongside the FRET-derived distance.</p>",
+        "mathExpressions": [
+          "E = \\frac{1}{1 + (r/R_0)^6}",
+          "R_0^6 = \\frac{9 \\ln(10)\\, \\kappa^2 \\Phi_D}{128 \\pi^5 n^4 N_A} J(\\lambda)",
+          "J(\\lambda) = \\int_0^\\infty F_D(\\lambda)\\, \\varepsilon_A(\\lambda)\\, \\lambda^4\\, d\\lambda",
+          "\\kappa^2 = (\\hat{\\mu}_D \\cdot \\hat{\\mu}_A - 3(\\hat{\\mu}_D \\cdot \\hat{r})(\\hat{\\mu}_A \\cdot \\hat{r}))^2 \\in [0, 4]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-03-c2",
+        "title": "Reading a Single-Molecule FRET Trajectory",
+        "contentHtml": "<p>A standard surface-immobilised smFRET experiment records two channels per molecule, the donor and acceptor intensities <code>I<sub>D</sub>(t), I<sub>A</sub>(t)</code> sampled at 10-100 Hz on an EMCCD/sCMOS for seconds to minutes. The proximity ratio <code>E<sub>app</sub> = I<sub>A</sub>/(I<sub>A</sub> + γ I<sub>D</sub>)</code> uses the correction factor γ that accounts for differing detection efficiency and quantum yield. For accurate distance work, four ALEX/MFD corrections are applied: γ (detection efficiency ratio), β (direct acceptor excitation), α (donor leakage into acceptor channel), and δ (acceptor-only contamination). After correction, distances are extracted from <code>r = R<sub>0</sub>(1/E - 1)<sup>1/6</sup></code>.</p><p>Anticorrelated jumps in <code>I<sub>D</sub></code> and <code>I<sub>A</sub></code> are the unmistakable smFRET signature: when r decreases (E increases), donor emission falls and acceptor emission rises by the same amount. This anticorrelation distinguishes a real FRET transition from a dye blink or an intensity fluctuation. Sudden loss of acceptor signal (without donor recovery) reports acceptor photobleaching, the dominant truncation of trajectories.</p><p>A modern smFRET trajectory shows discrete dwells at well-defined E levels, transitions on ms-s timescales, and switching kinetics. Standard pipelines (Holliday Junction, ribosome translocation, HIV reverse transcriptase) routinely resolve 3-5 distinct FRET states. Software packages (SPARTAN, ebFRET, Tweezer-Pull, Mash-FRET, Deepfret) implement the full analysis chain from raw camera frames to state-segmented distance histograms.</p>",
+        "mathExpressions": [
+          "E_{\\text{app}} = \\frac{I_A}{I_A + \\gamma I_D}",
+          "I_A^{\\text{corr}} = I_A - \\alpha I_D - \\beta I_{A,\\text{direct}}",
+          "r = R_0\\,(1/E - 1)^{1/6}",
+          "\\Delta E_{\\text{anticorr}}: \\quad \\Delta I_A = -\\Delta I_D \\cdot (\\gamma)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-03-c3",
+        "title": "Hidden Markov Models for State Identification",
+        "contentHtml": "<p>Raw FRET traces are noisy and the human eye over-segments. The dominant analysis is the <strong>Hidden Markov Model (HMM)</strong>: the molecule is assumed to occupy one of K hidden states with state-specific emission distributions p(E | state), and to switch between states with a transition matrix A<sub>ij</sub>. The forward-backward algorithm (Baum-Welch) iteratively estimates A<sub>ij</sub> and emission means; Viterbi decoding then assigns the most likely state to every frame.</p><p>Choosing K is a model-selection problem. <strong>Variational Bayes-EM</strong> (vbFRET, ebFRET, Bronson-Wiggins, 2009) penalises additional states automatically, finding the parsimonious K that fits the data without overfitting. Recent <strong>deep-learning approaches</strong> (DeepFRET, Thomsen et al. 2020) train CNNs to recognise valid traces and segment states without manual selection of analysis windows.</p><p>The transition matrix A converts directly into kinetics: <code>k<sub>ij</sub> ≈ A<sub>ij</sub>/Δt</code> for short Δt, and detailed balance <code>π<sub>i</sub> A<sub>ij</sub> = π<sub>j</sub> A<sub>ji</sub></code> tests whether the system is at equilibrium or being driven (e.g., by ATP). <strong>Transition density plots (TDPs)</strong> show how often each i → j transition occurs, often the cleanest visualisation of complex multistate kinetics. The Ha lab's seminal 2008 holliday-junction work and Cornish-Joo studies of ribosome dynamics rely on this exact pipeline.</p>",
+        "mathExpressions": [
+          "P(E_t | s_t = i) = \\mathcal{N}(\\mu_i, \\sigma_i^2)",
+          "P(s_{t+1} = j | s_t = i) = A_{ij}",
+          "L = P(E_{1:T}) = \\sum_{s_{1:T}} P(E_{1:T}, s_{1:T})",
+          "k_{ij} = -\\ln(1 - A_{ij})/\\Delta t \\approx A_{ij}/\\Delta t"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q17", "smol-q18", "smol-q19", "smol-q20", "smol-q21", "smol-q22", "smol-q23", "smol-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "smol-04",
+    "topicId": "chem-single-molecule-spec",
+    "order": 4,
+    "title": "Force Spectroscopy: Tweezers, AFM, and Nonequilibrium Free Energies",
+    "description": "Optical and magnetic tweezers, the worm-like chain, and how Jarzynski/Crooks let you read ΔG from irreversible single-molecule pulls",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "smol-04-c1",
+        "title": "Optical/Magnetic Tweezers and AFM",
+        "contentHtml": "<p>Three mechanical single-molecule tools dominate. <strong>Optical tweezers</strong> (Ashkin, 1986; Block lab, 1990s) trap a dielectric microsphere (1 µm polystyrene) at the focus of a high-NA infrared laser; the gradient force gives a Hookean restoring force <code>F = -k<sub>trap</sub>(x - x<sub>0</sub>)</code> with stiffness 0.05-1 pN/nm and force range 0.1-200 pN at sub-nm resolution. Bustamante's group used optical tweezers to pull on individual DNA, RNA, and protein molecules tethered between two beads, the configuration that produced classic studies of RNA hairpin folding (Liphardt, Onoa, Bustamante, Tinoco 2001).</p><p><strong>Magnetic tweezers</strong> (Croquette and Strick, 1996) attach a paramagnetic bead to one molecule end and apply force via external permanent magnets. Forces from 0.01 pN to ~100 pN are accessible, lower than optical traps but easier to apply for hours, ideal for DNA topology work and for measuring small forces that thermal fluctuations average over. Applying torque rotates the bead, allowing supercoiling, gyrase mechanism, and topoisomerase studies.</p><p><strong>AFM</strong> (Atomic Force Microscopy) cantilevers (Gaub, Rief, Fernandez 1990s) apply much higher forces, 10-2000 pN, typical for protein unfolding studies. Cantilever stiffness 1-100 pN/nm, time resolution down to 0.1 ms with high-speed AFMs. Single-molecule AFM revealed the sawtooth force-extension trace of titin, where each tooth corresponds to unfolding of one Ig domain at ~200 pN. The trade-offs: optical tweezers for low-force precision, magnetic tweezers for long timescales and torque, AFM for high force and topographic imaging.</p>",
+        "mathExpressions": [
+          "F_{\\text{trap}} = -k_{\\text{trap}}(x - x_0), \\quad k_{\\text{trap}} \\sim 0.05\\text{--}1 \\text{ pN/nm}",
+          "\\sigma_F^{\\text{thermal}} = \\sqrt{k_B T / k_{\\text{trap}}}\\, k_{\\text{trap}} \\quad \\text{at equilibrium}",
+          "F_{\\text{AFM}} = k_c \\cdot \\Delta z, \\quad k_c \\sim 1\\text{--}100 \\text{ pN/nm}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-04-c2",
+        "title": "The Worm-Like Chain and RNA Hairpin Folding",
+        "contentHtml": "<p>Polymer elasticity is described by the <strong>worm-like chain (WLC)</strong>, parametrised by the contour length L and the persistence length L<sub>p</sub>. The Marko-Siggia 1995 interpolation formula gives <code>F·L<sub>p</sub>/k<sub>B</sub>T = (1/4)(1 - x/L)<sup>-2</sup> - 1/4 + x/L</code>, fitting force-extension curves of dsDNA (L<sub>p</sub> ≈ 50 nm), ssDNA (L<sub>p</sub> ≈ 1 nm), and unfolded protein (L<sub>p</sub> ≈ 0.4-0.8 nm). Fitting WLC to a pull gives a label-free mechanical signature of secondary structure.</p><p>The classic Bustamante experiment: tether a single P5abc RNA hairpin between two beads via DNA handles, pull at constant velocity (~50 nm/s) using a dual-trap setup. The force-extension trace shows a smooth WLC region followed by an abrupt extension jump at <code>F<sub>unfold</sub> ≈ 14 pN</code>, releasing ~20 nm of contour length, the unfolded hairpin. Reverse the pull and the trace shows a refolding jump at slightly lower force, the hysteresis revealing a non-equilibrium pull.</p><p>Repeated pulling builds a distribution P(F<sub>unfold</sub>). The Bell-Evans framework <code>k(F) = k<sub>0</sub> exp(F·x<sup>‡</sup>/k<sub>B</sub>T)</code> links the most probable unfolding force to the transition-state distance x<sup>‡</sup> from the folded state and the zero-force unfolding rate k<sub>0</sub>. Dudko-Hummer-Szabo (2008) extended this to extract the full barrier height and curvature from force histograms; this analysis is now standard for protein unfolding by AFM and tweezers.</p>",
+        "mathExpressions": [
+          "\\frac{F L_p}{k_B T} = \\frac{1}{4}\\left(1 - \\frac{x}{L}\\right)^{-2} - \\frac{1}{4} + \\frac{x}{L}",
+          "L_p^{\\text{dsDNA}} \\approx 50 \\text{ nm}, \\quad L_p^{\\text{ssDNA}} \\approx 1 \\text{ nm}",
+          "k(F) = k_0 \\exp(F \\cdot x^{\\ddagger}/k_B T) \\quad \\text{(Bell-Evans)}",
+          "F^* \\approx \\frac{k_B T}{x^{\\ddagger}} \\ln\\!\\left(\\frac{\\dot{F} x^{\\ddagger}}{k_0 k_B T}\\right)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-04-c3",
+        "title": "Jarzynski and Crooks: Equilibrium ΔG from Irreversible Pulls",
+        "contentHtml": "<p>The 1997 <strong>Jarzynski equality</strong> looks impossible at first sight: an exact relation between equilibrium free-energy difference and the work done in <em>arbitrarily fast</em>, irreversible processes. <code>⟨exp(-βW)⟩ = exp(-βΔF)</code>, where the average is over many realisations of the same protocol and β = 1/k<sub>B</sub>T. The trick is the convex exponential: rare, low-work trajectories dominate the average even when the typical work is far above ΔF.</p><p>The 2005 <strong>Liphardt-Bustamante-Tinoco</strong> demonstration is canonical. Pull a single RNA hairpin at finite velocity and record W = ∫F dx for each trajectory. Forward pulls dissipate; reverse pulls dissipate too. Apply Jarzynski to ~50 forward trajectories and recover ΔF<sub>fold→unfold</sub> within a few k<sub>B</sub>T, agreeing with bulk calorimetry. Convergence is slow because the rare low-work trajectories are exponentially rare; biased reweighting (Hummer-Szabo) and the <strong>Crooks fluctuation theorem</strong> <code>P<sub>F</sub>(W)/P<sub>R</sub>(-W) = exp(β(W - ΔF))</code> let you find ΔF from the crossing point of forward and reverse work distributions, often more cleanly than Jarzynski.</p><p>This connects single-molecule mechanics to the foundations of nonequilibrium statistical mechanics. The Jarzynski/Crooks framework is now used to extract folding free-energy landscapes (Woodside, Ritort), to validate force-field accuracy in MD simulations against tweezer pulls, and to design molecular motors that exploit rare fluctuations. Cesare Bustamante's lab continues to be the testbed where these theorems get translated from theorem to instrument.</p>",
+        "mathExpressions": [
+          "\\langle e^{-\\beta W} \\rangle = e^{-\\beta \\Delta F} \\quad \\text{(Jarzynski 1997)}",
+          "\\frac{P_F(W)}{P_R(-W)} = e^{\\beta(W - \\Delta F)} \\quad \\text{(Crooks 1999)}",
+          "\\langle W \\rangle \\geq \\Delta F, \\quad \\langle W_{\\text{diss}} \\rangle = \\langle W \\rangle - \\Delta F \\geq 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q25", "smol-q26", "smol-q27", "smol-q28", "smol-q29", "smol-q30", "smol-q31", "smol-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "smol-05",
+    "topicId": "chem-single-molecule-spec",
+    "order": 5,
+    "title": "Super-Resolution: PALM, STORM, and MINFLUX",
+    "description": "How single-molecule localisation broke Abbe's diffraction limit and how MINFLUX pushed it to the angstrom scale",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "smol-05-c1",
+        "title": "Localisation Precision: Why σ ≈ s/√N",
+        "contentHtml": "<p>A single fluorescent emitter imaged through a diffraction-limited microscope produces an Airy disk approximated by a 2D Gaussian PSF of width <code>s ≈ λ/(2 NA) ≈ 200-300 nm</code> at typical wavelengths. You cannot resolve two emitters closer than that by simply looking. But you can <em>localise</em> a single emitter with precision much better than the PSF width: by fitting a Gaussian to the photon distribution, you find its centroid with statistical uncertainty <code>σ ≈ s/√N</code> where N is the number of detected photons.</p><p>This is the famous <strong>Thompson-Larson-Webb 2002</strong> formula in its idealised form; the full Mortensen-Churchman-Spudich 2010 expression includes background and pixelation: <code>σ<sup>2</sup> = (s<sup>2</sup> + a<sup>2</sup>/12)/N + 8πs<sup>4</sup>b<sup>2</sup>/(a<sup>2</sup>N<sup>2</sup>)</code>, where a is pixel size and b is background per pixel. With N = 10<sup>4</sup> photons, σ ≈ 2-3 nm; with N = 10<sup>3</sup>, σ ≈ 6-10 nm; the localisation precision scales as the inverse square root of the photon budget.</p><p>The catch: you can only localise an emitter when it is alone within the diffraction-limited spot. Two simultaneously emitting molecules within s of each other produce overlapping PSFs and a blurred fit. The super-resolution insight, which earned the 2014 Nobel for Hell, Betzig, and Moerner, is that you can <strong>impose isolation in time</strong> by switching most molecules off and only letting a sparse subset emit per frame.</p>",
+        "mathExpressions": [
+          "\\text{PSF}(x, y) \\approx \\frac{N}{2\\pi s^2} \\exp\\!\\left(-\\frac{(x-x_0)^2 + (y-y_0)^2}{2 s^2}\\right)",
+          "\\sigma_{xy} \\approx \\frac{s}{\\sqrt{N}} \\quad \\text{(idealised)}",
+          "\\sigma_{xy}^2 = \\frac{s^2 + a^2/12}{N} + \\frac{8\\pi s^4 b^2}{a^2 N^2} \\quad \\text{(Mortensen)}",
+          "s_{\\text{Abbe}} = \\frac{\\lambda}{2 \\text{NA}} \\approx 250 \\text{ nm at } \\lambda = 500\\text{ nm, NA} = 1.0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-05-c2",
+        "title": "PALM and STORM: Stochastic On-Off Imaging",
+        "contentHtml": "<p><strong>PALM (Photo-Activated Localisation Microscopy)</strong> from Eric Betzig and Harald Hess (2006, HHMI Janelia) uses photoactivatable fluorescent proteins (PA-GFP, mEos2, Dronpa) that switch from a dark state to a fluorescent state when hit with a low-intensity 405 nm UV pulse. Activate sparsely, image and localise the few activated molecules with a 488 nm laser, photobleach them, repeat. After 10<sup>4</sup>-10<sup>5</sup> cycles, you have a pointillist image with ~20 nm precision per molecule.</p><p><strong>STORM (Stochastic Optical Reconstruction Microscopy)</strong> from Xiaowei Zhuang's lab (2006, Harvard) uses organic dyes (Cy3-Cy5 pairs originally; now Alexa647 dominates) that blink stochastically in a thiol-containing buffer (β-mercaptoethanol or MEA, plus oxygen scavenger). The vast majority of dyes are 'off' (a long-lived radical anion state) at any moment; only a sparse subset emits per frame. Same algorithm, same ~20 nm precision, same final image. dSTORM (Heilemann 2008) and direct STORM made the buffer chemistry routine.</p><p>The defining cost: <strong>time</strong>. Both PALM and STORM need ~10<sup>5</sup> frames to reconstruct one super-resolved image, taking minutes to hours. Live-cell STORM with fast dyes (~ms blink times) and rapid cameras (~1000 fps) reaches ~30 s acquisition per frame. <strong>3D-PALM/STORM</strong> uses astigmatism, biplane, or interferometric encoding (iPALM, ~10 nm in z). These methods completely transformed cell-biology imaging, replacing the ~250 nm diffraction limit with ~20 nm structural resolution accessible to any well-equipped lab.</p>",
+        "mathExpressions": [
+          "\\rho_{\\text{on}}(t) = \\rho_{\\text{label}} \\cdot \\frac{k_{\\text{act}}}{k_{\\text{act}} + k_{\\text{bleach}}} \\cdot e^{-k_{\\text{bleach}} t}",
+          "\\text{frames to reconstruct} \\approx \\rho_{\\text{label}} A_{\\text{FOV}} / N_{\\text{on/frame}}",
+          "\\text{Nyquist sampling: } d_{\\text{label}} < 2 \\sigma_{\\text{loc}}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-05-c3",
+        "title": "MINFLUX and Sub-Nanometer Imaging",
+        "contentHtml": "<p>STORM and PALM hit a fundamental wall at ~10 nm precision because reaching 1 nm requires N ≈ 10<sup>6</sup> photons per emitter, more than any organic dye delivers before bleaching. <strong>Stefan Hell's MINFLUX</strong> (2017) breaks the σ = s/√N scaling entirely. Instead of imaging an emitter through a Gaussian PSF, MINFLUX excites it with a <strong>doughnut beam</strong> that has zero intensity at its centre. Move the doughnut around and measure how the emitter's photon count drops as the beam zero approaches it. The position is encoded in the photon count, not in PSF fitting.</p><p>MINFLUX achieves <strong>~1 nm localisation with only 10<sup>2</sup>-10<sup>3</sup> photons</strong>, more than 10× better photon efficiency than PALM. The trade is throughput: the doughnut must scan around each emitter individually, so MINFLUX is an iterative-tracking method, not a parallel imaging method like STORM. Modern abberior MINFLUX systems track single molecules at 1 nm precision and ~100 µs time resolution simultaneously; a 2024 Hell-lab paper (Schmidt et al., <em>Science</em> 2023; recent 2024 follow-ups) reported tracking a kinesin head's stepping with sub-nanometre precision in living cells, the closest single-molecule tracking has come to atomic resolution.</p><p>Other recent advances: <strong>SIMFLUX</strong> (Cnossen et al. 2020) combines structured-illumination patterns with single-molecule localisation for 2× improvement at standard photon counts; <strong>RESI</strong> (Jungmann lab 2023) uses DNA-PAINT with per-binder identification to reach the angstrom regime with conventional optics. The current frontier targets <strong>imaging individual nucleotides on DNA, individual amino acids on a protein</strong>, the Holy Grail of all-optical single-molecule structural biology.</p>",
+        "mathExpressions": [
+          "I_{\\text{doughnut}}(r) = I_0\\, (r/r_0)^2 \\exp(1 - (r/r_0)^2) \\quad \\text{(2D doughnut)}",
+          "\\sigma_{\\text{MINFLUX}} \\approx \\frac{L}{\\sqrt{8 N}} \\quad \\text{(L = doughnut zero-spacing)}",
+          "L \\approx 50 \\text{ nm}, N = 200 \\to \\sigma \\approx 1.2 \\text{ nm}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q33", "smol-q34", "smol-q35", "smol-q36", "smol-q37", "smol-q38", "smol-q39", "smol-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "smol-06",
+    "topicId": "chem-single-molecule-spec",
+    "order": 6,
+    "title": "Mass Photometry, Nanopores, and Real-Time Enzymology",
+    "description": "Single-protein mass without labels, nanopore nucleotide sequencing, and the Greene lab's DNA-curtains real-time enzymology",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "smol-06-c1",
+        "title": "Mass Photometry: Single Proteins by Light Scattering",
+        "contentHtml": "<p><strong>Mass photometry</strong> (Refeyn, commercialised 2018 from the Kukura lab in Oxford) measures the mass of a single protein without any label. A protein lands on a glass coverslip and scatters incident laser light; the scattered field interferes with reflected light to produce a tiny contrast change <code>ΔI/I ≈ 10<sup>-4</sup>-10<sup>-5</sup></code>. Subtract the background (the running median of preceding frames), and the landing event appears as a small dark dot whose contrast is linearly proportional to mass.</p><p>Calibration uses standards of known molecular weight (BSA 66 kDa, β-amylase 200 kDa, thyroglobulin 670 kDa). The instrument achieves a <strong>mass resolution of ~25 kDa FWHM</strong> over the 30-5000 kDa range, with concentrations from picomolar to low-nanomolar. Use cases include protein oligomerisation analysis (monomer/dimer/trimer ratios), antibody characterisation, viral capsid assembly, and protein-ligand stoichiometry, all label-free, in solution, in minutes.</p><p>Why does it work? Interferometric scattering microscopy (iSCAT) detects scattering cross-sections that scale as <code>σ<sub>scat</sub> ∝ V<sup>2</sup></code> where V is the protein volume. For typical proteins, V scales linearly with mass (density ≈ 1.35 g/cm<sup>3</sup>). The result is a single-molecule mass spectrometer that requires no ionisation, no vacuum, and no fragmentation, complementary to native MS by Heck and Robinson. Marketed as 'Refeyn TwoMP' and 'Refeyn SamuxMP', mass photometry has been adopted in hundreds of labs as a routine assay since 2020.</p>",
+        "mathExpressions": [
+          "\\Delta I/I \\propto \\frac{2 \\text{Re}(E_{\\text{sc}}^* E_{\\text{ref}})}{|E_{\\text{ref}}|^2}",
+          "\\sigma_{\\text{scat}} = \\frac{8\\pi^3}{3} \\frac{V^2}{\\lambda^4} \\left|\\frac{n_p^2 - n_m^2}{n_p^2 + 2 n_m^2}\\right|^2",
+          "\\Delta I/I \\propto m_{\\text{protein}} \\quad \\text{(linear calibration)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-06-c2",
+        "title": "Nanopore Sequencing: Single Strands Through a Pore",
+        "contentHtml": "<p><strong>Nanopore sequencing</strong> threads a single DNA strand through a nanometre-wide protein pore (originally α-hemolysin, now Oxford Nanopore's CsgG-derivative R10.4 pore) embedded in a lipid bilayer; an applied 100-200 mV bias drives K<sup>+</sup>/Cl<sup>-</sup> ions through the pore at picoampere currents. Each nucleotide partially blocks the current as it passes through the constriction. The current trace, sampled at 4-10 kHz, encodes the sequence at a per-base or per-k-mer level (the Oxford pore reads ~5 bases at the constriction).</p><p>The original Kasianowicz-Branton-Deamer 1996 demonstration showed that ssDNA could even be threaded through α-hemolysin. The path from there to commercial sequencing was 18 years of pore engineering and machine-learning basecallers. Modern Oxford Nanopore MinION devices read 10<sup>5</sup>-10<sup>6</sup> bases per pore in a single run, with read lengths up to ~2 Mb (the ultralong record), at ~99.5% accuracy after polishing. The PromethION scales this to 48 flowcells and ~400 Tb of sequence per run.</p><p>Beyond sequencing, nanopores detect <strong>protein post-translational modifications</strong> (Bayley lab), single-amino-acid level peptide reading (Akeson, Nivala), small-molecule ions (Long 2020), and even single proteins translocated through engineered pores. The nanopore is among the most direct single-molecule chemical sensors: each ion passing through is electronically counted, no optics, no labels, in real time at kHz bandwidth.</p>",
+        "mathExpressions": [
+          "I_{\\text{block}} = I_0 \\cdot (1 - \\Delta_{\\text{base}}), \\quad \\Delta_{\\text{base}} \\approx 0.7\\text{--}0.95",
+          "v_{\\text{translocation}} \\approx 10\\text{--}1000 \\text{ bases/s}",
+          "\\text{SNR} = \\Delta I/\\sigma_I, \\quad \\sigma_I^2 \\approx 4 k_B T/R \\cdot \\Delta f"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-06-c3",
+        "title": "DNA Curtains and Real-Time Enzymology",
+        "contentHtml": "<p>The <strong>Greene lab DNA curtains</strong> (Eric Greene, Columbia, 2006-) are a transformative platform for real-time single-molecule enzymology. A microfluidic flow cell is patterned with a chromium nanofabricated barrier; biotinylated lambda DNA (48.5 kb) is anchored at one end to a streptavidin-coated lipid bilayer that flows freely until reaching the barrier, where DNAs align in a row, all 48.5 kb extended in parallel by buffer flow. Add fluorescently-labelled enzyme and watch hundreds of single-molecule trajectories simultaneously by TIRF.</p><p>Greene's group used DNA curtains to dissect homologous recombination (RecA, RAD51), DNA repair (MRX/MRN), CRISPR-Cas target search (Cas9, Cas12), and chromatin dynamics. Single-molecule rate constants for protein-DNA association, target search by 1D sliding, hopping, and dissociation are extracted directly from trajectories, often revealing kinetic intermediates that bulk gel-shift assays could not detect.</p><p><strong>Single-molecule hairpin assays</strong> (Tinoco, Bustamante) and <strong>smRNAseq</strong>-style single-molecule transcription assays (Kapanidis, Larson) round out the real-time enzymology toolkit. Each method shares the philosophy: tether one molecule, image it for as long as the dyes last, watch the chemistry happen. The convergence of labelling chemistry, microscopy, microfluidics, and trajectory analysis since ~2005 has made single-molecule enzymology routine; many enzyme mechanisms now have their definitive characterisation at the single-molecule level rather than the bulk steady-state level.</p>",
+        "mathExpressions": [
+          "k_{\\text{on}}^{\\text{sm}} = \\frac{1}{[\\text{enzyme}] \\cdot \\bar{\\tau}_{\\text{on}}}, \\quad k_{\\text{off}} = 1/\\bar{\\tau}_{\\text{bound}}",
+          "D_{1D} = \\langle x^2 \\rangle / 2t \\quad \\text{(1D sliding)}",
+          "p(\\tau) = k_{\\text{off}} \\exp(-k_{\\text{off}} \\tau) \\quad \\text{(single-exponential dwell time)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q41", "smol-q42", "smol-q43", "smol-q44", "smol-q45", "smol-q46", "smol-q47", "smol-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "smol-07",
+    "topicId": "chem-single-molecule-spec",
+    "order": 7,
+    "title": "The Modern Frontier: Cryo-EM Synergy, AI Trajectories, and Folding Intermediates",
+    "description": "How cryo-EM, smFRET, and AI-driven analysis converge on individual molecular states at near-atomic detail",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "smol-07-c1",
+        "title": "Cryo-EM Complements Single-Molecule Dynamics",
+        "contentHtml": "<p>By 2017 (Henderson-Frank-Dubochet Nobel) cryo-electron microscopy reached near-atomic single-particle resolution: ~2-3 Å on rigid protein complexes &gt; 200 kDa, &lt;2 Å on benchmark cases. Single-molecule fluorescence and cryo-EM are now <strong>natural complements</strong>: cryo-EM gives the snapshot structure of every conformational state with atomic detail, while smFRET gives the kinetics, populations, and pathways linking those states in real time at room temperature.</p><p>The integrative workflow: cryo-EM identifies a discrete set of structural classes (RELION 3D classification, cryoSPARC heterogeneous refinement); smFRET measures the dwell times and transition kinetics between FRET states; structural modelling (Rosetta, AlphaFold-Multimer, Modeller) builds atomistic models for each FRET state by constraining the dye attachment-point distance to the smFRET-derived r. The 2023-2024 work on the SARS-CoV-2 spike, on bacterial ribosome translocation (Frank, Tinoco labs), and on Cas9 conformational selection (Joo, Doudna) follows this template.</p><p>Cryo-EM also allows <strong>continuous heterogeneity analysis</strong>: cryoDRGN (Zhong, Berger, 2021) and 3DVA (cryoSPARC) embed particles in a low-dimensional latent space that captures continuous conformational change. The output trajectories along the latent manifold can be directly compared to smFRET-extracted reaction coordinates, building a unified picture from atomic to kinetic scales.</p>",
+        "mathExpressions": [
+          "\\text{FSC}(k) = \\frac{\\sum F_1 F_2^*}{\\sqrt{\\sum |F_1|^2 \\sum |F_2|^2}}, \\quad \\text{resolution at FSC = 0.143}",
+          "\\Delta r_{\\text{FRET}} = R_0 \\left[(1/E_1 - 1)^{1/6} - (1/E_2 - 1)^{1/6}\\right]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-07-c2",
+        "title": "AI-Aided Trajectory Analysis",
+        "contentHtml": "<p>Single-molecule datasets are increasingly large, often 10<sup>5</sup>-10<sup>7</sup> trajectories per study, and modern analysis is dominated by <strong>deep learning</strong>. <strong>DeepFRET</strong> (Thomsen, Hatzakis, 2020) trains a 1D CNN on synthetic and curated trajectories to classify smFRET traces as valid (single-pair, anticorrelated, no aggregation) or invalid, automating the most labour-intensive step in the pipeline. <strong>tFlow / FRET-DGM</strong> (Husada 2023) uses transformer architectures to identify state transitions in noisy traces.</p><p>For force spectroscopy, <strong>U-Net architectures</strong> segment force-extension events and rip features automatically; <strong>physics-informed neural nets</strong> learn the underlying free-energy landscape from many force-extension trajectories. For super-resolution, <strong>DeepSTORM and DECODE</strong> (Speiser, Müller 2021) replace Gaussian-fitting localisation with CNN-based subpixel emitter detection that handles overlapping PSFs gracefully, doubling allowed labelling density and recovering 2-3× more emitters per dataset.</p><p>The shared theme: data collection is no longer the bottleneck. The bottleneck is curation, segmentation, and biological interpretation. Modern single-molecule labs run automated pipelines that ingest raw camera streams and emit state-segmented trajectories, fitted kinetic models, and uncertainty estimates with minimal human curation. The classic Joo-Ha-Tinoco workflow has become a Snakemake/Nextflow pipeline.</p>",
+        "mathExpressions": [
+          "L_{\\text{CNN}} = -\\sum_i y_i \\log \\hat{y}_i + \\lambda \\|w\\|^2 \\quad \\text{(classifier loss)}",
+          "\\text{Localisation NN: } \\hat{x}, \\hat{y}, \\hat{N} = f_{\\theta}(\\text{frame stack})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "smol-07-c3",
+        "title": "Frontier: smFRET Folding Intermediates and 2024 MINFLUX",
+        "contentHtml": "<p>The current frontier of single-molecule biophysics is increasingly the discovery of <strong>folding intermediates</strong> and rare states that bulk methods cannot access. Schuler's confocal smFRET, Eaton's microsecond mixing, and Best's molecular dynamics analysis now routinely resolve protein folding intermediates on the µs-ms timescale, dissecting mechanisms once thought beyond observation. The IDP (intrinsically disordered protein) field is built almost entirely on smFRET, since these proteins lack the well-defined structures cryo-EM relies on, but reveal their conformational ensembles directly under smFRET.</p><p>The <strong>2024 MINFLUX milestone</strong>: Carter, Schmidt, and Hell (Nature/Science 2023-2024) demonstrated tracking single biomolecules at 1 nm spatial precision and 0.1 ms temporal resolution simultaneously, watching a kinesin motor head's individual sub-steps within an 8 nm step. Subsequent 2024 reports apply the same precision to F<sub>1</sub>-ATPase rotation, RNA polymerase translocation, and ribosomal protein dynamics. The combination of MINFLUX's photon-efficient localisation with bright, photostable JF dyes and HaloTag labelling is rapidly converting smFRET-style trajectories into quasi-structural live-cell movies.</p><p>What's left? <strong>Single-cell single-molecule</strong>: extending all of these methods to native cellular environments at endogenous expression levels (Liphardt, Yildiz, Lippincott-Schwartz). <strong>All-optical single-amino-acid sequencing</strong>: combining MINFLUX-class localisation with cyclic chemistry to read protein sequences single-molecule. <strong>Integration with structural prediction</strong>: AlphaFold-3 + smFRET ensemble fitting to produce dynamic atomistic structures with experimental restraint, the agenda for 2025-2030.</p>",
+        "mathExpressions": [
+          "\\tau_{\\text{folding}}^{\\text{intermediate}} \\sim 10^{-6}\\text{--}10^{-3} \\text{ s}",
+          "\\sigma_{\\text{MINFLUX 2024}} \\approx 1 \\text{ nm at } \\Delta t = 0.1 \\text{ ms}",
+          "\\text{step size}_{\\text{kinesin}} = 8 \\text{ nm}, \\quad \\text{sub-step resolution} \\approx 1\\text{ nm}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["smol-q49", "smol-q50", "smol-q51", "smol-q52", "smol-q53", "smol-q54", "smol-q55", "smol-q56"],
+    "puzzleId": null
+  }
+]

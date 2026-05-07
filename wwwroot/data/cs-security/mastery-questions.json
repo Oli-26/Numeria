@@ -1,0 +1,129 @@
+[
+  {
+    "id": "mastery-sec-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which control most directly mitigates 'broken access control' (OWASP #1)?",
+    "options": ["Strong TLS configuration", "Per-resource authorization checks on every endpoint", "Rate limiting", "WAF rules"],
+    "correctAnswer": "Per-resource authorization checks on every endpoint",
+    "explanation": "Broken access control is fundamentally about endpoints that authenticate but don't authorize. Consistent per-resource authorization is the direct fix; the others are useful but address different problems.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sec-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Compromising a developer's workstation can compromise the production systems they have access to, even when production itself is well-defended.",
+    "correctAnswer": "True",
+    "explanation": "This is the supply-chain-of-trust problem. Strong production controls don't help if a developer's workstation is the privileged jump host. Endpoint security and least-privilege CI/CD pipelines mitigate this.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sec-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the principle that says authentication failure should default to denying access (rather than allowing)?",
+    "correctAnswer": "fail closed",
+    "acceptableAnswers": ["fail closed", "fail-closed", "fail secure", "fail-secure", "Fail Closed"],
+    "explanation": "Fail closed (also called fail secure) ensures that broken security controls deny access rather than permit it. Fail open is the dangerous opposite.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sec-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each cookie attribute to what it does:",
+    "pairs": [
+      {"left": "HttpOnly", "right": "Hides the cookie from JavaScript"},
+      {"left": "Secure", "right": "Only sent over HTTPS"},
+      {"left": "SameSite", "right": "Restricts cross-site sending of the cookie"},
+      {"left": "Domain", "right": "Specifies which hosts may receive the cookie"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Properly setting these attributes is one of the highest-leverage hardening steps for session cookies — defending against XSS, MITM, and CSRF.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-sec-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why is Argon2 generally preferred over bcrypt for new password storage?",
+    "options": ["Argon2 is faster to compute", "Argon2 is memory-hard, resisting GPU/ASIC cracking better than bcrypt", "Argon2 produces shorter hashes", "Argon2 doesn't need a salt"],
+    "correctAnswer": "Argon2 is memory-hard, resisting GPU/ASIC cracking better than bcrypt",
+    "explanation": "Argon2 (winner of the 2015 Password Hashing Competition) is designed to require both CPU time AND memory, neutralizing the speed advantage attackers get from GPUs and custom hardware.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sec-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this disclosure scenario:",
+    "steps": [
+      "I find a SQL injection vulnerability in a SaaS company's API",
+      "I email their security team with a detailed report",
+      "They fix the issue within two weeks and thank me",
+      "I wait the agreed 90 days, then publish the technical write-up",
+      "On the day of publication, I post a working exploit script that hits their live production",
+      "This is responsible disclosure"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is wrong. Responsible disclosure permits writing about the vulnerability after the agreed timeline; it does NOT include attacking live production. Posting a working exploit that targets the actual company crosses the line from disclosure into facilitating harm.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-sec-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "A site that uses HTTPS, parameterized queries, and HttpOnly cookies is automatically safe from CSRF.",
+    "correctAnswer": "False",
+    "explanation": "Those measures don't address CSRF. CSRF specifically requires CSRF tokens or SameSite cookies. The browser will dutifully attach the session cookie to attacker-initiated state-changing requests regardless of HTTPS, query parameterization, or HttpOnly.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sec-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "What is the strongest argument against rolling your own cryptographic protocol?",
+    "options": ["Custom crypto is illegal in most countries", "Modern compilers cannot optimize custom crypto", "Subtle bugs in homemade crypto have a long history of catastrophic failure even from experts", "Custom crypto is always slower"],
+    "correctAnswer": "Subtle bugs in homemade crypto have a long history of catastrophic failure even from experts",
+    "explanation": "Crypto is full of non-obvious pitfalls: timing attacks, padding oracles, nonce reuse, malleability. Even cryptographers regularly produce flawed schemes. The mature move is to use vetted, audited libraries.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-sec-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of a proper threat-modeling exercise:",
+    "steps": [
+      "Identify what you're protecting (assets and data flows)",
+      "Identify who would want to attack it (threat actors)",
+      "Walk through STRIDE for each component",
+      "Assess likelihood and impact for each identified threat",
+      "Define controls to mitigate the most important risks",
+      "Document and revisit the model as the system evolves"
+    ],
+    "correctAnswer": null,
+    "explanation": "Threat modeling is iterative. The early steps frame the problem; the later steps choose where to invest. The model is most useful when revisited as architecture changes.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-sec-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What document or list of components, increasingly mandated for software, helps track upstream supply-chain dependencies?",
+    "correctAnswer": "SBOM",
+    "acceptableAnswers": ["SBOM", "Software Bill of Materials", "software bill of materials", "S-BOM"],
+    "explanation": "SBOMs (Software Bill of Materials) inventory every dependency in a piece of software. Mandated by US Executive Order 14028 (2021) for federal software, increasingly common elsewhere.",
+    "xpReward": 40
+  }
+]

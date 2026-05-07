@@ -1,0 +1,819 @@
+@page "/molecule-builder"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Molecule Builder</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Molecule Builder" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Molecule Builder</h1>
+</div>
+
+<div class="mb-modes">
+    <button class="mb-mode @(mode == "atom" ? "active" : "")" @onclick='() => SetMode("atom")'>
+        <Icon Name="target" Size="16" /> Add Atom
+    </button>
+    <button class="mb-mode @(mode == "bond" ? "active" : "")" @onclick='() => SetMode("bond")'>
+        <Icon Name="puzzle" Size="16" /> Add Bond
+    </button>
+    <button class="mb-mode @(mode == "erase" ? "active" : "")" @onclick='() => SetMode("erase")'>
+        <Icon Name="x-mark" Size="16" /> Erase
+    </button>
+</div>
+
+@if (mode == "atom")
+{
+    <div class="mb-palette">
+        @foreach (var el in elements)
+        {
+            var elem = el;
+            <button class="mb-elem @(selectedElement == elem.Symbol ? "selected" : "")"
+                    style="background: @elem.Color; color: @elem.TextColor; border-color: @(selectedElement == elem.Symbol ? "var(--primary)" : elem.Border);"
+                    @onclick="() => selectedElement = elem.Symbol">
+                @elem.Symbol
+            </button>
+        }
+    </div>
+}
+else if (mode == "bond")
+{
+    <div class="mb-bond-controls">
+        <span class="mb-hint">Bond order:</span>
+        <button class="mb-bond-btn @(bondOrder == 1 ? "active" : "")" @onclick="() => bondOrder = 1">Single</button>
+        <button class="mb-bond-btn @(bondOrder == 2 ? "active" : "")" @onclick="() => bondOrder = 2">Double</button>
+        <button class="mb-bond-btn @(bondOrder == 3 ? "active" : "")" @onclick="() => bondOrder = 3">Triple</button>
+    </div>
+}
+else
+{
+    <div class="mb-bond-controls">
+        <span class="mb-hint">Tap an atom to delete it (and its bonds).</span>
+    </div>
+}
+
+<div class="mb-canvas-wrap card">
+    <svg class="mb-canvas" viewBox="0 0 400 300" @onclick="OnCanvasClick" preserveAspectRatio="xMidYMid meet">
+        <defs>
+            <linearGradient id="mb-bg-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--bg-card)" stop-opacity="0.6" />
+                <stop offset="100%" stop-color="var(--bg-surface)" stop-opacity="1" />
+            </linearGradient>
+            <pattern id="mb-grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="10" cy="10" r="0.7" fill="var(--border)" opacity="0.55" />
+            </pattern>
+            <filter id="mb-bond-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" />
+                <feOffset dx="0" dy="0.6" result="off" />
+                <feComponentTransfer><feFuncA type="linear" slope="0.55" /></feComponentTransfer>
+                <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="mb-atom-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" />
+                <feOffset dx="0" dy="1.5" result="off" />
+                <feComponentTransfer><feFuncA type="linear" slope="0.55" /></feComponentTransfer>
+                <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="mb-hetero-glow" x="-80%" y="-80%" width="260%" height="260%">
+                <feGaussianBlur stdDeviation="2.5" />
+            </filter>
+            @foreach (var elem in elements)
+            {
+                <radialGradient id="@($"mb-grad-{elem.Symbol}")" cx="35%" cy="32%" r="75%">
+                    <stop offset="0%" stop-color="@elem.Highlight" stop-opacity="1" />
+                    <stop offset="45%" stop-color="@elem.Color" stop-opacity="1" />
+                    <stop offset="100%" stop-color="@elem.Shadow" stop-opacity="1" />
+                </radialGradient>
+            }
+        </defs>
+
+        <rect x="0" y="0" width="400" height="300" fill="url(#mb-bg-grad)" />
+        <rect x="0" y="0" width="400" height="300" fill="url(#mb-grid)" />
+        <rect x="1" y="1" width="398" height="298" fill="none" stroke="var(--border)" stroke-width="1" rx="6" opacity="0.7" />
+
+        @* Bonds *@
+        @foreach (var b in bonds)
+        {
+            var a1 = atoms.FirstOrDefault(a => a.Id == b.A1);
+            var a2 = atoms.FirstOrDefault(a => a.Id == b.A2);
+            if (a1 != null && a2 != null)
+            {
+                var lines = GetBondLines(a1, a2, b.Order);
+                <g filter="url(#mb-bond-shadow)">
+                    @foreach (var ln in lines)
+                    {
+                        <line x1="@(ln.X1.ToString("F1"))" y1="@(ln.Y1.ToString("F1"))"
+                              x2="@(ln.X2.ToString("F1"))" y2="@(ln.Y2.ToString("F1"))"
+                              stroke="var(--text-secondary)" stroke-width="2.4" stroke-linecap="round"
+                              stroke-dasharray="@(ln.Dashed ? "4 3" : "")" opacity="0.92" />
+                    }
+                </g>
+            }
+        }
+
+        @* Atoms *@
+        @{
+            var showLonePairs = atoms.Count <= 6;
+        }
+        @foreach (var a in atoms)
+        {
+            var atom = a;
+            var elem = GetElement(atom.Symbol);
+            var isFirstBondPick = bondFirstAtomId == atom.Id;
+            var radius = elem.Radius;
+            var isHetero = atom.Symbol == "O" || atom.Symbol == "N" || atom.Symbol == "S" || atom.Symbol == "P";
+            <g class="mb-atom @(isFirstBondPick ? "selected" : "")" @onclick="(e) => OnAtomClick(e, atom)" @onclick:stopPropagation="true">
+                @if (isHetero)
+                {
+                    <circle cx="@atom.X" cy="@atom.Y" r="@(radius + 6)" fill="@elem.Color" opacity="0.18" filter="url(#mb-hetero-glow)" />
+                }
+                @if (isFirstBondPick)
+                {
+                    <circle cx="@atom.X" cy="@atom.Y" r="@(radius + 7)" fill="none" stroke="var(--primary)" stroke-width="2" stroke-dasharray="3 3" opacity="0.9">
+                        <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="@atom.X" cy="@atom.Y" r="@(radius + 3)" fill="none" stroke="var(--primary)" stroke-width="1" opacity="0.4" />
+                }
+                @if (showLonePairs && atom.Symbol == "O")
+                {
+                    <circle cx="@(atom.X - radius - 3)" cy="@(atom.Y - 3)" r="0.9" fill="var(--text-secondary)" opacity="0.7" />
+                    <circle cx="@(atom.X - radius - 3)" cy="@(atom.Y + 3)" r="0.9" fill="var(--text-secondary)" opacity="0.7" />
+                    <circle cx="@(atom.X + radius + 3)" cy="@(atom.Y - 3)" r="0.9" fill="var(--text-secondary)" opacity="0.7" />
+                    <circle cx="@(atom.X + radius + 3)" cy="@(atom.Y + 3)" r="0.9" fill="var(--text-secondary)" opacity="0.7" />
+                }
+                @if (showLonePairs && atom.Symbol == "N")
+                {
+                    <circle cx="@(atom.X - 2)" cy="@(atom.Y - radius - 3)" r="0.9" fill="var(--text-secondary)" opacity="0.7" />
+                    <circle cx="@(atom.X + 2)" cy="@(atom.Y - radius - 3)" r="0.9" fill="var(--text-secondary)" opacity="0.7" />
+                }
+                <g filter="url(#mb-atom-shadow)">
+                    <circle cx="@atom.X" cy="@atom.Y" r="@radius" fill="@($"url(#mb-grad-{atom.Symbol})")" stroke="@elem.Shadow" stroke-width="0.8" />
+                </g>
+                <ellipse cx="@(atom.X - radius * 0.32)" cy="@(atom.Y - radius * 0.4)"
+                         rx="@(radius * 0.42)" ry="@(radius * 0.26)"
+                         fill="#ffffff" opacity="0.35" />
+                <text x="@atom.X" y="@(atom.Y + radius * 0.3)" text-anchor="middle"
+                      font-size="@(radius * 0.95)" font-weight="800"
+                      fill="@elem.TextColor" stroke="@(elem.TextColor == "#FFF" ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.85)")"
+                      stroke-width="0.5" paint-order="stroke" style="font-family: 'Segoe UI', system-ui, sans-serif; letter-spacing: -0.5px;">@atom.Symbol</text>
+            </g>
+        }
+    </svg>
+</div>
+
+@if (!string.IsNullOrEmpty(recognizedName))
+{
+    <div class="mb-recognized">
+        <Icon Name="search" Size="16" /> Recognized: <strong>@recognizedName</strong>
+    </div>
+}
+
+<div class="mb-stats card">
+    <div class="mb-stat">
+        <span class="mb-stat-label">Formula</span>
+        <strong class="mb-formula">@(string.IsNullOrEmpty(MolecularFormula) ? "-" : MolecularFormula)</strong>
+    </div>
+    <div class="mb-stat">
+        <span class="mb-stat-label">Atoms</span>
+        <strong>@atoms.Count</strong>
+    </div>
+    <div class="mb-stat">
+        <span class="mb-stat-label">Bonds</span>
+        <strong>@bonds.Count</strong>
+    </div>
+</div>
+
+<div class="mb-actions">
+    <button class="btn btn-outline" @onclick="ClearCanvas">
+        <Icon Name="x-mark" Size="16" /> Clear Canvas
+    </button>
+</div>
+
+<div class="mb-library">
+    <h3 class="mb-section-title">Library</h3>
+    <p class="mb-section-sub">Tap any molecule to load it.</p>
+    <div class="mb-lib-grid">
+        @foreach (var lib in library)
+        {
+            var item = lib;
+            <button class="mb-lib-btn" @onclick="() => LoadLibrary(item)">
+                <strong>@item.Name</strong>
+                <small>@item.Formula</small>
+            </button>
+        }
+    </div>
+</div>
+
+}
+
+@code {
+    private bool unlocked;
+    private string mode = "atom";
+    private string selectedElement = "C";
+    private int bondOrder = 1;
+    private int? bondFirstAtomId;
+    private int nextAtomId = 1;
+    private string? recognizedName;
+
+    private List<Atom> atoms = new();
+    private List<Bond> bonds = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-molecule-builder");
+            StateHasChanged();
+        }
+    }
+
+    private void SetMode(string m)
+    {
+        mode = m;
+        bondFirstAtomId = null;
+    }
+
+    private async Task OnCanvasClick(MouseEventArgs e)
+    {
+        if (mode != "atom") { bondFirstAtomId = null; return; }
+
+        // Convert client coords to SVG viewBox coords
+        var pt = await JS.InvokeAsync<double[]>("eval", $"(function(){{var s=document.querySelector('.mb-canvas');if(!s)return [0,0];var r=s.getBoundingClientRect();var x=({e.ClientX.ToString("F2")}-r.left)*400/r.width;var y=({e.ClientY.ToString("F2")}-r.top)*300/r.height;return [x,y];}})()");
+        var x = pt[0];
+        var y = pt[1];
+
+        // Clamp inside canvas with margin
+        x = Math.Max(16, Math.Min(384, x));
+        y = Math.Max(16, Math.Min(284, y));
+
+        atoms.Add(new Atom { Id = nextAtomId++, Symbol = selectedElement, X = x, Y = y });
+        recognizedName = null;
+    }
+
+    private void OnAtomClick(MouseEventArgs e, Atom atom)
+    {
+        if (mode == "erase")
+        {
+            atoms.RemoveAll(a => a.Id == atom.Id);
+            bonds.RemoveAll(b => b.A1 == atom.Id || b.A2 == atom.Id);
+            recognizedName = null;
+            return;
+        }
+
+        if (mode == "bond")
+        {
+            if (bondFirstAtomId == null)
+            {
+                bondFirstAtomId = atom.Id;
+            }
+            else if (bondFirstAtomId == atom.Id)
+            {
+                bondFirstAtomId = null;
+            }
+            else
+            {
+                var a1 = bondFirstAtomId.Value;
+                var a2 = atom.Id;
+                // Replace existing bond between same pair if any
+                bonds.RemoveAll(b => (b.A1 == a1 && b.A2 == a2) || (b.A1 == a2 && b.A2 == a1));
+                bonds.Add(new Bond { A1 = a1, A2 = a2, Order = bondOrder });
+                bondFirstAtomId = null;
+                recognizedName = null;
+            }
+            return;
+        }
+
+        // In atom mode, clicking on an atom does nothing (avoid stacking)
+    }
+
+    private void ClearCanvas()
+    {
+        atoms.Clear();
+        bonds.Clear();
+        bondFirstAtomId = null;
+        recognizedName = null;
+    }
+
+    private void LoadLibrary(LibraryMolecule m)
+    {
+        atoms.Clear();
+        bonds.Clear();
+        bondFirstAtomId = null;
+        nextAtomId = 1;
+
+        var idMap = new Dictionary<int, int>();
+        for (int i = 0; i < m.Atoms.Count; i++)
+        {
+            var src = m.Atoms[i];
+            var newId = nextAtomId++;
+            idMap[i] = newId;
+            atoms.Add(new Atom { Id = newId, Symbol = src.Symbol, X = src.X, Y = src.Y });
+        }
+        foreach (var b in m.Bonds)
+        {
+            bonds.Add(new Bond { A1 = idMap[b.A1], A2 = idMap[b.A2], Order = b.Order });
+        }
+        recognizedName = m.Name;
+    }
+
+    private string MolecularFormula
+    {
+        get
+        {
+            if (atoms.Count == 0) return "";
+            var counts = atoms.GroupBy(a => a.Symbol).ToDictionary(g => g.Key, g => g.Count());
+            var parts = new List<string>();
+            // Hill system: C first, then H, then alphabetical
+            if (counts.ContainsKey("C"))
+            {
+                parts.Add(FormatPart("C", counts["C"]));
+                counts.Remove("C");
+                if (counts.ContainsKey("H"))
+                {
+                    parts.Add(FormatPart("H", counts["H"]));
+                    counts.Remove("H");
+                }
+            }
+            foreach (var kv in counts.OrderBy(k => k.Key, StringComparer.Ordinal))
+            {
+                parts.Add(FormatPart(kv.Key, kv.Value));
+            }
+            return string.Concat(parts);
+        }
+    }
+
+    private static string FormatPart(string symbol, int count) => count == 1 ? symbol : $"{symbol}{count}";
+
+    private record BondLine(double X1, double Y1, double X2, double Y2, bool Dashed = false);
+
+    private List<BondLine> GetBondLines(Atom a, Atom b, int order)
+    {
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        var len = Math.Sqrt(dx * dx + dy * dy);
+        if (len < 0.001) return new List<BondLine>();
+        var ux = dx / len;
+        var uy = dy / len;
+        var rA = GetElement(a.Symbol).Radius;
+        var rB = GetElement(b.Symbol).Radius;
+        var x1 = a.X + ux * rA;
+        var y1 = a.Y + uy * rA;
+        var x2 = b.X - ux * rB;
+        var y2 = b.Y - uy * rB;
+
+        var px = -uy;
+        var py = ux;
+
+        var result = new List<BondLine>();
+        if (order == 1)
+        {
+            result.Add(new BondLine(x1, y1, x2, y2));
+        }
+        else if (order == 2)
+        {
+            var off = 3.2;
+            result.Add(new BondLine(x1 + px * off, y1 + py * off, x2 + px * off, y2 + py * off));
+            var shrink = 0.18;
+            var sx1 = x1 + ux * (len - rA - rB) * shrink - px * off;
+            var sy1 = y1 + uy * (len - rA - rB) * shrink - py * off;
+            var sx2 = x2 - ux * (len - rA - rB) * shrink - px * off;
+            var sy2 = y2 - uy * (len - rA - rB) * shrink - py * off;
+            result.Add(new BondLine(sx1, sy1, sx2, sy2));
+        }
+        else if (order == 3)
+        {
+            var off = 4.2;
+            result.Add(new BondLine(x1, y1, x2, y2));
+            var shrink = 0.22;
+            var inner = (len - rA - rB) * shrink;
+            result.Add(new BondLine(x1 + ux * inner + px * off, y1 + uy * inner + py * off,
+                                     x2 - ux * inner + px * off, y2 - uy * inner + py * off));
+            result.Add(new BondLine(x1 + ux * inner - px * off, y1 + uy * inner - py * off,
+                                     x2 - ux * inner - px * off, y2 - uy * inner - py * off));
+        }
+        else if (order == 4)
+        {
+            var off = 3.2;
+            result.Add(new BondLine(x1 + px * off, y1 + py * off, x2 + px * off, y2 + py * off));
+            var shrink = 0.18;
+            var inner = (len - rA - rB) * shrink;
+            result.Add(new BondLine(x1 + ux * inner - px * off, y1 + uy * inner - py * off,
+                                     x2 - ux * inner - px * off, y2 - uy * inner - py * off, true));
+        }
+        else
+        {
+            result.Add(new BondLine(x1, y1, x2, y2));
+        }
+        return result;
+    }
+
+    private Element GetElement(string symbol) =>
+        elements.FirstOrDefault(e => e.Symbol == symbol) ?? new Element("?", "#888", "#555", "#fff", "#bbb", "#444", 13);
+
+    private class Atom
+    {
+        public int Id { get; set; }
+        public string Symbol { get; set; } = "C";
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+
+    private class Bond
+    {
+        public int A1 { get; set; }
+        public int A2 { get; set; }
+        public int Order { get; set; } = 1;
+    }
+
+    private record Element(string Symbol, string Color, string Border, string TextColor, string Highlight, string Shadow, double Radius);
+
+    private static readonly List<Element> elements = new()
+    {
+        new("H",  "#FFFFFF", "#999999", "#222", "#FFFFFF", "#9AA0A6", 10),
+        new("C",  "#3A3A3A", "#1B1B1B", "#FFF", "#7A7A7A", "#0E0E0E", 14),
+        new("N",  "#3060E8", "#1E3FA8", "#FFF", "#7BA0FF", "#142776", 14),
+        new("O",  "#E63946", "#A02530", "#FFF", "#FF8B85", "#7A1820", 13.5),
+        new("F",  "#2EB872", "#1F8650", "#FFF", "#74E2A6", "#155E36", 12),
+        new("P",  "#E89A2C", "#A86A18", "#FFF", "#FFC274", "#7A4A0E", 15),
+        new("S",  "#F4D03F", "#B89B1F", "#222", "#FFEE82", "#8B7615", 15),
+        new("Cl", "#A8E6A1", "#6FB46A", "#222", "#D8F5D2", "#4F8A4A", 14),
+    };
+
+    private record LibAtom(string Symbol, double X, double Y);
+    private record LibBond(int A1, int A2, int Order);
+    private record LibraryMolecule(string Name, string Formula, List<LibAtom> Atoms, List<LibBond> Bonds);
+
+    // Coordinate helpers (centered around 200,150 canvas)
+    private static List<LibraryMolecule> library = new()
+    {
+        new("Water", "H2O", new()
+        {
+            new("O", 200, 150),
+            new("H", 160, 180),
+            new("H", 240, 180),
+        }, new()
+        {
+            new(0, 1, 1), new(0, 2, 1)
+        }),
+
+        new("Methane", "CH4", new()
+        {
+            new("C", 200, 150),
+            new("H", 160, 110),
+            new("H", 240, 110),
+            new("H", 160, 190),
+            new("H", 240, 190),
+        }, new()
+        {
+            new(0, 1, 1), new(0, 2, 1), new(0, 3, 1), new(0, 4, 1)
+        }),
+
+        new("Ammonia", "NH3", new()
+        {
+            new("N", 200, 150),
+            new("H", 160, 180),
+            new("H", 240, 180),
+            new("H", 200, 110),
+        }, new()
+        {
+            new(0, 1, 1), new(0, 2, 1), new(0, 3, 1)
+        }),
+
+        new("Carbon Dioxide", "CO2", new()
+        {
+            new("C", 200, 150),
+            new("O", 140, 150),
+            new("O", 260, 150),
+        }, new()
+        {
+            new(0, 1, 2), new(0, 2, 2)
+        }),
+
+        new("Methanol", "CH4O", new()
+        {
+            new("C", 170, 150),
+            new("O", 230, 150),
+            new("H", 130, 120),
+            new("H", 130, 180),
+            new("H", 170, 200),
+            new("H", 270, 130),
+        }, new()
+        {
+            new(0, 1, 1), new(0, 2, 1), new(0, 3, 1), new(0, 4, 1), new(1, 5, 1)
+        }),
+
+        new("Ethanol", "C2H6O", new()
+        {
+            new("C", 130, 150),
+            new("C", 200, 150),
+            new("O", 270, 150),
+            new("H", 100, 120),
+            new("H", 100, 180),
+            new("H", 130, 200),
+            new("H", 200, 110),
+            new("H", 200, 190),
+            new("H", 310, 120),
+        }, new()
+        {
+            new(0, 1, 1), new(1, 2, 1),
+            new(0, 3, 1), new(0, 4, 1), new(0, 5, 1),
+            new(1, 6, 1), new(1, 7, 1),
+            new(2, 8, 1)
+        }),
+
+        new("Glucose", "C6H12O6", new()
+        {
+            // Simplified ring layout (hexagon)
+            new("C",  200, 90),
+            new("C",  260, 120),
+            new("C",  260, 180),
+            new("C",  200, 210),
+            new("C",  140, 180),
+            new("O",  140, 120),
+            new("O",  200, 50),
+            new("O",  310, 100),
+            new("O",  310, 200),
+            new("O",  200, 250),
+            new("O",  100, 200),
+            new("H",  170, 90),
+            new("H",  290, 140),
+            new("H",  290, 160),
+            new("H",  230, 210),
+            new("H",  120, 160),
+            new("H",  175, 60),
+        }, new()
+        {
+            new(0,1,1), new(1,2,1), new(2,3,1), new(3,4,1), new(4,5,1), new(5,0,1),
+            new(0,6,1), new(1,7,1), new(2,8,1), new(3,9,1), new(4,10,1),
+            new(0,11,1), new(1,12,1), new(2,13,1), new(3,14,1), new(4,15,1), new(6,16,1)
+        }),
+
+        new("Benzene", "C6H6", new()
+        {
+            new("C", 200, 90),
+            new("C", 252, 120),
+            new("C", 252, 180),
+            new("C", 200, 210),
+            new("C", 148, 180),
+            new("C", 148, 120),
+            new("H", 200, 60),
+            new("H", 278, 105),
+            new("H", 278, 195),
+            new("H", 200, 240),
+            new("H", 122, 195),
+            new("H", 122, 105),
+        }, new()
+        {
+            new(0,1,2), new(1,2,1), new(2,3,2), new(3,4,1), new(4,5,2), new(5,0,1),
+            new(0,6,1), new(1,7,1), new(2,8,1), new(3,9,1), new(4,10,1), new(5,11,1)
+        }),
+
+        new("Caffeine", "C8H10N4O2", new()
+        {
+            // Schematic (not stereochemically perfect)
+            new("N", 120, 130),
+            new("C", 170, 110),
+            new("N", 220, 130),
+            new("C", 220, 180),
+            new("C", 170, 200),
+            new("C", 120, 180),
+            new("N", 270, 110),
+            new("C", 310, 140),
+            new("N", 270, 180),
+            new("O",  80, 110),
+            new("O", 170, 240),
+            new("C",  80, 200),
+            new("C", 220, 80),
+            new("C", 310, 200),
+        }, new()
+        {
+            new(0,1,1), new(1,2,2), new(2,3,1), new(3,4,2), new(4,5,1), new(5,0,1),
+            new(2,6,1), new(6,7,2), new(7,8,1), new(8,3,1),
+            new(5,9,2), new(4,10,2),
+            new(0,11,1), new(1,12,1), new(8,13,1)
+        }),
+
+        new("Aspirin", "C9H8O4", new()
+        {
+            // Benzene ring + acetyl ester + carboxyl
+            new("C", 160, 110),
+            new("C", 210, 100),
+            new("C", 250, 130),
+            new("C", 240, 180),
+            new("C", 190, 190),
+            new("C", 150, 160),
+            new("O", 100, 130),
+            new("C",  60, 100),
+            new("O",  60,  60),
+            new("C",  20, 130),
+            new("C", 290, 200),
+            new("O", 280, 250),
+            new("O", 340, 200),
+            new("H", 210,  70),
+            new("H", 280, 110),
+            new("H", 270, 200),
+            new("H", 200, 220),
+            new("H", 340, 230),
+        }, new()
+        {
+            new(0,1,2), new(1,2,1), new(2,3,2), new(3,4,1), new(4,5,2), new(5,0,1),
+            new(0,6,1), new(6,7,1), new(7,8,2), new(7,9,1),
+            new(3,10,1), new(10,11,2), new(10,12,1),
+            new(1,13,1), new(2,14,1), new(3,15,1), new(4,16,1), new(12,17,1)
+        }),
+
+        new("Urea", "CH4N2O", new()
+        {
+            new("C", 200, 150),
+            new("O", 200, 100),
+            new("N", 150, 180),
+            new("N", 250, 180),
+            new("H", 120, 160),
+            new("H", 120, 210),
+            new("H", 280, 160),
+            new("H", 280, 210),
+        }, new()
+        {
+            new(0,1,2), new(0,2,1), new(0,3,1),
+            new(2,4,1), new(2,5,1), new(3,6,1), new(3,7,1)
+        }),
+
+        new("Formaldehyde", "CH2O", new()
+        {
+            new("C", 200, 160),
+            new("O", 200, 110),
+            new("H", 160, 190),
+            new("H", 240, 190),
+        }, new()
+        {
+            new(0,1,2), new(0,2,1), new(0,3,1)
+        }),
+
+        new("Hydrogen Peroxide", "H2O2", new()
+        {
+            new("O", 170, 150),
+            new("O", 230, 150),
+            new("H", 140, 120),
+            new("H", 260, 180),
+        }, new()
+        {
+            new(0,1,1), new(0,2,1), new(1,3,1)
+        }),
+
+        new("Glycine", "C2H5NO2", new()
+        {
+            new("N", 110, 150),
+            new("C", 170, 150),
+            new("C", 230, 150),
+            new("O", 230, 100),
+            new("O", 290, 180),
+            new("H",  80, 120),
+            new("H",  80, 180),
+            new("H", 170, 110),
+            new("H", 170, 190),
+            new("H", 320, 200),
+        }, new()
+        {
+            new(0,1,1), new(1,2,1), new(2,3,2), new(2,4,1),
+            new(0,5,1), new(0,6,1), new(1,7,1), new(1,8,1), new(4,9,1)
+        }),
+
+        new("Acetic Acid", "C2H4O2", new()
+        {
+            new("C", 150, 160),
+            new("C", 210, 160),
+            new("O", 210, 110),
+            new("O", 270, 190),
+            new("H", 120, 130),
+            new("H", 120, 190),
+            new("H", 150, 200),
+            new("H", 300, 210),
+        }, new()
+        {
+            new(0,1,1), new(1,2,2), new(1,3,1),
+            new(0,4,1), new(0,5,1), new(0,6,1), new(3,7,1)
+        }),
+    };
+}
+
+<style>
+    .mb-modes {
+        display: flex; gap: 4px; background: var(--bg-surface); border-radius: var(--radius-md);
+        padding: 4px; margin-bottom: 12px;
+    }
+    .mb-mode {
+        flex: 1; padding: 8px 6px; border: none; background: transparent; color: var(--text-muted);
+        font-weight: 600; font-size: 0.82rem; border-radius: var(--radius-sm); cursor: pointer;
+        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .mb-mode.active {
+        background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow);
+    }
+
+    .mb-palette {
+        display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-bottom: 12px;
+    }
+    .mb-elem {
+        aspect-ratio: 1 / 1; border-radius: var(--radius-sm); border: 2px solid;
+        font-weight: 800; font-size: 0.95rem; cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mb-elem:active { transform: scale(0.93); }
+    .mb-elem.selected { box-shadow: 0 0 0 2px var(--primary), 0 2px 8px var(--shadow); }
+
+    .mb-bond-controls {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+        padding: 8px 12px; background: var(--bg-surface); border-radius: var(--radius-md);
+    }
+    .mb-hint { color: var(--text-muted); font-size: 0.82rem; }
+    .mb-bond-btn {
+        padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-secondary); font-weight: 600;
+        font-size: 0.8rem; cursor: pointer; transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mb-bond-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .mb-canvas-wrap {
+        padding: 8px; margin-bottom: 12px;
+        background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+        border: 1px solid var(--border);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.18), 0 1px 4px var(--shadow);
+    }
+    .mb-canvas {
+        width: 100%; height: auto; display: block; border-radius: var(--radius-sm);
+        cursor: crosshair; touch-action: manipulation;
+    }
+    .mb-atom { cursor: pointer; transition: transform 0.18s ease; transform-box: fill-box; transform-origin: center; }
+    .mb-atom:hover { transform: scale(1.08); }
+    .mb-atom:active { transform: scale(0.94); }
+    .mb-atom.selected { transform: scale(1.06); }
+    .mb-atom text { pointer-events: none; user-select: none; }
+    @@keyframes mb-atom-pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+    .mb-atom > g > circle { animation: mb-atom-pop 0.22s ease-out; }
+
+    .mb-recognized {
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 14px; background: rgba(76,175,80,0.10);
+        color: var(--success); border-radius: var(--radius-sm);
+        font-size: 0.9rem; margin-bottom: 12px; font-weight: 600;
+    }
+    .mb-recognized strong { color: var(--success); margin-left: 4px; }
+
+    .mb-stats {
+        display: flex; justify-content: space-around; gap: 8px;
+        padding: 14px 12px; margin-bottom: 12px;
+    }
+    .mb-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+    .mb-stat-label {
+        font-size: 0.72rem; color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .mb-stat strong { font-size: 1.05rem; color: var(--text-primary); font-weight: 700; }
+    .mb-formula { font-family: 'Courier New', monospace; color: var(--accent) !important; letter-spacing: 0.5px; }
+
+    .mb-actions {
+        display: flex; gap: 8px; justify-content: center; margin-bottom: 18px;
+    }
+
+    .mb-library { margin-top: 8px; }
+    .mb-section-title {
+        font-size: 1rem; color: var(--text-primary); margin: 0 0 4px;
+    }
+    .mb-section-sub {
+        color: var(--text-muted); font-size: 0.82rem; margin: 0 0 10px;
+    }
+    .mb-lib-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .mb-lib-btn {
+        padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease;
+        text-align: left; -webkit-tap-highlight-color: transparent;
+        display: flex; flex-direction: column; gap: 2px;
+    }
+    .mb-lib-btn:active { transform: scale(0.97); }
+    .mb-lib-btn:hover { border-color: var(--primary); }
+    .mb-lib-btn strong { font-size: 0.88rem; color: var(--text-primary); }
+    .mb-lib-btn small {
+        color: var(--text-muted); font-size: 0.76rem;
+        font-family: 'Courier New', monospace;
+    }
+</style>

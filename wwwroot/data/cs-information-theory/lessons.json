@@ -1,0 +1,362 @@
+[
+  {
+    "id": "info-01",
+    "topicId": "cs-information-theory",
+    "order": 1,
+    "title": "Entropy: The Measure of Surprise",
+    "description": "Shannon's 1948 definition of information as a quantitative thing",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "info-01-c1",
+        "title": "Information as Reduced Uncertainty",
+        "contentHtml": "<p>In 1948, Claude Shannon's <em>A Mathematical Theory of Communication</em> founded an entire field. His radical move: treat <strong>information</strong> as a quantity, the same way physics treats energy. The amount of information in an event is the amount by which it reduces your uncertainty.</p><p>Surprising events carry more information than expected ones. If a coin always lands heads, learning the result tells you nothing — you already knew. A fair coin's outcome is one full <strong>bit</strong> of information. A 1-in-1024 lottery win is about 10 bits of surprise. Shannon defined the information content of a single outcome with probability <code>p</code> as <code>-log₂(p)</code>: rare events carry many bits, near-certain events carry few.</p><p>The base-2 logarithm gives us bits — yes/no answers. Use the natural log and you get nats; use log base 256 and you get bytes. The unit is conventional; the substance — that surprise is logarithmic in inverse probability — is not. Every modem, every compressed file, every line of TCP has Shannon's bit at its core.</p>",
+        "mathExpressions": ["I(x) = -\\log_2 p(x) \\quad \\text{(bits of self-information)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-01-c2",
+        "title": "Shannon Entropy",
+        "contentHtml": "<p>The <strong>entropy</strong> of a random variable is the expected information content over all its outcomes. For a discrete variable X with distribution p, <code>H(X) = -∑ p(x) log₂ p(x)</code>. Entropy is in bits per symbol — the average amount of surprise you get from one draw.</p><p>A fair coin has H = 1 bit. A fair six-sided die has H = log₂(6) ≈ 2.585 bits. A heavily biased coin (99% heads) has very low entropy: most outcomes are unsurprising, so the average surprise is small. Entropy is maximized by the uniform distribution and minimized (zero) by a degenerate distribution where one outcome is certain.</p><p>The deeper interpretation: entropy is the minimum number of bits per symbol needed to encode the source losslessly. English text has roughly 1.0–1.5 bits per character of entropy (despite using 8-bit ASCII), which is why text compresses so well. Shannon's source coding theorem makes this precise: you cannot compress below H bits per symbol on average, but you can get arbitrarily close.</p>",
+        "mathExpressions": ["H(X) = -\\sum_{x} p(x) \\log_2 p(x)", "0 \\leq H(X) \\leq \\log_2 |\\mathcal{X}|"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-01-c3",
+        "title": "Joint, Conditional, and the Chain Rule",
+        "contentHtml": "<p>For two random variables X and Y, the <strong>joint entropy</strong> is <code>H(X,Y) = -∑ p(x,y) log₂ p(x,y)</code>. The <strong>conditional entropy</strong> H(Y|X) is the average remaining uncertainty about Y once X is known: <code>H(Y|X) = ∑ p(x) H(Y|X=x)</code>.</p><p>The chain rule unites them: <code>H(X,Y) = H(X) + H(Y|X)</code>. The joint information equals the information in X plus what's left to learn about Y given X. If X and Y are independent, knowing X tells you nothing about Y, so H(Y|X) = H(Y) and joint entropy is just the sum.</p><p>Conditioning never increases entropy: <code>H(Y|X) ≤ H(Y)</code>. Side information can only reduce uncertainty, never increase it (on average). This intuitive but powerful fact underlies almost every coding theorem. Equality holds exactly when X and Y are independent — knowing X is useless. The conditional entropy is the irreducible noise floor of any predictor that uses X to guess Y.</p>",
+        "mathExpressions": ["H(X,Y) = H(X) + H(Y|X)", "H(Y|X) \\leq H(Y) \\quad \\text{(conditioning reduces entropy)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q01", "info-q02", "info-q03", "info-q04", "info-q05", "info-q06", "info-q07", "info-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-02",
+    "topicId": "cs-information-theory",
+    "order": 2,
+    "title": "Mutual Information and KL Divergence",
+    "description": "Quantifying dependence and the distance between distributions",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "info-02-c1",
+        "title": "Mutual Information",
+        "contentHtml": "<p><strong>Mutual information</strong> I(X;Y) measures how much knowing one variable reduces uncertainty about the other. It's the most fundamental notion of statistical dependence in Shannon's framework. Definition: <code>I(X;Y) = H(X) - H(X|Y) = H(Y) - H(Y|X)</code>. Symmetric: knowing Y tells you about X exactly as much as knowing X tells you about Y.</p><p>I(X;Y) ≥ 0 always, with equality if and only if X and Y are independent. It generalizes correlation: correlation captures only linear dependence, while mutual information captures any kind — nonlinear, multimodal, anything. If Y = X² and X is symmetric around zero, correlation is zero but I(X;Y) is large.</p><p>Mutual information is the central quantity of channel coding. Given a noisy channel that maps inputs X to outputs Y, the channel capacity is the maximum of I(X;Y) over all input distributions. It's also essential in machine learning: the InfoMax principle says good representations should preserve mutual information with the input. Modern self-supervised methods (SimCLR, CPC) explicitly maximize MI between views.</p>",
+        "mathExpressions": ["I(X;Y) = H(X) - H(X|Y) = H(Y) - H(Y|X)", "I(X;Y) = \\sum_{x,y} p(x,y) \\log_2 \\frac{p(x,y)}{p(x)p(y)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-02-c2",
+        "title": "KL Divergence: How Wrong Is Your Model?",
+        "contentHtml": "<p>The <strong>Kullback-Leibler divergence</strong> D(p‖q) measures how much information is lost when distribution q is used to approximate the true distribution p. <code>D(p‖q) = ∑ p(x) log₂(p(x)/q(x))</code>. Units: bits.</p><p>KL is non-negative, zero iff p = q, and <em>asymmetric</em> — D(p‖q) ≠ D(q‖p) in general. So it's not a true metric. The asymmetry has practical meaning: if some x has p(x) > 0 but q(x) = 0, then D(p‖q) is infinite — your model assigns zero probability to events that actually happen, an unforgivable error in coding terms. Reverse KL D(q‖p) is more lenient.</p><p>KL divergence is the foundation of information geometry, variational inference, and ML loss functions. The cross-entropy loss used to train every neural classifier is a KL divergence (plus a constant). Variational autoencoders minimize a KL divergence between the encoder distribution and a Gaussian prior. KL is also the bound: the extra bits per symbol you waste by encoding a source with the wrong probability model is exactly D(p‖q).</p>",
+        "mathExpressions": ["D_{KL}(p \\| q) = \\sum_{x} p(x) \\log_2 \\frac{p(x)}{q(x)}", "D_{KL}(p \\| q) \\geq 0, \\quad = 0 \\iff p = q"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-02-c3",
+        "title": "MI as KL: Dependence as Distance from Independence",
+        "contentHtml": "<p>Mutual information has a clean alternative form: it's the KL divergence between the joint distribution and the product of marginals. <code>I(X;Y) = D(p(x,y) ‖ p(x)p(y))</code>. In English: how far is the actual joint from the joint that <em>would</em> hold if X and Y were independent? That distance, in bits, is exactly the mutual information.</p><p>This formulation is beautiful because it unifies dependence and divergence. Independence means the joint factorizes; the more it deviates from factorizing, the more dependent the variables, the more bits one tells you about the other. Estimating MI from samples is equivalent to estimating this divergence — the reason MI estimation is hard in high dimensions (KL estimation needs lots of data).</p><p>For continuous variables you replace sums with integrals and entropies with <em>differential</em> entropies. Differential entropy can be negative (a tight Gaussian has negative entropy in nats), but mutual information remains non-negative because it's a KL divergence. The information bottleneck principle, which underlies modern deep learning theory, uses these tools to ask: what's the minimum I(X;T) we can keep while preserving I(T;Y)?</p>",
+        "mathExpressions": ["I(X;Y) = D_{KL}\\big(p(x,y) \\,\\big\\|\\, p(x)p(y)\\big)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q09", "info-q10", "info-q11", "info-q12", "info-q13", "info-q14", "info-q15", "info-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-03",
+    "topicId": "cs-information-theory",
+    "order": 3,
+    "title": "Source Coding: Compression Without Loss",
+    "description": "Kraft inequality, Huffman, arithmetic coding, and the entropy limit",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "info-03-c1",
+        "title": "Prefix Codes and the Kraft Inequality",
+        "contentHtml": "<p>A <strong>prefix code</strong> is one where no codeword is a prefix of any other. Morse code isn't a prefix code (E is a single dot, also the start of many letters), so Morse needs spacing. Modern compression uses prefix codes because they're <em>uniquely decodable on the fly</em> — read bits until a complete codeword forms, then start the next.</p><p>The <strong>Kraft inequality</strong> tells you exactly which codeword lengths are achievable. For binary codewords of lengths <code>l₁, l₂, ..., lₙ</code>, a prefix code exists if and only if <code>∑ 2^(-lᵢ) ≤ 1</code>. Intuitively: each codeword of length l \"uses up\" 2^(-l) of the unit code-space. You can't use more than 100% of it.</p><p>Combined with entropy, Kraft gives us Shannon's source coding theorem: the average codeword length L of any uniquely decodable code satisfies <code>L ≥ H(X)</code>. You can't compress below the entropy. And there exist codes (Shannon-Fano, Huffman) achieving <code>L &lt; H(X) + 1</code>. So entropy is the fundamental compression limit, tight to within one bit per symbol.</p>",
+        "mathExpressions": ["\\sum_{i=1}^{n} 2^{-l_i} \\leq 1 \\quad \\text{(Kraft inequality)}", "H(X) \\leq L < H(X) + 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-03-c2",
+        "title": "Huffman Coding",
+        "contentHtml": "<p><strong>Huffman coding</strong> (David Huffman, 1952, as a class assignment) builds the optimal prefix code symbol-by-symbol. Repeatedly combine the two least probable symbols into a meta-symbol whose probability is their sum; repeat until one symbol remains. The resulting binary tree gives the codewords (left = 0, right = 1).</p><p>Huffman is provably optimal among prefix codes that assign one codeword per symbol. The codeword for a symbol with probability p has length ⌈-log₂ p⌉ or close to it. JPEG, MP3, ZIP, and DEFLATE (PNG, gzip) all use Huffman tables. They store the code along with the data so the decoder can rebuild the tree.</p><p>The catch: Huffman wastes up to one bit per symbol because lengths are integers. For a source where the most likely symbol has probability 0.9, the optimal length is -log₂(0.9) ≈ 0.15 bits, but Huffman must use 1 bit. To fix this, you can encode <em>blocks</em> of symbols together, which spreads the rounding error. As block size grows, the per-symbol overhead vanishes — but the codebook explodes, motivating arithmetic coding.</p>",
+        "mathExpressions": ["L_{\\text{Huffman}} - H(X) < 1 \\text{ bit}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-03-c3",
+        "title": "Arithmetic Coding and the AEP",
+        "contentHtml": "<p><strong>Arithmetic coding</strong> sidesteps Huffman's integer-length limitation by encoding the entire message as a single number in [0, 1). Each symbol narrows the interval by a factor proportional to its probability. The final interval is described by enough bits to identify it uniquely, achieving exactly H(X) bits per symbol in the limit.</p><p>Arithmetic coding shines on highly skewed distributions and is the engine inside JPEG 2000, H.264 (CABAC), and modern video codecs. In the 2010s, <strong>Asymmetric Numeral Systems (ANS)</strong>, invented by Jarosław Duda, achieved arithmetic-coding compression at near-Huffman speeds. ANS now powers Facebook's Zstandard (zstd), Apple's LZFSE, and the JPEG XL image format — quietly running on billions of devices.</p><p>The theoretical backbone is the <strong>Asymptotic Equipartition Property (AEP)</strong>: for long iid sequences, almost all probability mass concentrates on a \"typical set\" of size approximately 2^(nH). You only need ~nH bits to label sequences in this set; everything outside it is essentially impossible. The AEP is the law of large numbers in disguise, and it's why entropy is the fundamental compression limit.</p>",
+        "mathExpressions": ["|\\mathcal{A}_\\epsilon^{(n)}| \\approx 2^{nH(X)} \\quad \\text{(typical set size)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q17", "info-q18", "info-q19", "info-q20", "info-q21", "info-q22", "info-q23", "info-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-04",
+    "topicId": "cs-information-theory",
+    "order": 4,
+    "title": "Channel Capacity and the Noisy Channel Theorem",
+    "description": "Shannon's astonishing 1948 result on reliable communication over unreliable channels",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "info-04-c1",
+        "title": "Channel Capacity",
+        "contentHtml": "<p>A <strong>discrete memoryless channel</strong> takes input X and produces output Y according to fixed transition probabilities p(y|x). The <strong>channel capacity</strong> is the maximum rate at which information can be reliably sent: <code>C = max_{p(x)} I(X;Y)</code>. The maximum is over all input distributions — pick the one that lets the channel convey the most mutual information.</p><p>For the binary symmetric channel (BSC) with bit-flip probability p, capacity is <code>C = 1 - H(p)</code> bits per use, where H(p) is the binary entropy function. A perfect channel (p = 0) gives C = 1 bit per use; a totally random channel (p = 0.5) gives C = 0 — the output tells you nothing about the input. The capacity tells you how much real information per channel use you can squeeze through.</p><p>Capacity is intuitive but the next step is shocking. Naively you might expect noise to slowly degrade reliability as the rate increases. Shannon proved something stronger: there's a sharp threshold at C, above which reliable communication is impossible and below which it's <em>arbitrarily reliable</em>.</p>",
+        "mathExpressions": ["C = \\max_{p(x)} I(X;Y)", "C_{\\text{BSC}}(p) = 1 - H(p) \\quad \\text{where } H(p) = -p\\log_2 p - (1-p)\\log_2(1-p)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-04-c2",
+        "title": "The Noisy Channel Coding Theorem",
+        "contentHtml": "<p>Shannon's <strong>noisy channel coding theorem</strong> (1948) is one of the most important results in 20th-century mathematics. It states: for any rate R &lt; C, there exist codes that achieve arbitrarily small probability of error as the block length grows. For any rate R &gt; C, error probability is bounded away from zero — reliable communication is impossible.</p><p>This was counterintuitive in 1948. Engineers assumed noise was a fundamental enemy: more reliability required more energy, redundancy, or bandwidth, with diminishing returns. Shannon showed that <em>perfect reliability is achievable</em> at any rate up to capacity, with a coding scheme. The proof is non-constructive (it shows a random code works on average), so engineers spent the next 50 years searching for explicit codes that came close.</p><p>Concrete payoff: every modem, hard drive, satellite link, deep-space probe, and cellular base station operates within a known fraction of its Shannon limit. The Voyager probes (1977) used Reed-Solomon plus convolutional codes to push within 2 dB of capacity; modern LDPC and polar codes (5G) operate within 0.1 dB. The whole engineering enterprise of information theory is the quest to close the gap to Shannon.</p>",
+        "mathExpressions": ["R < C \\implies \\exists \\text{ code with } P_e \\to 0", "R > C \\implies P_e \\geq \\delta > 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-04-c3",
+        "title": "AWGN Channels and the Shannon Limit",
+        "contentHtml": "<p>For continuous channels with additive white Gaussian noise (AWGN) — the standard model for radio, fiber optics, and most physical channels — Shannon's formula gives the capacity in closed form: <code>C = (1/2) log₂(1 + S/N)</code> bits per channel use, where S/N is the signal-to-noise ratio.</p><p>For a bandwidth W in Hz, this becomes the famous <strong>Shannon-Hartley</strong> formula: <code>C = W log₂(1 + S/N)</code> bits per second. Doubling bandwidth doubles capacity. Doubling SNR adds only one bit per channel use — so SNR has logarithmic returns while bandwidth has linear returns.</p><p>This formula sets the upper bound for every wireless link. 5G millimeter-wave carries massive throughput because W is huge (hundreds of MHz). Deep-space probes get tiny throughput because received power is staggeringly low — the Voyager 1 signal arrives at Earth with about 10⁻²⁰ watts, a billion-billionth of a flashlight. Yet thanks to error-correcting codes operating near the Shannon limit, JPL still receives data reliably from 24 billion km away. The Shannon limit is the only law that matters.</p>",
+        "mathExpressions": ["C = \\frac{1}{2} \\log_2\\!\\left(1 + \\frac{S}{N}\\right) \\quad \\text{bits per channel use}", "C = W \\log_2\\!\\left(1 + \\frac{S}{N}\\right) \\quad \\text{bits per second}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q25", "info-q26", "info-q27", "info-q28", "info-q29", "info-q30", "info-q31", "info-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-05",
+    "topicId": "cs-information-theory",
+    "order": 5,
+    "title": "Error-Correcting Codes I: Hamming and Reed-Solomon",
+    "description": "From parity bits to Voyager, CDs, and QR codes",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "info-05-c1",
+        "title": "Hamming Codes",
+        "contentHtml": "<p>Richard Hamming, frustrated in 1947 with Bell Labs computers crashing on weekends due to a single bit flip, invented the first practical error-correcting code. The <strong>Hamming(7,4) code</strong> encodes 4 data bits as 7 transmitted bits, with 3 parity bits arranged so that any single-bit error can be detected <em>and corrected</em>.</p><p>The trick: each parity bit covers a distinct subset of data bits, so the pattern of parity-check failures (the syndrome) points directly at the bit in error. With three parity bits you get 2³ = 8 possible syndromes — one for \"no error\" and seven that pinpoint each of the 7 transmitted bits.</p><p>Hamming codes are <strong>perfect codes</strong>: they achieve the maximum possible distance for their parameters with no wasted code-space. Generalizations Hamming(2ᵐ-1, 2ᵐ-1-m) exist for all m. Modern ECC RAM uses an extended Hamming code (SECDED — single error correct, double error detect), so the server you're reading this on probably runs Hamming's 1950 algorithm millions of times per second to silently correct cosmic-ray bit flips.</p>",
+        "mathExpressions": ["d_{\\min} = 3 \\implies \\text{can correct } \\lfloor (d_{\\min}-1)/2 \\rfloor = 1 \\text{ error}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-05-c2",
+        "title": "Reed-Solomon Codes",
+        "contentHtml": "<p><strong>Reed-Solomon codes</strong> (Irving Reed and Gustave Solomon, 1960) operate on symbols (typically 8-bit bytes) rather than bits. They treat data as the coefficients of a polynomial over a finite field GF(2^m), then transmit evaluations of that polynomial at chosen points. Errors become missing or wrong evaluations; if you have enough surviving evaluations to over-determine the polynomial, you can recover it.</p><p>RS(n, k) over GF(2^m) encodes k symbols into n symbols and can correct up to <code>(n-k)/2</code> symbol errors — or fix any (n-k) erasures (errors at known positions). Its great strength is handling <strong>burst errors</strong>: a scratch on a CD that wipes out 100 consecutive bits affects only ~12 bytes, well within RS's correction capability.</p><p>Reed-Solomon is everywhere data must survive damage: <strong>CDs and DVDs</strong> (CIRC interleaved RS), <strong>QR codes</strong> (with selectable error correction up to 30%), <strong>SSDs</strong>, RAID-6 disk arrays, the Voyager probes, and most digital broadcast TV (DVB). Without Reed-Solomon, you couldn't drop a CD on the floor and still hear it perfectly. Modern systems are gradually replacing RS with LDPC for higher efficiency, but RS remains the workhorse of robust storage.</p>",
+        "mathExpressions": ["t = \\lfloor (n-k)/2 \\rfloor \\quad \\text{(correctable errors in RS}(n,k)\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-05-c3",
+        "title": "BCH Codes and Algebraic Decoding",
+        "contentHtml": "<p><strong>BCH codes</strong> (Bose, Chaudhuri, Hocquenghem; 1959–1960) generalize Hamming and form the algebraic backbone of the cyclic-code tradition. They're defined by a generator polynomial whose roots include t consecutive powers of a primitive element in GF(2^m). The minimum distance is at least 2t+1, so BCH codes can correct any t errors.</p><p>The Berlekamp-Massey algorithm decodes BCH and Reed-Solomon codes in O(nt) time by solving a linear system to find the error-locator polynomial. The roots of that polynomial point at the error positions; back-substitution finds the error magnitudes. This 1968 algorithm made RS practical and is implemented on every CD player chip ever made.</p><p>BCH codes saw their biggest deployment in <strong>QR codes</strong>: the format and version information at the corners of every QR code is BCH-encoded so that even a heavily damaged code can still be parsed. They also encode the message itself when low error correction levels are selected. The combination of algebraic structure and computationally cheap decoding made BCH the dominant ECC family of the late 20th century, before LDPC took over high-throughput applications.</p>",
+        "mathExpressions": ["d_{\\min} \\geq 2t + 1 \\quad \\text{(BCH bound)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q33", "info-q34", "info-q35", "info-q36", "info-q37", "info-q38", "info-q39", "info-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-06",
+    "topicId": "cs-information-theory",
+    "order": 6,
+    "title": "Error-Correcting Codes II: Modern Capacity-Approaching Codes",
+    "description": "LDPC, turbo codes, polar codes — closing the gap to Shannon",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "info-06-c1",
+        "title": "Turbo Codes",
+        "contentHtml": "<p>For decades after Shannon's 1948 theorem, the best practical codes operated 2–3 dB short of capacity. In 1993, Berrou, Glavieux, and Thitimajshima stunned the field by demonstrating <strong>turbo codes</strong> operating within 0.5 dB of the Shannon limit — a discontinuous jump in the state of the art.</p><p>The construction is two convolutional encoders running in parallel on the data and an interleaved (scrambled) version of it. Decoding uses two soft-input soft-output decoders that exchange probabilistic guesses iteratively, each refining the other's estimate. The name \"turbo\" comes from the analogy with turbocharged engines: feedback that accelerates a process.</p><p>Turbo codes were adopted in <strong>3G UMTS</strong> and <strong>4G LTE</strong>, providing the error correction for billions of mobile phone calls. They also flew on NASA's Mars Reconnaissance Orbiter. The 1993 paper was reportedly rejected on first submission as \"too good to be true\" — referees couldn't believe a simple iterative algorithm could approach Shannon. The discovery reignited coding theory and led directly to the LDPC revival.</p>",
+        "mathExpressions": ["\\text{Turbo: } R \\approx 0.5, \\quad E_b/N_0 \\approx 0.7 \\text{ dB at BER} = 10^{-5}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-06-c2",
+        "title": "LDPC Codes",
+        "contentHtml": "<p><strong>Low-Density Parity-Check (LDPC) codes</strong> were invented by Robert Gallager in his 1962 PhD thesis, then forgotten for 30 years because computers couldn't handle the decoding. After turbo codes proved iterative decoding worked, MacKay rediscovered LDPC in 1996 and showed they can match or beat turbo performance.</p><p>An LDPC code is defined by a sparse parity-check matrix — a Tanner graph with variable nodes and check nodes. Decoding uses <strong>belief propagation</strong>: messages of probability estimates flow back and forth between nodes until convergence. Sparsity makes each iteration cheap; iteration drives performance to near-capacity.</p><p>LDPC is now the dominant capacity-approaching code in deployment: <strong>Wi-Fi 6 (802.11ax)</strong>, <strong>Wi-Fi 7</strong>, the data channel of <strong>5G NR</strong>, <strong>DVB-S2</strong> (HD satellite TV), <strong>10GBASE-T Ethernet</strong>, and modern <strong>SSDs</strong>. The DVB-S2 standard achieves performance within 0.7 dB of Shannon, making the gap mostly a matter of finite block length and decoding latency rather than fundamental coding loss.</p>",
+        "mathExpressions": ["\\text{LDPC at } n = 10^4: \\quad R/C \\geq 0.99"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-06-c3",
+        "title": "Polar Codes",
+        "contentHtml": "<p>Erdal Arıkan's 2008 invention of <strong>polar codes</strong> was a theoretical breakthrough: the first family of codes <em>provably</em> achieving the Shannon capacity for binary symmetric channels with explicit construction and feasible decoding (O(n log n)). The earlier breakthroughs (turbo, LDPC) approached capacity empirically; polar codes do it by construction.</p><p>The mechanism is <strong>channel polarization</strong>: through clever recursive combining, n copies of a noisy channel can be transformed into n synthesized channels that are almost-perfect or almost-useless, with very few in between. Send your data through the good channels and freeze the bad ones to known values. As n grows, the fraction of good channels approaches the capacity exactly.</p><p>Just nine years after publication, polar codes were standardized for the <strong>5G NR control channel</strong> in 2017 — possibly the fastest theory-to-deployment cycle in coding history. The control channel needs short messages with very low latency, where polar codes' simple successive-cancellation decoder excels. The data channel uses LDPC, so 5G actually deploys both modern code families side by side.</p>",
+        "mathExpressions": ["\\lim_{n \\to \\infty} \\frac{|\\{i : I(W_n^{(i)}) > 1 - \\epsilon\\}|}{n} = I(W) = C"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q41", "info-q42", "info-q43", "info-q44", "info-q45", "info-q46", "info-q47", "info-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-07",
+    "topicId": "cs-information-theory",
+    "order": 7,
+    "title": "Rate-Distortion Theory",
+    "description": "How much can you compress when you accept some loss?",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "info-07-c1",
+        "title": "The Lossy Compression Bound",
+        "contentHtml": "<p>Shannon's source coding theorem tells you the limit of <em>lossless</em> compression: H(X) bits per symbol. But for images, audio, and video, perfect reconstruction is overkill — humans don't notice tiny pixel changes. <strong>Rate-distortion theory</strong> quantifies the trade-off: how few bits suffice if you accept distortion at most D?</p><p>Define a distortion function d(x, x̂) (squared error, Hamming distance, perceptual metric). The <strong>rate-distortion function</strong> is <code>R(D) = min I(X; X̂)</code> over all conditional distributions p(x̂|x) such that E[d(X, X̂)] ≤ D. R(D) is monotone decreasing: more allowed distortion lets you use fewer bits.</p><p>For a Gaussian source with variance σ² and squared-error distortion: <code>R(D) = (1/2) log₂(σ²/D)</code> for D ≤ σ². Each halving of allowed distortion costs you 1/2 bit per sample. JPEG, MP3, AAC, H.265, and Opus all operate near their respective rate-distortion functions for human-perceptual distortion measures. Designing a good codec is largely about finding the right perceptual D.</p>",
+        "mathExpressions": ["R(D) = \\min_{p(\\hat{x}|x): E[d(X,\\hat{X})] \\leq D} I(X; \\hat{X})", "R_{\\text{Gauss}}(D) = \\tfrac{1}{2} \\log_2\\!\\left(\\frac{\\sigma^2}{D}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-07-c2",
+        "title": "Vector Quantization",
+        "contentHtml": "<p><strong>Scalar quantization</strong> rounds each sample independently — straightforward but suboptimal. <strong>Vector quantization (VQ)</strong> groups samples into vectors and snaps each vector to the nearest of a fixed set of \"codebook\" vectors. By exploiting joint structure, VQ achieves rates closer to R(D) than scalar quantization can.</p><p>The Linde-Buzo-Gray (LBG) algorithm — essentially k-means clustering — designs codebooks by iterating: assign training vectors to nearest codeword, then update codewords to be centroids of assigned vectors. Variants include tree-structured VQ for fast lookup and product VQ for high-dimensional spaces.</p><p>Modern relevance: <strong>VQ-VAE</strong> (DeepMind 2017) put vector quantization inside neural networks, learning discrete latent codes for images, audio, and video. <strong>Residual VQ</strong> (used in SoundStream, EnCodec, and Stable Audio) cascades multiple VQ layers, each quantizing the residual of the previous. These power modern audio compression and tokenize continuous data for transformer models. \"VQ\" went from a 1980s textbook topic to a cornerstone of generative AI in a decade.</p>",
+        "mathExpressions": ["\\text{Codebook } \\mathcal{C} = \\{\\mathbf{c}_1, \\dots, \\mathbf{c}_K\\}, \\quad \\text{rate} = \\frac{\\log_2 K}{n}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-07-c3",
+        "title": "Joint Source-Channel Coding and Practical Codecs",
+        "contentHtml": "<p>Shannon's <strong>separation theorem</strong> says that, in the limit of long block lengths, you lose nothing by separating compression from error correction: optimally compress, then optimally protect. This is why almost every modern system uses a clean pipeline — encode JPEG, then add LDPC for transmission.</p><p>The theorem fails for finite block lengths and non-ergodic channels, motivating <strong>joint source-channel coding</strong> for time-critical applications. Streaming video over lossy networks benefits from joint design — losing a key reference frame is much worse than losing a B-frame, so unequal error protection allocates more parity to the important parts.</p><p>Practical codecs blend many tricks. JPEG: DCT + scalar quantization + Huffman/arithmetic. MP3: psychoacoustic masking + MDCT + Huffman. H.265: motion compensation + DCT + CABAC. Modern neural codecs (Lyra for speech, Soundstream/EnCodec for general audio) replace hand-designed transforms with learned ones, often beating classical codecs at low bitrates by exploiting structure that hand-coded systems miss. Rate-distortion theory provides the universal yardstick.</p>",
+        "mathExpressions": ["R_{\\text{source}} < C \\implies \\exists \\text{ separated scheme}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q49", "info-q50", "info-q51", "info-q52", "info-q53", "info-q54", "info-q55", "info-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-08",
+    "topicId": "cs-information-theory",
+    "order": 8,
+    "title": "Kolmogorov Complexity and MDL",
+    "description": "Information as the length of the shortest description",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "info-08-c1",
+        "title": "Kolmogorov Complexity",
+        "contentHtml": "<p>Shannon entropy needs a probability distribution. <strong>Kolmogorov complexity</strong> K(x), independently introduced by Solomonoff, Kolmogorov, and Chaitin in the 1960s, defines information about an individual object x: the length of the <em>shortest program</em> (in some fixed universal language) that outputs x.</p><p>The first million digits of π have low Kolmogorov complexity — a short program generates them. A million random coin flips have high complexity — no shorter description exists than the bits themselves. The choice of programming language only changes K up to a constant (any language can be implemented in any other), so K is well-defined up to a universal constant.</p><p>Kolmogorov complexity formalizes the intuition that <strong>regular = compressible = simple</strong>, while <strong>random = incompressible = complex</strong>. It generalizes Shannon entropy: for a random variable X with distribution p, the expected Kolmogorov complexity of a sample is approximately H(X). It's the deepest definition of information available — though, as we'll see, also the most pathological.</p>",
+        "mathExpressions": ["K(x) = \\min_{p : U(p) = x} |p| \\quad \\text{(shortest program producing } x\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-08-c2",
+        "title": "Incomputability",
+        "contentHtml": "<p>The fatal property of Kolmogorov complexity: <strong>K is uncomputable</strong>. There is no algorithm that, given x, returns K(x). The proof is short and beautiful, related to Berry's paradox: if we could compute K, we could find \"the smallest number requiring more than a million bits to describe,\" which we just described in much less than a million bits — contradiction.</p><p>Equivalently, K is upper-semicomputable but not lower-semicomputable: you can find programs that produce x and shrink your upper bound, but you can never know you've found the shortest one (some shorter program might still terminate later — the halting problem strikes).</p><p>Despite incomputability, Kolmogorov complexity is profoundly useful as a conceptual tool. Chaitin's incompleteness theorem says: in any consistent formal system, you can prove only finitely many statements of the form \"K(x) > N\" — randomness has a built-in unprovability. Chaitin's constant Ω, the halting probability, is a definable real number that's both random and uncomputable. This is the deepest known link between information theory and the foundations of mathematics.</p>",
+        "mathExpressions": ["K(x) \\text{ is upper-semicomputable but not computable}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-08-c3",
+        "title": "MDL: Minimum Description Length",
+        "contentHtml": "<p>The <strong>Minimum Description Length (MDL) principle</strong> (Rissanen, 1978) is the practical version of Kolmogorov complexity. To choose between competing models for data, pick the one that minimizes the total description length: <code>L(model) + L(data | model)</code>. A complex model fits data well (short L(data|model)) but costs a lot to describe (large L(model)); a simple model is the reverse.</p><p>MDL is Occam's razor made quantitative. It naturally avoids overfitting: a model that memorizes the training set has L(model) ≈ L(data), no compression at all. A model that captures real structure compresses, and the more structure it captures, the more it compresses. MDL selects the sweet spot.</p><p>Applications: model selection in statistics, decision tree pruning, language model perplexity, neural network regularization, and a beautiful equivalence: minimizing MDL on iid data is asymptotically equivalent to maximum a posteriori (MAP) inference with the prior <code>p(model) ∝ 2^(-L(model))</code>. \"Compression equals understanding\" is more than a slogan — under MDL, it's a theorem.</p>",
+        "mathExpressions": ["\\hat{M} = \\arg\\min_M \\big[L(M) + L(D \\mid M)\\big]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q57", "info-q58", "info-q59", "info-q60", "info-q61", "info-q62", "info-q63", "info-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-09",
+    "topicId": "cs-information-theory",
+    "order": 9,
+    "title": "Information Theory in Machine Learning",
+    "description": "Cross-entropy loss, mutual info estimation, and the information bottleneck",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "info-09-c1",
+        "title": "Cross-Entropy Loss",
+        "contentHtml": "<p>Almost every classifier you've ever trained — logistic regression, neural net, transformer — minimizes the <strong>cross-entropy loss</strong>. For true distribution p and model distribution q, cross-entropy is <code>H(p, q) = -∑ p(x) log q(x)</code>. It decomposes as <code>H(p, q) = H(p) + D(p ‖ q)</code>: the irreducible entropy of the data plus the KL divergence of the model from the truth.</p><p>Since H(p) doesn't depend on the model, minimizing cross-entropy is equivalent to minimizing KL divergence. Equivalently, it's maximum likelihood estimation: <code>-log q(x)</code> is the number of bits the model spends to encode x, and a maximum-likelihood model is one that encodes the training data in the fewest bits.</p><p>The same reading explains <strong>perplexity</strong>, the standard metric for language models: <code>perplexity = 2^H(p, q)</code>, the effective branching factor of the predictor. GPT-4-class models achieve perplexity on the order of 10 on natural English text — they predict the next token as well as a uniform 10-way choice, despite vocabularies of 50,000+ tokens. Information-theoretic loss connects training to compression, and good language models really are good text compressors.</p>",
+        "mathExpressions": ["H(p, q) = -\\sum_x p(x) \\log_2 q(x) = H(p) + D_{KL}(p \\| q)", "\\text{perplexity} = 2^{H(p, q)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-09-c2",
+        "title": "Mutual Information Estimation in Deep Learning",
+        "contentHtml": "<p>Estimating mutual information from samples in high dimensions is hard — you can't compute the integrals analytically and naive density estimation fails fast. Modern ML uses <strong>variational lower bounds</strong>: parameterize a function f with a neural net, then optimize an MI lower bound that f can compute.</p><p>The <strong>InfoNCE</strong> bound (van den Oord et al., 2018) underlies contrastive learning. Given a positive pair (x, y) drawn from p(x,y) and N-1 \"negatives\" from p(x)p(y), train a critic to assign higher scores to positives than negatives. The bound is <code>I(X;Y) ≥ log N - L_NCE</code>. SimCLR, MoCo, CLIP, and most modern self-supervised methods are essentially InfoNCE in disguise.</p><p>The <strong>MINE estimator</strong> (Belghazi et al., 2018) uses the Donsker-Varadhan dual representation of KL divergence, training a neural net to maximize a lower bound on I(X;Y). MINE works on continuous variables in high dimensions where classical estimators fail. These ideas drive everything from disentangled representation learning to CLIP-style vision-language models — MI maximization is the lingua franca of self-supervised learning.</p>",
+        "mathExpressions": ["I(X;Y) \\geq \\log N - L_{\\text{InfoNCE}}", "I(X;Y) = \\sup_{T} \\big(E_{p(x,y)}[T(x,y)] - \\log E_{p(x)p(y)}[e^{T(x,y)}]\\big)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-09-c3",
+        "title": "The Information Bottleneck",
+        "contentHtml": "<p>The <strong>Information Bottleneck (IB)</strong> principle (Tishby, Pereira, Bialek; 1999) gives a principled answer to: what's the best representation T of input X for predicting target Y? The IB objective: <code>min I(X;T) - β I(T;Y)</code>. Compress X (small I(X;T)) while keeping what's relevant for Y (large I(T;Y)). Beta tunes the trade-off.</p><p>IB explains why good representations <em>throw away</em> information. A perfect classifier could just memorize X, but that representation generalizes poorly. The IB-optimal T discards everything in X that's irrelevant to Y, keeping only the useful bits — a compressed but predictive sufficient statistic.</p><p>Tishby and Schwartz-Ziv's 2017 work argued that deep neural network training has two phases: a fitting phase (I(T;Y) grows) followed by a compression phase (I(X;T) shrinks while I(T;Y) holds). The claim sparked controversy — later work (Saxe et al.) found this happens reliably only with saturating activations. But the IB framework remains a powerful lens: representations are good when they compress maximally subject to preserving downstream task information. This sits at the heart of modern theory of deep learning generalization.</p>",
+        "mathExpressions": ["\\mathcal{L}_{\\text{IB}} = I(X; T) - \\beta \\, I(T; Y)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q65", "info-q66", "info-q67", "info-q68", "info-q69", "info-q70", "info-q71", "info-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "info-10",
+    "topicId": "cs-information-theory",
+    "order": 10,
+    "title": "Quantum, Network, and Privacy",
+    "description": "Von Neumann entropy, multiple-access channels, and differential privacy",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "info-10-c1",
+        "title": "Quantum Information: Von Neumann Entropy and the Holevo Bound",
+        "contentHtml": "<p>Quantum information theory replaces probability distributions with <strong>density operators</strong> ρ on Hilbert spaces. The quantum analogue of Shannon entropy is the <strong>von Neumann entropy</strong>: <code>S(ρ) = -tr(ρ log₂ ρ)</code>. For a classical (diagonal) ρ, this reduces exactly to Shannon entropy of the diagonal probabilities.</p><p>Quantum entropy has unfamiliar properties. Pure states (rank-1 ρ) have S = 0 — perfectly known states carry no entropy, even when entangled. A maximally entangled Bell pair has S = 0 globally, but each subsystem alone has S = 1 — entropy can decrease when you combine systems, violating classical intuition.</p><p>The <strong>Holevo bound</strong> (Alexander Holevo, 1973) is the quantum no-cloning of capacity: when n classical bits are encoded into quantum states and measured, you can recover at most n bits — quantum systems can't help you transmit more classical information per qubit than per bit. But quantum coding does enable <strong>superdense coding</strong> (2 classical bits per qubit, with prior entanglement), <strong>quantum teleportation</strong>, and <strong>BB84 quantum key distribution</strong> deployed in 2010s commercial systems and the Chinese Micius satellite (2017).</p>",
+        "mathExpressions": ["S(\\rho) = -\\mathrm{tr}(\\rho \\log_2 \\rho)", "I_{\\text{accessible}} \\leq \\chi = S(\\bar\\rho) - \\sum_i p_i S(\\rho_i)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-10-c2",
+        "title": "Network Information Theory",
+        "contentHtml": "<p>Real networks have many senders and receivers sharing channels. <strong>Network information theory</strong> generalizes Shannon's two-party setup to multi-user scenarios. Two foundational channels:</p><p>The <strong>multiple-access channel (MAC)</strong>: many transmitters, one receiver. Think of cell phones in a tower's coverage area. The capacity is a region in (R₁, R₂, ..., R_k) space, not a single number. The boundary is the famous \"pentagon\" for two users — total rate is bounded by joint mutual information, individual rates by their own mutual information given the other as side information.</p><p>The <strong>broadcast channel</strong>: one transmitter, many receivers, each with different channel quality. This is one cell tower serving many phones. Surprisingly, optimal strategies often involve the strong receiver decoding the weak receiver's message and subtracting it before decoding its own — \"successive cancellation,\" deployed in non-orthogonal multiple access (NOMA) for 5G. The full capacity region of the general broadcast channel is still open after 50 years; concrete progress includes the degraded broadcast channel solved by Bergmans (1973) and Cover-El Gamal coding.</p>",
+        "mathExpressions": ["R_1 + R_2 \\leq I(X_1, X_2; Y), \\quad R_1 \\leq I(X_1; Y | X_2)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "info-10-c3",
+        "title": "Differential Privacy",
+        "contentHtml": "<p><strong>Differential privacy</strong> (Cynthia Dwork et al., 2006) gives an information-theoretic guarantee about leakage. A randomized algorithm M is <code>ε</code>-differentially private if, for any two datasets D and D' differing in one record, <code>P(M(D) ∈ S) ≤ e^ε · P(M(D') ∈ S)</code> for all output sets S. Adding or removing one person changes any output probability by at most a factor of e^ε.</p><p>The classical mechanism: add Laplace or Gaussian noise calibrated to the function's <strong>sensitivity</strong>. A counting query has sensitivity 1 (one person changes the count by 1), so adding Laplace noise with scale 1/ε gives ε-DP. The trade-off is fundamental: more privacy (smaller ε) requires more noise, lowering accuracy.</p><p>An older idea, <strong>randomized response</strong> (Warner 1965), is a special case: when asked a sensitive question, flip a coin and answer truthfully or randomly. The aggregate statistic survives, but each individual has plausible deniability. Modern deployments: Apple uses local DP for emoji and keyboard usage telemetry; Google's RAPPOR for Chrome; the US Census 2020 used central DP for all published statistics. DP frames privacy as bounded mutual information between input data and output, closing the conceptual loop back to Shannon.</p>",
+        "mathExpressions": ["P(M(D) \\in S) \\leq e^{\\epsilon} \\cdot P(M(D') \\in S) \\quad \\text{for } |D \\triangle D'| \\leq 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["info-q73", "info-q74", "info-q75", "info-q76", "info-q77", "info-q78", "info-q79", "info-q80"],
+    "puzzleId": null
+  }
+]

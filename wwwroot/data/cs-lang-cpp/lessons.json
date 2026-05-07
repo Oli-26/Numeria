@@ -1,0 +1,182 @@
+[
+  {
+    "id": "cpp-01",
+    "topicId": "cs-lang-cpp",
+    "order": 1,
+    "title": "Classes and RAII",
+    "description": "Encapsulation, constructors/destructors, and the killer C++ idiom",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "cpp-01-c1",
+        "title": "C++ Is C With Classes (Plus a Lot More)",
+        "contentHtml": "<p><strong>C++</strong>, designed by Bjarne Stroustrup starting in 1979, began as \"C with Classes\" — adding object-oriented programming to C while preserving its low-level control. Forty-five years later, C++ has grown into a multi-paradigm language with templates, exceptions, lambdas, concepts, modules, and more.</p><p>The language remains largely backward-compatible with C. Most C code compiles as C++. This compatibility is both a feature (immediate access to vast existing C codebases) and a curse (C's footguns persist). Modern C++ (C++11 and later) provides safer abstractions, but the old, raw-pointer-and-manual-malloc style still works.</p><p>The language is famously massive. The C++ standard is over 1500 pages. Few developers know all of it. Effective C++ practice is about choosing a tasteful subset, sticking to modern idioms, and avoiding the corners that trap the unwary. Scott Meyers' books, Stroustrup's own \"A Tour of C++,\" and the C++ Core Guidelines distill what to use and what to avoid.</p>",
+        "mathExpressions": ["\\text{C++} = \\text{C} + \\text{classes} + \\text{templates} + \\text{exceptions} + \\ldots"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-01-c2",
+        "title": "Constructors, Destructors, and the Rule of 0/3/5",
+        "contentHtml": "<p>A C++ <strong>class</strong> bundles state and behavior. Special <strong>constructors</strong> initialize objects; the <strong>destructor</strong> runs when an object goes out of scope. The compiler can synthesize default versions, but explicit ones are needed when the class manages a resource.</p><p>The classic guideline is the <strong>Rule of Three</strong>: if you write any of {destructor, copy constructor, copy assignment operator}, you probably need all three. Modern C++ adds the <strong>Rule of Five</strong> (also move constructor and move assignment) and the <strong>Rule of Zero</strong> (use member types that handle resources for you, so you write none of the special members).</p><p>The Rule of Zero is the modern best practice. Use <code>std::vector</code> instead of raw arrays, <code>std::unique_ptr</code> instead of raw pointers, <code>std::string</code> instead of char arrays. Each of those types correctly implements all five special members. Your class then uses the synthesized defaults — no manual memory management code at all.</p>",
+        "mathExpressions": ["\\text{Rule of 0/3/5: zero special members preferred, else write all 3 (or 5)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-01-c3",
+        "title": "RAII: Resource Acquisition Is Initialization",
+        "contentHtml": "<p><strong>RAII</strong> is C++'s most important idiom. The pattern: tie a resource (memory, file handle, lock, network connection) to an object's lifetime. Acquire the resource in the constructor; release it in the destructor. When the object goes out of scope, cleanup happens automatically.</p><p>This is dramatically better than manual cleanup. <code>std::lock_guard&lt;std::mutex&gt; lock(m);</code> acquires the lock; the destructor releases it on scope exit, even if an exception is thrown. <code>std::ifstream f(\"data.txt\");</code> opens the file; closing happens automatically. <code>std::unique_ptr&lt;Foo&gt; p(new Foo);</code> manages heap memory; <code>delete</code> happens automatically.</p><p>RAII solves what manual cleanup could not: <strong>exception safety</strong>. With manual <code>cleanup();</code> calls, an exception between acquire and cleanup leaks the resource. With RAII, the destructor runs as the exception unwinds the stack. RAII is why modern C++ can safely use exceptions without the resource leaks that plague Java/C# without try-with-resources.</p>",
+        "mathExpressions": ["\\text{RAII: resource lifetime} \\equiv \\text{object lifetime}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["cpp-q01", "cpp-q02", "cpp-q03", "cpp-q04", "cpp-q05", "cpp-q06", "cpp-q07", "cpp-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "cpp-02",
+    "topicId": "cs-lang-cpp",
+    "order": 2,
+    "title": "Templates and Generic Programming",
+    "description": "Compile-time code generation and type-parameterized algorithms",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "cpp-02-c1",
+        "title": "Function and Class Templates",
+        "contentHtml": "<p><strong>Templates</strong> are C++'s answer to generic programming. <code>template &lt;typename T&gt; T max(T a, T b) { return a &gt; b ? a : b; }</code> defines a function that works for any type T supporting <code>&gt;</code>. The compiler generates a separate version for each T you call it with — <code>max(3, 5)</code> produces an <code>int</code> version; <code>max(3.0, 5.0)</code> produces a <code>double</code> version.</p><p><strong>Class templates</strong> work the same way: <code>template &lt;typename T&gt; class vector { ... };</code>. <code>vector&lt;int&gt;</code> and <code>vector&lt;string&gt;</code> are distinct types generated from the same template. The Standard Template Library (STL) uses class templates extensively for containers and algorithms.</p><p>Templates are <strong>resolved at compile time</strong> — the generated code is as fast as if you'd hand-written it. There's no runtime overhead like Java's type erasure or Python's duck typing. The cost: longer compile times, larger binaries (multiple instantiations), and notoriously cryptic error messages when things go wrong. C++20's <strong>concepts</strong> finally let you constrain template parameters, dramatically improving error messages.</p>",
+        "mathExpressions": ["\\text{template instantiation: code generated per type at compile time}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-02-c2",
+        "title": "Template Specialization and SFINAE",
+        "contentHtml": "<p>Templates can be <strong>specialized</strong> for specific types. <code>template &lt;&gt; class vector&lt;bool&gt; { ... }</code> defines a special vector-of-bool that packs bits to save space (a famously controversial choice). Specialization lets you optimize for known cases while keeping the generic version.</p><p>Templates also support <strong>partial specialization</strong> for class templates: providing a more specific implementation for, say, all pointer types or all maps with int keys. This is the foundation of much template metaprogramming.</p><p>The advanced trick is <strong>SFINAE</strong> (Substitution Failure Is Not An Error): if substituting template arguments produces an invalid type, the compiler removes that overload from consideration rather than erroring. Library writers used SFINAE for type traits, conditional dispatch, and detecting features. C++20 <strong>concepts</strong> replace much SFINAE with cleaner syntax: <code>template &lt;std::integral T&gt; T add(T a, T b);</code> says T must satisfy the integral concept.</p>",
+        "mathExpressions": ["\\text{SFINAE: substitution failure} \\to \\text{remove from overload set, not error}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-02-c3",
+        "title": "constexpr and Compile-Time Computation",
+        "contentHtml": "<p>C++ has gradually expanded what can be computed at compile time. <code>constexpr</code> functions can be evaluated at compile time when called with constant arguments. <code>constexpr int factorial(int n) { return n &lt;= 1 ? 1 : n * factorial(n-1); }</code> can produce <code>factorial(5)</code> = 120 entirely at compile time, baking the result into the binary.</p><p>Each C++ standard expanded constexpr's reach. C++11 allowed simple expressions; C++14 added loops and locals; C++17 added <code>if constexpr</code> for compile-time branching; C++20 allowed allocations, virtual functions, and even <code>std::vector</code> in constexpr contexts. C++23 adds <code>constexpr</code> to most of the standard library.</p><p>This blurs the line between runtime and compile time. Sophisticated libraries use compile-time computation for size calculations, validation, and metaprogramming. The downside: extreme constexpr code can be slow to compile and produce mysterious errors. The trend is real and useful, but it's also the kind of feature that's easy to over-apply.</p>",
+        "mathExpressions": ["\\text{constexpr: function callable at compile time when given constexpr args}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["cpp-q09", "cpp-q10", "cpp-q11", "cpp-q12", "cpp-q13", "cpp-q14", "cpp-q15", "cpp-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "cpp-03",
+    "topicId": "cs-lang-cpp",
+    "order": 3,
+    "title": "Move Semantics and Smart Pointers",
+    "description": "Avoiding copies, transferring ownership, and managing memory safely",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "cpp-03-c1",
+        "title": "lvalues, rvalues, and References",
+        "contentHtml": "<p>C++11 introduced <strong>rvalue references</strong> (<code>T&amp;&amp;</code>) to enable move semantics. The vocabulary: an <strong>lvalue</strong> has identity and persists (a named variable); an <strong>rvalue</strong> is temporary (the result of an expression). <code>T&amp;</code> is an lvalue reference; <code>T&amp;&amp;</code> is an rvalue reference.</p><p>The key insight: when an object is about to be destroyed, you can <em>steal</em> its resources rather than copying them. <code>std::string s = std::move(other);</code> transfers other's internal buffer into s instead of copying the characters. <code>other</code> is left in a valid-but-unspecified state.</p><p>This matters enormously for performance. Returning a large vector from a function used to copy it; with move semantics, the return value is moved (or even better, eliminated entirely via copy elision). The whole STL was retrofitted to support moves. Modern C++ code is dramatically faster than C++03 code on many workloads, mostly because of this single feature.</p>",
+        "mathExpressions": ["\\text{copy: } O(n) \\text{ work} \\quad \\text{move: } O(1) \\text{ pointer swap}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-03-c2",
+        "title": "unique_ptr, shared_ptr, weak_ptr",
+        "contentHtml": "<p>Modern C++ avoids raw <code>new</code>/<code>delete</code>. The standard library's <strong>smart pointers</strong> handle the lifetime for you.</p><p><strong>std::unique_ptr&lt;T&gt;</strong>: exclusive ownership. Cannot be copied (only moved). When it goes out of scope, the pointee is deleted. Replaces 99% of raw pointer ownership in modern C++. Zero overhead — same size and speed as a raw pointer.</p><p><strong>std::shared_ptr&lt;T&gt;</strong>: shared ownership via reference counting. The pointee is deleted when the last shared_ptr to it is destroyed. Useful for graphs and caches where multiple owners exist. Has overhead: an atomic counter per object.</p><p><strong>std::weak_ptr&lt;T&gt;</strong>: a non-owning observer of a shared_ptr. Doesn't keep the pointee alive but can be 'locked' to obtain a shared_ptr if it's still valid. Used to break shared_ptr cycles (parent owns child via shared, child observes parent via weak — otherwise neither is freed).</p>",
+        "mathExpressions": ["\\text{unique\\_ptr: 1 owner} \\quad \\text{shared\\_ptr: refcount} \\quad \\text{weak\\_ptr: observer}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-03-c3",
+        "title": "Move-Only Types and the End of new/delete",
+        "contentHtml": "<p>Smart pointers and move semantics enable <strong>move-only types</strong>: classes that can be moved but not copied. <code>std::unique_ptr</code>, <code>std::thread</code>, <code>std::ifstream</code> are all move-only. This makes single ownership <em>enforced by the type system</em> rather than convention.</p><p>The pattern: when ownership matters and copying makes no sense (a thread, a file handle, an exclusive resource), make the type move-only. Functions take it by rvalue reference or by value with a move at the call site. Compilation will catch any accidental copy attempt.</p><p>Modern C++ best practice: <strong>raw <code>new</code> and <code>delete</code> belong nowhere in application code</strong>. Use <code>std::make_unique&lt;T&gt;(args...)</code> or <code>std::make_shared&lt;T&gt;(args...)</code> for heap allocation. Use <code>std::vector</code>, <code>std::string</code>, <code>std::array</code> for collections. The C-style memory management still works for compatibility, but in clean modern code, you should never see <code>delete</code> outside of low-level libraries.</p>",
+        "mathExpressions": ["\\text{modern C++: } \\text{make\\_unique / make\\_shared} \\quad \\text{not new / delete}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["cpp-q17", "cpp-q18", "cpp-q19", "cpp-q20", "cpp-q21", "cpp-q22", "cpp-q23", "cpp-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "cpp-04",
+    "topicId": "cs-lang-cpp",
+    "order": 4,
+    "title": "The STL: Containers, Iterators, Algorithms",
+    "description": "C++'s remarkable generic library and how to wield it",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "cpp-04-c1",
+        "title": "Containers: vector, map, unordered_map, and Friends",
+        "contentHtml": "<p>The <strong>STL containers</strong> are template classes for common data structures. <strong>std::vector&lt;T&gt;</strong>: dynamic array, by far the most-used container. <strong>std::array&lt;T, N&gt;</strong>: fixed-size array. <strong>std::deque&lt;T&gt;</strong>: double-ended queue. <strong>std::list&lt;T&gt;</strong>: doubly linked list (rarely the right choice).</p><p>Associative containers: <strong>std::map&lt;K, V&gt;</strong> (sorted, typically red-black tree, O(log n)), <strong>std::unordered_map&lt;K, V&gt;</strong> (hash table, O(1) average), and the <code>set</code> versions of each. There are also <code>multi-</code> variants that allow duplicate keys.</p><p>The default rule: <strong>use std::vector unless you have a specific reason not to</strong>. Cache locality wins over linked-list theory in practice. Use <code>unordered_map</code> for hash-based lookups. Avoid <code>std::list</code> in nearly all real code.</p>",
+        "mathExpressions": ["\\text{default = std::vector} \\quad \\text{(cache wins over Big-O for small to medium n)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-04-c2",
+        "title": "Iterators and Algorithms",
+        "contentHtml": "<p>STL <strong>algorithms</strong> work on any container via <strong>iterators</strong>. <code>std::sort(v.begin(), v.end());</code> sorts a vector. The same <code>std::sort</code> works on arrays, deques, custom containers — anything that exposes random-access iterators.</p><p>The library is huge: <code>find</code>, <code>count</code>, <code>copy</code>, <code>transform</code>, <code>accumulate</code>, <code>partition</code>, <code>unique</code>, <code>rotate</code>, <code>shuffle</code>, <code>min_element</code>, <code>max_element</code>, <code>binary_search</code>, <code>lower_bound</code>. Each works through iterator pairs (<code>begin</code>, <code>end</code>) or now via <strong>ranges</strong> (C++20).</p><p>The 2020 ranges library lets you compose pipelines: <code>auto evens = vec | std::views::filter(is_even) | std::views::transform(square) | std::views::take(10);</code>. Lazy evaluation, no intermediate containers, dramatically more readable than the equivalent iterator-pair calls. C++23 expands ranges further. This is one area where modern C++ feels like Haskell or Rust.</p>",
+        "mathExpressions": ["\\text{algorithm}(\\text{begin}, \\text{end}) \\quad \\text{or} \\quad \\text{range} | \\text{view} | \\text{view}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-04-c3",
+        "title": "Lambdas and Functional Style",
+        "contentHtml": "<p>C++11 introduced <strong>lambda expressions</strong>: <code>[capture](args) { body }</code>. They create anonymous function objects, perfect for STL algorithms: <code>std::sort(v.begin(), v.end(), [](int a, int b) { return a &gt; b; });</code> sorts in descending order.</p><p>The <strong>capture</strong> clause controls how lambdas access outer variables. <code>[]</code> captures nothing; <code>[x]</code> captures x by value; <code>[&amp;x]</code> by reference; <code>[=]</code> all by value; <code>[&amp;]</code> all by reference. C++14 added init captures: <code>[ptr = std::move(orig)]</code> moves into the lambda.</p><p>Lambdas turned C++ into a much more functional language. Combined with <code>std::function</code> (type-erased callable) and ranges, much code that used to require a separate functor class becomes a one-liner. Performance is excellent: lambdas are just classes with an <code>operator()</code>, fully inlined when possible. Modern STL is unimaginable without them.</p>",
+        "mathExpressions": ["\\text{lambda: } [\\text{capture}](\\text{args}) \\to \\{ \\text{body} \\} \\equiv \\text{anonymous functor}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["cpp-q25", "cpp-q26", "cpp-q27", "cpp-q28", "cpp-q29", "cpp-q30", "cpp-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "cpp-05",
+    "topicId": "cs-lang-cpp",
+    "order": 5,
+    "title": "Modern C++: 11/14/17/20/23",
+    "description": "How the language has transformed in the last decade",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "cpp-05-c1",
+        "title": "C++11/14: The Modernization",
+        "contentHtml": "<p><strong>C++11</strong> was a watershed: <code>auto</code> type deduction, range-based for loops, lambdas, smart pointers, move semantics, <code>nullptr</code>, threading library, <code>constexpr</code>, uniform initialization, variadic templates. The language went from clunky to genuinely pleasant for a huge fraction of code.</p><p><strong>C++14</strong> was a refinement: generic lambdas, return type deduction, more constexpr, <code>std::make_unique</code>. <strong>C++17</strong> added structured bindings (<code>auto [k, v] = pair;</code>), <code>std::optional</code>, <code>std::variant</code>, <code>std::filesystem</code>, and parallel algorithms.</p><p>By C++17, the language had caught up to peer languages on safety and ergonomics. The Rule of Zero became practical, exception-safe code became natural, the standard library covered most domains. Modern C++17 code looks more like high-level languages than C — <code>auto</code>, range-for, lambdas, smart pointers everywhere.</p>",
+        "mathExpressions": ["C++11: \\text{auto, lambda, smart ptrs, move, threads, constexpr}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-05-c2",
+        "title": "C++20: Concepts, Ranges, Modules, Coroutines",
+        "contentHtml": "<p><strong>C++20</strong> shipped four big features. <strong>Concepts</strong>: constrain templates with named requirements (<code>std::integral</code>, <code>std::sortable</code>, your own). Compile errors finally make sense.</p><p><strong>Ranges</strong>: lazy view pipelines over containers. <code>vec | filter(...) | transform(...)</code>. Composable, readable, often as fast as hand-written loops. <strong>Modules</strong>: a real module system replacing the include-everything-everywhere C model. Faster compiles, no header guard fights. Adoption has been slower than hoped due to tooling/build-system support.</p><p><strong>Coroutines</strong>: stackless coroutines for async code. <code>co_await</code>, <code>co_yield</code>, <code>co_return</code> turn functions into coroutines. The standard library's coroutine support is sparse; libraries like <strong>cppcoro</strong> and <strong>folly::coro</strong> fill the gap. C++20 coroutines are powerful but the API surface area is large.</p>",
+        "mathExpressions": ["C++20: \\text{concepts} + \\text{ranges} + \\text{modules} + \\text{coroutines}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "cpp-05-c3",
+        "title": "C++23 and Beyond: Where the Language Is Going",
+        "contentHtml": "<p><strong>C++23</strong>'s biggest features: <strong>std::expected</strong> (Rust-style Result type for error handling), <strong>std::print</strong> (modern formatted output replacing iostreams), <strong>multidimensional subscript</strong>, <strong>deducing this</strong>, more constexpr. The standard library continues catching up to user demands.</p><p>The bigger picture: C++ is increasingly competing with Rust for systems programming. Major efforts are underway to address the safety gap. <strong>Profiles</strong> (proposed for C++26) would offer a 'safe subset' of the language, banning the most common UB sources. The <strong>Carbon</strong> language (Google) and <strong>Cpp2/cppfront</strong> (Herb Sutter) explore C++-compatible successor languages with stricter defaults.</p><p>The brute reality: C++ has 50 billion lines of legacy code and ABI commitments that make rapid evolution painful. Modern C++ is a beautiful language for a thoughtful subset, but the language as a whole is enormous and hostile to newcomers. Whether C++ remains dominant in the 2030s or yields to Rust depends largely on whether 'safe by default' actually arrives in the language itself.</p>",
+        "mathExpressions": ["\\text{C++ future: } \\text{safety + ergonomics vs ABI legacy}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["cpp-q32", "cpp-q33", "cpp-q34", "cpp-q35", "cpp-q36", "cpp-q37"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,460 @@
+[
+  {
+    "id": "plas-01",
+    "topicId": "physics-plasma",
+    "order": 1,
+    "title": "What Is Plasma — The Fourth State of Matter",
+    "description": "Quasineutrality, Debye shielding, plasma parameter, plasma frequency",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "plas-01-c1",
+        "title": "Quasineutrality and the Debye Length",
+        "contentHtml": "<p>A <strong>plasma</strong> is an ionized gas that exhibits collective behavior. Heat any gas to 10,000 K — or expose it to strong fields — and electrons unbind from nuclei. The result is a soup of free electrons and positive ions that is, on macroscopic scales, electrically neutral. This near-equality of positive and negative charge density is called <strong>quasineutrality</strong>: <code>n_e ≈ Z n_i</code>.</p><p>Quasineutrality holds only above a characteristic length. Drop a stray test charge into the plasma and electrons swarm toward it (or away from it), screening the field. Beyond a distance called the <strong>Debye length</strong> <code>λ_D</code>, the field is exponentially suppressed. λ_D depends on electron temperature and density: hotter, sparser plasmas screen over longer distances; cold, dense plasmas screen almost instantly.</p><p>Numerical sense: the solar corona has λ_D ~ 1 cm; a tokamak core has λ_D ~ 70 μm; the interstellar medium has λ_D ~ 10 m. In every case the system size dwarfs λ_D — that is precisely what makes it a plasma rather than just an ionized gas.</p>",
+        "mathExpressions": [
+          "\\lambda_D = \\sqrt{\\frac{\\epsilon_0 k_B T_e}{n_e e^2}}",
+          "\\phi(r) = \\frac{q}{4\\pi\\epsilon_0 r} e^{-r/\\lambda_D}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-01-c2",
+        "title": "The Plasma Parameter",
+        "contentHtml": "<p>For collective behavior to dominate over single-particle binary collisions, a Debye sphere must contain many particles. The <strong>plasma parameter</strong> <code>Λ = n_e λ_D³</code> counts how many electrons live inside one Debye volume. A true plasma requires <code>Λ ≫ 1</code>; otherwise you have a strongly coupled system where each particle's nearest neighbor matters more than the cloud.</p><p>Most laboratory and astrophysical plasmas are weakly coupled: the tokamak core has <code>Λ ~ 10⁸</code>, the solar wind <code>~ 10¹⁰</code>. White dwarf interiors and inertial-confinement fuel near peak compression sit closer to <code>Λ ~ 1</code>, the regime of <strong>warm dense matter</strong>, where neither plasma physics nor condensed-matter physics applies cleanly.</p><p>The complementary quantity <code>g = 1/Λ</code> is the <strong>coupling parameter</strong> — the ratio of average potential energy to thermal energy. When g is small, the plasma is fluid-like and kinetic theory works; when g approaches 1, particles correlate strongly and the system crystallizes into a <strong>Coulomb lattice</strong> (observed in dusty plasmas and the crusts of neutron stars).</p>",
+        "mathExpressions": [
+          "\\Lambda = n_e \\lambda_D^3 \\gg 1",
+          "g = \\frac{1}{n_e \\lambda_D^3} = \\frac{\\langle U \\rangle}{\\langle KE \\rangle}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-01-c3",
+        "title": "Plasma Frequency",
+        "contentHtml": "<p>Disturb the electron density and the electrons rush back to neutralize the charge separation, overshoot, and oscillate. The natural ringing frequency is the <strong>plasma frequency</strong> <code>ω_p</code>. Ions, being thousands of times heavier, barely move on this timescale.</p><p>ω_p sets the cutoff for electromagnetic wave propagation: light below ω_p is reflected, light above passes through. The ionosphere has f_p ~ 10 MHz, which is why AM radio (around 1 MHz) bounces off it for global propagation while FM (100 MHz) and TV punch straight through to space. The interstellar medium reflects radio waves below ~1 kHz, defining a permanent low-frequency horizon for radio astronomy.</p><p>In a fusion plasma at 10²⁰ m⁻³, ω_p ~ 6 × 10¹¹ rad/s — corresponding to about 90 GHz, which is why microwave heating of tokamak plasmas (electron cyclotron resonance heating) operates in the 100–200 GHz band. Plasma frequency, Debye length, and the plasma parameter together define the three characteristic scales that distinguish plasma from neutral gas behavior.</p>",
+        "mathExpressions": [
+          "\\omega_p = \\sqrt{\\frac{n_e e^2}{\\epsilon_0 m_e}}",
+          "f_p \\approx 8980 \\sqrt{n_e [\\text{cm}^{-3}]} \\;\\text{Hz}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q01", "plas-q02", "plas-q03", "plas-q04", "plas-q05", "plas-q06", "plas-q07", "plas-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-02",
+    "topicId": "physics-plasma",
+    "order": 2,
+    "title": "Single-Particle Motion",
+    "description": "Cyclotron orbits, drifts, magnetic mirrors, adiabatic invariants",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "plas-02-c1",
+        "title": "Gyration and the Cyclotron Frequency",
+        "contentHtml": "<p>A charged particle in a uniform magnetic field <strong>B</strong> traces a helix: free motion along B and circular motion perpendicular to it. The angular frequency of that circle is the <strong>cyclotron frequency</strong> (or gyrofrequency) <code>Ω_c = qB/m</code>; the radius is the <strong>Larmor radius</strong> (or gyroradius) <code>ρ_L = v_⊥ / Ω_c</code>.</p><p>For a 1 keV electron in a 5 T tokamak field, ρ_L ~ 20 μm and the electron orbits at 140 GHz. A 100 keV deuteron in the same field has ρ_L ~ 3 mm, gyrating at 38 MHz. The huge electron-to-ion ratio of cyclotron frequencies is why electron-cyclotron and ion-cyclotron heating use entirely different microwave bands.</p><p>The hierarchy of timescales — gyration ≪ collision time ≪ confinement time — is the foundation of magnetic confinement. As long as ρ_L is much smaller than the device, the particle is tied to a field line, free only to drift slowly across them. This is why a strong B field works as a magnetic bottle: it doesn't trap perpendicular motion (the gyration absorbs it), it freezes guiding-centre transport across field lines.</p>",
+        "mathExpressions": [
+          "\\Omega_c = \\frac{|q|B}{m}",
+          "\\rho_L = \\frac{m v_\\perp}{|q|B}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-02-c2",
+        "title": "E×B, Grad-B, and Curvature Drifts",
+        "contentHtml": "<p>Add a perpendicular force or a field gradient to a gyrating particle and the orbit centre slowly drifts. The most important is the <strong>E×B drift</strong>: in crossed electric and magnetic fields, every particle drifts at velocity <code>v_E = E × B / B²</code>, regardless of charge, mass, or speed. This is why E×B can move a whole plasma without separating species — it is the workhorse of plasma rotation in tokamaks and the mechanism that drives the solar-wind convection of the magnetosphere.</p><p>A gradient in B magnitude produces the <strong>grad-B drift</strong>, perpendicular to both ∇B and B. A curved field line produces the <strong>curvature drift</strong>, arising from the centrifugal force as the particle follows its bent helix. Both depend on charge sign and energy, so they drive currents and charge separation in inhomogeneous fields.</p><p>In a tokamak, grad-B and curvature drifts push electrons and ions in opposite vertical directions, building up a charge separation that would destroy confinement if uncorrected. Twisting the field lines into a helix (the <strong>safety factor q</strong>) ensures the particle samples the top and bottom of the torus on alternating passes, cancelling the drift average. This twist is why a torus needs both toroidal and poloidal fields.</p>",
+        "mathExpressions": [
+          "\\mathbf{v}_E = \\frac{\\mathbf{E} \\times \\mathbf{B}}{B^2}",
+          "\\mathbf{v}_{\\nabla B} = \\frac{m v_\\perp^2}{2qB^3}\\, \\mathbf{B} \\times \\nabla B",
+          "\\mathbf{v}_R = \\frac{m v_\\parallel^2}{qB^2}\\, \\frac{\\mathbf{R}_c \\times \\mathbf{B}}{R_c^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-02-c3",
+        "title": "Magnetic Mirrors and Adiabatic Invariants",
+        "contentHtml": "<p>A magnetic field that converges (gets stronger) acts as a <strong>magnetic mirror</strong>. The <strong>magnetic moment</strong> <code>μ = m v_⊥² / 2B</code> is an adiabatic invariant: as long as B varies slowly compared to the gyration period, μ stays constant. As the particle moves into stronger B, v_⊥ must increase; energy conservation then forces v_∥ to decrease. Eventually v_∥ reaches zero and the particle reflects.</p><p>This is the principle behind <strong>mirror machines</strong> (a fusion approach with Tandem Mirror experiments in the 1980s) and the trapping of cosmic rays in Earth's <strong>Van Allen belts</strong>: charged particles bounce between magnetic mirror points near the magnetic poles, drifting longitudinally around the planet. A particle escapes the mirror only if its initial pitch angle falls inside the <strong>loss cone</strong> — too parallel, too fast, and the mirror can't reflect it.</p><p>μ is the <strong>first adiabatic invariant</strong>. The integral <code>J = ∮ p_∥ dℓ</code> (the bounce action) is the second; the magnetic flux enclosed by a guiding-centre's drift orbit around a field-aligned axis is the third. Each is conserved over its own slow timescale and underpins the layered theory of trapped-particle dynamics in magnetospheric and fusion plasmas.</p>",
+        "mathExpressions": [
+          "\\mu = \\frac{m v_\\perp^2}{2B} = \\text{const}",
+          "\\sin^2\\theta_{loss} = \\frac{B_0}{B_{max}}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q09", "plas-q10", "plas-q11", "plas-q12", "plas-q13", "plas-q14", "plas-q15", "plas-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-03",
+    "topicId": "physics-plasma",
+    "order": 3,
+    "title": "Fluid Description and Two-Fluid Equations",
+    "description": "Moments of the kinetic equation, two-fluid model, MHD limit",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "plas-03-c1",
+        "title": "From Kinetic to Fluid",
+        "contentHtml": "<p>Tracking 10²⁰ particles individually is hopeless. The <strong>kinetic description</strong> uses a distribution function <code>f(x, v, t)</code> in 6D phase space; the <strong>fluid description</strong> takes velocity moments to reduce to functions of (x, t) only. The zeroth moment gives density n; the first gives bulk velocity u; the second gives pressure (or stress tensor) P.</p><p>Each moment equation references the next-higher one — density evolution depends on flow, flow on pressure, pressure on heat flux — so the chain has to be truncated by a <strong>closure</strong>. Common closures are isothermal (T = const), adiabatic (P n^{-γ} = const), or Chew-Goldberger-Low for strongly magnetized plasmas. The right closure depends on whether collisions are fast enough to thermalize on the timescale of interest.</p><p>The fluid description loses information about velocity-space structure. Phenomena like Landau damping, two-stream instability, and ion-acoustic wave damping have no fluid counterpart — they live in the kinetic theory only. So fluid models are powerful for low-frequency, large-scale dynamics but blind to microscopic physics that often drives transport in real plasmas.</p>",
+        "mathExpressions": [
+          "n(\\mathbf{x},t) = \\int f \\, d^3v",
+          "n \\mathbf{u} = \\int \\mathbf{v} f \\, d^3v",
+          "P_{ij} = m \\int (v_i - u_i)(v_j - u_j) f \\, d^3v"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-03-c2",
+        "title": "The Two-Fluid Equations",
+        "contentHtml": "<p>Treating electrons and ions as separate interpenetrating fluids gives the <strong>two-fluid model</strong>: continuity, momentum, and energy equations for each species, coupled by collisions and Maxwell's equations. The momentum equation for species s reads <code>m_s n_s (∂_t + u_s · ∇) u_s = q_s n_s (E + u_s × B) - ∇P_s + R_s</code>, where R_s is the inter-species collisional friction.</p><p>Two-fluid theory captures phenomena MHD misses: <strong>Hall effects</strong> at sub-ion-skin-depth scales, <strong>electron pressure gradient effects</strong>, and the separation of electron and ion dynamics on fast timescales. Hall MHD (a partial two-fluid simplification) is essential for collisionless reconnection and for understanding magnetosphere–ionosphere coupling.</p><p>The two-fluid equations are still much simpler than the full kinetic Vlasov–Boltzmann description but contain enough degrees of freedom to model most low-frequency plasma waves correctly: shear and compressional Alfvén modes, slow and fast magnetosonic modes, ion-acoustic and electron plasma oscillations. They form the workhorse of fusion, space, and astrophysical simulations when MHD is too crude and full kinetics too expensive.</p>",
+        "mathExpressions": [
+          "m_s n_s \\!\\left(\\frac{\\partial}{\\partial t} + \\mathbf{u}_s \\cdot \\nabla\\right)\\!\\mathbf{u}_s = q_s n_s (\\mathbf{E} + \\mathbf{u}_s \\times \\mathbf{B}) - \\nabla P_s + \\mathbf{R}_s",
+          "\\frac{\\partial n_s}{\\partial t} + \\nabla \\cdot (n_s \\mathbf{u}_s) = 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-03-c3",
+        "title": "Collapsing to MHD",
+        "contentHtml": "<p>For slow, large-scale dynamics, electrons and ions move together to leading order. Defining the bulk velocity <code>u = (m_i u_i + m_e u_e)/(m_i + m_e) ≈ u_i</code> and the current <code>J = e n (u_i - u_e)</code>, the two-fluid equations collapse into single-fluid <strong>magnetohydrodynamics (MHD)</strong>.</p><p>The MHD equations consist of mass continuity, a single momentum equation with magnetic pressure and tension <code>(J × B = -∇(B²/2μ_0) + (B · ∇)B/μ_0)</code>, an energy equation, and Ohm's law (in the simplest <strong>ideal</strong> form, <code>E + u × B = 0</code>). Maxwell's equations close the system. Crucially, MHD drops the displacement current — meaning it cannot describe electromagnetic waves at light speed, only the slow plasma waves where ω ≪ ω_p.</p><p>MHD is valid when length scales exceed the ion skin depth, frequencies are well below ω_p and Ω_ci, and collisional or anomalous resistivity is small. These conditions hold beautifully for the solar interior, the solar wind on planetary scales, and the bulk of a tokamak plasma — making MHD the most successful single framework in plasma physics, despite missing the kinetic physics of waves and instabilities at small scales.</p>",
+        "mathExpressions": [
+          "\\rho \\frac{D\\mathbf{u}}{Dt} = -\\nabla p + \\frac{1}{\\mu_0}(\\nabla \\times \\mathbf{B}) \\times \\mathbf{B}",
+          "\\mathbf{E} + \\mathbf{u} \\times \\mathbf{B} = \\eta \\mathbf{J}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q17", "plas-q18", "plas-q19", "plas-q20", "plas-q21", "plas-q22", "plas-q23", "plas-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-04",
+    "topicId": "physics-plasma",
+    "order": 4,
+    "title": "Ideal MHD: Frozen Flux and Alfvén Waves",
+    "description": "Flux freezing, Alfvén speed, force-free fields",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "plas-04-c1",
+        "title": "The Frozen-In Flux Theorem",
+        "contentHtml": "<p>In ideal MHD (zero resistivity), magnetic field lines are <strong>frozen into the fluid</strong>. Two fluid elements that share a field line at one moment share it forever. <strong>Alfvén's theorem</strong> states this rigorously: the magnetic flux through any surface co-moving with the fluid is exactly conserved.</p><p>The proof follows from combining the ideal Ohm's law <code>E + u × B = 0</code> with Faraday's law to get <code>∂B/∂t = ∇ × (u × B)</code>. The right-hand side is precisely the geometric statement that B is dragged with the flow.</p><p>Frozen flux is the single most powerful intuition in MHD. It explains why the solar magnetic field gets twisted into sunspots by differential rotation, why galactic dynamos amplify weak seed fields by the shear of differential rotation, and why magnetic structures in space plasmas behave like elastic membranes. The flip side is that whenever observations show field-line topology change — solar flares, Earth's substorms, sawtooth crashes in tokamaks — ideal MHD must be locally violated, and resistivity or kinetic effects come into play.</p>",
+        "mathExpressions": [
+          "\\frac{\\partial \\mathbf{B}}{\\partial t} = \\nabla \\times (\\mathbf{u} \\times \\mathbf{B})",
+          "\\frac{d}{dt}\\!\\!\\int_{S(t)}\\!\\!\\!\\mathbf{B}\\cdot d\\mathbf{A} = 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-04-c2",
+        "title": "Alfvén Waves",
+        "contentHtml": "<p>Pluck a field line in a perfectly conducting fluid and it oscillates like a string under tension. The wave that propagates along the field is the <strong>shear Alfvén wave</strong>, with phase speed <code>v_A = B / √(μ₀ ρ)</code>. The mass loading of the fluid plays the role of inertia; the magnetic tension provides the restoring force.</p><p>v_A is enormous in low-density plasmas. In the solar corona, B ~ 10 G and n ~ 10⁹ cm⁻³ give v_A ~ 1000 km/s — comparable to flare-ejected jets. In a tokamak with B ~ 5 T and n ~ 10²⁰ m⁻³ deuterium, v_A ~ 7 × 10⁶ m/s. In Earth's plasma sheet, v_A ~ 1000 km/s explains substorm timing.</p><p>Three MHD wave families exist: <strong>shear Alfvén</strong> (transverse, propagates along B, speed v_A), <strong>fast magnetosonic</strong> (compressional, propagates in any direction, speed roughly √(v_A² + c_s²)), and <strong>slow magnetosonic</strong> (compressional, anisotropic, speed below both v_A and c_s where c_s is the sound speed). Solar wind turbulence is dominated by Alfvénic fluctuations measured directly by Parker Solar Probe down to 0.05 AU since 2018. ITER will host a host of Alfvén-eigenmode instabilities driven by alpha particles — currently a major open issue in burning-plasma physics.</p>",
+        "mathExpressions": [
+          "v_A = \\frac{B}{\\sqrt{\\mu_0 \\rho}}",
+          "\\omega = k_\\parallel v_A \\quad (\\text{shear Alfv\\'en})",
+          "v_{f,s}^2 = \\tfrac{1}{2}(c_s^2 + v_A^2) \\pm \\tfrac{1}{2}\\sqrt{(c_s^2 + v_A^2)^2 - 4 c_s^2 v_A^2 \\cos^2\\theta}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-04-c3",
+        "title": "Force-Free Fields and Plasma β",
+        "contentHtml": "<p>The dimensionless ratio <code>β = p / (B²/2μ₀)</code> compares thermal pressure to magnetic pressure. In a tokamak β ~ 1–5%; in the solar corona β ≪ 1; in the solar wind β ~ 1; in star-forming molecular clouds β ~ 1. β controls which physics dominates: low-β systems are magnetically structured (\"the field tells the plasma what to do\"), high-β systems are flow-structured (\"the plasma drags the field around\").</p><p>When β is very small, MHD equilibrium <code>∇p = J × B</code> reduces to <code>J × B ≈ 0</code> — the current must be parallel to the field. Such configurations are <strong>force-free fields</strong>, satisfying <code>∇ × B = α(x) B</code>. When α is constant, you get <strong>linear force-free fields</strong>, a class containing the Lundquist solution and the Taylor states that plasmas relax toward in self-organization.</p><p>Force-free models describe the solar corona's magnetic structure between flares (extrapolated from photospheric magnetograms by NASA's SDO and Hinode satellites), the equilibrium of laboratory spheromaks and reversed-field pinches, and the flux ropes of coronal mass ejections measured in situ by the Parker Solar Probe. Taylor relaxation — the conjecture that plasmas with conserved magnetic helicity relax to the minimum-energy force-free state — is one of plasma physics' rare exact predictions for nonlinear self-organization.</p>",
+        "mathExpressions": [
+          "\\beta = \\frac{p}{B^2/2\\mu_0}",
+          "\\nabla \\times \\mathbf{B} = \\alpha(\\mathbf{x})\\, \\mathbf{B}",
+          "K = \\int \\mathbf{A} \\cdot \\mathbf{B} \\, dV \\quad (\\text{magnetic helicity})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q25", "plas-q26", "plas-q27", "plas-q28", "plas-q29", "plas-q30", "plas-q31", "plas-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-05",
+    "topicId": "physics-plasma",
+    "order": 5,
+    "title": "Resistive MHD and Magnetic Reconnection",
+    "description": "Sweet-Parker, Petschek, plasmoids, and the energy release of flares",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "plas-05-c1",
+        "title": "Resistivity Breaks the Frozen-In Theorem",
+        "contentHtml": "<p>Real plasmas have a small but non-zero resistivity η. The induction equation gains a diffusive term: <code>∂B/∂t = ∇ × (u × B) + (η/μ₀) ∇²B</code>. The relative importance of the two terms is the <strong>magnetic Reynolds number</strong> <code>Rm = u L μ₀ / η</code>. When Rm ≫ 1, the field is frozen-in; when Rm ~ 1, magnetic diffusion dominates.</p><p>For solar coronal length scales L ~ 10⁷ m and Spitzer resistivity, Rm ~ 10¹². Naively, magnetic field changes should be glacially slow. Yet solar flares release 10²⁵ J in tens of minutes — a factor of 10⁹ faster than naive resistive diffusion. This was the <strong>reconnection puzzle</strong> for decades.</p><p>The resolution: when oppositely directed field lines are pushed together, they form a thin current sheet whose width δ is much smaller than the global L. Reconnection happens not at the global Rm but at the local one, set by δ. Diffusion at small scales coupled to advective flow at large scales reconnects field lines and converts magnetic energy to plasma kinetic and thermal energy at rates driven by the inflow, not the resistivity.</p>",
+        "mathExpressions": [
+          "\\frac{\\partial \\mathbf{B}}{\\partial t} = \\nabla \\times (\\mathbf{u} \\times \\mathbf{B}) + \\frac{\\eta}{\\mu_0} \\nabla^2 \\mathbf{B}",
+          "Rm = \\frac{u L}{\\eta/\\mu_0}",
+          "\\eta_{Spitzer} \\propto T_e^{-3/2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-05-c2",
+        "title": "Sweet-Parker, Petschek, and Plasmoids",
+        "contentHtml": "<p>The <strong>Sweet-Parker</strong> model (1957) treated the reconnection layer as a long, thin current sheet of length L and thickness δ. Mass and flux conservation give a reconnection rate <code>v_in / v_A ~ Rm^{-1/2}</code>. For coronal Rm ~ 10¹², this predicts inflow speeds 10⁻⁶ of v_A — orders of magnitude too slow for observed flares.</p><p>Petschek (1964) proposed a different geometry: a much shorter diffusion region with two pairs of slow-mode shocks that accelerate the outflow. His rate scales as <code>1 / log(Rm)</code> — close to v_A regardless of resistivity. Petschek reconnection requires a localized, anomalous resistivity to maintain — a feature observed in collisionless plasmas where wave-particle interactions enhance dissipation.</p><p>Modern simulations show that long Sweet-Parker sheets are unstable: they break up via the <strong>plasmoid instability</strong> into a chain of magnetic islands (\"plasmoids\") above a critical Lundquist number S ~ 10⁴. The fragmented sheet reconnects at a rate ~ 0.01 v_A independent of resistivity — fast enough to match flare observations and the rapid sawtooth crashes seen in tokamaks. Plasmoid-mediated reconnection has unified flare physics, magnetospheric substorms, and tokamak disruptions into a single framework over the past two decades.</p>",
+        "mathExpressions": [
+          "\\frac{v_{in}}{v_A} \\sim Rm^{-1/2} \\quad (\\text{Sweet-Parker})",
+          "\\frac{v_{in}}{v_A} \\sim \\frac{1}{\\log Rm} \\quad (\\text{Petschek})",
+          "S_c \\approx 10^4 \\quad (\\text{plasmoid instability threshold})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-05-c3",
+        "title": "Reconnection in the Wild",
+        "contentHtml": "<p><strong>Solar flares</strong>: standard model has a coronal loop where reconnection above the loop ejects a CME upward and accelerates particles downward, lighting up chromospheric ribbons. NASA's RHESSI observed exactly this geometry; Solar Orbiter and the Parker Solar Probe now image microflares at unprecedented resolution.</p><p><strong>Earth's magnetosphere</strong>: dayside reconnection between solar-wind and magnetospheric field lines opens flux that is reclosed at the magnetotail in substorms — driving aurorae and geomagnetic storms. NASA's MMS mission (launched 2015) has measured reconnection electric fields in situ at electron-skin-depth scales.</p><p><strong>Tokamaks</strong>: sawtooth crashes flatten the core temperature profile every few hundred milliseconds via internal reconnection driven by the <strong>m=1 internal kink</strong>. <strong>Edge-localized modes (ELMs)</strong> in H-mode plasmas burst across the edge transport barrier; ITER must control them or risk wall damage. <strong>Disruptions</strong> in tokamaks are catastrophic reconnection events that quench currents on millisecond timescales — the leading control problem for next-generation fusion devices.</p>",
+        "mathExpressions": [
+          "E_{flare} \\sim 10^{25}\\,\\text{J} \\;\\text{ on } \\sim 10^3\\,\\text{s}",
+          "\\tau_{recon} \\sim L / (0.01\\, v_A)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q33", "plas-q34", "plas-q35", "plas-q36", "plas-q37", "plas-q38", "plas-q39", "plas-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-06",
+    "topicId": "physics-plasma",
+    "order": 6,
+    "title": "MHD Instabilities",
+    "description": "Rayleigh-Taylor, kink, sausage, Kruskal-Shafranov, and tokamak stability",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "plas-06-c1",
+        "title": "Pressure-Driven Instabilities",
+        "contentHtml": "<p>Magnetic equilibria can be unstable to perturbations that release the stored energy of pressure or current. The <strong>Rayleigh-Taylor instability</strong> appears whenever a heavier fluid sits atop a lighter one in a gravitational field; in a magnetized plasma the role of gravity is played by field-line curvature. <strong>Magnetic Rayleigh-Taylor</strong> and the closely related <strong>interchange instability</strong> develop in the bad-curvature regions of the outer side of a tokamak torus, where flux tubes can lower their potential energy by swapping with neighbors.</p><p>Stabilization comes from <strong>magnetic shear</strong> (twist along the field) and <strong>average minimum-B</strong> configurations like stellarators or the high-field side of tokamaks. The Mercier and ballooning stability criteria translate these geometric statements into algebraic conditions.</p><p>In a Z-pinch — a column of plasma carrying a longitudinal current — the unstable modes are the famous <strong>sausage</strong> (m=0, axial necking) and <strong>kink</strong> (m=1, helical deformation). Pinch geometry was tried as a fusion approach in the 1950s; the kink instability quickly broke any column that tried to hold significant current, ending the dream of straight pinch fusion.</p>",
+        "mathExpressions": [
+          "\\gamma_{RT} = \\sqrt{g k}",
+          "\\frac{d\\rho}{dz} g > 0 \\implies \\text{unstable}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-06-c2",
+        "title": "The Kruskal-Shafranov Limit and the Safety Factor",
+        "contentHtml": "<p>Wrap a Z-pinch into a torus and add a strong toroidal field B_T to suppress the kink. The toroidal field provides line tension that resists the helical bending. Kruskal and Shafranov showed (1958) that the kink mode is stabilized as long as the field-line pitch is gentle enough — equivalently, the <strong>safety factor q = (r B_T) / (R B_p) > 1</strong>. The inequality became known as the <strong>Kruskal-Shafranov limit</strong>.</p><p>Inside a tokamak, q increases with minor radius. At q=1 on axis, the m=1/n=1 internal kink can drive sawtooth crashes; at q=2 surfaces, m=2/n=1 tearing modes lead to neoclassical tearing modes (NTMs); the q=qa surface at the edge sets the disruption boundary. Operating with q_edge above 2.5–3 is essential for stability — pushed too low and the plasma disrupts.</p><p>The safety factor name reflects a piece of fusion history: q is the number of toroidal transits a field line makes per poloidal transit, and \"safety\" referred to MHD stability margin. Modern advanced tokamak scenarios shape the q-profile actively (with reversed shear, hollow profiles) to access higher β and avoid mode lock-up — a major focus of DIII-D, JT-60SA, and ITER's planned operations.</p>",
+        "mathExpressions": [
+          "q = \\frac{r B_T}{R B_p}",
+          "q > 1 \\;\\text{(internal kink stabilized)}, \\quad q_a > 2 \\;\\text{(external kink)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-06-c3",
+        "title": "Beta Limits and Operational Boundaries",
+        "contentHtml": "<p>Pressure pushes a plasma against its magnetic confinement; how much pressure a configuration can support sets its <strong>β-limit</strong>. The empirical <strong>Troyon limit</strong> <code>β_max ≈ β_N · I_p / (a B_T)</code> with β_N ~ 3–4 captures the practical ceiling for conventional tokamaks. SPARC's high-temperature superconducting magnets aim for B_T ~ 12 T, allowing high pressures at moderate β.</p><p>Above the β limit, ballooning modes destabilize and confinement collapses. The MHD operational space of a tokamak — the famous <strong>Hugill</strong> or <strong>Greenwald-Hugill diagram</strong> — is bounded by the kink limit (low q_edge), the density limit (Greenwald n_GW = I_p / πa²), and the β limit (Troyon). Stable operation lives inside this triangle.</p><p>Stellarators (e.g. Wendelstein 7-X in Germany, since 2015) avoid current-driven instabilities by generating their entire poloidal field externally — no plasma current, no kink, no disruption. The cost is fearsome 3D engineering of helical magnets. In return, W7-X has demonstrated steady-state operation for nearly half an hour at fusion-relevant parameters, an option no tokamak has matched.</p>",
+        "mathExpressions": [
+          "\\beta_N = \\beta\\,[\\%] \\cdot \\frac{a B_T}{I_p}",
+          "\\beta_N \\lesssim 3{-}4 \\quad (\\text{Troyon})",
+          "n_{GW} = \\frac{I_p}{\\pi a^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q41", "plas-q42", "plas-q43", "plas-q44", "plas-q45", "plas-q46", "plas-q47", "plas-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-07",
+    "topicId": "physics-plasma",
+    "order": 7,
+    "title": "Kinetic Theory: Vlasov, Landau, Plasma Waves",
+    "description": "Vlasov equation, collisionless damping, Langmuir and ion-acoustic waves",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "plas-07-c1",
+        "title": "The Vlasov Equation",
+        "contentHtml": "<p>The <strong>Vlasov equation</strong> governs the distribution function f_s(x, v, t) in collisionless plasmas: <code>∂f/∂t + v · ∇_x f + (q/m)(E + v × B) · ∇_v f = 0</code>. Coupled to Maxwell's equations (<strong>Vlasov–Maxwell</strong>) it is the mother equation of plasma physics. It expresses that f is constant along phase-space trajectories — Liouville's theorem in plasma form.</p><p>Vlasov is exact in the limit of zero collisions and many particles per Debye sphere. It captures phenomena entirely lost to fluid theory: wave-particle resonance, beam instabilities, particle trapping in waves, runaway electrons in tokamaks, the bump-on-tail instability that drives Type-III solar radio bursts.</p><p>Solving Vlasov is hard. Direct simulation in 6D phase space is expensive; <strong>particle-in-cell (PIC)</strong> methods sample f with macroparticles and have become the standard tool in space, laser, and fusion plasma simulation. Continuum Vlasov solvers and gyrokinetic reductions (Vlasov averaged over the gyration) tame the dimensionality and have made first-principles tokamak transport simulation tractable on petascale computers like Frontier.</p>",
+        "mathExpressions": [
+          "\\frac{\\partial f}{\\partial t} + \\mathbf{v}\\cdot\\nabla_x f + \\frac{q}{m}(\\mathbf{E} + \\mathbf{v}\\times\\mathbf{B})\\cdot\\nabla_v f = 0",
+          "\\frac{Df}{Dt}\\bigg|_{traj} = 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-07-c2",
+        "title": "Landau Damping",
+        "contentHtml": "<p>In 1946 Lev Landau derived an astonishing result: a collisionless plasma damps electrostatic waves anyway. The mechanism is purely kinetic. Particles with velocity matching the wave's phase velocity exchange energy resonantly: those slightly slower than the wave are accelerated (gain energy from the wave), those slightly faster are decelerated (give energy to the wave). For a Maxwellian, more particles sit on the slow side of any given v_φ, so the wave loses net energy.</p><p>The damping rate is <code>γ_L ∝ ω · ∂f/∂v |_{v=v_φ}</code>. It is small when v_φ ≫ v_thermal (few resonant particles, weak damping — the case of fast Langmuir waves, ω = ω_p, k λ_D ≪ 1) and large when v_φ ~ v_thermal (strong damping). Landau damping is reversible: a clever experimentalist can phase-mix and recover the wave (<strong>plasma echo</strong>, observed by Malmberg and Wharton in 1968), demonstrating that no entropy was actually generated.</p><p>The same calculation applied to a non-Maxwellian distribution can give γ_L &gt; 0 — wave growth instead of damping. A bump on the tail of the distribution drives waves unstable; this is the <strong>bump-on-tail instability</strong>, the basis of solar Type-III radio bursts and the beam-plasma instability used in plasma-based particle accelerators (where wakefield gradients exceed 100 GV/m, vs ~50 MV/m in conventional RF cavities).</p>",
+        "mathExpressions": [
+          "\\gamma_L = \\frac{\\pi}{2}\\frac{\\omega_p^3}{k^2}\\frac{\\partial f_0}{\\partial v}\\bigg|_{v=\\omega/k}",
+          "\\frac{\\partial f_0}{\\partial v}\\bigg|_{v=v_\\phi} > 0 \\implies \\text{wave growth}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-07-c3",
+        "title": "Plasma Waves Zoo",
+        "contentHtml": "<p>The simplest electrostatic wave is the <strong>Langmuir wave</strong> (electron plasma oscillation): high-frequency oscillation at ω ≈ ω_p with a small thermal correction <code>ω² = ω_p² + 3 k² v_te²</code> (Bohm-Gross dispersion). Ions are too slow to participate.</p><p>The <strong>ion-acoustic wave</strong> is the plasma analog of sound: low-frequency, longitudinal, <code>ω = k c_s</code> with <code>c_s = √(k_B T_e / m_i)</code>. It exists only when T_e ≫ T_i; otherwise it is heavily Landau-damped on resonant ions. This temperature ratio condition is routinely met in tokamak scrape-off layers and the solar wind, where ion-acoustic waves are observed by spacecraft instruments.</p><p>In magnetized plasmas the wave families multiply enormously. Whistler waves carry lightning energy along Earth's geomagnetic field, the basis of early radio observations of the magnetosphere. <strong>Lower-hybrid waves</strong> are used to drive non-inductive currents in tokamaks. <strong>Bernstein modes</strong> and <strong>cyclotron-harmonic waves</strong> appear at multiples of Ω_c. Each enters the engineering of fusion devices: every species, every harmonic, every dispersion branch is exploited or fought against in real machines.</p>",
+        "mathExpressions": [
+          "\\omega^2 = \\omega_p^2 + 3 k^2 v_{te}^2 \\quad (\\text{Langmuir})",
+          "\\omega = k c_s,\\; c_s = \\sqrt{k_B T_e/m_i} \\quad (\\text{ion-acoustic})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q49", "plas-q50", "plas-q51", "plas-q52", "plas-q53", "plas-q54", "plas-q55", "plas-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-08",
+    "topicId": "physics-plasma",
+    "order": 8,
+    "title": "Magnetic Confinement Fusion",
+    "description": "Tokamaks, stellarators, the Lawson criterion, ITER, SPARC",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "plas-08-c1",
+        "title": "The Lawson Criterion and Triple Product",
+        "contentHtml": "<p>For a fusion plasma to release more energy than it consumes, the heating from fusion products must outpace energy losses. The original <strong>Lawson criterion</strong> (1955) was <code>n τ_E > f(T)</code> for breakeven, where n is density and τ_E is the energy confinement time. The more useful modern form is the <strong>fusion triple product</strong> <code>n T τ_E</code>, with optimal T ~ 15 keV for D-T fusion.</p><p>For ignition (alpha-heating self-sustains the burn against losses), the D-T triple product must reach roughly <code>n T τ_E ≳ 3 × 10²¹ keV·s/m³</code>. Achieving this is the central engineering challenge of fusion: density is limited by Greenwald, β-limits cap pressure, and τ_E must therefore grow with device size. Empirically τ_E scales as <code>ITER-89P</code>: τ_E ~ I_p^0.85 R^1.2 — bigger machines confine better.</p><p>JET held the record for actual fusion power output (~16 MW, Q~0.67 in 1997, then 59 MJ over 5 s in 2021) until ITER comes online. ITER aims for Q=10 (500 MW fusion from 50 MW input), with first plasma now scheduled for 2034. SPARC, the MIT/CFS-led private-sector machine using REBCO HTS magnets at 12 T, aims to demonstrate Q&gt;2 by 2027 in a far smaller footprint, leveraging the strong B-field scaling B⁴ of the triple product.</p>",
+        "mathExpressions": [
+          "n T \\tau_E \\gtrsim 3 \\times 10^{21}\\;\\text{keV s m}^{-3} \\quad (\\text{D-T ignition})",
+          "Q = \\frac{P_{fusion}}{P_{heating}}",
+          "n T \\tau_E \\propto B^4 a^3"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-08-c2",
+        "title": "The Tokamak",
+        "contentHtml": "<p>The <strong>tokamak</strong> (a Russian acronym for \"toroidal chamber with magnetic coils\") confines a plasma in a torus using a strong <strong>toroidal field</strong> from external coils plus a <strong>poloidal field</strong> from a plasma current driven inductively by a central solenoid. Together they produce helical field lines that average out drifts and confine the plasma.</p><p>Modern tokamaks operate in <strong>H-mode</strong> (high-confinement mode, discovered on ASDEX in 1982): when heating exceeds a threshold, a transport barrier forms at the edge, almost doubling τ_E. H-mode is the operating point for ITER and SPARC. The downside: edge gradients drive periodic edge-localized modes (ELMs) that must be controlled by resonant magnetic perturbations or pellet pacing to avoid wall damage.</p><p>ITER, under construction at Cadarache (France), is a 6.2 m major-radius, 23000-tonne machine with 13 T peak field on its NbTi/Nb₃Sn superconducting coils. It will be the first tokamak with significant alpha self-heating. SPARC, by contrast, is 1.85 m, ~10000 tonnes lighter, using REBCO HTS pancake coils running at 20 K — demonstrating that high-field, smaller-volume designs may shortcut the cost-and-time scaling that has plagued fusion since the 1950s.</p>",
+        "mathExpressions": [
+          "B_T \\gg B_p,\\;\\; q = \\frac{r B_T}{R B_p}",
+          "\\tau_{E}^{H} \\approx 2\\, \\tau_{E}^{L}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-08-c3",
+        "title": "Stellarators and Alternative Concepts",
+        "contentHtml": "<p>The <strong>stellarator</strong>, invented by Lyman Spitzer at Princeton in 1951, generates the entire helical field externally — no plasma current required, hence no current-driven instabilities, no disruption risk, and (potentially) inherent steady-state operation. The price is geometric: stellarator coils are intricately twisted 3D shapes, each unique, requiring multi-tonne tolerances of millimeter precision.</p><p><strong>Wendelstein 7-X</strong> at IPP Greifswald (operating since 2015) is the world's largest stellarator: 50 superconducting non-planar coils, optimized using CRAY supercomputers in the 1990s for low neoclassical transport. In 2023 it sustained a 480 s plasma at 1.3 GJ — by far the longest fusion-relevant plasma ever, validating the steady-state stellarator path.</p><p>Other concepts: <strong>spherical tokamaks</strong> (NSTX, MAST-U) with very low aspect ratio for higher β; <strong>reversed-field pinches</strong> (MST, RFX) operating at q&lt;1 with strong magnetic shear; <strong>spheromaks</strong> and <strong>field-reversed configurations (FRCs)</strong> with no central solenoid (TAE Technologies, Helion). Compact, magnet-free, and steady-state goals drive private fusion ventures with $6+ billion invested by 2024 — a remarkable shift from the four-decade public-funded ITER timeline.</p>",
+        "mathExpressions": [
+          "B_p^{stellarator}\\;\\text{generated entirely by external coils}",
+          "A = R/a \\sim 1.5{-}2 \\;\\text{(spherical tokamak)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q57", "plas-q58", "plas-q59", "plas-q60", "plas-q61", "plas-q62", "plas-q63", "plas-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-09",
+    "topicId": "physics-plasma",
+    "order": 9,
+    "title": "Inertial Confinement and Ignition",
+    "description": "NIF, hohlraum drive, the December 2022 result, fast and shock ignition",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "plas-09-c1",
+        "title": "The Inertial Confinement Idea",
+        "contentHtml": "<p>Magnetic confinement holds a hot, dilute plasma for ~seconds. <strong>Inertial confinement fusion (ICF)</strong> goes the opposite way: compress a tiny D-T pellet to extreme density (~1000× solid) for a few hundred picoseconds, faster than it can fly apart. The <strong>fuel inertia</strong> alone confines it long enough for fusion to occur — hence the name.</p><p>The triple product <code>n T τ_E</code> scales the same as in MCF, but ICF lives in the regime <code>n ~ 10³² m⁻³</code> (a million times tokamak density) and <code>τ ~ 10⁻¹⁰ s</code>. Compression must be near-spherical and adiabatic: any asymmetry seeds Rayleigh-Taylor instabilities that mix cold ablator material into the hot core and quench the burn. Surface roughness must be controlled to nanometers on the capsule.</p><p>Two drive paths: <strong>direct drive</strong> illuminates the capsule with laser beams directly (used at OMEGA, University of Rochester); <strong>indirect drive</strong> converts laser energy to soft X-rays inside a metal cavity called a <strong>hohlraum</strong> (used at the National Ignition Facility — NIF — in Livermore). Indirect drive is more uniform and forgiving but loses ~80% of the laser energy in the X-ray conversion. Direct drive is more efficient but harder to make symmetric.</p>",
+        "mathExpressions": [
+          "\\rho R \\gtrsim 0.3\\;\\text{g cm}^{-2} \\quad (\\text{ICF burn parameter})",
+          "n \\sim 10^{32}\\,\\text{m}^{-3},\\; \\tau \\sim 10^{-10}\\,\\text{s}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-09-c2",
+        "title": "The NIF and December 2022",
+        "contentHtml": "<p>The <strong>National Ignition Facility</strong> at Lawrence Livermore (operating since 2009) delivers up to 2.05 MJ of 351 nm UV laser light from 192 beams onto a 1-cm gold hohlraum containing a 2-mm D-T capsule. Each shot lasts ~10 ns, generating ~500 TW peak power — momentarily a thousand times the entire grid output of the United States.</p><p>On December 5, 2022, NIF achieved <strong>scientific breakeven</strong>: 3.15 MJ of fusion energy out from 2.05 MJ of laser input — Q_capsule ≈ 1.54. This was the first laboratory demonstration of fusion ignition (alpha self-heating exceeding losses). Subsequent shots in 2023 and 2024 reached Q&gt;2 and 5.2 MJ output. Note these numbers count laser energy on target, not the ~422 MJ of grid power that drives NIF's flashlamps — a useful science result, far from an energy-positive plant.</p><p>The path forward at NIF is now optimization of capsule design (HDC vs CH ablators, larger cases, more energy) and exploring whether ICF can scale to inertial fusion energy (IFE) — requiring repetition rates of ~10 Hz instead of NIF's one shot per day, plus diode-pumped lasers far more efficient than NIF's flashlamp-pumped Nd-glass slabs. A new IFE program was funded in the US in 2023 to pursue exactly this.</p>",
+        "mathExpressions": [
+          "Q_{cap} = \\frac{E_{fusion}}{E_{laser}} = \\frac{3.15}{2.05} \\approx 1.54 \\;(2022)",
+          "E_{laser} = 2.05\\,\\text{MJ},\\; t_{pulse} \\sim 10\\,\\text{ns}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-09-c3",
+        "title": "Alternative Ignition Schemes",
+        "contentHtml": "<p>Conventional ICF (\"hot-spot ignition\") relies on a self-heating central spark that propagates outward. It demands extreme symmetry. Alternatives split compression and ignition into separate stages.</p><p><strong>Fast ignition</strong>: compress the fuel with long-pulse beams to high density; then deliver a separate ultra-intense (~10²⁰ W/cm²) picosecond beam that bores a channel and fast electrons heat the compressed core to ignition. Demonstrated to work in principle by FIREX-I in Japan; not yet at ignition. The advantage is decoupling — compression need not be perfectly symmetric.</p><p><strong>Shock ignition</strong>: compress at low intensity, then deliver a final high-intensity pulse that launches a strong shock that converges on the hot-spot, providing the ignition kick. Tested at OMEGA. <strong>Magneto-inertial fusion</strong> (e.g., Sandia's MagLIF, Z-pinch–driven cylindrical liners) combines pulsed magnetic flux with implosion to lower the temperature and density requirements. <strong>General Fusion</strong> (private, Canada) pursues a steam-piston-driven imploding lithium liner around an FRC plasma — mechanical, slow-moving, and quirky compared to laser approaches but with arguably easier engineering.</p>",
+        "mathExpressions": [
+          "I_{laser} \\sim 10^{20}\\,\\text{W cm}^{-2} \\quad (\\text{fast ignition})",
+          "B \\rho R \\;\\text{couples flux compression to inertia}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q65", "plas-q66", "plas-q67", "plas-q68", "plas-q69", "plas-q70", "plas-q71", "plas-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "plas-10",
+    "topicId": "physics-plasma",
+    "order": 10,
+    "title": "Astrophysical Plasmas",
+    "description": "Solar wind, magnetospheres, accretion disks, and dynamo theory",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "plas-10-c1",
+        "title": "Solar Wind and the Heliosphere",
+        "contentHtml": "<p>The <strong>solar wind</strong> is a continuous outflow of plasma from the Sun's corona, accelerated to supersonic and super-Alfvénic speeds by mechanisms still not fully understood. Eugene Parker predicted it in 1958 against fierce skepticism; Mariner 2 confirmed it in 1962. Typical parameters at 1 AU: n ~ 5 cm⁻³, T ~ 10⁵ K, v ~ 400 km/s for slow wind, ~700 km/s for fast wind from coronal holes.</p><p>The <strong>Parker Solar Probe</strong> (launched 2018) has dipped inside 9 solar radii since 2024 — closer than any spacecraft — directly measuring the corona's transition to wind. Its findings include <strong>switchbacks</strong> (sudden S-shaped reversals of the magnetic field), small-scale jets, and Alfvénic turbulence at sub-ion scales — reshaping coronal-heating theories.</p><p>The wind carves out the <strong>heliosphere</strong>, a bubble extending ~120 AU until it meets the interstellar medium at the <strong>heliopause</strong>, crossed by Voyager 1 in 2012 and Voyager 2 in 2018. Beyond is true interstellar plasma, with n ~ 0.1 cm⁻³ and a magnetic field of a few μG. The heliosphere shields Earth from most galactic cosmic rays — without it, surface life would face roughly 100× more high-energy radiation.</p>",
+        "mathExpressions": [
+          "v_{SW} \\sim 400\\text{--}700\\,\\text{km/s},\\; n_{SW} \\sim 5\\,\\text{cm}^{-3}",
+          "M_A = v_{SW}/v_A \\sim 5\\text{--}10"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-10-c2",
+        "title": "Magnetospheres and Accretion Disks",
+        "contentHtml": "<p>A planetary <strong>magnetosphere</strong> is the cavity an obstacle's magnetic field carves in the solar wind. Earth's, dominated by the geomagnetic dipole, extends ~10 R_E sunward and stretches into a magnetotail many hundreds of R_E downwind. The dayside <strong>bow shock</strong>, <strong>magnetopause</strong>, and tail <strong>plasma sheet</strong> form a coupled system: solar-wind reconnection drives convective flows, particle precipitation, ring currents, and aurorae. NASA's MMS, ESA's Cluster, and Cluster's Chinese counterpart Double Star have mapped this geometry in unprecedented kinetic detail.</p><p>The same plasma physics scales to other planets and stars. Jupiter's magnetosphere, powered by Io's volcanism rather than the solar wind, is a corotating co-magnetic plasma. Pulsar magnetospheres host extreme relativistic plasmas with magnetic fields up to 10¹¹ T. The Crab Nebula's pulsar-wind nebula is a relativistic MHD playground in our own backyard.</p><p><strong>Accretion disks</strong> around black holes and protostars are differentially rotating magnetized plasmas. Without magnetic fields, the <strong>Keplerian</strong> shear has no instability to drive angular-momentum transport — accretion would be impossibly slow. The <strong>magnetorotational instability (MRI)</strong> (Balbus & Hawley, 1991) provides a beautiful resolution: a weak vertical field destabilizes Keplerian shear, generating MHD turbulence and effective viscosity. MRI is now the standard mechanism for accretion across cosmic scales, validated by the Event Horizon Telescope's images of M87 and Sgr A*.</p>",
+        "mathExpressions": [
+          "R_{MP} \\propto \\left(\\frac{B_p^2}{\\mu_0 \\rho_{SW} v_{SW}^2}\\right)^{1/6}",
+          "\\gamma_{MRI}^2 = -\\Omega^2 + (k v_A)^2 \\quad (\\text{MRI dispersion})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "plas-10-c3",
+        "title": "Dynamo Theory",
+        "contentHtml": "<p>Cosmic magnetic fields are nearly ubiquitous: planets, stars, galaxies, even galaxy clusters, all show coherent fields. Yet a perfectly conducting fluid in laminar motion cannot amplify a magnetic field — Cowling's theorem rules out axisymmetric dynamos. Real dynamos exploit turbulent flows, broken symmetries, and a key separation: the <strong>α-effect</strong> (helical turbulence regenerates poloidal field from toroidal) and the <strong>Ω-effect</strong> (differential rotation winds poloidal into toroidal). Together they form the <strong>α-Ω dynamo</strong>, the standard model for the solar 22-year cycle.</p><p>Earth's <strong>geodynamo</strong> operates in the liquid outer core, sustaining a 50 μT field at the surface and reversing polarity unpredictably (last reversal 780,000 years ago). Numerical simulations (Glatzmaier & Roberts, 1995) reproduced spontaneous reversals and morphology — a triumph of computational MHD. The <strong>VKS experiment</strong> (Cadarache, 2007) demonstrated dynamo action and reversals in a turbulent sodium flow in the lab.</p><p>Galactic dynamos amplify μG-scale fields over Gyr timescales via differential rotation and supernova-driven turbulence. Cluster-scale fields (~μG over Mpc) likely arose from primordial seeds amplified by turbulent dynamos in the intracluster medium. Plasma physics, born in laboratories, ends up describing the magnetic skeleton of the universe — from a tabletop discharge to the structures binding galaxy clusters across cosmic time.</p>",
+        "mathExpressions": [
+          "\\frac{\\partial \\mathbf{B}}{\\partial t} = \\nabla \\times (\\mathbf{u}\\times\\mathbf{B}) + \\nabla \\times (\\alpha \\mathbf{B}) + \\eta\\nabla^2 \\mathbf{B}",
+          "Rm_{crit} \\sim 10\\text{--}100 \\quad (\\text{dynamo onset})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["plas-q73", "plas-q74", "plas-q75", "plas-q76", "plas-q77", "plas-q78", "plas-q79", "plas-q80"],
+    "puzzleId": null
+  }
+]

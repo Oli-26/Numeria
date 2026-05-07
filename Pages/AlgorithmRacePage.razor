@@ -1,0 +1,260 @@
+@page "/algorithm-race"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Algorithm Race</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Algorithm Race" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Algorithm Race</h1>
+    </div>
+
+    <div class="card ar-intro">
+        <Icon Name="trending-up" Size="22" Stroke="var(--accent)" />
+        <p>Race two sorting algorithms on the same input. Comparisons and swaps update live. Watch how O(n^2) drowns under data while O(n log n) cruises.</p>
+    </div>
+
+    <div class="card ar-controls">
+        <div class="ar-row">
+            <label>Size</label>
+            <select @bind="size">
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="ar-row">
+            <label>Distribution</label>
+            <select @bind="distribution">
+                <option value="random">Random</option>
+                <option value="reversed">Reversed</option>
+                <option value="nearly-sorted">Nearly sorted</option>
+                <option value="few-unique">Few unique</option>
+            </select>
+        </div>
+        <div class="ar-row">
+            <label>Speed (ms/step)</label>
+            <input type="range" min="1" max="80" step="1" @bind="speedMs" @bind:event="oninput" />
+            <span>@speedMs</span>
+        </div>
+        <div class="ar-actions">
+            <button class="btn btn-primary" disabled="@running" @onclick="StartRace">@(running ? "Running..." : "Start race")</button>
+            <button class="btn btn-outline" disabled="@(!running)" @onclick="() => running = false">Stop</button>
+            <button class="btn btn-outline" @onclick="Reset">Reset</button>
+        </div>
+    </div>
+
+    <div class="ar-grid">
+        @foreach (var racer in racers)
+        {
+            var r = racer;
+            <div class="card ar-racer">
+                <div class="ar-racer-head">
+                    <strong>@r.Name</strong>
+                    <small>@r.Big <span class="ar-pill">@(r.Done ? "DONE" : (running ? "..." : "ready"))</span></small>
+                </div>
+                <div class="ar-bars">
+                    @for (int i = 0; i < r.Data.Length; i++)
+                    {
+                        var h = (int)(r.Data[i] * 100.0 / Math.Max(1, r.Max));
+                        var col = (i == r.Cursor || i == r.Cursor2) ? "var(--accent)" : (i < r.SortedUpTo ? "var(--success)" : "var(--primary)");
+                        <span class="ar-bar" style="@($"height:{h}%;background:{col}")"></span>
+                    }
+                </div>
+                <div class="ar-stats">
+                    <span>cmp <strong>@r.Comparisons</strong></span>
+                    <span>swap <strong>@r.Swaps</strong></span>
+                    <span>steps <strong>@r.Steps</strong></span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool unlocked;
+    private int size = 32;
+    private string distribution = "random";
+    private int speedMs = 25;
+    private bool running;
+    private List<Racer> racers = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-algorithm-race");
+            if (unlocked && racers.Count == 0) Reset();
+            StateHasChanged();
+        }
+    }
+
+    private int[] BuildData()
+    {
+        var rng = new Random(42);
+        var arr = Enumerable.Range(1, size).Select(i => i).ToArray();
+        switch (distribution)
+        {
+            case "random": for (int i = arr.Length - 1; i > 0; i--) { var j = rng.Next(i + 1); (arr[i], arr[j]) = (arr[j], arr[i]); } break;
+            case "reversed": Array.Reverse(arr); break;
+            case "nearly-sorted":
+                for (int k = 0; k < arr.Length / 8; k++) { var a = rng.Next(arr.Length); var b = rng.Next(arr.Length); (arr[a], arr[b]) = (arr[b], arr[a]); }
+                break;
+            case "few-unique":
+                arr = Enumerable.Range(0, size).Select(_ => rng.Next(1, 5) * (size / 4)).ToArray();
+                break;
+        }
+        return arr;
+    }
+
+    private void Reset()
+    {
+        running = false;
+        var data = BuildData();
+        racers = new()
+        {
+            new("Bubble Sort", "O(n^2)", (int[])data.Clone(), data.Max(), BubbleSort),
+            new("Quicksort", "O(n log n)", (int[])data.Clone(), data.Max(), Quicksort)
+        };
+        StateHasChanged();
+    }
+
+    private async Task StartRace()
+    {
+        if (running) return;
+        Reset();
+        running = true;
+        StateHasChanged();
+        var tasks = racers.Select(r => RunRacer(r)).ToArray();
+        await Task.WhenAll(tasks);
+        running = false;
+        StateHasChanged();
+    }
+
+    private async Task RunRacer(Racer r)
+    {
+        await foreach (var _ in r.Algorithm(r))
+        {
+            if (!running) return;
+            StateHasChanged();
+            await Task.Delay(speedMs);
+        }
+        r.Done = true;
+        r.Cursor = -1; r.Cursor2 = -1;
+        r.SortedUpTo = r.Data.Length;
+        StateHasChanged();
+    }
+
+    private static async IAsyncEnumerable<int> BubbleSort(Racer r)
+    {
+        var n = r.Data.Length;
+        for (int i = 0; i < n - 1; i++)
+        {
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                r.Cursor = j; r.Cursor2 = j + 1; r.Steps++; r.Comparisons++;
+                if (r.Data[j] > r.Data[j + 1])
+                {
+                    (r.Data[j], r.Data[j + 1]) = (r.Data[j + 1], r.Data[j]);
+                    r.Swaps++;
+                }
+                yield return 0;
+            }
+            r.SortedUpTo = n - 1 - i;
+        }
+        await Task.CompletedTask;
+    }
+
+    private static async IAsyncEnumerable<int> Quicksort(Racer r)
+    {
+        await foreach (var _ in QuicksortRange(r, 0, r.Data.Length - 1)) yield return 0;
+    }
+
+    private static async IAsyncEnumerable<int> QuicksortRange(Racer r, int lo, int hi)
+    {
+        if (lo >= hi) yield break;
+        var pivot = r.Data[hi];
+        int i = lo - 1;
+        for (int j = lo; j < hi; j++)
+        {
+            r.Cursor = j; r.Cursor2 = hi; r.Steps++; r.Comparisons++;
+            yield return 0;
+            if (r.Data[j] <= pivot)
+            {
+                i++;
+                (r.Data[i], r.Data[j]) = (r.Data[j], r.Data[i]);
+                r.Swaps++;
+                yield return 0;
+            }
+        }
+        (r.Data[i + 1], r.Data[hi]) = (r.Data[hi], r.Data[i + 1]);
+        r.Swaps++;
+        await foreach (var _ in QuicksortRange(r, lo, i)) yield return 0;
+        await foreach (var _ in QuicksortRange(r, i + 2, hi)) yield return 0;
+    }
+
+    private class Racer
+    {
+        public string Name { get; }
+        public string Big { get; }
+        public int[] Data { get; set; }
+        public int Max { get; }
+        public Func<Racer, IAsyncEnumerable<int>> Algorithm { get; }
+        public int Comparisons { get; set; }
+        public int Swaps { get; set; }
+        public int Steps { get; set; }
+        public int Cursor { get; set; } = -1;
+        public int Cursor2 { get; set; } = -1;
+        public int SortedUpTo { get; set; }
+        public bool Done { get; set; }
+
+        public Racer(string name, string big, int[] data, int max, Func<Racer, IAsyncEnumerable<int>> alg)
+        {
+            Name = name; Big = big; Data = data; Max = max; Algorithm = alg;
+        }
+    }
+}
+
+<style>
+    .ar-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .ar-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .ar-controls { padding: 14px; }
+    .ar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+    .ar-row label { width: 110px; color: var(--text-muted); font-weight: 600; }
+    .ar-row select { flex: 1; padding: 4px 8px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); }
+    .ar-row input[type=range] { flex: 1; accent-color: var(--primary); }
+    .ar-row span { width: 30px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+    .ar-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+    .ar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @@media (max-width: 480px) { .ar-grid { grid-template-columns: 1fr; } }
+
+    .ar-racer { padding: 10px; }
+    .ar-racer-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .ar-racer-head strong { font-size: 0.9rem; }
+    .ar-racer-head small { font-size: 0.7rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
+    .ar-pill { padding: 1px 6px; background: var(--bg-surface); border-radius: 8px; margin-left: 4px; font-weight: 700; }
+
+    .ar-bars { display: flex; align-items: flex-end; gap: 1px; height: 100px; background: var(--bg-surface); border-radius: var(--radius-sm); padding: 2px; }
+    .ar-bar { flex: 1; min-width: 1px; background: var(--primary); transition: height 0.06s linear, background 0.06s linear; border-radius: 1px 1px 0 0; }
+
+    .ar-stats { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
+    .ar-stats strong { color: var(--text-primary); margin-left: 2px; }
+</style>

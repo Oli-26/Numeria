@@ -1,0 +1,182 @@
+[
+  {
+    "id": "csharp-01",
+    "topicId": "cs-lang-csharp",
+    "order": 1,
+    "title": "The CLR, Types, and the .NET Ecosystem",
+    "description": "Managed runtime, value vs reference types, and the modern .NET",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "csharp-01-c1",
+        "title": "C# and the CLR",
+        "contentHtml": "<p><strong>C#</strong> (Anders Hejlsberg, Microsoft, 2000) is a managed, statically typed, multi-paradigm language. It was originally a Java competitor and now runs on the <strong>Common Language Runtime (CLR)</strong> — a JIT-compiling, garbage-collected virtual machine.</p><p>The story of .NET has been a long arc. <strong>.NET Framework</strong> (Windows-only, 2002) was the original; <strong>Mono</strong> ported it to other platforms; <strong>.NET Core</strong> (2016) was the cross-platform rewrite; modern <strong>.NET</strong> (since .NET 5, 2020) unified everything. \".NET Framework\" is now legacy; new code targets the unified .NET (currently .NET 9 or 10).</p><p>The runtime gives C# strong properties: garbage collection, type safety, JIT compilation to optimized native code, sophisticated reflection, async support, AOT compilation when needed. It's a real performance contender: well-written C# is competitive with Java and within 2-3× of optimized C++ on most workloads. Modern .NET is one of the fastest mainstream managed runtimes.</p>",
+        "mathExpressions": ["\\text{C\\#} \\to \\text{IL (bytecode)} \\to \\text{CLR JIT/AOT} \\to \\text{native code}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-01-c2",
+        "title": "Value Types vs Reference Types",
+        "contentHtml": "<p>C# has two fundamental kinds of types. <strong>Value types</strong> (int, double, struct, enum) live on the stack (or inline in their containing object) and are copied on assignment. <strong>Reference types</strong> (class, string, array, delegate) live on the heap and are accessed through references; assignment copies the reference, not the data.</p><p>The distinction matters for performance and semantics. Passing a large <code>struct</code> by value copies all its bytes — slow if it's big. Passing a <code>class</code> instance shares it — efficient but mutations are visible to all references. <code>readonly struct</code>, <code>record</code>, and <code>ref</code> parameters give finer control.</p><p>The <strong>boxing</strong> problem: storing a value type in an <code>object</code> reference allocates a heap box. <code>object o = 5;</code> boxes the int. Used to be a major performance pitfall; modern generics (<code>List&lt;int&gt;</code> doesn't box) and <code>Span&lt;T&gt;</code> avoid most boxing in modern code.</p>",
+        "mathExpressions": ["\\text{value: copy on assign} \\quad \\text{reference: share on assign}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-01-c3",
+        "title": "Garbage Collection and Performance",
+        "contentHtml": "<p>The CLR uses a <strong>generational, compacting garbage collector</strong>. New objects allocate in Gen 0 (cheap); survivors promote to Gen 1, then Gen 2 (more expensive to collect). Short-lived objects almost never reach Gen 2 — exactly the common case.</p><p>The GC is tuned for throughput. <strong>Server GC</strong> (default for ASP.NET) uses multiple threads and is optimized for high allocation rates. <strong>Workstation GC</strong> (default for desktop) is gentler. <strong>Concurrent GC</strong> reduces pauses by collecting in parallel with application code.</p><p>Modern .NET emphasizes <strong>low-allocation programming</strong>. <code>Span&lt;T&gt;</code> and <code>Memory&lt;T&gt;</code> let you slice arrays and strings without allocating. <code>ArrayPool&lt;T&gt;</code> reuses buffers. <code>ValueTask</code> avoids allocating Tasks for fast paths. High-performance .NET code can run nearly allocation-free, achieving C-like throughput. The GC is still there but rarely needs to run.</p>",
+        "mathExpressions": ["\\text{GC: Gen 0} \\to \\text{Gen 1} \\to \\text{Gen 2} \\quad \\text{(allocate cheap, collect rare)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["csharp-q01", "csharp-q02", "csharp-q03", "csharp-q04", "csharp-q05", "csharp-q06", "csharp-q07", "csharp-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "csharp-02",
+    "topicId": "cs-lang-csharp",
+    "order": 2,
+    "title": "LINQ and Expression Trees",
+    "description": "C#'s killer feature: query expressions on any data source",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "csharp-02-c1",
+        "title": "What LINQ Is",
+        "contentHtml": "<p><strong>LINQ (Language Integrated Query)</strong> arrived in C# 3.0 (2007) and remains the language's defining feature. It provides a uniform query syntax over any data source: collections, XML, SQL databases, JSON, custom providers.</p><p>Two syntaxes: <strong>method syntax</strong> (<code>users.Where(u =&gt; u.Age &gt; 18).Select(u =&gt; u.Name)</code>) and <strong>query syntax</strong> (<code>from u in users where u.Age &gt; 18 select u.Name</code>). Both compile to the same code; method syntax is more common.</p><p>The standard operators come from <code>System.Linq</code>: <strong>Where</strong> (filter), <strong>Select</strong> (map), <strong>OrderBy</strong>, <strong>GroupBy</strong>, <strong>Join</strong>, <strong>Aggregate</strong>, <strong>Distinct</strong>, <strong>Count</strong>, <strong>Sum</strong>, <strong>Average</strong>. They're extension methods on <code>IEnumerable&lt;T&gt;</code>, so any class implementing the iteration protocol gets them automatically.</p>",
+        "mathExpressions": ["\\text{LINQ: } \\text{IEnumerable}\\langle T \\rangle \\to \\text{Where, Select, ...} \\to \\text{IEnumerable}\\langle U \\rangle"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-02-c2",
+        "title": "Deferred Execution and IEnumerable",
+        "contentHtml": "<p>LINQ-to-Objects is <strong>lazy</strong>. <code>users.Where(...)</code> doesn't run the filter immediately; it returns an <code>IEnumerable</code> that lazily filters when enumerated. Chains compose without intermediate collections: <code>users.Where(...).Select(...).Take(10)</code> only iterates as far as the first 10 matches.</p><p>This is why LINQ chains are usually fast: no scratch arrays, just a state machine consuming the source. To force materialization, call <code>.ToList()</code>, <code>.ToArray()</code>, or <code>.ToDictionary()</code>. Common gotcha: re-enumerating the same query reruns the entire pipeline.</p><p><strong>Parallel LINQ (PLINQ)</strong> (<code>users.AsParallel().Where(...)</code>) runs queries across CPU cores. Useful for CPU-bound transformations on large collections. <strong>Async LINQ</strong> (in <code>System.Linq.Async</code>) handles async sources with <code>IAsyncEnumerable&lt;T&gt;</code>.</p>",
+        "mathExpressions": ["\\text{lazy: filter pulls only as far as needed} \\quad \\text{ToList: materialize}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-02-c3",
+        "title": "Expression Trees and LINQ Providers",
+        "contentHtml": "<p>The deeper magic: LINQ over <code>IQueryable&lt;T&gt;</code> uses <strong>expression trees</strong>. Instead of compiling lambdas to delegates, the compiler emits an Expression&lt;Func&lt;...&gt;&gt; — a data structure representing the lambda's syntax. A LINQ provider can inspect the tree and translate to anything.</p><p><strong>Entity Framework</strong> uses this to translate LINQ to SQL. <code>db.Users.Where(u =&gt; u.Age &gt; 18).Select(u =&gt; u.Name)</code> becomes <code>SELECT Name FROM Users WHERE Age &gt; 18</code> at runtime. The query runs in the database; only the results come back to .NET. This is how C# gets type-safe, refactorable, IntelliSense-supported database queries.</p><p>Other providers: <strong>LINQ to XML</strong>, <strong>LINQ to JSON</strong> (Newtonsoft.Json), <strong>OData</strong>, <strong>MongoDB drivers</strong>, even <strong>cloud APIs</strong>. The expression-tree machinery lets any data source plug into the same query language. It's a beautiful demonstration of language-runtime co-design.</p>",
+        "mathExpressions": ["\\text{Expression}\\langle \\text{Func}\\rangle \\implies \\text{LINQ provider can translate (e.g., to SQL)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["csharp-q09", "csharp-q10", "csharp-q11", "csharp-q12", "csharp-q13", "csharp-q14", "csharp-q15", "csharp-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "csharp-03",
+    "topicId": "cs-lang-csharp",
+    "order": 3,
+    "title": "async/await and the Task Model",
+    "description": "How C# pioneered modern async, and why it sets the standard",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "csharp-03-c1",
+        "title": "Tasks Represent Futures",
+        "contentHtml": "<p>C# uses <strong>Task</strong> and <strong>Task&lt;T&gt;</strong> as its future type. A Task represents an operation that will complete (or fail) asynchronously. Methods returning Tasks are <strong>asynchronous methods</strong>.</p><p>The <code>async</code> keyword marks a method as a state machine; <code>await</code> suspends it until the awaited Task completes. <code>var data = await client.GetStringAsync(url);</code> sends the request, releases the thread, resumes when the response arrives. The compiler rewrites the method into a state machine; the runtime schedules continuations.</p><p>The pattern was a major ergonomic leap. Earlier callback-based async (BeginRead/EndRead, IAsyncResult) was painful. Tasks plus async/await let you write asynchronous code that reads sequentially. The model influenced JavaScript, Python, Rust, Swift, Kotlin — virtually every modern language.</p>",
+        "mathExpressions": ["\\text{Task<T>: future value} \\quad \\text{async/await: sequential-looking async}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-03-c2",
+        "title": "ConfigureAwait, SynchronizationContext, and Deadlocks",
+        "contentHtml": "<p>Awaits resume on a captured <strong>SynchronizationContext</strong> by default. In a UI app, this means after-await code runs back on the UI thread (good for updating UI). In ASP.NET Core (since 2016), there's no context — the continuation runs on any thread pool thread.</p><p>The famous footgun: blocking on a Task in code with a context. <code>task.Result</code> or <code>task.Wait()</code> blocks the current thread. If the task is awaiting back to that same thread, you have a deadlock. The classic UI freeze.</p><p><strong>Avoid sync-over-async</strong>: don't call <code>.Result</code> or <code>.Wait()</code> on async code. Use async all the way down. If you absolutely must block, <code>ConfigureAwait(false)</code> on every await tells the runtime not to capture context — used heavily in libraries to avoid imposing context capture on consumers. Modern .NET makes this less necessary; ASP.NET Core has no context, and most new code is async-throughout.</p>",
+        "mathExpressions": ["\\text{block on async + captured context} \\implies \\text{deadlock}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-03-c3",
+        "title": "ValueTask, Channels, and Modern Async",
+        "contentHtml": "<p>Allocating a Task per async call adds GC pressure on hot paths. <strong>ValueTask&lt;T&gt;</strong> avoids the allocation when the result is already available (cache hits, fast paths). Used heavily in performance-critical async APIs in modern .NET.</p><p><strong>System.Threading.Channels</strong> provides high-performance producer-consumer queues for async code. Bounded or unbounded; supports backpressure; integrates with async/await cleanly. Replaces many ad-hoc concurrent collections.</p><p><strong>IAsyncEnumerable&lt;T&gt;</strong> lets methods yield values asynchronously: <code>await foreach (var item in stream) ...</code>. Perfect for paginated APIs, streaming database results, watch loops. Combined with <strong>cancellation tokens</strong> threaded through every async API, modern C# async is genuinely excellent — among the best concurrency stories in any mainstream language.</p>",
+        "mathExpressions": ["\\text{ValueTask: alloc-free fast path} \\quad \\text{IAsyncEnumerable: async iterator}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["csharp-q17", "csharp-q18", "csharp-q19", "csharp-q20", "csharp-q21", "csharp-q22", "csharp-q23", "csharp-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "csharp-04",
+    "topicId": "cs-lang-csharp",
+    "order": 4,
+    "title": "Modern C#: Records, Pattern Matching, Nullables",
+    "description": "How C# 8-12 modernized the language",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "csharp-04-c1",
+        "title": "Nullable Reference Types",
+        "contentHtml": "<p>For two decades, every C# reference could be null. NullReferenceException was the most common runtime exception. <strong>C# 8</strong> (2019) introduced <strong>nullable reference types</strong>: opt-in static analysis that distinguishes <code>string</code> (non-null) from <code>string?</code> (nullable).</p><p>Once enabled (<code>&lt;Nullable&gt;enable&lt;/Nullable&gt;</code> in the project), the compiler analyzes flows: \"this variable could be null here, you're dereferencing it without checking — warning.\" The null-forgiving operator (<code>!</code>) suppresses warnings when you know better.</p><p>The feature is opt-in to preserve compatibility with old code. Modern .NET libraries (the BCL itself, EF Core, ASP.NET Core) ship with nullability annotations. New projects should enable it from day one. The result is dramatically fewer NREs in modern C# code — bringing it closer to Rust/Kotlin levels of null safety.</p>",
+        "mathExpressions": ["\\text{string: non-null} \\quad \\text{string?: nullable} \\quad \\text{compiler warns on unchecked deref}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-04-c2",
+        "title": "Records, Init-Only Properties, and Immutability",
+        "contentHtml": "<p><strong>C# 9</strong> introduced <strong>records</strong>: a concise syntax for immutable data types with value-based equality. <code>public record Point(int X, int Y);</code> generates the constructor, properties, equality, hashcode, and ToString. Compared to writing the equivalent class manually, it's about 30 lines shorter.</p><p><strong>Init-only properties</strong> (<code>{ get; init; }</code>) can be set during object initialization but not afterward. Together with records, this enables an immutable data style without sacrificing C#'s setter ergonomics.</p><p><strong>Record structs</strong> (C# 10) give you the same syntax for value types — useful for lightweight aggregates that should be copied rather than referenced. Pattern matching (next concept) integrates with records' <strong>positional deconstruction</strong>: <code>if (point is (0, 0)) ...</code>. The record/pattern combination makes C# feel like a more functional language.</p>",
+        "mathExpressions": ["\\text{record Point(int X, int Y) = class with value equality + immutable defaults}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-04-c3",
+        "title": "Pattern Matching and Switch Expressions",
+        "contentHtml": "<p>C# has expanded pattern matching dramatically since version 7. Modern C# supports type patterns, property patterns, positional patterns, list patterns, relational patterns, logical patterns, and more.</p><p><strong>Switch expressions</strong>: <code>var size = shape switch { Circle c =&gt; Math.PI * c.R * c.R, Rect(var w, var h) =&gt; w * h, _ =&gt; 0 };</code>. Concise, exhaustive (warns about unhandled cases), and significantly clearer than the old switch-statement form.</p><p><strong>List patterns</strong> (C# 11): <code>arr is [1, 2, .., var last]</code> matches arrays starting with 1, 2 and binds the last element. <strong>Relational patterns</strong>: <code>x is &gt;= 0 and &lt; 100</code>. Combined with deconstruction, pattern matching makes a lot of C# code more declarative and bug-resistant.</p>",
+        "mathExpressions": ["\\text{switch expr + patterns: declarative branching with exhaustiveness}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["csharp-q25", "csharp-q26", "csharp-q27", "csharp-q28", "csharp-q29", "csharp-q30", "csharp-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "csharp-05",
+    "topicId": "cs-lang-csharp",
+    "order": 5,
+    "title": "The .NET Ecosystem: ASP.NET, EF, Blazor, MAUI",
+    "description": "Where C# is being deployed in 2025",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "csharp-05-c1",
+        "title": "ASP.NET Core: Web Backend",
+        "contentHtml": "<p><strong>ASP.NET Core</strong> is .NET's web framework. <strong>Minimal APIs</strong> (since .NET 6) make a basic endpoint a one-liner: <code>app.MapGet(\"/hello\", () =&gt; \"world\");</code>. <strong>MVC</strong> remains for traditional view-rendered apps; <strong>Razor Pages</strong> for page-oriented sites; <strong>SignalR</strong> for real-time WebSocket-driven apps.</p><p>Performance is genuinely impressive. ASP.NET Core consistently tops <a href=\"https://www.techempower.com/benchmarks/\">TechEmpower</a> benchmarks, often beating frameworks in Go and Rust on certain workloads. Combined with the GC's improvements and the JIT's tier-2 optimization, modern .NET is a serious performance contender.</p><p>The ecosystem: <strong>Entity Framework Core</strong> for ORM (with LINQ as the query language), <strong>Dapper</strong> for lightweight micro-ORM, <strong>Polly</strong> for resilience, <strong>Serilog</strong> for structured logging, <strong>OpenTelemetry</strong> integration, <strong>FluentValidation</strong>. The package selection is large and the standard library is rich.</p>",
+        "mathExpressions": ["\\text{ASP.NET Core: minimal APIs, MVC, SignalR, top benchmark performance}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-05-c2",
+        "title": "Blazor: C# for the Web Frontend",
+        "contentHtml": "<p><strong>Blazor</strong> lets you write web UIs in C# instead of JavaScript. Two flavors. <strong>Blazor Server</strong>: UI runs on the server; events flow over SignalR. Low client-side overhead but every interaction is a network round trip. <strong>Blazor WebAssembly</strong>: the entire .NET runtime ships to the browser as wasm, executing C# directly client-side.</p><p>Blazor WebAssembly was the splashy bet. Initial bundle sizes were large (multi-MB); AOT compilation, trimming, and runtime improvements have brought them down. Hot reload, component model with razor syntax, and full C# tooling (debugging in browser, IntelliSense) make it a productive environment for teams already invested in .NET.</p><p>The honest story: Blazor is a strong choice for line-of-business apps, internal tools, and teams that want full-stack C#. For consumer-facing performance-critical web apps, JavaScript frameworks (React, Svelte, Solid) still have an edge. Blazor's adoption is steadily growing in the .NET community even if it hasn't dethroned JS.</p>",
+        "mathExpressions": ["\\text{Blazor WebAssembly: .NET runtime in browser via wasm}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "csharp-05-c3",
+        "title": "MAUI, Mobile, and the Multi-Platform Story",
+        "contentHtml": "<p><strong>.NET MAUI</strong> (Multi-platform App UI, since 2022) is the cross-platform UI framework, evolution of Xamarin.Forms. One C# codebase targets Windows, macOS, iOS, Android, and (with Blazor Hybrid) the web.</p><p>Real-world usage often combines technologies. Many production .NET mobile apps use <strong>Blazor WebAssembly + Capacitor</strong> (run web app as native shell) or <strong>MAUI Blazor</strong> (native shell with web UI inside). These hybrids let teams ship to all platforms with one C# codebase, leveraging existing web skills.</p><p>The .NET platform also covers <strong>Unity</strong> (game development with C#), <strong>Godot 4+</strong> (C# scripting), <strong>Microsoft Office add-ins</strong>, <strong>Power Platform plugins</strong>, and increasingly <strong>cloud-native services</strong> (Azure Functions, Container Apps, Service Bus). C# has expanded from \"Windows enterprise software\" to a genuinely universal platform — though its center of gravity remains backend services and line-of-business apps.</p>",
+        "mathExpressions": ["\\text{.NET targets: Windows, Mac, Linux, iOS, Android, Web (Blazor), embedded}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["csharp-q32", "csharp-q33", "csharp-q34", "csharp-q35", "csharp-q36", "csharp-q37"],
+    "puzzleId": null
+  }
+]

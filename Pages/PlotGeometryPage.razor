@@ -1,0 +1,218 @@
+@page "/plot-geometry"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Plot Geometry</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Plot Geometry" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Plot Geometry</h1>
+    </div>
+
+    <div class="card pg-intro">
+        <Icon Name="quill" Size="22" Stroke="var(--accent)" />
+        <p>Freytag's pyramid (1863) decomposed drama into five acts: exposition, rising action, climax, falling action, resolution. Trace the curve through famous works -- and notice when it doesn't fit.</p>
+    </div>
+
+    <div class="pg-grid">
+        @foreach (var w in works)
+        {
+            var wx = w;
+            <button class="pg-chip @(selected.Title == wx.Title ? "active" : "")" @onclick="() => selected = wx">@wx.Title</button>
+        }
+    </div>
+
+    <div class="card pg-stage">
+        <h3>@selected.Title <small>@selected.Author</small></h3>
+        <p class="pg-summary">@selected.Summary</p>
+
+        <svg viewBox="0 0 360 220" class="pg-svg">
+            <line x1="20" y1="200" x2="340" y2="200" stroke="var(--text-muted)" stroke-width="1"/>
+
+            @{
+                string Path()
+                {
+                    if (selected.Beats.Count < 2) return "";
+                    var sb = new System.Text.StringBuilder();
+                    for (int i = 0; i < selected.Beats.Count; i++)
+                    {
+                        var b = selected.Beats[i];
+                        var x = 20 + (i / (double)(selected.Beats.Count - 1)) * 320;
+                        var y = 200 - b.Tension * 1.7;
+                        sb.Append(i == 0 ? "M" : " L");
+                        sb.Append(x.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture));
+                        sb.Append(',');
+                        sb.Append(y.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                    return sb.ToString();
+                }
+            }
+            <path d="@Path()" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+
+            @for (int i = 0; i < selected.Beats.Count; i++)
+            {
+                var b = selected.Beats[i];
+                var x = 20 + (i / (double)(selected.Beats.Count - 1)) * 320;
+                var y = 200 - b.Tension * 1.7;
+                <circle cx="@x.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" cy="@y.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" r="5" fill="@(selectedBeat == i ? "var(--primary)" : "var(--accent)")" stroke="white" stroke-width="2"
+                    style="cursor:pointer" @onclick="() => selectedBeat = i"/>
+            }
+
+            <text x="20" y="216" font-size="9" fill="var(--text-muted)">opening</text>
+            <text x="340" y="216" font-size="9" fill="var(--text-muted)" text-anchor="end">close</text>
+        </svg>
+
+        @{ var beat = selected.Beats[selectedBeat]; }
+        <div class="pg-beat">
+            <div class="pg-beat-head">
+                <span class="pg-stage-tag">@beat.Stage</span>
+                <strong>@beat.Title</strong>
+            </div>
+            <p>@beat.Note</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(selected.Critique))
+        {
+            <div class="pg-critique">
+                <Icon Name="search" Size="14" Stroke="var(--accent)" /> @selected.Critique
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool unlocked;
+    private int selectedBeat;
+    private Work selected = works[0];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-plot-geometry");
+            StateHasChanged();
+        }
+    }
+
+    private record Beat(string Stage, string Title, int Tension, string Note);
+    private record Work(string Title, string Author, string Summary, string Critique, List<Beat> Beats);
+
+    private static readonly List<Work> works = new()
+    {
+        new("Hamlet", "Shakespeare",
+            "Prince of Denmark, ghost of his father, his mother married to his uncle. Tragedy in five acts -- the platonic Freytag pyramid.",
+            "",
+            new()
+            {
+                new("Exposition", "Ghost on the battlements", 18, "Watchmen on Elsinore see the dead king's ghost. Hamlet learns of his uncle's crime."),
+                new("Rising", "The play within the play", 45, "Hamlet stages a re-enactment to expose Claudius. Confirms guilt; commits to revenge."),
+                new("Rising", "Polonius killed behind the curtain", 65, "Hamlet stabs through arras thinking it's the king. The fuse is lit."),
+                new("Climax", "\"To be or not to be\" / graveyard", 90, "The decisive turn. Hamlet returns to Denmark and accepts his fate."),
+                new("Falling", "Ophelia's funeral, Laertes's challenge", 70, "The duel is set. Multiple deaths now inevitable."),
+                new("Resolution", "Final duel; everyone dies", 95, "Climactic body count: Gertrude, Laertes, Claudius, Hamlet. Fortinbras takes the throne.")
+            }),
+
+        new("Pride and Prejudice", "Austen",
+            "Elizabeth Bennet meets the proud Mr Darcy in regency England. Comedy of marriage and class.",
+            "",
+            new()
+            {
+                new("Exposition", "Bingley arrives at Netherfield", 12, "The Bennets calculate matrimonial prospects. Darcy snubs Elizabeth at the ball."),
+                new("Rising", "First proposal refused", 50, "Darcy proposes badly. Elizabeth refuses, citing his pride and Wickham's tales."),
+                new("Rising", "Lydia elopes with Wickham", 75, "Family disgrace. Darcy quietly resolves the situation, restoring honor."),
+                new("Climax", "Second proposal accepted", 85, "Darcy walks across the field at Pemberley. Elizabeth changes her mind."),
+                new("Falling", "Family negotiations", 40, "Lady Catherine's intrusion fails to derail the engagement."),
+                new("Resolution", "Marriages settled", 25, "Two marriages, peace at Pemberley. Mr Bennet keeps his books.")
+            }),
+
+        new("The Odyssey", "Homer",
+            "Odysseus tries to get home from Troy. It takes ten years. The original episodic adventure.",
+            "Episodic structure resists Freytag. Each book has its own arc; the through-line is not tension but distance from Ithaca.",
+            new()
+            {
+                new("Exposition", "Telemachus searches for news", 30, "Odysseus's son confronts the suitors and goes seeking word of his father."),
+                new("Rising", "Calypso releases Odysseus", 45, "After 7 years, the gods compel his release. He builds a raft."),
+                new("Rising", "Cyclops, Sirens, Scylla and Charybdis", 70, "Episodic disasters. He loses every ship and every man."),
+                new("Climax", "Slaughter of the suitors", 95, "Disguised as a beggar, he strings the bow none can string and kills them all."),
+                new("Falling", "Reunion with Penelope", 50, "The bed test: only she and Odysseus know its construction."),
+                new("Resolution", "Athena enforces peace", 25, "The suitors' families threaten reprisal; the gods stop it.")
+            }),
+
+        new("Mrs Dalloway", "Woolf",
+            "One day in London, June 1923. Clarissa Dalloway plans a party while Septimus Smith drowns in PTSD.",
+            "Modernist novels resist tension curves. Plot tension is replaced by associative interiority. The 'climax' here is a tonal shift, not an event.",
+            new()
+            {
+                new("Exposition", "Clarissa buys flowers", 20, "She walks across London. The day begins. Past and present interleave."),
+                new("Rising", "Peter visits, Septimus has visions", 35, "Two interior monologues weave. Septimus's PTSD intensifies."),
+                new("Rising", "Doctor Bradshaw insists on commitment", 55, "Septimus is diagnosed. The clinical violence of treatment is set up."),
+                new("Climax", "Septimus jumps from the window", 80, "Out of frame, but lands at the center of the novel. Time stops for a beat."),
+                new("Falling", "News reaches the party", 45, "Clarissa hears about a young man's suicide and feels he died for her."),
+                new("Resolution", "\"For there she was\"", 30, "The novel closes mid-thought. No tying off.")
+            }),
+
+        new("Beowulf", "Anonymous",
+            "Old English epic. Three battles: Grendel, Grendel's mother, the dragon. Each marks a stage of the hero's life.",
+            "Tolkien argued in 1936 that Beowulf is structurally a diptych: youth and old age, Grendel and dragon. The middle battle is a bridge.",
+            new()
+            {
+                new("Exposition", "Heorot terrorized by Grendel", 45, "Hrothgar's hall preyed on for 12 years. Beowulf sails from Geatland."),
+                new("Rising", "Beowulf vs Grendel", 75, "Bare-handed combat in the hall. Grendel flees mortally wounded."),
+                new("Climax", "Grendel's mother in the mere", 85, "Underwater fight; Beowulf nearly dies. Found a giant-forged sword."),
+                new("Falling", "50 years pass; Beowulf is king", 30, "Long peaceful reign. The dragon awakens."),
+                new("Climax", "Beowulf vs the dragon", 95, "Final battle. Beowulf and Wiglaf kill the dragon; Beowulf is mortally wounded."),
+                new("Resolution", "Funeral pyre at the headland", 50, "The Geats mourn. Their kingdom falls without him.")
+            }),
+
+        new("100 Years of Solitude", "Garcia Marquez",
+            "Seven generations of the Buendia family in Macondo. Magic realism; cyclical time; inevitability.",
+            "Cyclical structure rather than rising action. Names repeat; mistakes repeat; the curve is a loop, not a peak.",
+            new()
+            {
+                new("Exposition", "Founding of Macondo", 30, "Jose Arcadio Buendia founds the village. Gypsies bring magnets and ice."),
+                new("Rising", "Plague of insomnia and forgetting", 50, "The village forgets the names of objects. They label everything to remember."),
+                new("Rising", "Civil wars and Colonel Aureliano", 70, "32 wars, all lost. The colonel makes little gold fish, melts them, makes them again."),
+                new("Climax", "The banana company massacre", 85, "Three thousand workers shot, the bodies thrown into the sea. Erased from memory."),
+                new("Falling", "Decline of the line", 65, "The last generation grows. Incest haunts the family from the start."),
+                new("Resolution", "Macondo is erased", 95, "Aureliano deciphers Melquiades's manuscripts and reads the ending. The wind takes the village.")
+            })
+    };
+}
+
+<style>
+    .pg-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .pg-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .pg-grid { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .pg-chip { padding: 6px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; }
+    .pg-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .pg-stage { padding: 14px; }
+    .pg-stage h3 { margin: 0 0 4px; font-size: 1.05rem; font-family: 'Cormorant Garamond', Georgia, serif; }
+    .pg-stage h3 small { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; margin-left: 6px; }
+    .pg-summary { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 10px; }
+
+    .pg-svg { width: 100%; height: auto; max-height: 250px; display: block; }
+
+    .pg-beat { background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); margin-top: 10px; }
+    .pg-beat-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .pg-stage-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); font-weight: 700; }
+    .pg-beat-head strong { font-size: 0.9rem; color: var(--text-primary); }
+    .pg-beat p { margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .pg-critique { display: flex; align-items: flex-start; gap: 6px; padding: 8px 10px; margin-top: 10px; background: rgba(240,160,48,0.08); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+</style>

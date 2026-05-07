@@ -1,0 +1,971 @@
+@page "/cell-tour"
+@inject IProgressService Progress
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Cell Tour</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Cell Tour" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Cell Tour</h1>
+    </div>
+
+    <p class="ct-intro"><Icon Name="target" Size="14" Stroke="var(--accent)" /> Tap any organelle to learn its job.</p>
+
+    <div class="ct-tabs">
+        <button class="tab @(cellType == "animal" ? "active" : "")" @onclick='() => SwitchCell("animal")'>Animal Cell</button>
+        <button class="tab @(cellType == "plant" ? "active" : "")" @onclick='() => SwitchCell("plant")'>Plant Cell</button>
+        <button class="tab @(cellType == "bacteria" ? "active" : "")" @onclick='() => SwitchCell("bacteria")'>Bacteria (Prokaryote)</button>
+    </div>
+
+    <div class="ct-stage card">
+        @if (cellType == "animal")
+        {
+            <svg viewBox="0 0 400 320" class="ct-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="animalBg" cx="45%" cy="40%" r="70%">
+                        <stop offset="0%" stop-color="#FFF4F8" />
+                        <stop offset="55%" stop-color="#FBD9E3" />
+                        <stop offset="100%" stop-color="#E9A8BD" />
+                    </radialGradient>
+                    <radialGradient id="nucleusGrad" cx="40%" cy="35%" r="80%">
+                        <stop offset="0%" stop-color="#B79CD9" />
+                        <stop offset="60%" stop-color="#7B5EA7" />
+                        <stop offset="100%" stop-color="#3F2D60" />
+                    </radialGradient>
+                    <radialGradient id="nucleolusGrad" cx="40%" cy="35%" r="70%">
+                        <stop offset="0%" stop-color="#6E4E94" />
+                        <stop offset="100%" stop-color="#1F1330" />
+                    </radialGradient>
+                    <radialGradient id="mitoGrad" cx="40%" cy="40%" r="70%">
+                        <stop offset="0%" stop-color="#FFB1A8" />
+                        <stop offset="55%" stop-color="#E36B6B" />
+                        <stop offset="100%" stop-color="#702020" />
+                    </radialGradient>
+                    <radialGradient id="lysoGrad" cx="40%" cy="35%" r="70%">
+                        <stop offset="0%" stop-color="#FFE69A" />
+                        <stop offset="60%" stop-color="#F2C548" />
+                        <stop offset="100%" stop-color="#7E5F12" />
+                    </radialGradient>
+                    <radialGradient id="peroxGrad" cx="40%" cy="35%" r="70%">
+                        <stop offset="0%" stop-color="#D7F0AC" />
+                        <stop offset="60%" stop-color="#A8D26A" />
+                        <stop offset="100%" stop-color="#3D5F18" />
+                    </radialGradient>
+                    <linearGradient id="erRoughGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#F4B27D" />
+                        <stop offset="100%" stop-color="#C26A2A" />
+                    </linearGradient>
+                    <linearGradient id="erSmoothGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FBD49C" />
+                        <stop offset="100%" stop-color="#D89438" />
+                    </linearGradient>
+                    <linearGradient id="golgiGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#7DD0E2" />
+                        <stop offset="100%" stop-color="#2D7E94" />
+                    </linearGradient>
+                    <radialGradient id="centroGrad" cx="50%" cy="50%" r="70%">
+                        <stop offset="0%" stop-color="#A2B8E6" />
+                        <stop offset="100%" stop-color="#314B86" />
+                    </radialGradient>
+                    <filter id="ctShadow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" />
+                        <feOffset dx="0.5" dy="1" result="off" />
+                        <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
+                        <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                    <filter id="ctSoft" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="0.6" />
+                    </filter>
+                    <pattern id="cytoNoise" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <circle cx="6" cy="9" r="0.7" fill="#C97B95" opacity="0.25" />
+                        <circle cx="22" cy="14" r="0.5" fill="#A85A78" opacity="0.22" />
+                        <circle cx="34" cy="6" r="0.6" fill="#C97B95" opacity="0.18" />
+                        <circle cx="14" cy="28" r="0.6" fill="#A85A78" opacity="0.22" />
+                        <circle cx="30" cy="32" r="0.7" fill="#C97B95" opacity="0.25" />
+                    </pattern>
+                    <clipPath id="animalClip">
+                        <path d="M 200 18 C 320 16 388 84 388 160 C 388 250 312 304 200 304 C 92 304 12 248 12 160 C 12 80 84 20 200 18 Z" />
+                    </clipPath>
+                </defs>
+
+                <g class="ct-organelle @(IsActive("plasma-membrane-animal") ? "ct-active" : "")"
+                   @onclick='() => Select("plasma-membrane-animal")'>
+                    <path d="M 200 18 C 320 16 388 84 388 160 C 388 250 312 304 200 304 C 92 304 12 248 12 160 C 12 80 84 20 200 18 Z"
+                          fill="url(#animalBg)" stroke="#B66987" stroke-width="3" filter="url(#ctShadow)" />
+                    <path d="M 200 22 C 318 20 384 86 384 160 C 384 248 310 300 200 300 C 94 300 16 246 16 160 C 16 82 86 24 200 22 Z"
+                          fill="none" stroke="#E9B6C5" stroke-width="1" stroke-dasharray="2,2" opacity="0.7" />
+                </g>
+
+                <rect x="12" y="18" width="376" height="286" fill="url(#cytoNoise)" clip-path="url(#animalClip)" pointer-events="none" />
+
+                <g class="ct-organelle @(IsActive("cytoskeleton") ? "ct-active" : "")"
+                   @onclick='() => Select("cytoskeleton")' clip-path="url(#animalClip)">
+                    <path d="M 30 110 Q 150 130 270 100 T 380 220" fill="none" stroke="#9D8DF1" stroke-width="0.9" opacity="0.55" />
+                    <path d="M 40 240 Q 160 200 250 250 T 370 130" fill="none" stroke="#9D8DF1" stroke-width="0.9" opacity="0.55" />
+                    <path d="M 120 50 Q 200 160 130 280" fill="none" stroke="#B5A6FF" stroke-width="0.8" opacity="0.45" />
+                    <path d="M 280 40 Q 240 170 320 290" fill="none" stroke="#B5A6FF" stroke-width="0.8" opacity="0.45" />
+                    <path d="M 60 180 Q 200 175 350 180" fill="none" stroke="#9D8DF1" stroke-width="0.7" opacity="0.4" stroke-dasharray="2,3" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("nucleus") ? "ct-active" : "")"
+                   @onclick='() => Select("nucleus")'>
+                    <path d="M 180 92 C 222 90 240 116 238 152 C 240 188 220 212 178 210 C 138 212 120 184 122 150 C 120 116 142 94 180 92 Z"
+                          fill="url(#nucleusGrad)" stroke="#3F2D60" stroke-width="2" filter="url(#ctShadow)" />
+                    <path d="M 180 96 C 220 94 236 118 234 152 C 236 184 218 208 178 206 C 142 208 124 182 126 150 C 124 118 144 98 180 96 Z"
+                          fill="none" stroke="#5A4280" stroke-width="0.8" opacity="0.7" />
+                    <circle cx="138" cy="120" r="2" fill="#2A1B45" />
+                    <circle cx="222" cy="118" r="2" fill="#2A1B45" />
+                    <circle cx="232" cy="170" r="2" fill="#2A1B45" />
+                    <circle cx="180" cy="208" r="2" fill="#2A1B45" />
+                    <circle cx="126" cy="172" r="2" fill="#2A1B45" />
+                    <circle cx="200" cy="96" r="2" fill="#2A1B45" />
+                    <circle cx="158" cy="96" r="1.6" fill="#2A1B45" />
+                    <circle cx="160" cy="140" r="1.2" fill="#5A4280" opacity="0.6" />
+                    <circle cx="200" cy="160" r="1.2" fill="#5A4280" opacity="0.6" />
+                    <circle cx="170" cy="180" r="1.2" fill="#5A4280" opacity="0.6" />
+                </g>
+                <g class="ct-organelle @(IsActive("nucleolus") ? "ct-active" : "")"
+                   @onclick='() => Select("nucleolus")'>
+                    <circle cx="190" cy="155" r="14" fill="url(#nucleolusGrad)" stroke="#1F1430" stroke-width="1.5" />
+                    <circle cx="186" cy="151" r="3" fill="#9678BC" opacity="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("rough-er") ? "ct-active" : "")"
+                   @onclick='() => Select("rough-er")'>
+                    <path d="M 50 230 Q 80 210 110 228 Q 140 246 170 228 Q 200 210 230 232 L 230 246 Q 200 224 170 242 Q 140 260 110 242 Q 80 224 50 244 Z"
+                          fill="url(#erRoughGrad)" stroke="#8C4A18" stroke-width="1" filter="url(#ctShadow)" />
+                    <path d="M 60 258 Q 90 244 120 258 Q 150 272 180 258 Q 210 244 240 262 L 240 274 Q 210 256 180 270 Q 150 284 120 270 Q 90 256 60 272 Z"
+                          fill="url(#erRoughGrad)" stroke="#8C4A18" stroke-width="1" />
+                    <g class="ct-rib-twinkle">
+                        <circle cx="62" cy="226" r="2" fill="#1A1208" />
+                        <circle cx="86" cy="218" r="2" fill="#1A1208" />
+                        <circle cx="118" cy="226" r="2" fill="#1A1208" />
+                        <circle cx="148" cy="240" r="2" fill="#1A1208" />
+                        <circle cx="180" cy="222" r="2" fill="#1A1208" />
+                        <circle cx="210" cy="224" r="2" fill="#1A1208" />
+                        <circle cx="74" cy="252" r="2" fill="#1A1208" />
+                        <circle cx="108" cy="252" r="2" fill="#1A1208" />
+                        <circle cx="140" cy="266" r="2" fill="#1A1208" />
+                        <circle cx="172" cy="252" r="2" fill="#1A1208" />
+                        <circle cx="206" cy="252" r="2" fill="#1A1208" />
+                        <circle cx="232" cy="266" r="2" fill="#1A1208" />
+                    </g>
+                </g>
+
+                <g class="ct-organelle @(IsActive("smooth-er") ? "ct-active" : "")"
+                   @onclick='() => Select("smooth-er")'>
+                    <path d="M 250 80 C 268 90 248 108 268 120 C 290 132 268 152 286 168 C 300 180 280 200 296 212"
+                          fill="none" stroke="url(#erSmoothGrad)" stroke-width="6" stroke-linecap="round" filter="url(#ctShadow)" />
+                    <path d="M 268 78 C 286 92 268 110 286 122 C 308 134 290 154 308 168"
+                          fill="none" stroke="url(#erSmoothGrad)" stroke-width="5" stroke-linecap="round" />
+                    <path d="M 252 84 C 268 92 252 110 270 122" fill="none" stroke="#FFE3B7" stroke-width="1" opacity="0.7" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("golgi-animal") ? "ct-active" : "")"
+                   @onclick='() => Select("golgi-animal")'>
+                    <path d="M 282 214 Q 320 206 354 214 Q 350 220 318 220 Q 286 220 282 214 Z" fill="url(#golgiGrad)" stroke="#1F5E72" stroke-width="0.8" filter="url(#ctShadow)" />
+                    <path d="M 286 226 Q 322 218 350 226 Q 346 232 318 232 Q 290 232 286 226 Z" fill="url(#golgiGrad)" stroke="#1F5E72" stroke-width="0.8" />
+                    <path d="M 290 238 Q 322 230 346 238 Q 342 244 318 244 Q 294 244 290 238 Z" fill="url(#golgiGrad)" stroke="#1F5E72" stroke-width="0.8" />
+                    <path d="M 296 250 Q 322 242 340 250 Q 336 256 318 256 Q 300 256 296 250 Z" fill="url(#golgiGrad)" stroke="#1F5E72" stroke-width="0.8" />
+                    <circle cx="358" cy="218" r="3" fill="#7DD0E2" stroke="#1F5E72" stroke-width="0.6" class="ct-vesicle-a" />
+                    <circle cx="276" cy="246" r="2.5" fill="#7DD0E2" stroke="#1F5E72" stroke-width="0.6" class="ct-vesicle-b" />
+                    <circle cx="346" cy="262" r="2.2" fill="#7DD0E2" stroke="#1F5E72" stroke-width="0.6" class="ct-vesicle-c" />
+                </g>
+
+                <g class="ct-organelle ct-mito @(IsActive("mitochondrion-animal") ? "ct-active" : "")"
+                   @onclick='() => Select("mitochondrion-animal")'>
+                    <path d="M 64 102 C 60 86 84 80 104 82 C 128 84 144 92 138 108 C 142 122 124 120 102 118 C 84 122 62 116 64 102 Z"
+                          fill="url(#mitoGrad)" stroke="#5C1818" stroke-width="1.5" filter="url(#ctShadow)" />
+                    <path d="M 70 100 Q 78 92 86 100 Q 94 108 102 100 Q 110 92 118 100 Q 126 108 134 100" fill="none" stroke="#5C1818" stroke-width="1.2" opacity="0.85" />
+                    <path d="M 72 108 Q 80 116 88 108 Q 96 100 104 108 Q 112 116 120 108 Q 128 100 136 108" fill="none" stroke="#5C1818" stroke-width="1" opacity="0.7" />
+                    <path d="M 74 94 Q 80 88 86 94" fill="none" stroke="#5C1818" stroke-width="0.8" opacity="0.5" />
+                    <path d="M 100 112 Q 106 118 112 112" fill="none" stroke="#5C1818" stroke-width="0.8" opacity="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("lysosome") ? "ct-active" : "")"
+                   @onclick='() => Select("lysosome")'>
+                    <circle cx="320" cy="120" r="18" fill="url(#lysoGrad)" stroke="#7E5F12" stroke-width="1.5" filter="url(#ctShadow)" />
+                    <circle cx="314" cy="114" r="3" fill="#7E5F12" opacity="0.7" />
+                    <circle cx="324" cy="124" r="2.5" fill="#7E5F12" opacity="0.7" />
+                    <circle cx="328" cy="113" r="1.6" fill="#7E5F12" opacity="0.5" />
+                    <circle cx="312" cy="128" r="1.6" fill="#7E5F12" opacity="0.5" />
+                    <circle cx="316" cy="118" r="1.2" fill="#FFF3C4" opacity="0.7" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("peroxisome") ? "ct-active" : "")"
+                   @onclick='() => Select("peroxisome")'>
+                    <circle cx="80" cy="240" r="15" fill="url(#peroxGrad)" stroke="#3D5F18" stroke-width="1.5" filter="url(#ctShadow)" />
+                    <circle cx="80" cy="240" r="5" fill="#3D5F18" />
+                    <circle cx="78" cy="238" r="1.6" fill="#A8D26A" opacity="0.8" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("centriole") ? "ct-active" : "")"
+                   @onclick='() => Select("centriole")'>
+                    <rect x="240" y="252" width="22" height="10" rx="2" fill="url(#centroGrad)" stroke="#1A2A4D" stroke-width="1" filter="url(#ctShadow)" />
+                    <line x1="244" y1="252" x2="244" y2="262" stroke="#1A2A4D" stroke-width="0.6" opacity="0.7" />
+                    <line x1="250" y1="252" x2="250" y2="262" stroke="#1A2A4D" stroke-width="0.6" opacity="0.7" />
+                    <line x1="256" y1="252" x2="256" y2="262" stroke="#1A2A4D" stroke-width="0.6" opacity="0.7" />
+                    <rect x="246" y="262" width="10" height="22" rx="2" fill="url(#centroGrad)" stroke="#1A2A4D" stroke-width="1" />
+                    <line x1="246" y1="266" x2="256" y2="266" stroke="#1A2A4D" stroke-width="0.6" opacity="0.7" />
+                    <line x1="246" y1="272" x2="256" y2="272" stroke="#1A2A4D" stroke-width="0.6" opacity="0.7" />
+                    <line x1="246" y1="278" x2="256" y2="278" stroke="#1A2A4D" stroke-width="0.6" opacity="0.7" />
+                </g>
+
+                <g class="ct-organelle ct-rib-twinkle @(IsActive("ribosome-animal") ? "ct-active" : "")"
+                   @onclick='() => Select("ribosome-animal")'>
+                    <circle cx="158" cy="258" r="2.4" fill="#3F3A52" />
+                    <circle cx="162" cy="262" r="2" fill="#5A547A" />
+                    <circle cx="170" cy="270" r="2.4" fill="#3F3A52" />
+                    <circle cx="174" cy="274" r="2" fill="#5A547A" />
+                    <circle cx="200" cy="265" r="2.4" fill="#3F3A52" />
+                    <circle cx="204" cy="269" r="2" fill="#5A547A" />
+                    <circle cx="220" cy="280" r="2.4" fill="#3F3A52" />
+                    <circle cx="224" cy="284" r="2" fill="#5A547A" />
+                    <circle cx="140" cy="280" r="2.4" fill="#3F3A52" />
+                    <circle cx="144" cy="284" r="2" fill="#5A547A" />
+                </g>
+            </svg>
+        }
+        else if (cellType == "plant")
+        {
+            <svg viewBox="0 0 400 320" class="ct-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="plantBg" cx="50%" cy="40%" r="70%">
+                        <stop offset="0%" stop-color="#F1FCEB" />
+                        <stop offset="60%" stop-color="#D6F1CC" />
+                        <stop offset="100%" stop-color="#A8D89B" />
+                    </radialGradient>
+                    <linearGradient id="cellWallGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#B58A52" />
+                        <stop offset="100%" stop-color="#6E4D24" />
+                    </linearGradient>
+                    <radialGradient id="vacuoleGrad" cx="40%" cy="35%" r="80%">
+                        <stop offset="0%" stop-color="#D9ECFB" />
+                        <stop offset="60%" stop-color="#A4D2F4" />
+                        <stop offset="100%" stop-color="#3F6A98" />
+                    </radialGradient>
+                    <radialGradient id="chloroGrad" cx="40%" cy="35%" r="70%">
+                        <stop offset="0%" stop-color="#A2DD8F" />
+                        <stop offset="55%" stop-color="#5DA84B" />
+                        <stop offset="100%" stop-color="#1F5C18" />
+                    </radialGradient>
+                    <radialGradient id="nucleusPlantGrad" cx="40%" cy="35%" r="80%">
+                        <stop offset="0%" stop-color="#B79CD9" />
+                        <stop offset="60%" stop-color="#7B5EA7" />
+                        <stop offset="100%" stop-color="#3F2D60" />
+                    </radialGradient>
+                    <radialGradient id="mitoPlantGrad" cx="40%" cy="40%" r="70%">
+                        <stop offset="0%" stop-color="#FFB1A8" />
+                        <stop offset="55%" stop-color="#E36B6B" />
+                        <stop offset="100%" stop-color="#702020" />
+                    </radialGradient>
+                    <pattern id="wallTex" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+                        <path d="M 0 7 L 14 7" stroke="#7A5526" stroke-width="0.6" opacity="0.4" />
+                        <path d="M 7 0 L 7 14" stroke="#7A5526" stroke-width="0.4" opacity="0.3" />
+                    </pattern>
+                    <pattern id="cytoNoisePlant" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <circle cx="6" cy="9" r="0.7" fill="#5BA15B" opacity="0.22" />
+                        <circle cx="22" cy="14" r="0.5" fill="#3F7E3E" opacity="0.2" />
+                        <circle cx="34" cy="6" r="0.6" fill="#5BA15B" opacity="0.16" />
+                        <circle cx="14" cy="28" r="0.6" fill="#3F7E3E" opacity="0.2" />
+                        <circle cx="30" cy="32" r="0.7" fill="#5BA15B" opacity="0.22" />
+                    </pattern>
+                    <filter id="ctShadowP" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" />
+                        <feOffset dx="0.5" dy="1" result="off" />
+                        <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
+                        <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                    <clipPath id="plantClip">
+                        <rect x="22" y="27" width="356" height="266" rx="14" />
+                    </clipPath>
+                </defs>
+
+                <g class="ct-organelle @(IsActive("cell-wall-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("cell-wall-plant")'>
+                    <rect x="10" y="15" width="380" height="290" rx="18" fill="url(#cellWallGrad)" filter="url(#ctShadowP)" />
+                    <rect x="10" y="15" width="380" height="290" rx="18" fill="url(#wallTex)" />
+                    <rect x="14" y="19" width="372" height="282" rx="16" fill="none" stroke="#5C3F18" stroke-width="0.8" opacity="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("plasma-membrane-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("plasma-membrane-plant")'>
+                    <rect x="22" y="27" width="356" height="266" rx="14" fill="url(#plantBg)" stroke="#3F7E3E" stroke-width="2" />
+                    <rect x="25" y="30" width="350" height="260" rx="12" fill="none" stroke="#7CC07C" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.7" />
+                </g>
+
+                <rect x="22" y="27" width="356" height="266" fill="url(#cytoNoisePlant)" clip-path="url(#plantClip)" pointer-events="none" />
+
+                <g class="ct-organelle @(IsActive("plasmodesmata") ? "ct-active" : "")"
+                   @onclick='() => Select("plasmodesmata")'>
+                    <rect x="10" y="80" width="20" height="10" fill="#E5C796" stroke="#5A3A1A" stroke-width="0.8" />
+                    <line x1="10" y1="85" x2="30" y2="85" stroke="#A98654" stroke-width="0.5" />
+                    <rect x="10" y="200" width="20" height="10" fill="#E5C796" stroke="#5A3A1A" stroke-width="0.8" />
+                    <line x1="10" y1="205" x2="30" y2="205" stroke="#A98654" stroke-width="0.5" />
+                    <rect x="370" y="120" width="20" height="10" fill="#E5C796" stroke="#5A3A1A" stroke-width="0.8" />
+                    <line x1="370" y1="125" x2="390" y2="125" stroke="#A98654" stroke-width="0.5" />
+                    <rect x="370" y="230" width="20" height="10" fill="#E5C796" stroke="#5A3A1A" stroke-width="0.8" />
+                    <line x1="370" y1="235" x2="390" y2="235" stroke="#A98654" stroke-width="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("vacuole") ? "ct-active" : "")"
+                   @onclick='() => Select("vacuole")'>
+                    <ellipse cx="200" cy="170" rx="140" ry="95" fill="url(#vacuoleGrad)" stroke="#3F6A98" stroke-width="1.8" opacity="0.92" filter="url(#ctShadowP)" />
+                    <ellipse cx="200" cy="170" rx="136" ry="91" fill="none" stroke="#7FB6E0" stroke-width="0.8" opacity="0.6" />
+                    <ellipse cx="160" cy="135" rx="30" ry="12" fill="#FFFFFF" opacity="0.18" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("nucleus-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("nucleus-plant")'>
+                    <path d="M 78 60 C 100 58 116 72 114 92 C 116 112 100 124 76 122 C 56 124 44 108 46 90 C 44 72 60 60 78 60 Z"
+                          fill="url(#nucleusPlantGrad)" stroke="#3F2D60" stroke-width="1.8" filter="url(#ctShadowP)" />
+                    <path d="M 78 64 C 98 62 112 74 110 92 C 112 110 98 120 78 118 C 60 120 48 108 50 92 C 48 74 62 64 78 64 Z"
+                          fill="none" stroke="#5A4280" stroke-width="0.7" opacity="0.7" />
+                    <circle cx="86" cy="93" r="9" fill="#3A2754" />
+                    <circle cx="84" cy="91" r="2" fill="#9678BC" opacity="0.6" />
+                    <circle cx="58" cy="74" r="1.4" fill="#2A1B45" />
+                    <circle cx="100" cy="78" r="1.4" fill="#2A1B45" />
+                    <circle cx="108" cy="106" r="1.4" fill="#2A1B45" />
+                    <circle cx="62" cy="110" r="1.4" fill="#2A1B45" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("chloroplast") ? "ct-active" : "")"
+                   @onclick='() => Select("chloroplast")'>
+                    <ellipse cx="320" cy="80" rx="34" ry="18" fill="url(#chloroGrad)" stroke="#1F5C18" stroke-width="1.5" filter="url(#ctShadowP)" />
+                    <circle cx="306" cy="76" r="3.5" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="318" cy="82" r="3.5" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="330" cy="76" r="3.5" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="312" cy="86" r="2.8" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="324" cy="86" r="2.8" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <line x1="306" y1="76" x2="318" y2="82" stroke="#0F3A0E" stroke-width="0.5" opacity="0.6" />
+                    <line x1="318" y1="82" x2="330" y2="76" stroke="#0F3A0E" stroke-width="0.5" opacity="0.6" />
+
+                    <ellipse cx="60" cy="240" rx="30" ry="16" fill="url(#chloroGrad)" stroke="#1F5C18" stroke-width="1.5" filter="url(#ctShadowP)" />
+                    <circle cx="50" cy="237" r="3" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="60" cy="244" r="3" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="70" cy="237" r="3" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <line x1="50" y1="237" x2="60" y2="244" stroke="#0F3A0E" stroke-width="0.5" opacity="0.6" />
+
+                    <ellipse cx="340" cy="250" rx="28" ry="15" fill="url(#chloroGrad)" stroke="#1F5C18" stroke-width="1.5" filter="url(#ctShadowP)" />
+                    <circle cx="332" cy="248" r="2.8" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                    <circle cx="346" cy="252" r="2.8" fill="#1F5C18" stroke="#0F3A0E" stroke-width="0.5" />
+                </g>
+
+                <g class="ct-organelle ct-mito @(IsActive("mitochondrion-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("mitochondrion-plant")'>
+                    <path d="M 290 168 C 286 154 304 150 320 152 C 340 154 356 162 350 174 C 354 186 336 184 318 184 C 302 188 286 180 290 168 Z"
+                          fill="url(#mitoPlantGrad)" stroke="#5C1818" stroke-width="1.4" filter="url(#ctShadowP)" />
+                    <path d="M 296 168 Q 304 160 312 168 Q 320 176 328 168 Q 336 160 344 168" fill="none" stroke="#5C1818" stroke-width="1.2" opacity="0.85" />
+                    <path d="M 298 176 Q 306 184 314 176 Q 322 168 330 176 Q 338 184 346 176" fill="none" stroke="#5C1818" stroke-width="1" opacity="0.7" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("er-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("er-plant")'>
+                    <path d="M 50 130 C 64 140 50 152 64 162 C 80 172 60 186 76 198"
+                          fill="none" stroke="#D8843A" stroke-width="5" stroke-linecap="round" filter="url(#ctShadowP)" />
+                    <path d="M 65 135 C 80 144 64 158 80 168 C 96 178 78 192 92 204"
+                          fill="none" stroke="#D8843A" stroke-width="5" stroke-linecap="round" />
+                    <circle cx="56" cy="138" r="1.6" fill="#1A1208" />
+                    <circle cx="62" cy="156" r="1.6" fill="#1A1208" />
+                    <circle cx="70" cy="172" r="1.6" fill="#1A1208" />
+                    <circle cx="80" cy="190" r="1.6" fill="#1A1208" />
+                    <circle cx="74" cy="142" r="1.6" fill="#1A1208" />
+                    <circle cx="84" cy="174" r="1.6" fill="#1A1208" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("golgi-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("golgi-plant")'>
+                    <path d="M 122 264 Q 160 256 198 264 Q 192 272 160 272 Q 128 272 122 264 Z" fill="#7DD0E2" stroke="#1F5E72" stroke-width="0.8" filter="url(#ctShadowP)" />
+                    <path d="M 128 276 Q 162 268 192 276 Q 188 282 160 282 Q 132 282 128 276 Z" fill="#5DBED0" stroke="#1F5E72" stroke-width="0.8" />
+                    <path d="M 134 288 Q 162 280 186 288 Q 182 294 160 294 Q 138 294 134 288 Z" fill="#3FA9BC" stroke="#1F5E72" stroke-width="0.8" />
+                    <circle cx="204" cy="262" r="2.4" fill="#7DD0E2" stroke="#1F5E72" stroke-width="0.5" class="ct-vesicle-a" />
+                    <circle cx="116" cy="288" r="2.2" fill="#7DD0E2" stroke="#1F5E72" stroke-width="0.5" class="ct-vesicle-b" />
+                </g>
+
+                <g class="ct-organelle ct-rib-twinkle @(IsActive("ribosome-plant") ? "ct-active" : "")"
+                   @onclick='() => Select("ribosome-plant")'>
+                    <circle cx="238" cy="58" r="2.4" fill="#3F3A52" />
+                    <circle cx="242" cy="62" r="2" fill="#5A547A" />
+                    <circle cx="252" cy="68" r="2.4" fill="#3F3A52" />
+                    <circle cx="256" cy="72" r="2" fill="#5A547A" />
+                    <circle cx="265" cy="60" r="2.4" fill="#3F3A52" />
+                    <circle cx="269" cy="64" r="2" fill="#5A547A" />
+                    <circle cx="100" cy="280" r="2.4" fill="#3F3A52" />
+                    <circle cx="104" cy="284" r="2" fill="#5A547A" />
+                    <circle cx="260" cy="290" r="2.4" fill="#3F3A52" />
+                    <circle cx="264" cy="294" r="2" fill="#5A547A" />
+                </g>
+            </svg>
+        }
+        else
+        {
+            <svg viewBox="0 0 400 320" class="ct-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="bactBg" cx="45%" cy="40%" r="70%">
+                        <stop offset="0%" stop-color="#FFFCEC" />
+                        <stop offset="60%" stop-color="#F7E2A0" />
+                        <stop offset="100%" stop-color="#D9B14A" />
+                    </radialGradient>
+                    <radialGradient id="capsuleGrad" cx="50%" cy="50%" r="60%">
+                        <stop offset="0%" stop-color="#E9D2F4" stop-opacity="0.55" />
+                        <stop offset="100%" stop-color="#B58CD2" stop-opacity="0.35" />
+                    </radialGradient>
+                    <linearGradient id="bactWallGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#C09660" />
+                        <stop offset="100%" stop-color="#785528" />
+                    </linearGradient>
+                    <radialGradient id="nucleoidGrad" cx="50%" cy="50%" r="60%">
+                        <stop offset="0%" stop-color="#A286C8" />
+                        <stop offset="100%" stop-color="#4D3B70" />
+                    </radialGradient>
+                    <pattern id="cytoNoiseBact" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <circle cx="6" cy="9" r="0.7" fill="#B89438" opacity="0.22" />
+                        <circle cx="22" cy="14" r="0.5" fill="#7A5A2A" opacity="0.2" />
+                        <circle cx="34" cy="6" r="0.6" fill="#B89438" opacity="0.16" />
+                        <circle cx="14" cy="28" r="0.6" fill="#7A5A2A" opacity="0.2" />
+                        <circle cx="30" cy="32" r="0.7" fill="#B89438" opacity="0.22" />
+                    </pattern>
+                    <filter id="ctShadowB" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" />
+                        <feOffset dx="0.5" dy="1" result="off" />
+                        <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
+                        <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                    <clipPath id="bactClip">
+                        <ellipse cx="200" cy="160" rx="150" ry="60" />
+                    </clipPath>
+                </defs>
+
+                <g class="ct-organelle @(IsActive("capsule") ? "ct-active" : "")"
+                   @onclick='() => Select("capsule")'>
+                    <ellipse cx="200" cy="160" rx="172" ry="82" fill="url(#capsuleGrad)" stroke="#A77FC7" stroke-width="0.8" stroke-dasharray="3,2" />
+                    <ellipse cx="200" cy="160" rx="166" ry="78" fill="none" stroke="#C8A8E0" stroke-width="0.5" opacity="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("cell-wall-bact") ? "ct-active" : "")"
+                   @onclick='() => Select("cell-wall-bact")'>
+                    <ellipse cx="200" cy="160" rx="158" ry="68" fill="url(#bactWallGrad)" filter="url(#ctShadowB)" />
+                    <ellipse cx="200" cy="160" rx="155" ry="65" fill="none" stroke="#3D2A0E" stroke-width="0.6" opacity="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("plasma-membrane-bact") ? "ct-active" : "")"
+                   @onclick='() => Select("plasma-membrane-bact")'>
+                    <ellipse cx="200" cy="160" rx="150" ry="60" fill="url(#bactBg)" stroke="#7A5A2A" stroke-width="1.8" />
+                    <ellipse cx="200" cy="160" rx="146" ry="56" fill="none" stroke="#A8862E" stroke-width="0.7" stroke-dasharray="2,2" opacity="0.6" />
+                </g>
+
+                <ellipse cx="200" cy="160" rx="150" ry="60" fill="url(#cytoNoiseBact)" clip-path="url(#bactClip)" pointer-events="none" />
+
+                <g class="ct-organelle @(IsActive("nucleoid") ? "ct-active" : "")"
+                   @onclick='() => Select("nucleoid")'>
+                    <path d="M 140 150 Q 160 128 184 148 Q 208 168 232 148 Q 256 128 268 152 Q 256 172 232 162 Q 208 150 184 168 Q 160 178 140 150 Z"
+                          fill="url(#nucleoidGrad)" stroke="#3A2754" stroke-width="1.5" filter="url(#ctShadowB)" opacity="0.92" />
+                    <path d="M 148 152 Q 168 138 188 154 Q 210 168 230 154 Q 250 140 260 154" fill="none" stroke="#E0D2F0" stroke-width="0.7" opacity="0.7" />
+                    <path d="M 152 158 Q 172 170 192 158 Q 214 148 234 162 Q 250 170 258 162" fill="none" stroke="#E0D2F0" stroke-width="0.5" opacity="0.5" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("plasmid") ? "ct-active" : "")"
+                   @onclick='() => Select("plasmid")'>
+                    <ellipse cx="100" cy="155" rx="14" ry="9" fill="none" stroke="#1F8A6E" stroke-width="2.5" />
+                    <ellipse cx="100" cy="155" rx="11" ry="6" fill="none" stroke="#34BFA0" stroke-width="0.8" opacity="0.6" />
+                    <ellipse cx="305" cy="170" rx="12" ry="8" fill="none" stroke="#1F8A6E" stroke-width="2.5" />
+                    <ellipse cx="305" cy="170" rx="9" ry="5" fill="none" stroke="#34BFA0" stroke-width="0.8" opacity="0.6" />
+                </g>
+
+                <g class="ct-organelle ct-rib-twinkle @(IsActive("ribosome-bact") ? "ct-active" : "")"
+                   @onclick='() => Select("ribosome-bact")'>
+                    <circle cx="78" cy="138" r="2.2" fill="#3F3A52" />
+                    <circle cx="82" cy="142" r="1.8" fill="#5A547A" />
+                    <circle cx="88" cy="173" r="2.2" fill="#3F3A52" />
+                    <circle cx="92" cy="177" r="1.8" fill="#5A547A" />
+                    <circle cx="118" cy="178" r="2.2" fill="#3F3A52" />
+                    <circle cx="122" cy="182" r="1.8" fill="#5A547A" />
+                    <circle cx="268" cy="133" r="2.2" fill="#3F3A52" />
+                    <circle cx="272" cy="137" r="1.8" fill="#5A547A" />
+                    <circle cx="288" cy="188" r="2.2" fill="#3F3A52" />
+                    <circle cx="292" cy="192" r="1.8" fill="#5A547A" />
+                    <circle cx="318" cy="143" r="2.2" fill="#3F3A52" />
+                    <circle cx="322" cy="147" r="1.8" fill="#5A547A" />
+                    <circle cx="178" cy="188" r="2.2" fill="#3F3A52" />
+                    <circle cx="182" cy="192" r="1.8" fill="#5A547A" />
+                    <circle cx="218" cy="193" r="2.2" fill="#3F3A52" />
+                    <circle cx="222" cy="197" r="1.8" fill="#5A547A" />
+                </g>
+
+                <g class="ct-organelle @(IsActive("pilus") ? "ct-active" : "")"
+                   @onclick='() => Select("pilus")'>
+                    <line x1="60" y1="120" x2="48" y2="96" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="100" y1="100" x2="93" y2="74" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="160" y1="92" x2="156" y2="62" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="240" y1="92" x2="246" y2="62" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="300" y1="100" x2="308" y2="74" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="340" y1="120" x2="354" y2="98" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="80" y1="220" x2="70" y2="244" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                    <line x1="320" y1="220" x2="332" y2="244" stroke="#5A3A8E" stroke-width="1.6" stroke-linecap="round" />
+                </g>
+
+                <g class="ct-organelle ct-flagellum @(IsActive("flagellum") ? "ct-active" : "")"
+                   @onclick='() => Select("flagellum")'>
+                    <circle cx="350" cy="160" r="3.5" fill="#1F4A8A" stroke="#0E2B5A" stroke-width="0.6" />
+                    <path d="M 350 160 Q 366 148 376 164 Q 388 180 376 196 Q 366 212 386 222"
+                          fill="none" stroke="#1F4A8A" stroke-width="2.6" stroke-linecap="round" />
+                </g>
+            </svg>
+        }
+    </div>
+
+    @if (selected != null && organelles.ContainsKey(selected))
+    {
+        var info = organelles[selected];
+        <div class="ct-panel card">
+            <div class="ct-panel-head">
+                <div>
+                    <h3>@info.Name</h3>
+                    <small>@info.ShortLabel</small>
+                </div>
+                <button class="ct-close" aria-label="Close panel" @onclick="() => selected = null"><Icon Name="x-mark" Size="18" /></button>
+            </div>
+
+            <div class="ct-section">
+                <h4><Icon Name="brain" Size="14" Stroke="var(--primary)" /> Function</h4>
+                <p>@info.Function</p>
+            </div>
+
+            <div class="ct-section">
+                <h4><Icon Name="search" Size="14" Stroke="var(--accent)" /> Fun Fact</h4>
+                <p>@info.FunFact</p>
+            </div>
+
+            <div class="ct-section">
+                <h4>Found in</h4>
+                <div class="ct-chips">
+                    @foreach (var ct in new[] { "Animal", "Plant", "Bacteria" })
+                    {
+                        var present = info.FoundIn.Contains(ct);
+                        <span class="ct-chip @(present ? "ct-chip-on" : "ct-chip-off")">@ct</span>
+                    }
+                </div>
+            </div>
+
+            <div class="ct-section">
+                <h4>Related processes</h4>
+                <p class="ct-related">@info.Related</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="ct-hint">
+            <Icon Name="target" Size="16" Stroke="var(--text-muted)" />
+            <span>Select an organelle from the diagram above.</span>
+        </div>
+    }
+}
+
+@code {
+    private bool unlocked;
+    private string cellType = "animal";
+    private string? selected;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-cell-tour");
+            StateHasChanged();
+        }
+    }
+
+    private void SwitchCell(string ct)
+    {
+        cellType = ct;
+        selected = null;
+    }
+
+    private void Select(string id)
+    {
+        selected = selected == id ? null : id;
+    }
+
+    private bool IsActive(string id) => selected == id;
+
+    private record OrganelleInfo(string Name, string ShortLabel, string Function, string FunFact, string[] FoundIn, string Related);
+
+    private static readonly Dictionary<string, OrganelleInfo> organelles = new()
+    {
+        // Animal
+        ["nucleus"] = new("Nucleus", "Cell control centre",
+            "Stores the cell's DNA and directs all activity by controlling which genes are expressed. Surrounded by a double membrane with pores.",
+            "If you stretched the DNA from one human nucleus end to end, it would be roughly 2 metres long -- packed inside a sphere about 6 micrometres across.",
+            new[] { "Animal", "Plant" },
+            "Transcription, DNA replication, mRNA export"),
+
+        ["nucleolus"] = new("Nucleolus", "Ribosome factory",
+            "A dense region inside the nucleus where ribosomal RNA is transcribed and ribosome subunits are assembled.",
+            "It isn't bound by a membrane -- it's just a really crowded neighbourhood inside the nucleus where rRNA work happens.",
+            new[] { "Animal", "Plant" },
+            "rRNA synthesis, ribosome biogenesis"),
+
+        ["mitochondrion-animal"] = new("Mitochondrion", "Powerhouse of the cell",
+            "Generates most of the cell's ATP through aerobic respiration. Has a folded inner membrane (cristae) that increases surface area for energy production.",
+            "Mitochondria carry their own circular DNA and were almost certainly free-living bacteria swallowed by an ancestor cell about 1.5 billion years ago.",
+            new[] { "Animal", "Plant" },
+            "ATP synthesis, citric acid cycle, oxidative phosphorylation"),
+
+        ["ribosome-animal"] = new("Ribosomes", "Protein assemblers",
+            "Tiny molecular machines that read messenger RNA and link amino acids together to build proteins.",
+            "A single growing cell can contain millions of ribosomes -- each one builds a protein at roughly 20 amino acids per second.",
+            new[] { "Animal", "Plant", "Bacteria" },
+            "Translation, protein synthesis"),
+
+        ["rough-er"] = new("Rough Endoplasmic Reticulum", "Protein highway",
+            "A network of membrane sheets studded with ribosomes. Folds and modifies proteins destined for export or for membranes.",
+            "It's called 'rough' purely because the attached ribosomes make it look bumpy under an electron microscope.",
+            new[] { "Animal", "Plant" },
+            "Protein folding, glycosylation, quality control"),
+
+        ["smooth-er"] = new("Smooth Endoplasmic Reticulum", "Lipid lab",
+            "Membrane network without ribosomes. Synthesises lipids and steroids, detoxifies drugs, and stores calcium.",
+            "Liver cells are crammed with smooth ER because so much of their job is breaking down toxins like alcohol.",
+            new[] { "Animal", "Plant" },
+            "Lipid synthesis, detoxification, calcium storage"),
+
+        ["golgi-animal"] = new("Golgi Apparatus", "Packaging and dispatch",
+            "Modifies, sorts, and packages proteins and lipids from the ER into vesicles for delivery elsewhere in the cell or for secretion.",
+            "Discovered in 1898 by Camillo Golgi using a silver stain. For decades many scientists thought it was a staining artefact.",
+            new[] { "Animal", "Plant" },
+            "Protein sorting, glycosylation, vesicle transport"),
+
+        ["lysosome"] = new("Lysosome", "Recycling crew",
+            "Acidic vesicle filled with digestive enzymes that breaks down worn-out organelles, proteins, and engulfed material.",
+            "If a lysosome ruptures inside the cell, its enzymes can digest the cell from the inside -- earning them the nickname 'suicide bags'.",
+            new[] { "Animal" },
+            "Autophagy, intracellular digestion, phagocytosis"),
+
+        ["cytoskeleton"] = new("Cytoskeleton", "Internal scaffold",
+            "Network of protein filaments (microtubules, actin, intermediate filaments) that gives the cell shape, supports organelle movement, and drives cell division.",
+            "Motor proteins literally walk along microtubule tracks, hauling vesicles like microscopic delivery drivers.",
+            new[] { "Animal", "Plant" },
+            "Cell shape, intracellular transport, mitosis"),
+
+        ["plasma-membrane-animal"] = new("Plasma Membrane", "Selective barrier",
+            "Phospholipid bilayer studded with proteins. Controls what enters and leaves the cell and lets it sense its surroundings.",
+            "It's only about 8 nanometres thick -- around 10,000 times thinner than a sheet of paper.",
+            new[] { "Animal", "Plant", "Bacteria" },
+            "Transport, signalling, endocytosis"),
+
+        ["centriole"] = new("Centrioles", "Spindle organiser",
+            "Paired barrel-shaped structures that organise microtubules and form the mitotic spindle during cell division.",
+            "Plant cells get by without centrioles entirely -- they organise their spindles in a different way.",
+            new[] { "Animal" },
+            "Cell division, spindle assembly, cilia formation"),
+
+        ["peroxisome"] = new("Peroxisome", "Detox bubble",
+            "Small vesicle containing oxidative enzymes that break down fatty acids and neutralise hydrogen peroxide.",
+            "Peroxisomes destroy the very hydrogen peroxide they create, neatly cleaning up after themselves.",
+            new[] { "Animal", "Plant" },
+            "Beta-oxidation, hydrogen peroxide breakdown"),
+
+        // Plant
+        ["nucleus-plant"] = new("Nucleus", "Cell control centre",
+            "Stores the cell's DNA and directs all activity by controlling which genes are expressed. Surrounded by a double membrane with pores.",
+            "Plant nuclei are often pushed to the edge of the cell by the giant central vacuole.",
+            new[] { "Animal", "Plant" },
+            "Transcription, DNA replication, mRNA export"),
+
+        ["chloroplast"] = new("Chloroplast", "Solar panel of the cell",
+            "Captures light energy and uses it to convert carbon dioxide and water into sugar via photosynthesis. Contains the green pigment chlorophyll.",
+            "Like mitochondria, chloroplasts have their own DNA and descend from once free-living photosynthetic bacteria.",
+            new[] { "Plant" },
+            "Photosynthesis, Calvin cycle, sugar production"),
+
+        ["vacuole"] = new("Central Vacuole", "Water-filled storage",
+            "A huge fluid-filled sac that stores water, ions, and waste, and presses against the cell wall to keep the plant rigid.",
+            "When a plant wilts, it isn't sad -- its vacuoles have lost water and can no longer push outward, so the cells go floppy.",
+            new[] { "Plant" },
+            "Turgor pressure, storage, waste sequestration"),
+
+        ["cell-wall-plant"] = new("Cell Wall", "Rigid outer shell",
+            "Tough layer of cellulose outside the plasma membrane that provides structural support and protects the cell.",
+            "Cellulose is the most abundant organic polymer on Earth -- almost all of it is locked up in plant cell walls.",
+            new[] { "Plant", "Bacteria" },
+            "Structural support, protection, shape"),
+
+        ["plasma-membrane-plant"] = new("Plasma Membrane", "Selective barrier",
+            "Phospholipid bilayer just inside the cell wall. Controls movement of substances and senses chemical signals.",
+            "Despite being tucked behind a thick wall, the plant plasma membrane is still the cell's main gatekeeper.",
+            new[] { "Animal", "Plant", "Bacteria" },
+            "Transport, signalling, ion gradients"),
+
+        ["plasmodesmata"] = new("Plasmodesmata", "Cell-to-cell tunnels",
+            "Tiny channels through plant cell walls that link the cytoplasm of neighbouring cells, allowing direct exchange of molecules.",
+            "Plants effectively share an interconnected internal highway system through plasmodesmata -- something animals don't have.",
+            new[] { "Plant" },
+            "Symplastic transport, signalling between cells"),
+
+        ["mitochondrion-plant"] = new("Mitochondrion", "Powerhouse of the cell",
+            "Even photosynthetic plant cells need mitochondria to break down sugar into ATP at night and in non-photosynthetic tissues.",
+            "Plants run both chloroplasts (making sugar) and mitochondria (burning it) -- a 24-hour two-shift energy operation.",
+            new[] { "Animal", "Plant" },
+            "ATP synthesis, citric acid cycle"),
+
+        ["er-plant"] = new("Endoplasmic Reticulum", "Membrane factory",
+            "Network of membrane sheets and tubes that synthesises proteins (rough ER) and lipids (smooth ER).",
+            "Plant ER threads through plasmodesmata, linking the membrane systems of neighbouring cells.",
+            new[] { "Animal", "Plant" },
+            "Protein and lipid synthesis, transport"),
+
+        ["golgi-plant"] = new("Golgi Apparatus", "Packaging and dispatch",
+            "Sorts and packages proteins and lipids. In plants it also helps build cell wall components.",
+            "Plant cells often have hundreds of small Golgi stacks scattered through the cytoplasm rather than one big complex.",
+            new[] { "Animal", "Plant" },
+            "Cell wall synthesis, protein sorting"),
+
+        ["ribosome-plant"] = new("Ribosomes", "Protein assemblers",
+            "Read mRNA and link amino acids into proteins. Found free in the cytosol and bound to the rough ER.",
+            "Chloroplasts have their own ribosomes -- and they look more like bacterial ribosomes than plant ones.",
+            new[] { "Animal", "Plant", "Bacteria" },
+            "Translation, protein synthesis"),
+
+        // Bacteria
+        ["nucleoid"] = new("Nucleoid", "Bacterial DNA region",
+            "An irregular region of the cytoplasm where the bacterium's single circular chromosome sits. There is no surrounding membrane.",
+            "Bacteria don't have a true nucleus -- their DNA just floats in a tightly folded blob in the middle of the cell.",
+            new[] { "Bacteria" },
+            "DNA replication, transcription"),
+
+        ["plasmid"] = new("Plasmid", "Extra DNA loop",
+            "Small, circular DNA molecule separate from the main chromosome. Often carries genes for antibiotic resistance or special metabolism.",
+            "Bacteria can swap plasmids with each other, spreading antibiotic resistance like a chain letter.",
+            new[] { "Bacteria" },
+            "Horizontal gene transfer, antibiotic resistance"),
+
+        ["ribosome-bact"] = new("Ribosomes", "Protein assemblers",
+            "Bacterial ribosomes are slightly smaller (70S) than the ribosomes of animal and plant cells (80S).",
+            "Many antibiotics work by jamming the bacterial ribosome without harming our larger 80S ribosomes.",
+            new[] { "Animal", "Plant", "Bacteria" },
+            "Translation, target of many antibiotics"),
+
+        ["plasma-membrane-bact"] = new("Plasma Membrane", "Selective barrier",
+            "Phospholipid bilayer just inside the cell wall. In bacteria it also hosts the energy-producing electron transport chain.",
+            "Without mitochondria, bacteria run their entire respiratory chain on their plasma membrane.",
+            new[] { "Animal", "Plant", "Bacteria" },
+            "Transport, energy generation, signalling"),
+
+        ["cell-wall-bact"] = new("Cell Wall", "Rigid outer shell",
+            "Made of peptidoglycan, the wall gives the bacterium its shape and protects it from bursting under osmotic pressure.",
+            "Penicillin works by blocking the enzymes that build peptidoglycan -- the bacterium grows, can't reinforce its wall, and pops.",
+            new[] { "Plant", "Bacteria" },
+            "Shape, protection, antibiotic target"),
+
+        ["capsule"] = new("Capsule", "Sticky outer coat",
+            "A slimy polysaccharide layer outside the cell wall that helps bacteria stick to surfaces and dodge the immune system.",
+            "Encapsulated bacteria like Streptococcus pneumoniae are far more dangerous because immune cells struggle to grip them.",
+            new[] { "Bacteria" },
+            "Adhesion, immune evasion, biofilm formation"),
+
+        ["flagellum"] = new("Flagellum", "Rotary propeller",
+            "A long whip-like filament driven by a tiny rotary motor that spins and propels the bacterium through liquid.",
+            "The bacterial flagellar motor is one of the few true rotating machines in biology -- it can spin hundreds of revolutions per second.",
+            new[] { "Bacteria" },
+            "Motility, chemotaxis"),
+
+        ["pilus"] = new("Pili", "Grappling hooks",
+            "Short hair-like protein appendages used to attach to surfaces or to other bacteria. Sex pili transfer DNA between cells.",
+            "Some pili can pull a bacterium across a surface by extending, sticking, and retracting like microscopic grappling hooks.",
+            new[] { "Bacteria" },
+            "Adhesion, conjugation, twitching motility"),
+    };
+}
+
+<style>
+    .ct-intro {
+        display: flex; align-items: center; gap: 6px;
+        color: var(--text-secondary); font-size: 0.88rem;
+        margin: 0 0 12px;
+    }
+
+    .ct-tabs {
+        display: flex; gap: 4px; background: var(--bg-surface); border-radius: var(--radius-md);
+        padding: 4px; margin-bottom: 14px;
+    }
+    .tab {
+        flex: 1; padding: 8px 6px; border: none; background: transparent; color: var(--text-muted);
+        font-weight: 600; font-size: 0.78rem; border-radius: var(--radius-sm); cursor: pointer;
+        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow); }
+
+    .ct-stage {
+        padding: 10px;
+        margin-bottom: 14px;
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+    }
+    .ct-svg {
+        width: 100%; height: auto; display: block; max-height: 60vh;
+        border-radius: var(--radius-sm);
+        background: var(--bg-surface);
+    }
+
+    .ct-organelle {
+        cursor: pointer;
+        transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+        transform-box: fill-box;
+        transform-origin: center;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .ct-organelle:hover { filter: brightness(1.08); }
+    .ct-organelle.ct-active {
+        filter: drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 10px var(--accent)) brightness(1.05);
+        animation: ctActivePulse 1.6s ease-in-out infinite;
+    }
+    .ct-organelle.ct-active line,
+    .ct-organelle.ct-active path,
+    .ct-organelle.ct-active rect,
+    .ct-organelle.ct-active circle,
+    .ct-organelle.ct-active ellipse {
+        stroke-width: 2.4;
+    }
+
+    .ct-mito {
+        animation: ctMitoPulse 3.4s ease-in-out infinite;
+        transform-origin: center;
+    }
+    .ct-rib-twinkle circle {
+        animation: ctTwinkle 2.4s ease-in-out infinite;
+    }
+    .ct-rib-twinkle circle:nth-child(2n) { animation-delay: 0.4s; }
+    .ct-rib-twinkle circle:nth-child(3n) { animation-delay: 0.9s; }
+    .ct-rib-twinkle circle:nth-child(5n) { animation-delay: 1.3s; }
+
+    .ct-vesicle-a { animation: ctVesicleA 5s ease-in-out infinite; }
+    .ct-vesicle-b { animation: ctVesicleB 6.2s ease-in-out infinite; }
+    .ct-vesicle-c { animation: ctVesicleC 4.6s ease-in-out infinite; }
+
+    .ct-flagellum path {
+        animation: ctFlagWave 1.4s ease-in-out infinite;
+        transform-origin: 350px 180px;
+    }
+
+    @@keyframes ctActivePulse {
+        0%, 100% { filter: drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 10px var(--accent)) brightness(1.05); }
+        50%      { filter: drop-shadow(0 0 7px var(--accent)) drop-shadow(0 0 16px var(--accent)) brightness(1.12); }
+    }
+    @@keyframes ctMitoPulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.025); }
+    }
+    @@keyframes ctTwinkle {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.55; }
+    }
+    @@keyframes ctVesicleA {
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(4px, -3px); }
+    }
+    @@keyframes ctVesicleB {
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(-3px, 4px); }
+    }
+    @@keyframes ctVesicleC {
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(2px, 3px); }
+    }
+    @@keyframes ctFlagWave {
+        0%, 100% { transform: rotate(-2deg); }
+        50%      { transform: rotate(2deg); }
+    }
+    @@media (prefers-reduced-motion: reduce) {
+        .ct-organelle.ct-active,
+        .ct-mito,
+        .ct-rib-twinkle circle,
+        .ct-vesicle-a, .ct-vesicle-b, .ct-vesicle-c,
+        .ct-flagellum path { animation: none; }
+    }
+
+    .ct-panel {
+        padding: 14px 16px;
+        animation: ctSlideUp 0.25s ease;
+    }
+    .ct-panel-head {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        gap: 10px; margin-bottom: 10px;
+        padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .ct-panel-head h3 {
+        margin: 0; font-size: 1.05rem; color: var(--text-primary);
+    }
+    .ct-panel-head small {
+        color: var(--text-muted); font-size: 0.78rem; font-style: italic;
+    }
+    .ct-close {
+        background: var(--bg-surface); border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text-secondary); cursor: pointer;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .ct-close:active { transform: scale(0.94); }
+
+    .ct-section { margin-bottom: 10px; }
+    .ct-section h4 {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 0.75rem; color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.5px;
+        margin: 0 0 4px;
+    }
+    .ct-section p {
+        margin: 0; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.55;
+    }
+    .ct-related {
+        font-style: italic;
+        color: var(--text-secondary);
+    }
+
+    .ct-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .ct-chip {
+        padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;
+        border: 1px solid var(--border);
+    }
+    .ct-chip-on {
+        background: rgba(76,175,80,0.12);
+        color: var(--success);
+        border-color: var(--success);
+    }
+    .ct-chip-off {
+        background: var(--bg-surface);
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+
+    .ct-hint {
+        display: flex; align-items: center; gap: 8px; justify-content: center;
+        padding: 14px; color: var(--text-muted); font-size: 0.85rem;
+        background: var(--bg-surface);
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-md);
+    }
+
+    @@keyframes ctSlideUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>

@@ -1,0 +1,233 @@
+[
+  {
+    "id": "mat-mec-01",
+    "topicId": "mat-mechanical",
+    "order": 1,
+    "title": "Stress, Strain, and Elastic Behaviour",
+    "description": "How loads, deformations, and material constants are related",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "mat-mec-01-c1",
+        "title": "Defining Stress and Strain",
+        "contentHtml": "<p><strong>Stress</strong> σ = F/A is the force per unit area of cross-section, with SI units of pascals (Pa = N/m²). Engineering scale uses MPa (10⁶ Pa) and GPa (10⁹ Pa).</p><p><strong>Strain</strong> ε = ΔL/L is the fractional change in length — a dimensionless ratio. A 1 % strain corresponds to 0.01.</p><p>Both come in three flavours: <em>tension</em> (pulling apart), <em>compression</em> (pushing together), and <em>shear</em> (sliding planes past each other). Real loading is some combination of these three. The whole machinery of continuum mechanics is built on tracking 9 components of stress and 9 components of strain at every point in a body.</p>",
+        "mathExpressions": [
+          "\\sigma = \\frac{F}{A}",
+          "\\varepsilon = \\frac{\\Delta L}{L}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-01-c2",
+        "title": "Hooke's Law and Elastic Constants",
+        "contentHtml": "<p>For small loads, almost every solid obeys <strong>Hooke's law</strong>:</p><p style=\"text-align:center\"><em>σ = E ε</em></p><p>where E is <strong>Young's modulus</strong>, the slope of the linear part of the stress-strain curve. Some representative values:</p><ul><li>Rubber — 0.01–0.1 GPa</li><li>Wood (along grain) — 10–15 GPa</li><li>Aluminium — 70 GPa</li><li>Steel — 200 GPa</li><li>Tungsten — 410 GPa</li><li>Diamond — 1050 GPa</li></ul><p>Two more independent elastic constants describe how a material deforms in three dimensions: <strong>Poisson's ratio</strong> ν (lateral contraction per unit longitudinal extension, typically 0.25–0.35 for metals) and the <strong>shear modulus</strong> G ≈ E / [2(1+ν)]. For an isotropic material these three are related, so any two suffice.</p>",
+        "mathExpressions": [
+          "\\sigma = E\\, \\varepsilon",
+          "G = \\frac{E}{2(1+\\nu)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-01-c3",
+        "title": "Why Materials Have the Stiffness They Do",
+        "contentHtml": "<p>Young's modulus is set by how steeply the interatomic potential rises near equilibrium. Strong, short bonds (covalent in diamond, metallic in tungsten) give high E. Weak bonds (van der Waals in polymers and rubbers) give low E.</p><p>Roughly:</p><p style=\"text-align:center\"><em>E ≈ d²U/dr² evaluated at r₀, divided by atom spacing</em></p><p>This explains the enormous spread: rubber and diamond differ in stiffness by five orders of magnitude because their bond stiffness differs by exactly that much. Stiffness is essentially fixed by chemistry — alloying barely changes it. To make a stiffer wing or a less-flexing bridge, the levers are the bond type and the geometry, not the heat treatment.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mat-mec-q01",
+      "mat-mec-q02",
+      "mat-mec-q03",
+      "mat-mec-q04",
+      "mat-mec-q05"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mat-mec-02",
+    "topicId": "mat-mechanical",
+    "order": 2,
+    "title": "Yield and Plastic Flow",
+    "description": "Where elastic behaviour ends and permanent deformation begins",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "mat-mec-02-c1",
+        "title": "The Stress-Strain Curve",
+        "contentHtml": "<p>A standard tensile test pulls a specimen at a fixed strain rate while measuring the load. The resulting stress-strain curve has several key features:</p><ul><li><strong>Elastic region</strong> — linear, slope = Young's modulus. Removing the load returns the specimen to its original length.</li><li><strong>Yield point</strong> — stress σ_y at which permanent plastic deformation begins.</li><li><strong>Strain-hardening region</strong> — increasing stress required to drive further plastic flow as dislocations multiply and tangle.</li><li><strong>Ultimate tensile strength (UTS)</strong> — the peak engineering stress, after which a neck forms.</li><li><strong>Fracture</strong> — the specimen breaks. The stress drops to zero, but the local stress in the neck is much higher than the engineering value would suggest.</li></ul><p>Reading these features off a stress-strain curve is the core skill of mechanical testing.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-02-c2",
+        "title": "Engineering vs True Stress-Strain",
+        "contentHtml": "<p><strong>Engineering stress</strong> uses the original area: σ_E = F/A₀. <strong>True stress</strong> uses the actual instantaneous area: σ_T = F/A.</p><p>During plastic flow the cross-section shrinks (volume is approximately conserved). True stress therefore keeps rising until fracture, even when the engineering curve is falling after necking. True strain is correspondingly defined as ε_T = ln(L/L₀) so that infinitesimal strains add naturally.</p><p>For metallurgy and serious mechanical analysis the true stress-strain curve is what matters; engineering curves are convenient shortcuts that hide the underlying microstructural physics.</p>",
+        "mathExpressions": [
+          "\\sigma_T = \\frac{F}{A} = \\sigma_E (1 + \\varepsilon_E)",
+          "\\varepsilon_T = \\ln(L/L_0) = \\ln(1 + \\varepsilon_E)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-02-c3",
+        "title": "Yield Criteria",
+        "contentHtml": "<p>Real loading is rarely uniaxial. To predict yielding under a general stress state, two classical criteria are used:</p><ul><li><strong>Tresca</strong> — yield when the maximum shear stress reaches a critical value: σ_max − σ_min = σ_y.</li><li><strong>von Mises</strong> — yield when the second invariant of the deviatoric stress reaches a critical value: σ_eq = σ_y, where σ_eq is the equivalent (or 'von Mises') stress.</li></ul><p>von Mises matches experiment better for most ductile metals and is the basis of nearly every finite-element plasticity calculation. Tresca is conservative and simpler, useful for back-of-the-envelope estimates and codes that prefer a margin of safety.</p>",
+        "mathExpressions": [
+          "\\sigma_{eq} = \\sqrt{\\tfrac{1}{2}\\left[(\\sigma_1-\\sigma_2)^2 + (\\sigma_2-\\sigma_3)^2 + (\\sigma_3-\\sigma_1)^2\\right]}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mat-mec-q06",
+      "mat-mec-q07",
+      "mat-mec-q08",
+      "mat-mec-q09",
+      "mat-mec-q10"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mat-mec-03",
+    "topicId": "mat-mechanical",
+    "order": 3,
+    "title": "Hardness",
+    "description": "Indentation tests — Mohs, Vickers, Brinell, Rockwell",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "mat-mec-03-c1",
+        "title": "What Hardness Measures",
+        "contentHtml": "<p><strong>Hardness</strong> is resistance to localised plastic deformation, typically measured by pressing a hard indenter into the material under controlled load and measuring the indent.</p><p>Different scales emphasise different aspects:</p><ul><li><strong>Mohs</strong> — qualitative scratch hardness, 1 (talc) to 10 (diamond). Useful for minerals; almost useless for metals because most engineering metals fall in a narrow window 4–6 on Mohs.</li><li><strong>Vickers (HV)</strong> — diamond pyramid indenter, gives quantitative hardness on any material from soft lead to ceramics. Standard in research.</li><li><strong>Brinell (HB)</strong> — 10 mm steel or carbide ball, suited to coarse-grained metals like cast iron.</li><li><strong>Rockwell (HRC, HRB, …)</strong> — depth-based, fast, used industrially for QC of steels.</li></ul>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-03-c2",
+        "title": "Hardness and Tensile Strength",
+        "contentHtml": "<p>For most ductile metals there is a remarkably good empirical correlation between hardness and ultimate tensile strength:</p><p style=\"text-align:center\"><em>UTS (MPa) ≈ 3.5 × HV</em></p><p>The factor reflects the constraint that an indenter imposes on the plastic zone — it cannot flow freely outwards as it can in a tensile bar. The exact constant varies between materials and scales, but a Vickers measurement on a polished sample takes a few seconds and gives a reasonable strength estimate without machining a tensile specimen.</p><p>This correlation breaks down for very brittle materials, very soft metals, and porous samples — where the plastic zone interacts with cracks or voids.</p>",
+        "mathExpressions": [
+          "\\sigma_{UTS} \\approx 3.5 \\times HV"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-03-c3",
+        "title": "Microhardness and Nanoindentation",
+        "contentHtml": "<p>Modern instruments can measure hardness at much smaller scales:</p><ul><li><strong>Microhardness</strong> — small loads (gram-force range) and Vickers or Knoop indenters. Allows mapping hardness across phases or grain interiors of a microstructure.</li><li><strong>Nanoindentation</strong> — depth-sensing diamond tips with sub-nm resolution. Records load vs depth as the indenter penetrates and unloads, allowing extraction of <em>both</em> hardness and Young's modulus from a single contact (the Oliver-Pharr method).</li></ul><p>Nanoindentation is the standard tool for thin films, coatings, and small individual phases — features that are too small to test with bulk tensile machines but dominate practical performance of microelectronic devices, MEMS, and protective coatings.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mat-mec-q11",
+      "mat-mec-q12",
+      "mat-mec-q13",
+      "mat-mec-q14",
+      "mat-mec-q15"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mat-mec-04",
+    "topicId": "mat-mechanical",
+    "order": 4,
+    "title": "Fracture and Toughness",
+    "description": "Griffith, stress intensity, and how things break",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "mat-mec-04-c1",
+        "title": "The Griffith Criterion",
+        "contentHtml": "<p>A perfect glass should be ~10 GPa strong, but real glass fails at a few tens of MPa — a thousand times weaker. <strong>A. A. Griffith</strong> resolved the puzzle in 1921: real materials contain microscopic flaws, and stress concentrates dramatically at the tip of any crack.</p><p>Griffith's energy-balance argument gives the critical fracture stress:</p><p style=\"text-align:center\"><em>σ_c ≈ √(2 E γ_s / π a)</em></p><p>where γ_s is the surface energy and a is the half-length of the largest flaw. Strength scales as 1/√a — doubling the flaw size cuts the strength by √2. This is why a glass cup with a tiny scratch fails so much sooner than a polished one, and why high-strength fibres must be drawn with surfaces below a critical defect size.</p>",
+        "mathExpressions": [
+          "\\sigma_c = \\sqrt{\\frac{2 E \\gamma_s}{\\pi a}}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-04-c2",
+        "title": "Stress Intensity and Fracture Toughness",
+        "contentHtml": "<p>Modern fracture mechanics, due to Irwin (1957), characterises a crack by the <strong>stress intensity factor</strong> K = σ √(πa), with units of MPa·√m. A crack grows catastrophically when K exceeds a material constant K_IC — the <strong>fracture toughness</strong>:</p><ul><li>Soda-lime glass — 0.7 MPa·√m</li><li>Aluminium oxide ceramic — 3–5 MPa·√m</li><li>Cast iron — 6–20 MPa·√m</li><li>Aluminium alloys — 20–40 MPa·√m</li><li>Structural steels — 50–150 MPa·√m</li><li>Titanium alloys — up to 100 MPa·√m</li></ul><p>Fracture toughness, not yield strength, is the relevant design number for any structure that may already contain a crack — pressure vessels, bridges, aircraft fuselages. The 'damage-tolerant design' philosophy used in modern aerospace assumes flaws are present and sizes structures to limit K below K_IC throughout the life of the part.</p>",
+        "mathExpressions": [
+          "K = \\sigma \\sqrt{\\pi a}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-04-c3",
+        "title": "Brittle vs Ductile Behaviour",
+        "contentHtml": "<p>Materials fall on a spectrum from brittle (no plastic deformation before fracture) to ductile (extensive plastic flow before fracture):</p><ul><li><strong>Brittle</strong>: ceramics, glasses, low-temperature steels (BCC), fully hardened high-carbon steels.</li><li><strong>Ductile</strong>: most pure FCC metals, low-carbon steels above their ductile-to-brittle transition temperature (DBTT).</li></ul><p>The DBTT phenomenon is famous from the Liberty ships of WWII and the Titanic: low-temperature water made the BCC steels extremely brittle, leading to catastrophic crack propagation through hulls. Above the DBTT the same steels are tough and ductile.</p><p>Modern structural steels have low DBTT or use FCC austenitic compositions to stay ductile down to cryogenic temperatures.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mat-mec-q16",
+      "mat-mec-q17",
+      "mat-mec-q18",
+      "mat-mec-q19",
+      "mat-mec-q20"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mat-mec-05",
+    "topicId": "mat-mechanical",
+    "order": 5,
+    "title": "Fatigue and Creep",
+    "description": "Failure under repeated load and at high temperature",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "mat-mec-05-c1",
+        "title": "Fatigue and the S-N Curve",
+        "contentHtml": "<p>Many real failures occur at stresses well below the static yield strength — caused by <strong>fatigue</strong> from repeated loading. Fatigue is responsible for the great majority of in-service mechanical failures.</p><p>The classical engineering tool is the <strong>S-N curve</strong>: stress amplitude S vs cycles to failure N (logarithmic). For most steels there is a stress amplitude — the <em>endurance limit</em>, typically ~40–50 % of UTS — below which the part survives indefinitely. Aluminium alloys do not show a true endurance limit, so design uses a finite-life criterion.</p><p>Fatigue cracks initiate at stress concentrations (notches, inclusions, machining marks), grow stably across most of the life, then accelerate to fracture. Improving surface finish, shot-peening to leave compressive residual stresses, and reducing inclusion size all push the S-N curve upward.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-05-c2",
+        "title": "Crack Growth and Paris Law",
+        "contentHtml": "<p>Fatigue cracks grow stably for most of their life, governed by the <strong>Paris law</strong>:</p><p style=\"text-align:center\"><em>da/dN = C (ΔK)^m</em></p><p>where ΔK is the range of stress intensity per cycle, and C, m are material constants (m typically 2–4 for metals). Integrating between an initial defect size a₀ and the critical size a_c gives the remaining life of the component.</p><p>This model is the basis of <strong>damage-tolerant design</strong>: assume flaws below the inspection limit exist, calculate how long they take to grow to a critical size, schedule inspections at intervals comfortably shorter than that life. Aircraft like the Airbus A380 are inspected on this principle every few thousand flight hours.</p>",
+        "mathExpressions": [
+          "\\frac{da}{dN} = C (\\Delta K)^m"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mat-mec-05-c3",
+        "title": "Creep at High Temperature",
+        "contentHtml": "<p>At elevated temperatures (above ~0.4 of the absolute melting point) materials deform slowly under steady stress — <strong>creep</strong>. The strain rate is approximated by:</p><p style=\"text-align:center\"><em>dε/dt = A σⁿ exp(−Q / k_B T)</em></p><p>with stress exponent n typically 3–8 and Q the activation energy for creep mechanisms (lattice diffusion, grain-boundary sliding, dislocation climb). The exponential temperature term makes creep extremely sensitive to operating temperature.</p><p>Creep is the life-limiting design constraint for jet-engine turbine blades, steam-turbine rotors, and nuclear reactor cores. Modern <strong>nickel-base superalloys</strong> like CMSX-4 are grown as single crystals so there are no grain boundaries to slide on, and they contain fine γ' (Ni₃Al) precipitates to obstruct dislocation climb. With these tricks, jet engines now operate above 1100 °C — close to two-thirds of the alloy's melting point.</p>",
+        "mathExpressions": [
+          "\\dot{\\varepsilon} = A\\, \\sigma^n\\, e^{-Q/(k_B T)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mat-mec-q21",
+      "mat-mec-q22",
+      "mat-mec-q23",
+      "mat-mec-q24",
+      "mat-mec-q25"
+    ],
+    "puzzleId": null
+  }
+]

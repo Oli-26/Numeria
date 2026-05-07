@@ -1,0 +1,362 @@
+[
+  {
+    "id": "spec-01",
+    "topicId": "chem-spectroscopy",
+    "order": 1,
+    "title": "NMR Principles: Spin, Shift, Coupling, Relaxation",
+    "description": "Larmor precession, chemical shift origins, J-coupling, and the T1/T2 timescales that govern every NMR experiment",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "spec-01-c1",
+        "title": "Spin, Larmor Frequency, and the Boltzmann Population",
+        "contentHtml": "<p>NMR works because nuclei with non-zero spin (<sup>1</sup>H, <sup>13</sup>C, <sup>15</sup>N, <sup>19</sup>F, <sup>31</sup>P) behave as tiny magnets. In an external field <code>B<sub>0</sub></code>, the spin states split by energy <code>ΔE = γℏB<sub>0</sub></code>, where γ is the nuclear gyromagnetic ratio. The resulting precession frequency, the <strong>Larmor frequency</strong>, is <code>ν<sub>0</sub> = γB<sub>0</sub>/2π</code>.</p><p>For <sup>1</sup>H on a Bruker Avance Neo 600 (B<sub>0</sub> = 14.1 T), γ = 2.675×10<sup>8</sup> rad·s<sup>−1</sup>·T<sup>−1</sup> gives ν<sub>0</sub> ≈ 600 MHz. <sup>13</sup>C at the same field precesses near 150 MHz because γ(<sup>13</sup>C) is roughly a quarter of γ(<sup>1</sup>H).</p><p>NMR is a low-sensitivity technique because the Boltzmann population difference is minuscule: at 600 MHz and 298 K, the upper-state excess is only ~5×10<sup>−5</sup>. That is why you average for hours, why <sup>13</sup>C at 1.1 % natural abundance is so much harder than <sup>1</sup>H, and why cryoprobes (cooled preamplifier coils) and dynamic nuclear polarization (DNP) deliver such dramatic gains.</p>",
+        "mathExpressions": ["\\nu_0 = \\frac{\\gamma B_0}{2\\pi}", "\\Delta E = \\gamma \\hbar B_0", "\\frac{N_\\beta}{N_\\alpha} = \\exp\\left(-\\frac{\\gamma \\hbar B_0}{k_B T}\\right) \\approx 1 - \\frac{\\gamma \\hbar B_0}{k_B T}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-01-c2",
+        "title": "Chemical Shift and Scalar (J) Coupling",
+        "contentHtml": "<p>Electrons around a nucleus partially shield it from B<sub>0</sub>, so the actual local field is <code>B<sub>local</sub> = B<sub>0</sub>(1 − σ)</code>. The dimensionless chemical shift δ in ppm is referenced (for <sup>1</sup>H and <sup>13</sup>C) to TMS at 0 ppm: <code>δ = (ν<sub>sample</sub> − ν<sub>ref</sub>)/ν<sub>ref</sub> × 10<sup>6</sup></code>.</p><p>Familiar <sup>1</sup>H benchmarks: alkyl CH<sub>3</sub> 0.9 ppm; CH<sub>2</sub> next to oxygen 3.5–4.5 ppm; vinyl 5–6 ppm; aromatic 6.5–8.5 ppm; aldehyde 9.5–10 ppm; carboxylic acid 10–13 ppm. <sup>13</sup>C: aliphatic 0–50 ppm, sp<sup>3</sup>-CO 50–90 ppm, sp<sup>2</sup> 100–150 ppm, carbonyl 160–220 ppm.</p><p><strong>Scalar (J) coupling</strong> reports through-bond electron-mediated interaction between nuclei, splitting peaks into multiplets. For an ethyl group, the CH<sub>3</sub> appears as a triplet from the two neighboring protons (n+1 rule, J ≈ 7 Hz) and the CH<sub>2</sub> as a quartet. <sup>3</sup>J<sub>HH</sub> obeys the Karplus relation, <code>J(θ) = A cos<sup>2</sup>θ + B cosθ + C</code>, allowing dihedral angles to be read straight off a spectrum.</p>",
+        "mathExpressions": ["\\delta_{\\text{ppm}} = \\frac{\\nu_{\\text{sample}} - \\nu_{\\text{ref}}}{\\nu_{\\text{ref}}} \\times 10^6", "{}^3J_{HH}(\\theta) = A\\cos^2\\theta + B\\cos\\theta + C", "B_{\\text{local}} = B_0 (1 - \\sigma)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-01-c3",
+        "title": "T1, T2, and the Nuclear Overhauser Effect",
+        "contentHtml": "<p>After an RF pulse tilts magnetization, two distinct relaxation processes return it to equilibrium. <strong>T<sub>1</sub> (spin–lattice)</strong> is energy exchange with the environment, restoring M<sub>z</sub>. <strong>T<sub>2</sub> (spin–spin)</strong> is loss of phase coherence in the xy-plane and sets the natural linewidth: <code>Δν<sub>1/2</sub> = 1/(πT<sub>2</sub>)</code>. Small molecules in low-viscosity solvent have T<sub>1</sub> ≈ T<sub>2</sub> ≈ a few seconds; proteins in water tumble slowly so T<sub>2</sub> collapses to milliseconds, broadening lines dramatically.</p><p>Practical consequence: the recycle delay between scans should be ~5·T<sub>1</sub> for full quantitative recovery. <sup>13</sup>C of a quaternary carbon can have T<sub>1</sub> > 30 s — measure it before quantifying.</p><p>The <strong>Nuclear Overhauser Effect (NOE)</strong> is a through-space (<em>not</em> through-bond) cross-relaxation that transfers polarization between dipolar-coupled nuclei within ~5 Å. NOE intensities scale as <code>r<sup>−6</sup></code>, making 2D NOESY spectra into a distance ruler used to determine solution structures of proteins, oligonucleotides, and complex natural products.</p>",
+        "mathExpressions": ["M_z(t) = M_0\\left(1 - e^{-t/T_1}\\right)", "M_{xy}(t) = M_0\\, e^{-t/T_2}", "\\Delta\\nu_{1/2} = \\frac{1}{\\pi T_2}", "\\eta_{\\text{NOE}} \\propto \\frac{1}{r^6}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q01", "spec-q02", "spec-q03", "spec-q04", "spec-q05", "spec-q06", "spec-q07", "spec-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-02",
+    "topicId": "chem-spectroscopy",
+    "order": 2,
+    "title": "1D NMR in Practice: 1H, 13C, and DEPT",
+    "description": "Multiplicity, integration, common shifts, and the DEPT edited-13C trick",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "spec-02-c1",
+        "title": "Reading a 1H Spectrum: Shift, Integration, Multiplicity",
+        "contentHtml": "<p>A <sup>1</sup>H spectrum encodes three pieces of information per peak. <strong>Chemical shift</strong> identifies the chemical environment. <strong>Integration</strong> (the area under the peak) gives the number of equivalent protons. <strong>Multiplicity</strong> reports the number of vicinal coupled protons via the <code>n+1</code> rule.</p><p>Consider ethyl acetate, CH<sub>3</sub>COOCH<sub>2</sub>CH<sub>3</sub>, in CDCl<sub>3</sub>. The acetyl CH<sub>3</sub> sits at 2.05 ppm as a 3H singlet (no neighbors). The OCH<sub>2</sub> appears at 4.12 ppm as a 2H quartet (J ≈ 7.1 Hz, coupled to three CH<sub>3</sub> protons). The CH<sub>3</sub> of the ethoxy group sits at 1.26 ppm as a 3H triplet, the same J. Three signals; integration ratio 3:2:3 confirms the formula.</p><p>Solvent peaks anchor the spectrum: CDCl<sub>3</sub> residual CHCl<sub>3</sub> at 7.26 ppm, DMSO-d<sub>6</sub> at 2.50 ppm, D<sub>2</sub>O HOD at 4.79 ppm. Exchangeable protons (OH, NH) often disappear or shift unpredictably and can be confirmed by a D<sub>2</sub>O shake (the peak vanishes when exchangeable H is replaced by D).</p>",
+        "mathExpressions": ["\\text{multiplicity} = n + 1 \\text{ for } n \\text{ equivalent neighbors}", "\\text{integration ratio} = \\frac{N_A}{N_B} = \\frac{\\int_A I(\\nu) d\\nu}{\\int_B I(\\nu) d\\nu}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-02-c2",
+        "title": "13C and Heteronuclear Decoupling",
+        "contentHtml": "<p><sup>13</sup>C NMR is acquired with broadband <sup>1</sup>H decoupling, which collapses every C–H multiplet into a singlet and harvests an NOE enhancement (up to 3×). The trade: integration is no longer quantitative because NOE depends on local proton environment. For quantitative <sup>13</sup>C, use inverse-gated decoupling and a long recycle delay (5·T<sub>1</sub>, often 30–60 s).</p><p>Anchoring shifts: TMS 0.0 ppm; CDCl<sub>3</sub> solvent triplet 77.16 ppm; aromatic carbons 110–150 ppm; carbonyl carbons 165–185 ppm for esters/amides, 195–205 ppm for ketones, 200–210 ppm for aldehydes, 170–180 ppm for carboxylic acids.</p><p>On a typical 600 MHz Bruker spectrometer, a 10 mg sample of a small molecule in 0.6 mL CDCl<sub>3</sub> needs only minutes for a clean <sup>1</sup>H spectrum but often hours for a clean <sup>13</sup>C — the gyromagnetic ratio ratio (γ<sub>H</sub>/γ<sub>C</sub>)<sup>3</sup> ≈ 64 plus 1.1 % natural abundance puts <sup>13</sup>C sensitivity ~5700× below <sup>1</sup>H per nucleus.</p>",
+        "mathExpressions": ["\\text{Sensitivity} \\propto N \\cdot \\gamma^{5/2} \\cdot B_0^{3/2} \\cdot \\sqrt{n_{\\text{scans}}}", "\\frac{S(^{1}H)}{S(^{13}C)} \\approx \\left(\\frac{\\gamma_H}{\\gamma_C}\\right)^{5/2} \\cdot \\frac{1}{0.011} \\approx 5700"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-02-c3",
+        "title": "DEPT and Multiplicity Editing",
+        "contentHtml": "<p><strong>DEPT (Distortionless Enhancement by Polarization Transfer)</strong> uses a tunable proton pulse angle θ to edit a <sup>13</sup>C spectrum by C–H multiplicity. With θ = 90°, only CH carbons appear. With θ = 135° (the most common), CH and CH<sub>3</sub> point up while CH<sub>2</sub> points down; quaternary C is invisible. With θ = 45°, all protonated carbons point up, quaternary still invisible.</p><p>Comparing a normal <sup>13</sup>C and a DEPT-135 of the same sample reveals every quaternary carbon as a peak missing from DEPT — invaluable in natural product structure elucidation, where quaternary centers are often the structural anchors.</p><p>DEPT is a <strong>polarization transfer</strong> experiment: it borrows magnetization from <sup>1</sup>H to <sup>13</sup>C through one-bond <sup>1</sup>J<sub>CH</sub> coupling (~125–250 Hz), so signal scales by γ<sub>H</sub>/γ<sub>C</sub> ≈ 4 compared to direct excitation. Modern multiplicity-edited HSQC essentially achieves DEPT editing along with the 2D HSQC correlation in the same experiment, but DEPT remains useful when 1D resolution is enough.</p>",
+        "mathExpressions": ["I_{\\text{DEPT}}(\\theta) \\propto \\sin\\theta \\cdot \\cos^{n-1}\\theta \\quad (n = \\text{number of attached } ^{1}H)", "{}^1J_{CH} \\approx 125\\text{--}250 \\text{ Hz}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q09", "spec-q10", "spec-q11", "spec-q12", "spec-q13", "spec-q14", "spec-q15", "spec-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-03",
+    "topicId": "chem-spectroscopy",
+    "order": 3,
+    "title": "2D NMR: COSY, HSQC, HMBC, NOESY",
+    "description": "Through-bond and through-space correlations and the structure-elucidation workflow",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "spec-03-c1",
+        "title": "The 2D NMR Pulse Sequence Recipe",
+        "contentHtml": "<p>Every 2D NMR experiment shares the same skeleton: <strong>preparation – evolution (t<sub>1</sub>) – mixing – detection (t<sub>2</sub>)</strong>. Magnetization is prepared (often a 90° pulse), evolves under chemical shift and coupling for incremented time t<sub>1</sub>, gets mixed (the step that defines the experiment — coupling, polarization transfer, NOE), then is detected during t<sub>2</sub>. A 2D Fourier transform over both time domains produces a frequency-frequency map.</p><p>Diagonal peaks (F1 = F2) connect a nucleus to itself; cross peaks reveal correlations. The cross-peak meaning depends on the mixing block: J-coupling (COSY, TOCSY), one-bond <sup>1</sup>H–<sup>13</sup>C (HSQC), long-range <sup>1</sup>H–<sup>13</sup>C (HMBC), through-space dipolar (NOESY, ROESY).</p><p>Sensitivity scales with √(number of t<sub>1</sub> increments); a typical heteronuclear 2D on a Bruker 600 MHz Avance with cryoprobe takes 30 min to a few hours for a 5 mg sample, vs. overnight on a room-temperature probe. <strong>Non-uniform sampling (NUS)</strong> can shave acquisition time by 4–8× by sampling only a fraction of t<sub>1</sub> points and reconstructing the spectrum with iterative algorithms.</p>",
+        "mathExpressions": ["S(t_1, t_2) \\xrightarrow{\\text{2D FT}} S(\\omega_1, \\omega_2)", "\\text{SNR} \\propto \\sqrt{n_{\\text{scans}}} \\cdot \\sqrt{N_{t_1}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-03-c2",
+        "title": "COSY, TOCSY, HSQC, HMBC",
+        "contentHtml": "<p><strong>COSY (Correlation Spectroscopy)</strong> is the simplest 2D experiment: <sup>1</sup>H–<sup>1</sup>H cross peaks identify scalar (J) coupling partners, almost always 2- or 3-bond. Trace cross peaks across the spectrum to walk along a spin system.</p><p><strong>TOCSY (Total Correlation Spectroscopy)</strong> uses an isotropic mixing block (DIPSI or MLEV) to spread magnetization across an entire J-coupled spin system. One row of a TOCSY spectrum lights up every proton in the same coupling network — invaluable for assigning peptide spin systems or sugar rings in oligosaccharides.</p><p><strong>HSQC</strong> and <strong>HMBC</strong> are heteronuclear. HSQC correlates a proton with its <em>directly bonded</em> heteronucleus via <sup>1</sup>J<sub>CH</sub> (~145 Hz default). HMBC correlates <sup>1</sup>H with <em>2- and 3-bond</em> distant carbons via <sup>n</sup>J<sub>CH</sub> (~5–10 Hz). HMBC is the workhorse for connecting fragments across quaternary carbons and heteroatoms — e.g., locating an ester linkage by seeing the OCH<sub>2</sub> proton correlate to the carbonyl carbon three bonds away. Modern variants (CIGAR-HMBC, ADEQUATE) push selectivity even further.</p>",
+        "mathExpressions": ["\\text{HSQC delay: } \\Delta = \\frac{1}{4\\,{}^{1}J_{CH}} \\approx 1.7 \\text{ ms}", "\\text{HMBC delay: } \\Delta = \\frac{1}{2\\,{}^{n}J_{CH}} \\approx 50\\text{--}100 \\text{ ms}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-03-c3",
+        "title": "NOESY and the Structure-Elucidation Workflow",
+        "contentHtml": "<p><strong>NOESY</strong> cross peaks come from through-space dipolar coupling and decay as r<sup>−6</sup>; cross peak intensity → distance, with practical reach of about 5 Å. NOESY is how solution structures of small proteins, RNA, and stereochemically rich natural products are determined: hundreds of NOE distance restraints feed a simulated annealing protocol (Xplor-NIH, CYANA) to compute a 3D structure.</p><p>For molecules with τ<sub>c</sub> ≈ 1/ω<sub>0</sub> (typically MW 1000–2000 in standard solvents), the NOE crosses zero. <strong>ROESY</strong> (rotating-frame NOE) escapes the zero-crossing and gives positive cross peaks at any size.</p><p>The classical structure elucidation workflow: <strong>(1)</strong> 1D <sup>1</sup>H + <sup>13</sup>C/DEPT to count C and H environments; <strong>(2)</strong> COSY/TOCSY to map proton spin systems; <strong>(3)</strong> HSQC to attach each proton to its carbon; <strong>(4)</strong> HMBC to splice spin systems through quaternary centers and heteroatoms; <strong>(5)</strong> NOESY to fix relative stereochemistry and conformation. Modern computer-assisted tools (LSD, SENECA, MNova) automate fragment assembly.</p>",
+        "mathExpressions": ["I_{\\text{NOE}} \\propto \\frac{\\tau_c}{r^6}", "\\sigma_{\\text{NOE}} = \\frac{\\gamma^4 \\hbar^2}{10 r^6}\\left[\\frac{6\\tau_c}{1 + 4\\omega_0^2 \\tau_c^2} - \\tau_c\\right]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q17", "spec-q18", "spec-q19", "spec-q20", "spec-q21", "spec-q22", "spec-q23", "spec-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-04",
+    "topicId": "chem-spectroscopy",
+    "order": 4,
+    "title": "Solid-State NMR: MAS and Cross-Polarization",
+    "description": "Spinning the sample at the magic angle to recover liquid-like resolution from rocks, polymers, and proteins",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "spec-04-c1",
+        "title": "Why Solids Are Hard: Anisotropic Interactions",
+        "contentHtml": "<p>In solution, fast molecular tumbling averages anisotropic interactions to zero, leaving sharp lines. In a powder or a protein crystal, three large interactions remain orientation-dependent. <strong>Chemical shift anisotropy (CSA)</strong> can span 200 ppm for carbonyls. <strong>Dipolar coupling</strong> between <sup>1</sup>H and <sup>13</sup>C reaches ~25 kHz; between two protons, ~120 kHz. <strong>Quadrupolar coupling</strong> for spin > 1/2 nuclei (<sup>2</sup>H, <sup>14</sup>N, <sup>17</sup>O) reaches MHz. The result without intervention: featureless 100 kHz-wide lumps where you wanted 1 Hz lines.</p><p>The trick is <strong>magic angle spinning (MAS)</strong>: physically spin the rotor at angle θ<sub>m</sub> = arccos(1/√3) ≈ 54.74° to B<sub>0</sub>. The dipolar Hamiltonian and CSA both contain the geometric factor <code>(3cos²θ − 1)</code>, which vanishes at this angle. Spin fast enough (faster than the interaction strength) and the powder pattern collapses to isotropic-like lines plus spinning sidebands at multiples of the MAS rate.</p><p>Modern probes spin 1.3 mm rotors at 60–110 kHz; emerging 0.7 mm rotors push beyond 150 kHz, fast enough to nearly remove the strongest <sup>1</sup>H–<sup>1</sup>H dipolar couplings and enable proton-detected protein ssNMR.</p>",
+        "mathExpressions": ["\\theta_m = \\arccos\\left(\\frac{1}{\\sqrt{3}}\\right) \\approx 54.74^\\circ", "\\frac{3\\cos^2\\theta_m - 1}{2} = 0", "H_D = -\\frac{\\mu_0}{4\\pi}\\frac{\\gamma_I \\gamma_S \\hbar^2}{r^3}\\left(3\\cos^2\\theta - 1\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-04-c2",
+        "title": "Cross-Polarization and DNP",
+        "contentHtml": "<p><strong>Cross-polarization (CP)</strong> transfers magnetization from abundant <sup>1</sup>H to dilute, slowly-relaxing nuclei (<sup>13</sup>C, <sup>15</sup>N) via simultaneous spin-lock pulses on both channels. The Hartmann–Hahn condition <code>γ<sub>H</sub>B<sub>1H</sub> = γ<sub>X</sub>B<sub>1X</sub></code> matches the rotating-frame energy gap and lets dipolar coupling shuttle polarization across. Result: signal enhancement up to γ<sub>H</sub>/γ<sub>X</sub> (~4 for <sup>13</sup>C) and a much shorter recycle delay set by the (faster) <sup>1</sup>H T<sub>1</sub>.</p><p>For <sup>13</sup>C and <sup>15</sup>N work on Bruker and JEOL solid-state probes, CPMAS (cross-polarization with MAS) is the default: ramped CP, contact times 0.5–2 ms, MAS 10–14 kHz, high-power TPPM or SPINAL64 <sup>1</sup>H decoupling during acquisition.</p><p><strong>Dynamic nuclear polarization (DNP)</strong> goes further: dope the sample with a stable biradical (TOTAPOL, AMUPol), cool to ~100 K, irradiate the electron EPR transition with a gyrotron-generated microwave (~263 GHz at 9.4 T), and electron polarization (γ<sub>e</sub>/γ<sub>H</sub> ≈ 660) transfers to nearby protons. Routine signal enhancements of 50–200× on commercial Bruker DNP-NMR systems make experiments feasible that would otherwise require months of averaging.</p>",
+        "mathExpressions": ["\\gamma_I B_{1I} = \\gamma_S B_{1S} \\quad \\text{(Hartmann--Hahn)}", "\\varepsilon_{\\text{DNP}} \\le \\frac{\\gamma_e}{\\gamma_n} \\approx 660 \\text{ for } {}^1H"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-04-c3",
+        "title": "Applications: Catalysts, Membranes, Batteries",
+        "contentHtml": "<p>Solid-state NMR sees what diffraction misses: amorphous regions, disordered surfaces, and dynamics on µs–ms timescales. <strong>Heterogeneous catalysts</strong>: <sup>27</sup>Al MAS distinguishes 4-, 5-, and 6-coordinate Al in zeolites by chemical shift (60, 30, 0 ppm respectively); <sup>29</sup>Si MAS resolves Q<sup>4</sup>, Q<sup>3</sup>, Q<sup>2</sup> silicate environments differing by 10 ppm each.</p><p><strong>Membrane proteins</strong>: amyloid fibrils, GPCRs in lipid bilayers, and bacterial cell walls have all been solved by ssNMR using <sup>13</sup>C, <sup>15</sup>N labeling and dipolar recoupling sequences (PDSD, DARR, RFDR) that reintroduce the dipolar coupling that MAS removed, encoding distances. Influenza M2, the K<sup>+</sup> channel selectivity filter, and amyloid-β fibril structures are all ssNMR results that crystallography couldn't have produced.</p><p><strong>Batteries</strong>: <sup>7</sup>Li and <sup>23</sup>Na MAS NMR follows lithium environments inside operating Li-ion electrodes, identifies plated Li metal vs intercalated Li, and quantifies SEI components in real time. <sup>17</sup>O DNP on lithium-ion cathodes (LiCoO<sub>2</sub>, LiFePO<sub>4</sub>) reveals oxygen redox chemistry that controls cycling stability.</p>",
+        "mathExpressions": ["\\delta(^{27}\\text{Al}): \\quad \\text{AlO}_4 \\sim 60 \\text{ ppm}, \\; \\text{AlO}_5 \\sim 30 \\text{ ppm}, \\; \\text{AlO}_6 \\sim 0 \\text{ ppm}", "\\nu_{\\text{rotor}} > \\Delta\\sigma\\,\\nu_0 \\quad \\text{(to remove sidebands)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q25", "spec-q26", "spec-q27", "spec-q28", "spec-q29", "spec-q30", "spec-q31", "spec-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-05",
+    "topicId": "chem-spectroscopy",
+    "order": 5,
+    "title": "IR, Raman, and Surface-Enhanced Raman",
+    "description": "Vibrational fingerprints, mutual-exclusion rules, and the SERS plasmonic enhancement",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "spec-05-c1",
+        "title": "Selection Rules and Group Frequencies",
+        "contentHtml": "<p>Vibrational spectroscopy probes molecular vibrations whose energies sit in the IR (mid-IR 400–4000 cm<sup>−1</sup>). Each normal mode has frequency <code>ν̃ = (1/2πc)√(k/μ)</code>, where k is the bond force constant and μ is the reduced mass — heavier atoms or weaker bonds give lower frequencies.</p><p>The <strong>IR selection rule</strong> requires a mode to change the dipole moment to be active. The <strong>Raman selection rule</strong> requires a change in polarizability. For centrosymmetric molecules (CO<sub>2</sub>, benzene), these are <em>mutually exclusive</em>: gerade modes are Raman-only, ungerade modes are IR-only.</p><p>Group frequencies anchor interpretation. <strong>O–H stretch</strong> 3200–3550 cm<sup>−1</sup> (broad, H-bonded). <strong>N–H stretch</strong> 3300–3500 cm<sup>−1</sup>. <strong>C–H stretch</strong> 2850–3100 cm<sup>−1</sup>. <strong>C≡N</strong> 2200–2260 cm<sup>−1</sup>. <strong>C=O stretch</strong> 1670–1820 cm<sup>−1</sup> (acid 1700–1725, ketone 1705–1725, amide I 1640–1690, ester 1735–1750). Below 1500 cm<sup>−1</sup> sits the <strong>fingerprint region</strong>, dense and largely diagnostic by overall pattern matching against libraries (Sigma-Aldrich, NIST).</p>",
+        "mathExpressions": ["\\tilde{\\nu} = \\frac{1}{2\\pi c}\\sqrt{\\frac{k}{\\mu}}, \\quad \\mu = \\frac{m_1 m_2}{m_1 + m_2}", "\\text{IR active: } \\left(\\frac{\\partial \\mu_{\\text{dipole}}}{\\partial Q}\\right)_{Q=0} \\neq 0", "\\text{Raman active: } \\left(\\frac{\\partial \\alpha}{\\partial Q}\\right)_{Q=0} \\neq 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-05-c2",
+        "title": "FTIR and Raman Instrumentation",
+        "contentHtml": "<p>Modern IR spectrometers (Thermo Nicolet iS50, Bruker Vertex 70, PerkinElmer Spectrum 3) are <strong>Fourier-transform IR (FTIR)</strong>: a Michelson interferometer with a moving mirror produces an interferogram, and a Fourier transform yields the spectrum. FTIR's <strong>multiplex (Fellgett) advantage</strong> measures all wavelengths at once, and the <strong>throughput (Jacquinot) advantage</strong> dispenses with slits, giving SNR orders of magnitude better than dispersive IR.</p><p><strong>Attenuated Total Reflection (ATR)</strong> accessories with diamond or ZnSe crystals enable solid/liquid sampling without preparation: an evanescent wave penetrates ~1 µm into the sample. ATR-FTIR is the workhorse of pharma QC and forensics today.</p><p>Raman spectrometers excite with a monochromatic laser (532 nm green, 785 nm NIR, or 1064 nm to suppress fluorescence) and detect inelastically scattered light shifted by molecular vibrations. Raman cross sections are tiny (~10<sup>−30</sup> cm<sup>2</sup>), making it ~10<sup>10</sup>× weaker than fluorescence — until SERS changes the game.</p>",
+        "mathExpressions": ["I(\\nu) = \\int_{-\\infty}^{\\infty} I(\\delta) \\cos(2\\pi \\nu \\delta) \\, d\\delta \\quad \\text{(FT of interferogram)}", "\\Delta\\tilde{\\nu} = \\frac{1}{\\lambda_{\\text{laser}}} - \\frac{1}{\\lambda_{\\text{scattered}}} \\quad \\text{(Raman shift)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-05-c3",
+        "title": "Surface-Enhanced Raman (SERS)",
+        "contentHtml": "<p>Adsorb a molecule onto a roughened metal surface (Au, Ag) and Raman scattering can intensify by 10<sup>6</sup>–10<sup>11</sup>×. The dominant mechanism is <strong>electromagnetic enhancement</strong>: the laser excites localized surface plasmon resonances on metal nanostructures, generating intense near-fields that scale signal as <code>|E<sub>local</sub>|<sup>4</sup></code>. A secondary <strong>chemical enhancement</strong> contributes ~10–100× via charge transfer between adsorbate and metal.</p><p>At <strong>hot spots</strong> — the gap between two nanoparticles or a sharp tip-to-surface junction — the field reaches enhancements of 10<sup>10</sup>–10<sup>12</sup>, enough for <strong>single-molecule SERS</strong> first reported by Nie and Kneipp in 1997. Nanostructured commercial substrates (Hamamatsu, Ocean Insight, Renishaw) deliver reproducible enhancement of 10<sup>6</sup>–10<sup>8</sup>, sufficient for trace detection of pesticides, explosives, drugs, and neurotransmitters at picomolar concentration.</p><p><strong>Tip-Enhanced Raman Spectroscopy (TERS)</strong> combines AFM/STM with a sharpened plasmonic tip, achieving spatial resolution ~10 nm and even sub-nm at low temperature — vibrational spectra of individual molecules with chemical-bond imaging.</p>",
+        "mathExpressions": ["\\text{EF} = \\frac{I_{\\text{SERS}} / N_{\\text{SERS}}}{I_{\\text{normal}} / N_{\\text{normal}}}", "I_{\\text{SERS}} \\propto \\left|E_{\\text{local}}(\\omega_L)\\right|^2 \\cdot \\left|E_{\\text{local}}(\\omega_S)\\right|^2 \\approx \\left|\\frac{E_{\\text{local}}}{E_0}\\right|^4"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q33", "spec-q34", "spec-q35", "spec-q36", "spec-q37", "spec-q38", "spec-q39", "spec-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-06",
+    "topicId": "chem-spectroscopy",
+    "order": 6,
+    "title": "Mass Spectrometry: Ionization, Analyzers, Fragmentation",
+    "description": "From EI and ESI to Orbitrap and FT-ICR, plus exact mass and isotope pattern interpretation",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "spec-06-c1",
+        "title": "Ionization Methods: EI, ESI, MALDI",
+        "contentHtml": "<p>Mass spectrometry needs gas-phase ions; how you make them shapes the spectrum. <strong>Electron ionization (EI, 70 eV)</strong> bombards vaporized neutrals with energetic electrons, producing radical cations M<sup>+•</sup> and extensive fragmentation. EI is reproducible enough that NIST spectral libraries (>350,000 entries) make GC-EI-MS the gold standard for small-molecule identification.</p><p><strong>Electrospray ionization (ESI)</strong>, the 2002 Nobel-winning Fenn technique, sprays liquid through a charged capillary at atmospheric pressure, producing multiply-charged [M+nH]<sup>n+</sup> ions for proteins or [M+H]<sup>+</sup>, [M+Na]<sup>+</sup>, [M−H]<sup>−</sup> for small molecules. ESI is gentle and ideal for LC-MS coupling — the hyphenated technique behind virtually all modern proteomics, metabolomics, and pharma DMPK.</p><p><strong>MALDI (Matrix-Assisted Laser Desorption/Ionization)</strong> co-crystallizes analyte with a UV-absorbing matrix (CHCA, sinapinic acid, DHB) on a metal target; a 337 nm N<sub>2</sub> laser pulse generates predominantly singly-charged [M+H]<sup>+</sup>. Excellent for proteins, polymers, and now <strong>MALDI imaging</strong>: rastering the laser across a tissue section produces molecular images of metabolites, lipids, and drugs at 5–20 µm resolution.</p>",
+        "mathExpressions": ["[M+nH]^{n+} : m/z = \\frac{M + n \\cdot 1.00728}{n}", "n = \\frac{m_2 - 1.00728}{m_1 - m_2} \\quad \\text{(charge from two adjacent peaks)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-06-c2",
+        "title": "Mass Analyzers: TOF, Orbitrap, FT-ICR",
+        "contentHtml": "<p>Resolving power R = m/Δm distinguishes ions of similar mass. <strong>Quadrupole</strong> (R ~1000) is cheap, fast, robust — the workhorse of routine LC-MS. <strong>Time-of-flight (TOF)</strong> measures flight time across a field-free drift tube: lighter ions arrive first, with <code>t = L√(m/2zU)</code>. Modern reflectron-TOFs (Bruker timsTOF, Waters Synapt, AB Sciex TripleTOF) deliver R ~50,000 with mass accuracy &lt;2 ppm.</p><p>The <strong>Orbitrap</strong> (Makarov, 2000; commercialized by Thermo Fisher as Exactive, Q Exactive, Orbitrap Eclipse, Orbitrap Astral) traps ions in a logarithmic radial potential around a spindle electrode; ions oscillate axially with frequency <code>ω = √(k/m)</code>. An image-current detector + Fourier transform yields R up to 1,000,000 and sub-ppm mass accuracy. The Orbitrap reshaped proteomics by combining Q-MS<sup>2</sup> selectivity with high-resolution accurate-mass detection.</p><p><strong>FT-ICR</strong> traps ions in a Penning cell, exciting cyclotron motion at <code>ω<sub>c</sub> = qB/m</code>; at 21 T (Bruker solariX XR, the ultra-high-field FT-ICR at NHMFL), R exceeds 10,000,000 and mass accuracy reaches sub-ppb. Indispensable for crude oil characterization (petroleomics) where 30,000 distinct molecular formulas may coexist.</p>",
+        "mathExpressions": ["R = \\frac{m}{\\Delta m_{\\text{FWHM}}}", "t_{\\text{TOF}} = L\\sqrt{\\frac{m}{2zU}}", "\\omega_c = \\frac{qB}{m} \\quad \\text{(ICR cyclotron frequency)}", "\\omega_{\\text{Orbitrap}} = \\sqrt{\\frac{k}{m/z}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-06-c3",
+        "title": "Exact Mass and Isotope Patterns",
+        "contentHtml": "<p>At sub-ppm mass accuracy, the <strong>exact mass</strong> of an ion uniquely (often) determines its molecular formula. <sup>12</sup>C = 12.000000 by definition; <sup>1</sup>H = 1.007825; <sup>14</sup>N = 14.003074; <sup>16</sup>O = 15.994915; <sup>32</sup>S = 31.972071. Caffeine C<sub>8</sub>H<sub>10</sub>N<sub>4</sub>O<sub>2</sub> has nominal mass 194 but monoisotopic mass 194.080376 — distinguishable from C<sub>9</sub>H<sub>14</sub>N<sub>2</sub>O<sub>3</sub> (194.105528) at any R > 8000.</p><p>The <strong>nitrogen rule</strong>: an organic molecule with an odd nominal mass contains an odd number of nitrogens (only N has odd valence and even nominal mass).</p><p><strong>Isotope patterns</strong> tag elements at a glance. Cl gives a 3:1 [M]:[M+2] doublet (<sup>35</sup>Cl/<sup>37</sup>Cl, 76:24). Br gives 1:1 [M]:[M+2]. S gives a small [M+2] (~4 % per S from <sup>34</sup>S). For a molecule with n carbons, the [M+1] peak is ~1.1n % of M from <sup>13</sup>C natural abundance — counting carbons by isotope pattern is a one-line check on a candidate formula.</p>",
+        "mathExpressions": ["\\text{exact mass} = \\sum_i n_i \\cdot m_i \\quad (\\text{monoisotopic})", "\\text{ppm error} = \\frac{|m_{\\text{obs}} - m_{\\text{calc}}|}{m_{\\text{calc}}} \\times 10^6", "\\frac{[M+1]}{[M]} \\approx 0.0107 \\cdot n_C + 0.00368 \\cdot n_N"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q41", "spec-q42", "spec-q43", "spec-q44", "spec-q45", "spec-q46", "spec-q47", "spec-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-07",
+    "topicId": "chem-spectroscopy",
+    "order": 7,
+    "title": "Tandem MS and Proteomics",
+    "description": "MS/MS fragmentation, b/y peptide ions, DDA vs DIA, and label-free quantification",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "spec-07-c1",
+        "title": "Tandem MS: CID, HCD, ETD, UVPD",
+        "contentHtml": "<p><strong>Tandem MS (MS/MS)</strong> selects a precursor ion in MS<sup>1</sup>, fragments it, and analyzes the products in MS<sup>2</sup>. The selectivity transforms MS from a molecular weight tool into a sequencing tool.</p><p><strong>Collision-Induced Dissociation (CID)</strong>, performed in a quadrupole or linear ion trap, uses inert gas (Ar, N<sub>2</sub>, He) collisions to deposit vibrational energy that breaks the weakest bonds. <strong>Higher-energy Collisional Dissociation (HCD)</strong> on Orbitrap-class instruments uses a separate collision cell; energies are higher and immonium ions appear, giving more comprehensive peptide spectra.</p><p><strong>Electron Transfer Dissociation (ETD)</strong> transfers an electron from a radical anion (typically fluoranthene<sup>−•</sup>) to a multiply-charged peptide, cleaving N–Cα bonds and producing c/z<sup>•</sup> ions while preserving labile post-translational modifications like phosphorylation, glycosylation, and sulfation. <strong>UVPD (Ultraviolet Photodissociation)</strong> with 193 nm excimer lasers fragments more uniformly across the backbone and is especially powerful for top-down proteomics on intact proteins. Modern Orbitrap Tribrid instruments offer all four modes selectable per scan.</p>",
+        "mathExpressions": ["E_{\\text{lab}} \\to E_{\\text{CM}} = E_{\\text{lab}} \\cdot \\frac{m_{\\text{gas}}}{m_{\\text{ion}} + m_{\\text{gas}}}", "h\\nu_{193\\text{nm}} = 6.42 \\text{ eV} \\quad \\text{(UVPD photon energy)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-07-c2",
+        "title": "Peptide Fragmentation: b and y Ions",
+        "contentHtml": "<p>Roepstorff–Biemann nomenclature labels peptide backbone fragments by which side keeps the charge: <strong>a, b, c</strong> from the N-terminus; <strong>x, y, z</strong> from the C-terminus. CID/HCD predominantly produce <strong>b</strong> ions (acylium-like, charge on N-side after CO–NH cleavage) and <strong>y</strong> ions (charge on C-side, +1 H<sub>2</sub>O). ETD produces <strong>c</strong> and <strong>z<sup>•</sup></strong> ions from N–Cα cleavage.</p><p>Mass differences between consecutive b (or y) ions equal residue masses, letting the peptide sequence be read off the spectrum: G = 57.02, A = 71.04, S = 87.03, P = 97.05, V = 99.07, T = 101.05, C = 103.01, L/I = 113.08 (isobaric — indistinguishable at unit mass), N = 114.04, D = 115.03, Q = 128.06, K = 128.09 (close to Q!), E = 129.04, M = 131.04, H = 137.06, F = 147.07, R = 156.10, Y = 163.06, W = 186.08.</p><p>Database search engines (SEQUEST, Mascot, MaxQuant Andromeda, MSFragger, Comet) match observed MS<sup>2</sup> spectra against in-silico digests of FASTA proteome databases, scoring with statistical models and applying target-decoy FDR control (typically 1 %).</p>",
+        "mathExpressions": ["m_{b_n} = \\sum_{i=1}^{n} R_i + 1.00728", "m_{y_n} = \\sum_{i=N-n+1}^{N} R_i + 18.01056 + 1.00728", "\\text{FDR} = \\frac{\\text{decoy hits}}{\\text{target hits}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-07-c3",
+        "title": "DDA vs DIA and Label-Free Quantification",
+        "contentHtml": "<p><strong>Data-Dependent Acquisition (DDA)</strong> is the classical shotgun proteomics workflow: an MS<sup>1</sup> survey scan picks the top N (usually 10–20) most intense precursors, isolates each in turn (~1.6 m/z window), fragments them, and collects MS<sup>2</sup>. Coverage depends on chromatographic peak picking and is stochastic — abundant peptides crowd out weak ones.</p><p><strong>Data-Independent Acquisition (DIA / SWATH)</strong>, pioneered on AB Sciex TripleTOF and now standard on Orbitrap Exploris and Astral, fragments <em>everything</em> in successive m/z windows (typically 4–25 m/z wide), producing chimeric MS<sup>2</sup> spectra that are deconvolved with spectral libraries (Spectronaut, DIA-NN). Result: reproducible, comprehensive quantification across thousands of samples.</p><p>For <strong>label-free quantification</strong>, MaxQuant's MaxLFQ algorithm derives protein abundances from peptide MS<sup>1</sup> intensities. For multiplexed quantification, <strong>TMT</strong> (tandem mass tags) attaches isobaric labels to up to 18 samples; reporter ions appear in MS<sup>2</sup> (or MS<sup>3</sup> SPS for accuracy) at low m/z (126–135). A modern Orbitrap Astral analyzes ~10,000 proteins per single-shot 30 min DIA run on a 5 µg HeLa digest.</p>",
+        "mathExpressions": ["\\text{DDA: select top } N \\text{ precursors per MS}^1 \\text{ cycle}", "\\text{LFQ ratio} = \\frac{\\sum_i I_i^{\\text{sample}}}{\\sum_i I_i^{\\text{ref}}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q49", "spec-q50", "spec-q51", "spec-q52", "spec-q53", "spec-q54", "spec-q55", "spec-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-08",
+    "topicId": "chem-spectroscopy",
+    "order": 8,
+    "title": "EPR/ESR and X-ray Spectroscopies",
+    "description": "Electron spin spectroscopy and the X-ray techniques (XPS, XANES, EXAFS) that probe oxidation state and local geometry",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "spec-08-c1",
+        "title": "EPR: g-Values, Hyperfine, and Spin Trapping",
+        "contentHtml": "<p>EPR (electron paramagnetic resonance), also called ESR, is NMR's electron-spin cousin. The resonance condition <code>hν = gμ<sub>B</sub>B</code> gives, for a free electron g = 2.0023, a frequency near 9.4 GHz at B ≈ 0.34 T (X-band, the standard Bruker EMXplus setup) — three orders of magnitude higher than typical NMR. The <strong>g-tensor</strong> is anisotropic and reports orbital character: g<sub>e</sub> for organic radicals, g ≈ 2.05 for Cu<sup>2+</sup>, large deviations for low-spin Fe<sup>3+</sup>.</p><p>The unpaired electron couples to nearby magnetic nuclei via <strong>hyperfine coupling</strong> A, splitting the EPR line into 2nI+1 components. A nitroxide radical (TEMPO, MTSL spin label) shows the iconic three-line spectrum from <sup>14</sup>N (I = 1) with A<sub>iso</sub> ≈ 14–17 G in solution.</p><p><strong>Spin trapping</strong> uses diamagnetic traps (DMPO, PBN) to capture short-lived radicals like •OH and •O<sub>2</sub><sup>−</sup> as stable nitroxide adducts; characteristic A<sub>N</sub> and A<sub>H</sub> values identify the original radical. <strong>Site-Directed Spin Labeling (SDSL)</strong> attaches MTSL to engineered cysteines on proteins, and CW EPR + DEER pulsed EPR (Bruker Elexsys E580) measure 2–8 nm distances between two labels — a structural ruler complementary to NMR and FRET.</p>",
+        "mathExpressions": ["h\\nu = g\\mu_B B", "\\nu_{\\text{X-band}} \\approx 9.4 \\text{ GHz at } B = 0.336 \\text{ T}", "\\Delta E = g\\mu_B B + \\sum_i A_i m_{I,i}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-08-c2",
+        "title": "XPS and Surface Composition",
+        "contentHtml": "<p><strong>X-ray Photoelectron Spectroscopy (XPS / ESCA)</strong> illuminates a surface with monochromatic Al Kα (1486.6 eV) or Mg Kα (1253.6 eV) X-rays and analyzes the kinetic energies of ejected core-level photoelectrons. The Einstein photoelectric equation gives <code>BE = hν − KE − φ</code>, where φ is the spectrometer work function. Each element has unique binding energies (NIST XPS database), and the inelastic mean free path of photoelectrons (~1–10 nm) makes XPS strictly surface-sensitive.</p><p>Beyond elemental ID, XPS resolves <strong>chemical states</strong> via 1–10 eV chemical shifts. C 1s sits at 284.8 eV for graphitic C, 286.5 for C–O, 288 for C=O, 289 for COOH/COOR. Si 2p sits at 99 eV for Si<sup>0</sup>, 103.4 for SiO<sub>2</sub>. Oxidation-state mapping of transition-metal catalysts and surface treatments uses these shifts directly.</p><p>Modern Thermo K-Alpha, Kratos Axis Supra, PHI VersaProbe instruments add <strong>imaging XPS</strong> (5–10 µm spot) and <strong>depth profiling</strong> via Ar<sup>+</sup> or Ar cluster sputtering. Synchrotron-based <strong>HAXPES</strong> uses 5–10 keV X-rays for buried-interface depth (>20 nm) — invaluable for battery interfaces and gate stacks.</p>",
+        "mathExpressions": ["E_{\\text{BE}} = h\\nu - E_{\\text{KE}} - \\phi_{\\text{spec}}", "\\lambda_{\\text{IMFP}}(\\text{nm}) \\approx 0.41\\sqrt{a^3 E_{\\text{KE}}} \\quad \\text{(TPP-2M form)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-08-c3",
+        "title": "XAS: XANES and EXAFS",
+        "contentHtml": "<p><strong>X-ray Absorption Spectroscopy (XAS)</strong> tunes a synchrotron X-ray beam (e.g. APS, ESRF, Diamond, NSLS-II) across an element's absorption edge and measures the absorption coefficient. The spectrum splits into two regimes.</p><p><strong>XANES (X-ray Absorption Near Edge Structure)</strong>, within ±50 eV of the edge, encodes <strong>oxidation state</strong> (the edge shifts ~1–2 eV per oxidation unit) and <strong>coordination geometry</strong> (Pre-edge intensity in the Fe K-edge tells tetrahedral vs octahedral). XANES is used routinely to monitor operating fuel cells, Li-ion battery cycling, enzyme intermediates (cytochrome P450, photosystem II), and homogeneous catalysts in situ.</p><p><strong>EXAFS (Extended X-ray Absorption Fine Structure)</strong>, extending 50–1000 eV above the edge, contains oscillations χ(k) caused by interference between the outgoing photoelectron wave and waves backscattered from neighboring atoms. Fourier transform of k<sup>2</sup>χ(k) yields a pseudo-radial distribution: <strong>nearest-neighbor distances</strong> with ±0.02 Å precision and coordination numbers ±20 %. EXAFS works on amorphous and dilute samples where XRD fails — single-atom catalysts, metal sites in proteins, glasses.</p>",
+        "mathExpressions": ["\\chi(k) = \\sum_j \\frac{N_j S_0^2 |f_j(k)|}{kR_j^2} \\sin\\!\\left(2kR_j + \\phi_j(k)\\right) e^{-2k^2\\sigma_j^2} e^{-2R_j/\\lambda(k)}", "k = \\sqrt{\\frac{2m_e (E - E_0)}{\\hbar^2}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q57", "spec-q58", "spec-q59", "spec-q60", "spec-q61", "spec-q62", "spec-q63", "spec-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-09",
+    "topicId": "chem-spectroscopy",
+    "order": 9,
+    "title": "Chiroptical and Nonlinear Vibrational Spectroscopy",
+    "description": "VCD, ROA, SRS, and 2D-IR — pushing vibrational and chiral information further",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "spec-09-c1",
+        "title": "ECD, VCD, and ROA: Vibrational Chiroptics",
+        "contentHtml": "<p>Chiroptical methods directly probe molecular chirality. <strong>Electronic Circular Dichroism (ECD)</strong> measures differential absorption of left vs right circularly polarized UV light (Δε = ε<sub>L</sub> − ε<sub>R</sub>), reporting on chromophore environment — used routinely for protein secondary structure (α-helix shows minima at 208 and 222 nm; β-sheet a single 218 nm minimum). Modern instruments: JASCO J-1500, Applied Photophysics Chirascan.</p><p><strong>Vibrational Circular Dichroism (VCD)</strong> extends CD to IR, measuring tiny (~10<sup>−4</sup>) absorbance differences across vibrational modes. Combined with DFT calculations (Gaussian, ADF) of theoretical VCD spectra for both enantiomers, VCD <strong>determines absolute configuration</strong> without crystallization — pharma uses it to confirm chirality of API and metabolites.</p><p><strong>Raman Optical Activity (ROA)</strong> measures the difference in Raman scattering intensity for right vs left circularly polarized incident light. ROA is uniquely powerful for biomolecules in water (water transmits poorly in the IR); it has been used to fingerprint protein folds, virus capsids, and even intact bacteria. The signals are smaller still (~10<sup>−5</sup> of Raman), demanding hours of integration on commercial BioTools ChiralRAMAN or research-grade instruments.</p>",
+        "mathExpressions": ["\\Delta\\varepsilon = \\varepsilon_L - \\varepsilon_R", "g_{\\text{abs}} = \\frac{\\Delta\\varepsilon}{\\varepsilon} \\sim 10^{-4}\\text{--}10^{-3} \\text{ for VCD}", "I_R - I_L \\propto \\text{Im}\\!\\left[\\alpha_{\\alpha\\beta} \\cdot G'_{\\alpha\\beta}\\right]"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-09-c2",
+        "title": "SRS, CARS, and Stimulated Raman Microscopy",
+        "contentHtml": "<p>Spontaneous Raman is weak; nonlinear Raman is fast. <strong>Coherent Anti-Stokes Raman Scattering (CARS)</strong> uses two lasers — pump at ω<sub>p</sub> and Stokes at ω<sub>s</sub> — to coherently drive a vibration when ω<sub>p</sub> − ω<sub>s</sub> matches a Raman mode. A third pulse generates anti-Stokes signal at 2ω<sub>p</sub> − ω<sub>s</sub>, signal scales quadratically with concentration but rides a non-resonant background.</p><p><strong>Stimulated Raman Scattering (SRS)</strong> microscopy, popularized by Xie and Min for cellular imaging, modulates one beam and detects amplitude transfer to the other. Signal is linear in concentration and free of non-resonant background — making it the gold-standard label-free vibrational microscopy. Commercial Leica TCS SP8 SRS, Olympus FV3000-multiphoton, and APE picoEmerald systems achieve diffraction-limited SRS imaging at video rate.</p><p>Applications include label-free imaging of myelin (CH<sub>2</sub> stretch at 2845 cm<sup>−1</sup>), in vivo skin tumor identification by lipid:protein ratio, real-time histology during neurosurgery (Invenio Imaging SRH), and tracking small-molecule drugs by their unique fingerprint vibrations.</p>",
+        "mathExpressions": ["\\omega_p - \\omega_s = \\Omega_{\\text{vib}} \\quad \\text{(Raman resonance)}", "I_{\\text{CARS}} \\propto \\left|\\chi^{(3)}\\right|^2 I_p^2 I_s", "I_{\\text{SRS}} \\propto \\text{Im}\\!\\left[\\chi^{(3)}\\right] I_p I_s \\quad \\text{(linear, background-free)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-09-c3",
+        "title": "2D-IR: Vibrational Couplings and Sub-ps Dynamics",
+        "contentHtml": "<p><strong>2D-IR spectroscopy</strong> is to IR what 2D NMR is to NMR — but six orders of magnitude faster. Three femtosecond mid-IR pulses drive vibrational coherences and probe their evolution: a 2D map (ω<sub>pump</sub>, ω<sub>probe</sub>) appears, with diagonal peaks for each mode and off-diagonal cross peaks for vibrationally coupled modes.</p><p>Cross peaks reveal anharmonic coupling between, say, the amide-I C=O stretches of two residues in a peptide — <strong>protein structure on a 1 ps timescale</strong>. The waiting time T<sub>w</sub> between pump and probe lets you watch <strong>spectral diffusion</strong>: how a frequency loses memory of its initial value as the local environment fluctuates, directly reporting on hydrogen-bond dynamics in water (~50 fs frequency-frequency correlation time) and protein–water interfaces.</p><p>Commercial 2D-IR systems (PhaseTech 2D Quick, Newport Spectra-Physics) build on Ti:sapphire-pumped OPAs producing 50–100 fs mid-IR pulses. Applications now span enzyme catalysis (watching transition states form), membrane protein dynamics, electric fields at protein active sites measured via Stark effect on a CN or carbonyl probe, and the structural dynamics of amyloid intermediates inaccessible to crystallography.</p>",
+        "mathExpressions": ["S_{\\text{2D-IR}}(\\omega_1, T_w, \\omega_3) = \\text{FT}\\left[R(t_1, T_w, t_3)\\right]", "C(T_w) = \\langle \\delta\\omega(0)\\, \\delta\\omega(T_w) \\rangle \\quad \\text{(spectral diffusion)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q65", "spec-q66", "spec-q67", "spec-q68", "spec-q69", "spec-q70", "spec-q71", "spec-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "spec-10",
+    "topicId": "chem-spectroscopy",
+    "order": 10,
+    "title": "Single-Molecule and Ultrafast Spectroscopy",
+    "description": "smFRET, fs pump-probe, transient absorption, and watching chemistry one molecule at a time",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "spec-10-c1",
+        "title": "Single-Molecule FRET",
+        "contentHtml": "<p><strong>Förster Resonance Energy Transfer (FRET)</strong> is dipole–dipole energy transfer from an excited donor fluorophore to a nearby acceptor, with efficiency <code>E = 1/(1 + (r/R<sub>0</sub>)<sup>6</sup>)</code>. The Förster radius R<sub>0</sub> (typically 4–6 nm for common dye pairs like Cy3/Cy5, Atto550/Atto647N, Alexa 488/Alexa 594) makes FRET a <strong>2–10 nm spectroscopic ruler</strong>.</p><p><strong>Single-molecule FRET (smFRET)</strong> watches one molecule at a time, eliminating ensemble averaging that hides intermediate states and asynchronous processes. Two configurations: <strong>confocal smFRET</strong> with diffusing molecules through a fL excitation volume on a Picoquant MicroTime 200 reveals submillisecond conformational fluctuations; <strong>TIRF smFRET</strong> on surface-tethered molecules tracks individual trajectories for seconds to minutes.</p><p>smFRET has revealed conformational switching of ribosome translation, ribozyme folding intermediates, kinetics of protein folding pathways, voltage-driven motions of membrane proteins, and the mechanism of bacterial RNA polymerase translocation. Pulse-Interleaved Excitation (PIE) and ALEX (alternating laser excitation) cleanly separate FRET-induced from direct-excitation acceptor signal, enabling accurate distance and stoichiometry measurements.</p>",
+        "mathExpressions": ["E_{\\text{FRET}} = \\frac{1}{1 + (r/R_0)^6}", "R_0^6 = \\frac{9000\\, \\ln 10\\, \\kappa^2 \\Phi_D J(\\lambda)}{128\\pi^5 N_A n^4}", "k_{\\text{FRET}} = \\frac{1}{\\tau_D}\\left(\\frac{R_0}{r}\\right)^6"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-10-c2",
+        "title": "Femtosecond Pump-Probe and Transient Absorption",
+        "contentHtml": "<p><strong>Pump-probe spectroscopy</strong> uses an intense femtosecond pump pulse to electronically excite molecules and a delayed weaker probe pulse to read out the resulting absorption changes ΔA(λ, t). Time resolution is set by the pulse cross-correlation, routinely 30–100 fs with Ti:sapphire amplifier systems (Coherent Astrella, Spectra-Physics Solstice Ace) and white-light continuum probes. Helios Fire (Ultrafast Systems) and Newport TA spectrometers turn this into a turnkey lab tool.</p><p>The signal contains <strong>ground-state bleach</strong> (negative ΔA at the absorption peak), <strong>stimulated emission</strong> (negative, red-shifted), and <strong>excited-state absorption</strong> (positive). Global fitting with kinetic models (Glotaran, KIMOPACK) extracts species-associated spectra and rate constants for internal conversion, intersystem crossing, charge-transfer, and photoisomerization.</p><p>Landmarks: the cis–trans isomerization of rhodopsin in vision occurs in 200 fs; the primary charge separation in photosystem II reaction centers takes ~3 ps; singlet fission in pentacene is complete in ~80 fs. Modern <strong>2D electronic spectroscopy (2DES)</strong> applied to FMO and LH2 photosynthetic complexes revealed coherent excitonic dynamics that reignited the entire field of quantum biology.</p>",
+        "mathExpressions": ["\\Delta A(\\lambda, t) = -\\log_{10}\\!\\left(\\frac{I_{\\text{pump-on}}}{I_{\\text{pump-off}}}\\right)", "\\Delta t \\geq \\tau_{\\text{pump}} \\otimes \\tau_{\\text{probe}}", "S(\\lambda, t) = \\sum_i A_i(\\lambda)\\, e^{-t/\\tau_i}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "spec-10-c3",
+        "title": "X-ray Free Electron Lasers and Attosecond Frontiers",
+        "contentHtml": "<p><strong>X-ray Free Electron Lasers (XFELs)</strong> — LCLS at SLAC, European XFEL, SACLA, PAL-XFEL, SwissFEL — produce 10<sup>12</sup> coherent hard X-ray photons in pulses as short as 1 fs, ten orders of magnitude brighter than synchrotrons. Pump-probe at an XFEL combines time-resolved structure and spectroscopy: <strong>serial femtosecond crystallography</strong> films enzymes turning over (PSII oxygen evolution, isomerization in rhodopsin), and <strong>time-resolved XAS</strong> tracks electron and atom motion through transition states with sub-ps temporal and Å spatial resolution.</p><p>At the absolute frontier, <strong>attosecond spectroscopy</strong> (Krausz, L'Huillier, Agostini Nobel 2023) uses high-harmonic-generated XUV pulses of 20–500 attoseconds (1 as = 10<sup>−18</sup> s) to time-resolve <em>electron motion</em> within atoms and molecules. Streaking, RABBITT, and attosecond transient absorption record valence electron dynamics, charge migration after photoionization, and the time delay (~20 as) between photoemission of differently bound electrons in Ne — measurements that stretch what 'spectroscopy' can mean.</p><p>The arrow has run from minutes (early NMR) to attoseconds (HHG). Each shorter timescale opened a new physics: vibrations on ps, electronic relaxation on fs, electron rearrangement on as. The <em>next</em> spectroscopy is yours to invent.</p>",
+        "mathExpressions": ["\\tau_{\\text{atto}} \\sim 10^{-18} \\text{ s} = 10^{-3} \\text{ fs}", "E_{\\text{cutoff}}^{\\text{HHG}} = I_p + 3.17\\, U_p", "\\Delta E \\cdot \\Delta t \\geq \\hbar/2 \\quad \\text{(time-energy uncertainty)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["spec-q73", "spec-q74", "spec-q75", "spec-q76", "spec-q77", "spec-q78", "spec-q79", "spec-q80"],
+    "puzzleId": null
+  }
+]

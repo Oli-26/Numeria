@@ -1,0 +1,249 @@
+@page "/front-page"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Front Page Builder</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Front Page Builder" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    var s = stories[storyIndex];
+
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Front Page Builder</h1>
+    </div>
+
+    <div class="card fp-intro">
+        <Icon Name="antenna" Size="22" Stroke="var(--accent)" />
+        <p>Same event, three story angles. Pick a headline, a photo caption, and a featured quote. The newsroom rates how the page frames the story.</p>
+    </div>
+
+    <div class="fp-tabs">
+        @for (int i = 0; i < stories.Count; i++)
+        {
+            var ix = i;
+            <button class="fp-tab @(storyIndex == ix ? "active" : "")" @onclick='() => { storyIndex = ix; Reset(); }'>@stories[ix].Topic</button>
+        }
+    </div>
+
+    <div class="card fp-event">
+        <small class="fp-stamp">The event</small>
+        <p>@s.Event</p>
+    </div>
+
+    <div class="card fp-slot">
+        <small class="fp-stamp">Headline</small>
+        <div class="fp-options">
+            @foreach (var o in s.Headlines)
+            {
+                var opt = o;
+                <button class="fp-option @(headline?.Text == opt.Text ? "picked" : "")" @onclick="() => headline = opt">@opt.Text</button>
+            }
+        </div>
+    </div>
+
+    <div class="card fp-slot">
+        <small class="fp-stamp">Photo caption</small>
+        <div class="fp-options">
+            @foreach (var o in s.Captions)
+            {
+                var opt = o;
+                <button class="fp-option @(caption?.Text == opt.Text ? "picked" : "")" @onclick="() => caption = opt">@opt.Text</button>
+            }
+        </div>
+    </div>
+
+    <div class="card fp-slot">
+        <small class="fp-stamp">Featured quote</small>
+        <div class="fp-options">
+            @foreach (var o in s.Quotes)
+            {
+                var opt = o;
+                <button class="fp-option @(quote?.Text == opt.Text ? "picked" : "")" @onclick="() => quote = opt">@opt.Text</button>
+            }
+        </div>
+    </div>
+
+    @if (headline != null && caption != null && quote != null)
+    {
+        var totalLean = headline.Lean + caption.Lean + quote.Lean;
+        var totalSensation = headline.Sensation + caption.Sensation + quote.Sensation;
+        var leanLabel = totalLean switch
+        {
+            <= -4 => ("Strong critical frame", "#E74C3C"),
+            <= -1 => ("Critical lean", "#E67E22"),
+            >= 4 => ("Strong supportive frame", "#1ABC9C"),
+            >= 1 => ("Supportive lean", "#2ECC71"),
+            _ => ("Balanced", "#7B68EE")
+        };
+        var sensLabel = totalSensation switch
+        {
+            >= 6 => ("Tabloid pitch", "#E91E63"),
+            >= 3 => ("Punchy", "#F39C12"),
+            _ => ("Restrained", "#4A90D9")
+        };
+
+        <div class="card fp-mock">
+            <small class="fp-stamp">Mock front page</small>
+            <h2 class="fp-headline">@headline.Text</h2>
+            <p class="fp-caption">"@caption.Text"</p>
+            <blockquote class="fp-quote">@quote.Text</blockquote>
+        </div>
+
+        <div class="card fp-rating">
+            <h3>Newsroom assessment</h3>
+            <div class="fp-rate-row">
+                <span>Frame</span>
+                <strong style="@($"color:{leanLabel.Item2}")">@leanLabel.Item1</strong>
+            </div>
+            <div class="fp-rate-row">
+                <span>Tone</span>
+                <strong style="@($"color:{sensLabel.Item2}")">@sensLabel.Item1</strong>
+            </div>
+            <p class="fp-blurb">@s.LessonAfter</p>
+        </div>
+    }
+}
+
+@code {
+    private bool unlocked;
+    private int storyIndex;
+    private NewsOption? headline, caption, quote;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-front-page");
+            StateHasChanged();
+        }
+    }
+
+    private void Reset() { headline = null; caption = null; quote = null; }
+
+    private record NewsOption(string Text, int Lean, int Sensation);
+    private record Story(string Topic, string Event, string LessonAfter, List<NewsOption> Headlines, List<NewsOption> Captions, List<NewsOption> Quotes);
+
+    private static readonly List<Story> stories = new()
+    {
+        new("Protest", "10,000 people gathered downtown over the weekend. Police arrested 14 for property damage. The crowd dispersed by midnight.",
+            "Same event, six possible front pages. Lean and tone are choices, not facts. Lippmann (1922): readers respond to the picture, not the event.",
+            new()
+            {
+                new("MASSIVE CROWD DEMANDS CHANGE", 2, 2),
+                new("PROTEST TURNS VIOLENT, 14 ARRESTED", -2, 3),
+                new("THOUSANDS RALLY DOWNTOWN", 1, 1),
+                new("RIOT POLICE CONFRONT MOB", -3, 3),
+                new("CITIZENS GATHER FOR RALLY", 0, 0),
+                new("UNREST GRIPS DOWNTOWN", -1, 2)
+            },
+            new()
+            {
+                new("Demonstrators march in solidarity at the steps of city hall", 2, 1),
+                new("Vandals smash storefronts as protest spirals", -2, 3),
+                new("Crowd assembles ahead of evening rally", 0, 0),
+                new("Police hold the line against agitators", -2, 2)
+            },
+            new()
+            {
+                new("\"This is democracy in action,\" said one organizer.", 2, 0),
+                new("\"They were destroying everything,\" said a shop owner.", -2, 2),
+                new("\"The city will weather this,\" said the mayor.", 0, 1),
+                new("\"It was beautiful and peaceful for hours,\" said a marcher.", 2, 0)
+            }),
+
+        new("Election", "The incumbent won re-election by 2.3 percent. Turnout was 58 percent, slightly down from the previous election. Three districts had ballot recounts.",
+            "Margins, turnout, recounts -- all factual. Yet six different framings produce six different stories.",
+            new()
+            {
+                new("INCUMBENT SECURES VICTORY", 2, 0),
+                new("RAZOR-THIN MARGIN PROMPTS RECOUNTS", -1, 2),
+                new("VOTERS RETURN PRESIDENT TO OFFICE", 1, 0),
+                new("ELECTION IN CHAOS AS MARGINS NARROW", -2, 3),
+                new("PRESIDENT WINS SECOND TERM", 1, 0),
+                new("DEMOCRACY IN QUESTION AFTER CLOSE VOTE", -2, 2)
+            },
+            new()
+            {
+                new("Supporters celebrate at headquarters", 2, 1),
+                new("Voters wait in long lines on election day", 0, 0),
+                new("Tense scenes at recount centers", -1, 2),
+                new("Election workers count ballots into the night", 0, 1)
+            },
+            new()
+            {
+                new("\"The people have spoken,\" the president said.", 1, 0),
+                new("\"Something does not add up,\" an opposition lawyer claimed.", -2, 2),
+                new("\"Turnout was solid,\" an election official noted.", 0, 0),
+                new("\"This was the most secure election in years,\" a watchdog said.", 1, 0)
+            }),
+
+        new("Economy", "Inflation slowed to 2.4 percent for the month. Wages grew 0.3 percent. Unemployment edged up from 3.7 to 3.9 percent.",
+            "Three numbers can support optimism, alarm, or routine. Editors choose which the reader sees first.",
+            new()
+            {
+                new("ECONOMY COOLS, FED WINS", 2, 1),
+                new("INFLATION EASES BUT JOBS SLIP", 0, 1),
+                new("UNEMPLOYMENT TICKS UP, WORKERS SQUEEZED", -2, 2),
+                new("PRICES STEADY, PROGRESS ON FED TARGET", 2, 0),
+                new("RECESSION FEARS GROW", -3, 3),
+                new("STABLE QUARTER FOR US ECONOMY", 1, 0)
+            },
+            new()
+            {
+                new("Shoppers browse a busy market on Saturday", 1, 0),
+                new("Job seekers line up at a downtown fair", -2, 2),
+                new("Federal Reserve building at sunset", 0, 1),
+                new("A family at the grocery checkout", 0, 0)
+            },
+            new()
+            {
+                new("\"This is real progress,\" the chair of the Fed said.", 2, 0),
+                new("\"It feels worse than the numbers suggest,\" a shopper said.", -1, 1),
+                new("\"Soft landing remains plausible,\" an economist noted.", 1, 0),
+                new("\"Layoffs are coming,\" a union leader warned.", -2, 2)
+            })
+    };
+}
+
+<style>
+    .fp-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .fp-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .fp-tabs { display: flex; gap: 4px; background: var(--bg-surface); border-radius: var(--radius-md); padding: 4px; margin-bottom: 12px; }
+    .fp-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-sm); cursor: pointer; }
+    .fp-tab.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow); }
+
+    .fp-event { padding: 14px; }
+    .fp-stamp { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .fp-event p { margin: 0; font-size: 0.88rem; color: var(--text-primary); line-height: 1.55; }
+
+    .fp-slot { padding: 12px 14px; }
+    .fp-options { display: flex; flex-direction: column; gap: 6px; }
+    .fp-option { padding: 8px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: left; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary); }
+    .fp-option.picked { background: rgba(74,95,224,0.1); border-color: var(--primary); color: var(--text-primary); }
+
+    .fp-mock { padding: 14px; }
+    .fp-headline { font-family: 'Cinzel', Georgia, serif; font-size: 1.4rem; line-height: 1.15; margin: 4px 0 10px; color: var(--text-primary); }
+    .fp-caption { font-size: 0.85rem; color: var(--text-secondary); font-style: italic; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+    .fp-quote { margin: 0; padding-left: 12px; border-left: 3px solid var(--accent); font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .fp-rating { padding: 14px; }
+    .fp-rating h3 { margin: 0 0 10px; font-size: 0.95rem; }
+    .fp-rate-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
+    .fp-rate-row:last-of-type { border-bottom: none; }
+    .fp-rate-row span { color: var(--text-muted); }
+    .fp-blurb { margin: 10px 0 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; padding: 8px 10px; background: var(--bg-surface); border-radius: var(--radius-sm); }
+</style>

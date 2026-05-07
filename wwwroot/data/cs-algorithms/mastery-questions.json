@@ -1,0 +1,128 @@
+[
+  {
+    "id": "mastery-algo-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why is quicksort often faster than mergesort in practice despite worse worst-case complexity?",
+    "options": ["Quicksort uses fewer comparisons", "Quicksort has better cache locality and lower constants", "Quicksort uses extra memory", "Quicksort is parallelizable while mergesort is not"],
+    "correctAnswer": "Quicksort has better cache locality and lower constants",
+    "explanation": "Quicksort's in-place partitioning works well with CPU caches; mergesort's split-and-merge needs extra memory and has worse locality. Both are O(n log n) average; constants matter.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-algo-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Memoization and tabulation produce the same asymptotic complexity for the same DP problem.",
+    "correctAnswer": "True",
+    "explanation": "Both compute each subproblem once. Constants and overheads differ (memoization has function call overhead; tabulation has tighter loops), but the asymptotic time and space are identical.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-algo-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the complexity class containing problems verifiable in polynomial time but not necessarily solvable in polynomial time?",
+    "correctAnswer": "NP",
+    "acceptableAnswers": ["NP", "np"],
+    "explanation": "NP = Non-deterministic Polynomial. A problem is in NP if a solution can be VERIFIED in polynomial time. Whether all NP problems can also be SOLVED in polynomial time (P = NP) is the most famous open question in computer science.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-algo-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each algorithmic technique to its hallmark example:",
+    "pairs": [
+      {"left": "Divide and conquer", "right": "Mergesort"},
+      {"left": "Greedy", "right": "Dijkstra's algorithm"},
+      {"left": "Dynamic programming", "right": "Edit distance"},
+      {"left": "Backtracking", "right": "N-queens problem"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Each technique has a canonical example that illustrates its core pattern. Knowing these by heart accelerates recognizing the right approach to a new problem.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-algo-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why does A* dominate Dijkstra's algorithm for video-game pathfinding?",
+    "options": ["A* runs in O(1)", "A* uses a heuristic that biases search toward the goal, exploring far fewer nodes in practice", "A* doesn't need a graph", "A* avoids using edge weights"],
+    "correctAnswer": "A* uses a heuristic that biases search toward the goal, exploring far fewer nodes in practice",
+    "explanation": "A* combines Dijkstra's actual-distance accounting with a heuristic estimate of distance-to-go. With an admissible heuristic, A* finds optimal paths while exploring dramatically fewer nodes than Dijkstra would.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-algo-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this DP attempt:",
+    "steps": [
+      "I want to compute the number of ways to reach the top of n stairs taking 1 or 2 steps at a time",
+      "ways(n) = ways(n-1) + ways(n-2)",
+      "Base case: ways(0) = 1, ways(1) = 1",
+      "I implement it recursively without memoization",
+      "For n = 100 it returns the right answer instantly",
+      "So memoization is unnecessary"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is wrong (the assumption rather than the math). Naive recursive Fibonacci-like computation is O(2^n). For n = 100, that's roughly 10^30 operations. The function would NOT return 'instantly' or even within the lifetime of the universe. Either the example is fabricated or memoization is silently happening.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-algo-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "If a problem has optimal substructure but lacks overlapping subproblems, divide-and-conquer is more appropriate than DP.",
+    "correctAnswer": "True",
+    "explanation": "DP's caching only helps when subproblems overlap. If each subproblem is unique (e.g., mergesort), pure divide-and-conquer is enough — caching adds no value.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-algo-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which is the strongest argument that the greedy choice for the activity-selection problem (always pick the next-finishing activity) is optimal?",
+    "options": ["It runs in O(n log n)", "An exchange argument proves any optimal solution can be transformed into one using the greedy choice without losing activities", "It's mentioned in textbooks", "It uses no extra memory"],
+    "correctAnswer": "An exchange argument proves any optimal solution can be transformed into one using the greedy choice without losing activities",
+    "explanation": "Greedy correctness usually requires a proof. The exchange argument shows the greedy choice is always 'at least as good' as any other first choice, so a greedy solution achieves the same value as the optimum.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-algo-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to convert exponential recursive Fibonacci into linear-time DP:",
+    "steps": [
+      "Identify the recurrence: fib(n) = fib(n-1) + fib(n-2)",
+      "Notice that the same subproblems are computed many times",
+      "Add a memoization cache keyed by n",
+      "Each subproblem is now computed once: O(n) time",
+      "Optionally rewrite as bottom-up tabulation using only two variables: O(n) time, O(1) space"
+    ],
+    "correctAnswer": null,
+    "explanation": "This is the canonical DP optimization path: recognize overlap, cache, optionally tighten to constant space.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-algo-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What polynomial-time approximation algorithm guarantees a tour at most 1.5× optimal for metric TSP?",
+    "correctAnswer": "Christofides",
+    "acceptableAnswers": ["Christofides", "Christofides algorithm", "christofides", "Christofides-Serdyukov"],
+    "explanation": "Christofides' 1976 algorithm uses minimum spanning tree + minimum-weight perfect matching to achieve a 3/2 approximation for metric TSP. Until 2020 it was the best-known polynomial bound; recent work has nudged it lower.",
+    "xpReward": 40
+  }
+]

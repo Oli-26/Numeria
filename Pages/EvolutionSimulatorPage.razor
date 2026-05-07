@@ -1,0 +1,615 @@
+@page "/evolution-sim"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Evolution Simulator</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Evolution Simulator" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Evolution Simulator</h1>
+    </div>
+
+    <p class="evo-intro">Tweak selection pressures, then step generations. Survivors reproduce with mutation.</p>
+
+    <div class="evo-presets">
+        <button class="preset-btn" @onclick='() => ApplyPreset("moth")'>
+            <Icon Name="fire" Size="16" />
+            <span>Peppered Moth</span>
+        </button>
+        <button class="preset-btn" @onclick='() => ApplyPreset("beak")'>
+            <Icon Name="target" Size="16" />
+            <span>Beak Size</span>
+        </button>
+        <button class="preset-btn" @onclick='() => ApplyPreset("antibiotic")'>
+            <Icon Name="zap" Size="16" />
+            <span>Antibiotic Resistance</span>
+        </button>
+    </div>
+
+    <div class="card evo-card">
+        <div class="evo-meta">
+            <div class="evo-meta-row">
+                <span class="meta-label">Generation</span>
+                <strong>@generation</strong>
+            </div>
+            <div class="evo-meta-row">
+                <span class="meta-label">Pop</span>
+                <strong>@population.Count</strong>
+            </div>
+            <div class="evo-meta-row">
+                <span class="meta-label">Avg hue</span>
+                <strong>@AvgHue.ToString("F0")</strong>
+            </div>
+            <div class="evo-meta-row">
+                <span class="meta-label">Avg size</span>
+                <strong>@AvgSizeLabel</strong>
+            </div>
+            <div class="evo-meta-row">
+                <span class="meta-label">Avg speed</span>
+                <strong>@AvgSpeedLabel</strong>
+            </div>
+        </div>
+
+        <div class="evo-canvas-wrap">
+            <svg viewBox="0 0 300 300" class="evo-canvas" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="300" height="300" fill="var(--bg-surface)" />
+                @foreach (var c in population)
+                {
+                    <circle cx="@c.X.ToString("F1")" cy="@c.Y.ToString("F1")"
+                            r="@SizeRadius(c.Size).ToString("F1")"
+                            fill="@HueToColor(c.Hue)"
+                            stroke="rgba(0,0,0,0.25)" stroke-width="0.5" />
+                }
+                @if (population.Count == 0)
+                {
+                    <g><text x="150" y="150" text-anchor="middle" fill="var(--text-muted)" font-size="14">extinct</text></g>
+                }
+            </svg>
+        </div>
+
+        <div class="histo-wrap">
+            <div class="histo-block">
+                <div class="histo-title">Hue distribution</div>
+                <svg viewBox="0 0 160 60" class="histo-svg" xmlns="http://www.w3.org/2000/svg">
+                    @{
+                        var hueBins = HueBins();
+                        var hueMax = hueBins.Max();
+                        if (hueMax == 0) hueMax = 1;
+                    }
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        var binIdx = i;
+                        var h = (int)(hueBins[binIdx] * 50.0 / hueMax);
+                        var hueCenter = (binIdx * 45) + 22;
+                        <rect x="@(binIdx * 20 + 2)" y="@(55 - h)" width="16" height="@h"
+                              fill="@HueToColor(hueCenter)" />
+                    }
+                    <line x1="0" y1="55" x2="160" y2="55" stroke="var(--border)" stroke-width="1" />
+                </svg>
+            </div>
+
+            <div class="histo-block">
+                <div class="histo-title">Size distribution</div>
+                <svg viewBox="0 0 160 60" class="histo-svg" xmlns="http://www.w3.org/2000/svg">
+                    @{
+                        var sizeBins = SizeBins();
+                        var sizeMax = sizeBins.Max();
+                        if (sizeMax == 0) sizeMax = 1;
+                        string[] sizeLabels = { "S", "M", "L" };
+                    }
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        var sIdx = i;
+                        var h = (int)(sizeBins[sIdx] * 45.0 / sizeMax);
+                        <g>
+                            <rect x="@(sIdx * 50 + 10)" y="@(50 - h)" width="40" height="@h"
+                                  fill="var(--primary)" />
+                            <text x="@(sIdx * 50 + 30)" y="58" text-anchor="middle" fill="var(--text-muted)"
+                                  font-size="9">@sizeLabels[sIdx]</text>
+                        </g>
+                    }
+                </svg>
+            </div>
+
+            <div class="histo-block">
+                <div class="histo-title">Speed distribution</div>
+                <svg viewBox="0 0 160 60" class="histo-svg" xmlns="http://www.w3.org/2000/svg">
+                    @{
+                        var spdBins = SpeedBins();
+                        var spdMax = spdBins.Max();
+                        if (spdMax == 0) spdMax = 1;
+                        string[] spdLabels = { "Slow", "Med", "Fast" };
+                    }
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        var sIdx = i;
+                        var h = (int)(spdBins[sIdx] * 45.0 / spdMax);
+                        <g>
+                            <rect x="@(sIdx * 50 + 10)" y="@(50 - h)" width="40" height="@h"
+                                  fill="var(--accent)" />
+                            <text x="@(sIdx * 50 + 30)" y="58" text-anchor="middle" fill="var(--text-muted)"
+                                  font-size="9">@spdLabels[sIdx]</text>
+                        </g>
+                    }
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="card evo-controls">
+        <h3 class="ctrl-title"><Icon Name="brain" Size="16" /> Selection pressures</h3>
+
+        <div class="ctrl-row">
+            <label>
+                <span>Predator color preference (hue): <strong>@predatorHue</strong></span>
+                <input type="range" min="0" max="360" step="5" @bind="predatorHue" @bind:event="oninput" />
+                <div class="hue-bar"></div>
+            </label>
+        </div>
+
+        <div class="ctrl-row">
+            <label>
+                <span>Prey size predators favor</span>
+                <select @bind="favoredSize">
+                    <option value="0">Small</option>
+                    <option value="1">Medium</option>
+                    <option value="2">Large</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="ctrl-row">
+            <label>
+                <span>Speed required to escape</span>
+                <select @bind="requiredSpeed">
+                    <option value="0">Slow (none)</option>
+                    <option value="1">Medium</option>
+                    <option value="2">Fast</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="ctrl-row">
+            <label>
+                <span>Selection strength: <strong>@selectionStrength.ToString("F2")</strong></span>
+                <input type="range" min="0.1" max="1.0" step="0.05" @bind="selectionStrength" @bind:event="oninput" />
+            </label>
+        </div>
+    </div>
+
+    <div class="evo-buttons">
+        <button class="btn btn-primary" @onclick="StepGeneration">
+            <Icon Name="trending-up" Size="16" /> Step Generation
+        </button>
+        <button class="btn btn-accent" @onclick="RunTen">
+            <Icon Name="rocket" Size="16" /> Run 10 Generations
+        </button>
+        <button class="btn btn-outline" @onclick="ResetSim">
+            <Icon Name="dice" Size="16" /> Reset
+        </button>
+    </div>
+
+    @if (lastEvent != null)
+    {
+        <div class="evo-event">@lastEvent</div>
+    }
+}
+
+@code {
+    private bool unlocked;
+    private int seed = 42;
+    private Random rng = new(42);
+    private int generation = 0;
+
+    // selection pressure params
+    private int predatorHue = 200;
+    private int favoredSize = 1; // 0=small,1=med,2=large : the size predators target (so creatures of THIS size suffer)
+    private int requiredSpeed = 1; // creatures slower than this die more
+    private double selectionStrength = 0.6;
+
+    private string? lastEvent;
+    private const int PopSize = 30;
+
+    private List<Creature> population = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-evolution-sim");
+            if (unlocked && population.Count == 0)
+            {
+                ResetSim();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ResetSim()
+    {
+        rng = new Random(seed);
+        generation = 0;
+        lastEvent = null;
+        population = Enumerable.Range(0, PopSize).Select(_ => RandomCreature()).ToList();
+    }
+
+    private Creature RandomCreature() => new Creature
+    {
+        Hue = rng.Next(0, 360),
+        Size = rng.Next(0, 3),
+        Speed = rng.Next(0, 3),
+        X = rng.NextDouble() * 280 + 10,
+        Y = rng.NextDouble() * 280 + 10
+    };
+
+    private void StepGeneration()
+    {
+        if (population.Count == 0) return;
+
+        // compute survival probabilities
+        var probs = population.Select(c => SurvivalProbability(c)).ToList();
+        var survivors = new List<Creature>();
+        for (int i = 0; i < population.Count; i++)
+        {
+            if (rng.NextDouble() < probs[i])
+                survivors.Add(population[i]);
+        }
+
+        if (survivors.Count == 0)
+        {
+            population = new List<Creature>();
+            generation++;
+            lastEvent = $"Gen {generation}: extinction.";
+            return;
+        }
+
+        // resample to PopSize, with mutation
+        var next = new List<Creature>(PopSize);
+        for (int i = 0; i < PopSize; i++)
+        {
+            var parent = survivors[rng.Next(survivors.Count)];
+            next.Add(Mutate(parent));
+        }
+        population = next;
+        generation++;
+        lastEvent = $"Gen {generation}: {survivors.Count}/{PopSize} survived, reseeded with mutation.";
+    }
+
+    private void RunTen()
+    {
+        for (int i = 0; i < 10 && population.Count > 0; i++)
+            StepGeneration();
+    }
+
+    private double SurvivalProbability(Creature c)
+    {
+        // hue fit: closer to predatorHue means MORE likely to be eaten -> lower survival.
+        // distance is shortest arc on 360 wheel.
+        double hueDist = Math.Min(Math.Abs(c.Hue - predatorHue), 360 - Math.Abs(c.Hue - predatorHue));
+        double hueFit = hueDist / 180.0; // 0..1, higher is safer
+
+        // size fit: matching favoredSize is bad (predators target it). distance is good.
+        double sizeFit = Math.Abs(c.Size - favoredSize) / 2.0; // 0..1
+
+        // speed fit: must be >= requiredSpeed; if slower, suffer.
+        double speedFit;
+        if (c.Speed >= requiredSpeed) speedFit = 1.0;
+        else speedFit = Math.Max(0.0, 1.0 - (requiredSpeed - c.Speed) * 0.5);
+
+        // combined fitness in [0,1]
+        double fit = hueFit * sizeFit * speedFit;
+
+        // baseline survival + selection pull
+        double baseline = 1.0 - selectionStrength;
+        return Math.Clamp(baseline + selectionStrength * fit, 0.02, 0.98);
+    }
+
+    private Creature Mutate(Creature parent)
+    {
+        int hue = parent.Hue + (int)Math.Round((rng.NextDouble() - 0.5) * 30);
+        if (hue < 0) hue += 360;
+        if (hue >= 360) hue -= 360;
+
+        int size = parent.Size;
+        if (rng.NextDouble() < 0.15) size += rng.Next(2) == 0 ? -1 : 1;
+        size = Math.Clamp(size, 0, 2);
+
+        int speed = parent.Speed;
+        if (rng.NextDouble() < 0.15) speed += rng.Next(2) == 0 ? -1 : 1;
+        speed = Math.Clamp(speed, 0, 2);
+
+        return new Creature
+        {
+            Hue = hue,
+            Size = size,
+            Speed = speed,
+            X = rng.NextDouble() * 280 + 10,
+            Y = rng.NextDouble() * 280 + 10
+        };
+    }
+
+    private void ApplyPreset(string key)
+    {
+        switch (key)
+        {
+            case "moth":
+                // dark moths survive in polluted forests. predator targets light moths.
+                // hue irrelevant in real moth case; we model "lightness" via hue ~ yellow (60).
+                predatorHue = 60;       // predators eat yellow/light
+                favoredSize = 1;        // size neutral
+                requiredSpeed = 0;      // moths don't need to be fast
+                selectionStrength = 0.7;
+                lastEvent = "Preset: Peppered Moth -- pollution favors dark forms.";
+                break;
+            case "beak":
+                // drought favors larger beaks (large seeds). predator targets small beaks.
+                predatorHue = 30;       // mild preference
+                favoredSize = 0;        // small beaks targeted
+                requiredSpeed = 0;
+                selectionStrength = 0.6;
+                lastEvent = "Preset: Beak Size -- drought favors larger beaks.";
+                break;
+            case "antibiotic":
+                // drug kills slow reproducers; fast survives.
+                predatorHue = 0;
+                favoredSize = 1;
+                requiredSpeed = 2;      // must be fast to survive
+                selectionStrength = 0.85;
+                lastEvent = "Preset: Antibiotic Resistance -- only the fast survive.";
+                break;
+        }
+        seed = rng.Next(0, 9999);
+        ResetSim();
+    }
+
+    private int[] HueBins()
+    {
+        var bins = new int[8];
+        foreach (var c in population)
+        {
+            int idx = Math.Min(7, c.Hue / 45);
+            bins[idx]++;
+        }
+        return bins;
+    }
+
+    private int[] SizeBins()
+    {
+        var bins = new int[3];
+        foreach (var c in population) bins[c.Size]++;
+        return bins;
+    }
+
+    private int[] SpeedBins()
+    {
+        var bins = new int[3];
+        foreach (var c in population) bins[c.Speed]++;
+        return bins;
+    }
+
+    private double AvgHue => population.Count == 0 ? 0 : population.Average(c => (double)c.Hue);
+    private string AvgSizeLabel
+    {
+        get
+        {
+            if (population.Count == 0) return "-";
+            double avg = population.Average(c => (double)c.Size);
+            return avg < 0.66 ? "Small" : avg < 1.34 ? "Medium" : "Large";
+        }
+    }
+    private string AvgSpeedLabel
+    {
+        get
+        {
+            if (population.Count == 0) return "-";
+            double avg = population.Average(c => (double)c.Speed);
+            return avg < 0.66 ? "Slow" : avg < 1.34 ? "Med" : "Fast";
+        }
+    }
+
+    private static double SizeRadius(int size) => size switch { 0 => 4.0, 1 => 7.0, 2 => 10.0, _ => 6.0 };
+
+    private static string HueToColor(int hue) => $"hsl({hue}, 70%, 55%)";
+
+    private class Creature
+    {
+        public int Hue { get; set; }
+        public int Size { get; set; }
+        public int Speed { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+}
+
+<style>
+    .evo-intro {
+        color: var(--text-secondary);
+        font-size: 0.88rem;
+        margin: 0 0 12px;
+        line-height: 1.5;
+    }
+
+    .evo-presets {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+    .preset-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 6px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .preset-btn:active { transform: scale(0.97); }
+    .preset-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .preset-btn span { line-height: 1.2; text-align: center; }
+
+    .evo-card {
+        padding: 14px;
+        margin-bottom: 14px;
+    }
+
+    .evo-meta {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+    .evo-meta-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+        padding: 6px 4px;
+    }
+    .meta-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .evo-meta-row strong {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        margin-top: 2px;
+    }
+
+    .evo-canvas-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 14px;
+    }
+    .evo-canvas {
+        width: 100%;
+        max-width: 320px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-surface);
+    }
+
+    .histo-wrap {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .histo-block {
+        background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+    }
+    .histo-title {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 4px;
+        text-align: center;
+    }
+    .histo-svg {
+        width: 100%;
+        height: auto;
+    }
+
+    .evo-controls {
+        padding: 14px;
+        margin-bottom: 14px;
+    }
+    .ctrl-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 10px;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+    }
+    .ctrl-row {
+        margin-bottom: 12px;
+    }
+    .ctrl-row:last-child { margin-bottom: 0; }
+    .ctrl-row label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    .ctrl-row input[type="range"] {
+        width: 100%;
+        accent-color: var(--primary);
+    }
+    .ctrl-row select {
+        padding: 8px 10px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+    }
+    .ctrl-row strong { color: var(--text-primary); }
+
+    .hue-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(to right,
+            hsl(0,70%,55%), hsl(60,70%,55%), hsl(120,70%,55%),
+            hsl(180,70%,55%), hsl(240,70%,55%), hsl(300,70%,55%), hsl(360,70%,55%));
+    }
+
+    .evo-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+    .evo-buttons .btn {
+        flex: 1;
+        min-width: 120px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .evo-event {
+        background: var(--bg-surface);
+        border-left: 3px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+    }
+
+    @@media (max-width: 380px) {
+        .evo-meta { grid-template-columns: repeat(3, 1fr); }
+        .preset-btn { font-size: 0.7rem; }
+    }
+</style>

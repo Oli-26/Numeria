@@ -1,0 +1,381 @@
+@page "/topic/{TopicId}/challenges"
+@page "/topic/{TopicId}/challenges/{ChallengeId}"
+@inject IContentRepository Content
+@inject IChallengeRepository ChallengeRepo
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@implements IAsyncDisposable
+
+@if (challenges == null)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Challenges</h1>
+    </div>
+    <div class="loading">Loading challenges...</div>
+}
+else if (active == null)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to topic" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "") Challenges</h1>
+    </div>
+
+    @if (challenges.Count == 0)
+    {
+        <div class="card" style="padding: 32px; text-align: center;">
+            <Icon Name="pencil" Size="36" Stroke="var(--text-muted)" />
+            <h2 style="margin-top: 12px">No challenges yet</h2>
+            <p style="color: var(--text-muted)">Challenges for this topic are coming soon.</p>
+        </div>
+    }
+    else
+    {
+        <p class="ch-subtitle">Open-ended problems. Use the writeboard to work it out, then enter your final answer.</p>
+        <div class="ch-list stagger-in">
+            @foreach (var c in challenges)
+            {
+                var done = completedIds.Contains(c.Id);
+                <div class="card card-clickable ch-card @(done ? "ch-done" : "")" @onclick="() => StartChallenge(c)">
+                    <div class="ch-card-left">
+                        <div class="ch-diff">
+                            @for (int i = 0; i < c.Difficulty; i++) { <span class="ch-star"><Icon Name="star-filled" Size="12" Fill="currentColor" /></span> }
+                            @for (int i = c.Difficulty; i < 3; i++) { <span class="ch-star dim"><Icon Name="star-filled" Size="12" Fill="currentColor" /></span> }
+                        </div>
+                        <strong>@c.Title</strong>
+                        <small>@c.Problem</small>
+                    </div>
+                    <div class="ch-card-right">
+                        @if (done)
+                        {
+                            <span class="ch-check"><Icon Name="check" Size="14" /></span>
+                        }
+                        else
+                        {
+                            <span class="ch-xp">+@c.XpReward XP</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to list" @onclick="BackToList"><Icon Name="arrow-left" Size="18" /></button>
+        <h1>@active.Title</h1>
+    </div>
+
+    <div class="ch-problem card">
+        <div class="ch-problem-text">@active.Problem</div>
+        @if (active.ProblemMath != null)
+        {
+            <div class="math-display" id="ch-problem-math"></div>
+        }
+        @if (active.Hint != null)
+        {
+            <button class="ch-hint-btn" @onclick="() => showHint = !showHint">
+                <Icon Name="lightbulb" Size="14" /> @(showHint ? "Hide hint" : "Show hint")
+            </button>
+            @if (showHint)
+            {
+                <div class="ch-hint">@active.Hint</div>
+            }
+        }
+    </div>
+
+    @if (!submitted)
+    {
+        <div class="ch-pad-wrap">
+            <div class="ch-pad-toolbar">
+                <span class="ch-pad-label">Writeboard</span>
+                <div class="ch-pad-actions">
+                    <button class="btn btn-outline btn-sm" @onclick="UndoStroke"><Icon Name="arrow-left" Size="14" /> Undo</button>
+                    <button class="btn btn-outline btn-sm" @onclick="ClearPad"><Icon Name="x-mark" Size="14" /> Clear</button>
+                </div>
+            </div>
+            <canvas id="@CanvasId" class="ch-pad"></canvas>
+        </div>
+
+        <div class="ch-answer">
+            <label for="ch-answer-input">Final answer</label>
+            <input id="ch-answer-input" class="ch-answer-input" type="text" @bind="answerInput" @bind:event="oninput" placeholder="Type your final answer" autocomplete="off" />
+            <button class="btn btn-primary btn-lg ch-submit"
+                    @onclick="SubmitAnswer"
+                    disabled="@string.IsNullOrWhiteSpace(answerInput)">
+                Submit Answer
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="ch-result card @(isCorrect ? "ch-correct" : "ch-wrong")">
+            <div class="ch-result-icon">
+                @if (isCorrect) { <Icon Name="check" Size="14" /> } else { <Icon Name="x-mark" Size="14" /> }
+            </div>
+            <h2>@(isCorrect ? "Correct!" : "Not Quite")</h2>
+
+            @if (isCorrect)
+            {
+                <div class="xp-earned pulse">
+                    <span class="xp-badge" style="font-size: 1rem; padding: 6px 14px">+@active.XpReward XP</span>
+                </div>
+            }
+            else
+            {
+                <p class="ch-your-answer">Your answer: <code>@answerInput</code></p>
+                <p class="ch-correct-answer">Correct answer: <strong>@active.FinalAnswer</strong></p>
+            }
+
+            @if (active.SolutionMath != null)
+            {
+                <div class="math-display" id="ch-solution-math"></div>
+            }
+
+            @if (active.Walkthrough.Count > 0)
+            {
+                <div class="ch-walkthrough">
+                    <h3>Walkthrough</h3>
+                    <ol>
+                        @foreach (var step in active.Walkthrough)
+                        {
+                            <li>@step</li>
+                        }
+                    </ol>
+                </div>
+            }
+
+            <div style="display:flex; gap:10px; margin-top:16px">
+                @if (!isCorrect)
+                {
+                    <button class="btn btn-primary" style="flex:1" @onclick="RetryChallenge">Try Again</button>
+                }
+                <button class="btn btn-outline" style="flex:1" @onclick="BackToList">
+                    @(isCorrect ? "More Challenges" : "Back to List")
+                </button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+    [Parameter] public string? ChallengeId { get; set; }
+
+    private Topic? topic;
+    private List<TopicChallenge>? challenges;
+    private TopicChallenge? active;
+    private HashSet<string> completedIds = new();
+    private string answerInput = "";
+    private bool submitted;
+    private bool isCorrect;
+    private bool showHint;
+    private bool padInitialized;
+
+    private string CanvasId => "ch-drawpad";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            topic = await Content.GetTopicAsync(TopicId);
+            challenges = await ChallengeRepo.GetTopicChallengesAsync(TopicId);
+            var profile = await Progress.GetProfileAsync();
+            completedIds = profile.ChallengesCompleted.ToHashSet();
+
+            if (ChallengeId != null && challenges != null)
+            {
+                var c = challenges.FirstOrDefault(x => x.Id == ChallengeId);
+                if (c != null) InitChallenge(c);
+            }
+            StateHasChanged();
+            return;
+        }
+
+        if (active != null && !submitted && !padInitialized)
+        {
+            try { await JS.InvokeVoidAsync("DrawPad.init", CanvasId); padInitialized = true; }
+            catch (Exception ex) { await JS.LogErrorAsync("ChallengesPage.DrawPad.init", ex); }
+        }
+
+        if (active?.ProblemMath != null && !submitted)
+        {
+            await JS.TryInvokeVoidAsync("renderMath", "ch-problem-math", active.ProblemMath, true);
+        }
+
+        if (submitted && active?.SolutionMath != null)
+        {
+            await JS.TryInvokeVoidAsync("renderMath", "ch-solution-math", active.SolutionMath, true);
+        }
+    }
+
+    private void StartChallenge(TopicChallenge c) => InitChallenge(c);
+
+    private void InitChallenge(TopicChallenge c)
+    {
+        active = c;
+        submitted = false;
+        isCorrect = false;
+        answerInput = "";
+        showHint = false;
+        padInitialized = false;
+    }
+
+    private async Task ClearPad()
+    {
+        await JS.TryInvokeVoidAsync("DrawPad.clear", CanvasId);
+    }
+
+    private async Task UndoStroke()
+    {
+        await JS.TryInvokeVoidAsync("DrawPad.undo", CanvasId);
+    }
+
+    private async Task SubmitAnswer()
+    {
+        if (active == null || string.IsNullOrWhiteSpace(answerInput)) return;
+        submitted = true;
+        isCorrect = MatchesAnswer(answerInput, active);
+
+        await JS.TryInvokeVoidAsync("DrawPad.destroy", CanvasId);
+        padInitialized = false;
+
+        if (isCorrect)
+        {
+            await JS.TryInvokeVoidAsync("Sounds.playCorrect");
+            await JS.TryInvokeVoidAsync("Confetti.launch", 50);
+
+            if (!completedIds.Contains(active.Id))
+            {
+                completedIds.Add(active.Id);
+                await Gamification.AwardXpAsync(active.XpReward);
+                var profile = await Progress.GetProfileAsync();
+                if (!profile.ChallengesCompleted.Contains(active.Id))
+                {
+                    profile.ChallengesCompleted.Add(active.Id);
+                    await Progress.SaveProfileAsync(profile);
+                }
+            }
+        }
+        else
+        {
+            await JS.TryInvokeVoidAsync("Sounds.playWrong");
+        }
+    }
+
+    private static bool MatchesAnswer(string given, TopicChallenge c)
+    {
+        var n = Normalize(given);
+        if (Normalize(c.FinalAnswer) == n) return true;
+        foreach (var v in c.AnswerVariants)
+            if (Normalize(v) == n) return true;
+        return false;
+    }
+
+    private static string Normalize(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        var sb = new System.Text.StringBuilder(s.Length);
+        foreach (var ch in s)
+        {
+            if (char.IsWhiteSpace(ch)) continue;
+            sb.Append(char.ToLowerInvariant(ch));
+        }
+        return sb.ToString();
+    }
+
+    private void RetryChallenge()
+    {
+        if (active != null) InitChallenge(active);
+    }
+
+    private async Task BackToList()
+    {
+        await JS.TryInvokeVoidAsync("DrawPad.destroy", CanvasId);
+        padInitialized = false;
+        active = null;
+        submitted = false;
+        answerInput = "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.TryInvokeVoidAsync("DrawPad.destroy", CanvasId);
+    }
+}
+
+<style>
+    .ch-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
+
+    .ch-list { display: flex; flex-direction: column; gap: 10px; }
+    .ch-card { display: flex; align-items: center; gap: 12px; padding: 14px; }
+    .ch-card:hover { transform: none; }
+    .ch-card.ch-done { border-color: var(--success); }
+    .ch-card-left { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .ch-card-left small { color: var(--text-muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .ch-card-right { flex-shrink: 0; }
+    .ch-diff { margin-bottom: 2px; }
+    .ch-star { color: var(--accent); font-size: 0.75rem; }
+    .ch-star.dim { opacity: 0.25; }
+    .ch-check { color: var(--success); font-weight: 700; font-size: 1.2rem; }
+    .ch-xp { font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+
+    .ch-problem { padding: 14px; margin-bottom: 12px; background: rgba(74,95,224,0.06); border-color: rgba(74,95,224,0.15); }
+    .ch-problem:hover { transform: none; }
+    .ch-problem-text { font-size: 0.95rem; line-height: 1.5; }
+    .ch-hint-btn {
+        margin-top: 10px; background: none; border: 1px dashed var(--border);
+        color: var(--text-muted); padding: 6px 10px; border-radius: 6px;
+        font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .ch-hint {
+        margin-top: 8px; padding: 10px 12px; font-size: 0.85rem;
+        background: rgba(240,160,48,0.08); border: 1px solid rgba(240,160,48,0.2);
+        border-radius: var(--radius-sm); color: var(--text-secondary);
+    }
+
+    .ch-pad-wrap {
+        margin-bottom: 14px; border: 1px solid var(--border);
+        border-radius: var(--radius-md); overflow: hidden; background: var(--bg-card);
+    }
+    .ch-pad-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 12px; background: var(--bg-surface); border-bottom: 1px solid var(--border);
+    }
+    .ch-pad-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+    .ch-pad-actions { display: flex; gap: 6px; }
+    .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+    .ch-pad {
+        width: 100%; height: 320px; display: block;
+        background: var(--bg-card); touch-action: none; cursor: crosshair;
+    }
+
+    .ch-answer { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .ch-answer label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+    .ch-answer-input {
+        padding: 12px 14px; border-radius: var(--radius-sm);
+        border: 1px solid var(--border); background: var(--bg-card);
+        color: var(--text-primary); font-size: 1rem; outline: none;
+        font-family: 'Courier New', Consolas, monospace;
+    }
+    .ch-answer-input:focus { border-color: var(--primary); }
+    .ch-submit { width: 100%; }
+
+    .ch-result { padding: 24px; text-align: center; }
+    .ch-result:hover { transform: none; }
+    .ch-result.ch-correct { border-color: var(--success); }
+    .ch-result.ch-wrong { border-color: var(--error); }
+    .ch-result-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .ch-correct .ch-result-icon { color: var(--success); }
+    .ch-wrong .ch-result-icon { color: var(--error); }
+    .ch-your-answer { margin: 8px 0 0; color: var(--text-secondary); font-size: 0.9rem; }
+    .ch-your-answer code { background: var(--bg-surface); padding: 2px 6px; border-radius: 4px; }
+    .ch-correct-answer { color: var(--success); font-size: 0.95rem; margin: 4px 0 0; }
+    .ch-walkthrough { text-align: left; margin-top: 16px; }
+    .ch-walkthrough h3 { font-size: 0.95rem; margin-bottom: 6px; }
+    .ch-walkthrough ol { margin: 0; padding-left: 20px; }
+    .ch-walkthrough li { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; padding: 4px 0; }
+</style>

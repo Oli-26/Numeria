@@ -1,0 +1,930 @@
+@page "/era-map"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Era Map</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Era Map" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Era Map</h1>
+</div>
+
+<div class="era-display card">
+    <div class="era-year-row">
+        <Icon Name="clock" Size="22" Stroke="var(--accent)" />
+        <div class="era-year">@CurrentEra.Label</div>
+    </div>
+    <div class="era-headline">@CurrentEra.Headline</div>
+</div>
+
+<div class="map-wrap card">
+    <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet" class="world-svg" role="img" aria-label="World map">
+        <defs>
+            <radialGradient id="oceanGrad" cx="50%" cy="50%" r="70%">
+                <stop offset="0%" stop-color="#3a6f9c" stop-opacity="0.25" />
+                <stop offset="60%" stop-color="#2a4d70" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#1a2f4a" stop-opacity="0.55" />
+            </radialGradient>
+            <linearGradient id="paperGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#e8d9b0" stop-opacity="0.18" />
+                <stop offset="50%" stop-color="#d4b886" stop-opacity="0.10" />
+                <stop offset="100%" stop-color="#a08858" stop-opacity="0.22" />
+            </linearGradient>
+            <pattern id="paperTex" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+                <rect width="120" height="120" fill="url(#paperGrad)" />
+                <circle cx="20" cy="30" r="0.8" fill="#000" fill-opacity="0.05" />
+                <circle cx="80" cy="60" r="0.6" fill="#000" fill-opacity="0.04" />
+                <circle cx="50" cy="100" r="1.0" fill="#000" fill-opacity="0.06" />
+                <circle cx="100" cy="20" r="0.5" fill="#000" fill-opacity="0.03" />
+                <circle cx="35" cy="80" r="0.7" fill="#000" fill-opacity="0.04" />
+            </pattern>
+            <pattern id="hatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="6" stroke="#fff" stroke-width="1" stroke-opacity="0.35" />
+            </pattern>
+            <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+                <feOffset dx="1" dy="2" result="off" />
+                <feComponentTransfer><feFuncA type="linear" slope="0.35" /></feComponentTransfer>
+                <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="rough">
+                <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="3" />
+                <feDisplacementMap in="SourceGraphic" scale="1.2" />
+            </filter>
+            <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+                <stop offset="60%" stop-color="#000" stop-opacity="0" />
+                <stop offset="100%" stop-color="#000" stop-opacity="0.35" />
+            </radialGradient>
+            <pattern id="latlong" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#ffffff" stroke-width="0.4" stroke-opacity="0.08" />
+            </pattern>
+        </defs>
+
+        <rect x="0" y="0" width="1000" height="500" fill="url(#oceanGrad)" />
+        <rect x="0" y="0" width="1000" height="500" fill="url(#latlong)" />
+
+        <g class="graticule" opacity="0.18">
+            @for (int i = 0; i < 9; i++)
+            {
+                var cy = 50 + i * 50;
+                <ellipse cx="500" cy="@cy" rx="@(490 - Math.Abs(i - 4) * 12)" ry="3" fill="none" stroke="#ffffff" stroke-width="0.3" />
+            }
+        </g>
+
+        <g class="continents" filter="url(#softShadow)">
+            <path class="continent" d="M 60,90 Q 130,75 200,70 Q 245,85 260,110 Q 275,140 270,170 Q 250,195 230,210 Q 215,235 200,260 Q 175,280 150,290 Q 125,280 110,260 Q 90,230 80,200 Q 65,175 60,150 Q 55,120 60,90 Z" />
+            <path class="continent" d="M 200,260 Q 220,258 240,260 Q 260,278 270,300 Q 262,318 250,330 Q 232,328 220,320 Q 210,305 205,290 Q 200,275 200,260 Z" />
+            <path class="continent" d="M 250,330 Q 282,318 310,310 Q 328,335 340,360 Q 338,392 330,420 Q 312,448 290,470 Q 273,468 260,460 Q 250,432 245,400 Q 240,378 240,360 Q 244,344 250,330 Z" />
+            <path class="continent" d="M 320,60 Q 352,52 380,50 Q 395,68 400,90 Q 388,102 370,110 Q 348,108 330,100 Q 322,80 320,60 Z" />
+            <path class="continent" d="M 450,90 Q 495,82 540,80 Q 565,88 580,100 Q 590,118 590,140 Q 578,158 560,170 Q 535,172 510,170 Q 488,162 470,150 Q 458,135 450,120 Q 446,105 450,90 Z" />
+            <path class="continent" d="M 470,180 Q 515,178 560,180 Q 585,198 600,220 Q 610,253 610,290 Q 602,325 590,360 Q 568,385 540,400 Q 518,402 500,400 Q 482,382 470,360 Q 463,325 460,290 Q 458,258 460,230 Q 463,205 470,180 Z" />
+            <path class="continent" d="M 590,170 Q 615,162 640,160 Q 658,178 670,200 Q 666,222 660,240 Q 638,248 620,250 Q 608,238 600,220 Q 593,195 590,170 Z" />
+            <path class="continent" d="M 580,70 Q 715,62 850,60 Q 880,78 900,100 Q 893,128 880,150 Q 838,162 800,170 Q 750,167 700,160 Q 658,152 620,140 Q 597,125 580,110 Q 577,90 580,70 Z" />
+            <path class="continent" d="M 640,160 Q 700,164 760,170 Q 775,190 780,210 Q 772,232 760,250 Q 728,258 700,260 Q 683,247 670,230 Q 663,215 660,200 Q 648,180 640,160 Z" />
+            <path class="continent" d="M 780,150 Q 830,148 880,150 Q 895,175 900,200 Q 892,232 880,260 Q 848,262 820,260 Q 798,248 780,230 Q 773,210 770,190 Q 774,170 780,150 Z" />
+            <path class="continent" d="M 780,260 Q 820,264 860,270 Q 870,290 870,310 Q 850,322 830,330 Q 808,322 790,310 Q 783,295 780,280 Q 778,270 780,260 Z" />
+            <path class="continent" d="M 700,230 Q 730,234 760,240 Q 762,265 760,290 Q 745,310 730,330 Q 712,322 700,310 Q 692,285 690,260 Q 693,243 700,230 Z" />
+            <path class="continent" d="M 900,170 Q 912,168 920,170 Q 924,190 925,210 Q 915,218 905,220 Q 902,195 900,170 Z" />
+            <path class="continent" d="M 820,360 Q 870,354 920,350 Q 933,372 940,390 Q 928,408 910,420 Q 880,422 850,420 Q 833,412 820,400 Q 818,378 820,360 Z" />
+            <path class="continent" d="M 950,420 Q 962,420 970,420 Q 974,432 975,445 Q 965,449 955,450 Q 952,435 950,420 Z" />
+        </g>
+
+        <g class="continents-tex" pointer-events="none">
+            <path d="M 60,90 Q 130,75 200,70 Q 245,85 260,110 Q 275,140 270,170 Q 250,195 230,210 Q 215,235 200,260 Q 175,280 150,290 Q 125,280 110,260 Q 90,230 80,200 Q 65,175 60,150 Q 55,120 60,90 Z" fill="url(#paperTex)" />
+            <path d="M 250,330 Q 282,318 310,310 Q 328,335 340,360 Q 338,392 330,420 Q 312,448 290,470 Q 273,468 260,460 Q 250,432 245,400 Q 240,378 240,360 Q 244,344 250,330 Z" fill="url(#paperTex)" />
+            <path d="M 470,180 Q 515,178 560,180 Q 585,198 600,220 Q 610,253 610,290 Q 602,325 590,360 Q 568,385 540,400 Q 518,402 500,400 Q 482,382 470,360 Q 463,325 460,290 Q 458,258 460,230 Q 463,205 470,180 Z" fill="url(#paperTex)" />
+            <path d="M 580,70 Q 715,62 850,60 Q 880,78 900,100 Q 893,128 880,150 Q 838,162 800,170 Q 750,167 700,160 Q 658,152 620,140 Q 597,125 580,110 Q 577,90 580,70 Z" fill="url(#paperTex)" />
+            <path d="M 450,90 Q 495,82 540,80 Q 565,88 580,100 Q 590,118 590,140 Q 578,158 560,170 Q 535,172 510,170 Q 488,162 470,150 Q 458,135 450,120 Q 446,105 450,90 Z" fill="url(#paperTex)" />
+            <path d="M 820,360 Q 870,354 920,350 Q 933,372 940,390 Q 928,408 910,420 Q 880,422 850,420 Q 833,412 820,400 Q 818,378 820,360 Z" fill="url(#paperTex)" />
+        </g>
+
+        <g class="era-regions">
+            @foreach (var region in CurrentEra.Regions)
+            {
+                var r = region;
+                var isSelected = selectedRegion?.Name == r.Name;
+                var isHover = hoverRegion?.Name == r.Name;
+                var pathD = SmoothPath(r.Points);
+                var dimmed = (selectedRegion != null && !isSelected) || (hoverRegion != null && !isHover && selectedRegion == null);
+                <g class="era-region-group @(dimmed ? "dimmed" : "") @(isSelected ? "selected" : "")"
+                   @onclick="() => SelectRegion(r)"
+                   @onmouseover="() => hoverRegion = r"
+                   @onmouseout="() => hoverRegion = null">
+                    <path class="era-region-glow" d="@pathD" stroke="@r.Color" />
+                    <path class="era-region-fill" d="@pathD" fill="@r.Color" stroke="@r.Color" />
+                    @if (isSelected)
+                    {
+                        <path class="era-region-hatch" d="@pathD" fill="url(#hatch)" />
+                    }
+                    <title>@r.Name (@r.Dates)</title>
+                </g>
+            }
+        </g>
+
+        <g class="capitals" pointer-events="none">
+            @foreach (var region in CurrentEra.Regions)
+            {
+                var r = region;
+                var c = CapitalPoint(r.Points);
+                var isSelected = selectedRegion?.Name == r.Name;
+                if (c.HasValue)
+                {
+                    <g transform="translate(@c.Value.x.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),@c.Value.y.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))">
+                        <circle r="6" fill="@r.Color" stroke="#fff7e0" stroke-width="1.5" class="@(isSelected ? "capital-pulse" : "")" />
+                        <path d="M -3,-2 L 0,-5 L 3,-2 L 2,2 L -2,2 Z" fill="#fff7e0" stroke="#000" stroke-width="0.3" stroke-opacity="0.4" />
+                    </g>
+                }
+            }
+        </g>
+
+        @if (hoverRegion != null || selectedRegion != null)
+        {
+            var lbl = selectedRegion ?? hoverRegion!;
+            var c = CapitalPoint(lbl.Points);
+            if (c.HasValue)
+            {
+                <g class="floating-label" pointer-events="none" transform="translate(@c.Value.x.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),@c.Value.y.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))">
+                    <rect x="-60" y="-30" width="120" height="18" rx="3" fill="rgba(20,18,12,0.85)" stroke="@lbl.Color" stroke-width="1" />
+                    <text x="0" y="-17" text-anchor="middle" class="cap-label">@lbl.Name</text>
+                </g>
+            }
+        }
+
+        <g class="compass" transform="translate(940,80)" pointer-events="none">
+            <circle r="28" fill="rgba(20,18,12,0.55)" stroke="#d4b886" stroke-width="1" stroke-opacity="0.6" />
+            <circle r="22" fill="none" stroke="#d4b886" stroke-width="0.4" stroke-opacity="0.4" />
+            <path d="M 0,-22 L 4,0 L 0,22 L -4,0 Z" fill="#d4b886" fill-opacity="0.85" />
+            <path d="M -22,0 L 0,4 L 22,0 L 0,-4 Z" fill="#d4b886" fill-opacity="0.55" />
+            <path d="M 0,-22 L 4,0 L -4,0 Z" fill="#e8d9b0" />
+            <text x="0" y="-30" text-anchor="middle" class="compass-n">N</text>
+            <text x="0" y="36" text-anchor="middle" class="compass-letter">S</text>
+            <text x="-32" y="3" text-anchor="middle" class="compass-letter">W</text>
+            <text x="32" y="3" text-anchor="middle" class="compass-letter">E</text>
+        </g>
+
+        <g class="scale-bar" transform="translate(40,460)" pointer-events="none">
+            <line x1="0" y1="0" x2="120" y2="0" stroke="#e8d9b0" stroke-width="2" stroke-opacity="0.7" />
+            <line x1="0" y1="-4" x2="0" y2="4" stroke="#e8d9b0" stroke-width="1.2" stroke-opacity="0.7" />
+            <line x1="40" y1="-3" x2="40" y2="3" stroke="#e8d9b0" stroke-width="1" stroke-opacity="0.7" />
+            <line x1="80" y1="-3" x2="80" y2="3" stroke="#e8d9b0" stroke-width="1" stroke-opacity="0.7" />
+            <line x1="120" y1="-4" x2="120" y2="4" stroke="#e8d9b0" stroke-width="1.2" stroke-opacity="0.7" />
+            <text x="60" y="-8" text-anchor="middle" class="scale-text">~ 5000 km</text>
+        </g>
+
+        <rect x="0" y="0" width="1000" height="500" fill="url(#vignette)" pointer-events="none" />
+        <rect x="3" y="3" width="994" height="494" fill="none" stroke="#d4b886" stroke-width="1.2" stroke-opacity="0.45" rx="4" pointer-events="none" />
+        <rect x="8" y="8" width="984" height="484" fill="none" stroke="#d4b886" stroke-width="0.5" stroke-opacity="0.35" rx="3" pointer-events="none" />
+
+        <g class="map-cartouche" pointer-events="none">
+            <rect x="20" y="20" width="190" height="34" rx="3" fill="rgba(20,18,12,0.6)" stroke="#d4b886" stroke-opacity="0.5" />
+            <text x="115" y="38" text-anchor="middle" class="cartouche-era">@CurrentEra.Label</text>
+            <text x="115" y="49" text-anchor="middle" class="cartouche-sub">@($"{CurrentEra.Regions.Count} civilizations")</text>
+        </g>
+    </svg>
+</div>
+
+<div class="legend card">
+    <div class="legend-title"><Icon Name="scroll" Size="16" Stroke="var(--text-muted)" /> Civilizations</div>
+    <div class="legend-grid">
+        @foreach (var civ in CurrentEra.Regions.GroupBy(r => r.Name).Select(g => g.First()))
+        {
+            var c = civ;
+            <button class="legend-item @(selectedRegion?.Name == c.Name ? "legend-active" : "")"
+                    @onclick="() => SelectRegion(c)">
+                <span class="legend-swatch" style="background: @c.Color"></span>
+                <span class="legend-name">@c.Name</span>
+            </button>
+        }
+    </div>
+</div>
+
+@if (selectedRegion != null)
+{
+    <div class="info-panel card">
+        <div class="info-header" style="border-color: @selectedRegion.Color">
+            <div class="info-swatch" style="background: @selectedRegion.Color"></div>
+            <div class="info-titles">
+                <strong>@selectedRegion.Name</strong>
+                <small>@selectedRegion.Dates @(string.IsNullOrEmpty(selectedRegion.Capital) ? "" : "  -  " + selectedRegion.Capital)</small>
+            </div>
+            <button class="close-btn" aria-label="Close" @onclick="() => selectedRegion = null">x</button>
+        </div>
+        <p class="info-desc">@selectedRegion.Description</p>
+    </div>
+}
+
+<div class="slider-card card">
+    <div class="slider-row">
+        <Icon Name="calendar" Size="18" Stroke="var(--text-muted)" />
+        <input type="range" min="0" max="@(eras.Count - 1)" step="1" value="@eraIndex"
+               @oninput="OnSliderInput" class="era-slider" aria-label="Era slider" />
+        <span class="slider-count">@(eraIndex + 1)/@eras.Count</span>
+    </div>
+    <div class="era-ticks">
+        @for (int i = 0; i < eras.Count; i++)
+        {
+            var idx = i;
+            var era = eras[i];
+            <button class="era-tick @(idx == eraIndex ? "tick-active" : "")"
+                    @onclick="() => JumpToEra(idx)"
+                    title="@era.Label">@era.ShortLabel</button>
+        }
+    </div>
+    <div class="slider-actions">
+        <button class="btn btn-sm btn-outline" @onclick="StepBack" disabled="@(eraIndex == 0)">
+            <Icon Name="arrow-left" Size="14" /> Earlier
+        </button>
+        <button class="btn btn-sm btn-outline" @onclick="StepForward" disabled="@(eraIndex == eras.Count - 1)">
+            Later <Icon Name="arrow-left" Size="14" />
+        </button>
+    </div>
+</div>
+
+}
+
+@code {
+    private bool unlocked;
+    private int eraIndex = 4; // start at 117 AD (Roman peak)
+    private Region? selectedRegion;
+    private Region? hoverRegion;
+
+    private Era CurrentEra => eras[eraIndex];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-era-map");
+            StateHasChanged();
+        }
+    }
+
+    private void OnSliderInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            eraIndex = Math.Clamp(v, 0, eras.Count - 1);
+            selectedRegion = null;
+        }
+    }
+
+    private void JumpToEra(int i)
+    {
+        eraIndex = Math.Clamp(i, 0, eras.Count - 1);
+        selectedRegion = null;
+    }
+
+    private void StepBack() { if (eraIndex > 0) { eraIndex--; selectedRegion = null; } }
+    private void StepForward() { if (eraIndex < eras.Count - 1) { eraIndex++; selectedRegion = null; } }
+
+    private void SelectRegion(Region r) => selectedRegion = selectedRegion?.Name == r.Name ? null : r;
+
+    private static (double x, double y)[] ParsePoints(string points)
+    {
+        var parts = points.Split(new[] { ' ', ',', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+        var pts = new List<(double x, double y)>();
+        for (int i = 0; i + 1 < parts.Length; i += 2)
+        {
+            if (double.TryParse(parts[i], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var x)
+                && double.TryParse(parts[i + 1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var y))
+                pts.Add((x, y));
+        }
+        return pts.ToArray();
+    }
+
+    private static string SmoothPath(string points)
+    {
+        var pts = ParsePoints(points);
+        if (pts.Length < 3) return "";
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        var sb = new System.Text.StringBuilder();
+        var n = pts.Length;
+        var first = ((pts[0].x + pts[n - 1].x) / 2.0, (pts[0].y + pts[n - 1].y) / 2.0);
+        sb.Append("M ").Append(first.Item1.ToString("0.##", inv)).Append(',').Append(first.Item2.ToString("0.##", inv));
+        for (int i = 0; i < n; i++)
+        {
+            var c = pts[i];
+            var nxt = pts[(i + 1) % n];
+            var midX = (c.x + nxt.x) / 2.0;
+            var midY = (c.y + nxt.y) / 2.0;
+            sb.Append(" Q ").Append(c.x.ToString("0.##", inv)).Append(',').Append(c.y.ToString("0.##", inv))
+              .Append(' ').Append(midX.ToString("0.##", inv)).Append(',').Append(midY.ToString("0.##", inv));
+        }
+        sb.Append(" Z");
+        return sb.ToString();
+    }
+
+    private static (double x, double y)? CapitalPoint(string points)
+    {
+        var pts = ParsePoints(points);
+        if (pts.Length == 0) return null;
+        double sx = 0, sy = 0;
+        foreach (var p in pts) { sx += p.x; sy += p.y; }
+        return (sx / pts.Length, sy / pts.Length);
+    }
+
+    private record Region(string Name, string Color, string Capital, string Dates, string Description, string Points);
+    private record Era(string Label, string ShortLabel, string Headline, List<Region> Regions);
+
+    // Color palette per civilization family
+    private const string C_SUMER     = "#C97B4A";
+    private const string C_EGYPT     = "#E0B341";
+    private const string C_INDUS     = "#7B68EE";
+    private const string C_CHINA     = "#D14545";
+    private const string C_HITTITE   = "#8B5E3C";
+    private const string C_OLMEC     = "#2E8B57";
+    private const string C_PERSIA    = "#3A8FBF";
+    private const string C_GREECE    = "#4A90D9";
+    private const string C_MAURYA    = "#E67E22";
+    private const string C_ROME      = "#9C2B2B";
+    private const string C_PARTHIA   = "#5D4E8C";
+    private const string C_KUSHAN    = "#A0522D";
+    private const string C_TEOTI     = "#3E8B3E";
+    private const string C_BYZANTINE = "#7C3AED";
+    private const string C_SASSANID  = "#1E6FA8";
+    private const string C_MAYA      = "#2DAB66";
+    private const string C_TIWANAKU  = "#B0671A";
+    private const string C_CAROLING  = "#1F4FAA";
+    private const string C_ABBASID   = "#0D7C66";
+    private const string C_PALA      = "#D2691E";
+    private const string C_HEIAN     = "#C71585";
+    private const string C_MONGOL    = "#4B0082";
+    private const string C_SONG      = "#B22222";
+    private const string C_AYYUBID   = "#1B7C58";
+    private const string C_HRE       = "#444A78";
+    private const string C_INCA      = "#CC5500";
+    private const string C_OTTOMAN   = "#0E5C2B";
+    private const string C_MING      = "#8B0000";
+    private const string C_AZTEC     = "#4F8F4F";
+    private const string C_SONGHAI   = "#B8860B";
+    private const string C_MUGHAL    = "#6A5ACD";
+    private const string C_QING      = "#A52A2A";
+    private const string C_SPAIN     = "#C0392B";
+    private const string C_RUSSIA    = "#2C3E72";
+    private const string C_BRITAIN   = "#9B1C31";
+    private const string C_FRANCE    = "#1F4FA8";
+    private const string C_GERMANY   = "#3A3A3A";
+    private const string C_AUSHUN    = "#8E7CC3";
+    private const string C_ROC       = "#C0392B";
+    private const string C_USSR      = "#7A1E1E";
+    private const string C_USA       = "#1F4FA8";
+    private const string C_USA_M     = "#2c5fb8";
+    private const string C_CHINA_M   = "#B33030";
+    private const string C_EU        = "#1E5BA8";
+    private const string C_INDIA_M   = "#E67E22";
+    private const string C_BRAZIL    = "#2E8B57";
+
+    private List<Era> eras = new()
+    {
+        new Era("3000 BC", "3000BC", "Bronze Age dawn -- the first cities and kingdoms",
+            new()
+            {
+                new("Sumer", C_SUMER, "Ur / Uruk", "c. 3500 - 1900 BC",
+                    "The first urban civilization. Sumerians invented cuneiform writing, the wheel, and large-scale irrigation in the Tigris-Euphrates floodplain. City-states like Uruk and Ur dominated southern Mesopotamia.",
+                    "615,200 620,210 635,215 640,225 625,230 612,222"),
+                new("Egypt (Old Kingdom)", C_EGYPT, "Memphis", "c. 2700 - 2200 BC",
+                    "Unified along the Nile under god-kings (pharaohs), the Old Kingdom built the Great Pyramids of Giza. Hieroglyphic writing and a centralized bureaucracy emerged early.",
+                    "560,210 580,210 590,260 580,310 565,310 555,260"),
+                new("Indus Valley", C_INDUS, "Harappa / Mohenjo-Daro", "c. 2600 - 1900 BC",
+                    "A vast urban civilization stretching across modern Pakistan and northwest India. Cities had grid plans, drainage, and standardized weights. Their script remains undeciphered.",
+                    "705,235 740,245 745,275 720,290 700,275"),
+                new("Yangshao / Longshan (China)", C_CHINA, "Anyang region", "c. 5000 - 2000 BC",
+                    "Neolithic farming cultures along the Yellow River. Painted pottery, millet agriculture, silk, and the first walled towns -- the seedbed of later Chinese civilization.",
+                    "800,180 855,180 870,210 850,235 805,225"),
+                new("Norte Chico", C_OLMEC, "Caral", "c. 3000 - 1800 BC",
+                    "The earliest urban culture in the Americas, on the coast of modern Peru. Monumental platform mounds and sunken plazas at Caral predate Egyptian pyramids.",
+                    "270,360 290,360 300,395 280,415 270,400"),
+            }),
+
+        new Era("1500 BC", "1500BC", "Bronze Age empires of chariots and cuneiform",
+            new()
+            {
+                new("Egypt (New Kingdom)", C_EGYPT, "Thebes", "c. 1550 - 1077 BC",
+                    "Egypt's imperial age under pharaohs like Thutmose III, Hatshepsut, and Ramesses II. Conquered Nubia and the Levant, fought Hittites at Kadesh, built temples at Karnak and Abu Simbel.",
+                    "555,210 590,210 595,290 580,335 560,335 548,260"),
+                new("Hittite Empire", C_HITTITE, "Hattusa", "c. 1600 - 1180 BC",
+                    "An Indo-European chariot empire in Anatolia. Rivalled Egypt for Levantine dominance. Master metallurgists who pioneered ironworking. Collapsed in the Bronze Age Collapse.",
+                    "590,150 660,160 670,180 640,195 600,185"),
+                new("Mitanni / Babylon", C_SUMER, "Babylon", "c. 1600 - 1300 BC",
+                    "Hurrian and Kassite kingdoms ruled Mesopotamia after Hammurabi's Babylon. Skilled chariot warriors and diplomats; correspondents in the Amarna letters.",
+                    "615,200 645,210 650,225 625,232 612,220"),
+                new("Shang China", C_CHINA, "Anyang", "c. 1600 - 1046 BC",
+                    "First historically attested Chinese dynasty. Famous for oracle bone inscriptions (the earliest Chinese writing) and stunning bronze ritual vessels.",
+                    "800,185 860,185 870,215 845,235 805,225"),
+                new("Indus (late phase)", C_INDUS, "Mohenjo-Daro", "c. 1900 - 1300 BC",
+                    "The great Indus cities were already in decline, possibly from climate shifts and river changes. Smaller late-Harappan settlements persisted.",
+                    "705,240 740,250 740,275 715,285 700,270"),
+                new("Olmec", C_OLMEC, "San Lorenzo", "c. 1500 - 400 BC",
+                    "Mesoamerica's first major civilization, in Mexico's Gulf coast. Famous for colossal basalt heads, the long-count calendar, and rituals later inherited by the Maya and Aztecs.",
+                    "215,275 245,275 250,300 230,315 215,300"),
+            }),
+
+        new Era("500 BC", "500BC", "The Axial Age -- Persia, Greece, the Buddha and Confucius",
+            new()
+            {
+                new("Achaemenid Persia", C_PERSIA, "Persepolis", "550 - 330 BC",
+                    "The largest empire the world had yet seen, founded by Cyrus the Great. Stretched from the Indus to Libya. Built the Royal Road, used satraps, and tolerated local religions.",
+                    "590,160 700,170 760,200 760,250 660,250 605,225 595,190"),
+                new("Greek City-States", C_GREECE, "Athens / Sparta", "c. 800 - 323 BC",
+                    "Independent poleis -- Athens, Sparta, Corinth, Thebes -- shared a language and culture. The Persian Wars forged a Greek identity. Birthplace of philosophy, drama, and democracy.",
+                    "535,150 575,150 580,170 555,180 535,170"),
+                new("Zhou China (Warring States)", C_CHINA, "Luoyang", "1046 - 256 BC",
+                    "The Zhou dynasty fragmented into rival kingdoms during the Warring States period. Iron tools spread; Confucius, Laozi, Mozi, and Sun Tzu all lived in this turbulent age.",
+                    "780,170 880,160 895,200 870,240 800,230 775,200"),
+                new("Mauryan India", C_MAURYA, "Pataliputra", "322 - 184 BC",
+                    "Founded just after this date by Chandragupta Maurya. By 500 BC, the region was a patchwork of mahajanapadas where the Buddha and Mahavira preached.",
+                    "705,230 760,240 760,290 720,320 695,290 690,250"),
+                new("Carthage", C_ROME, "Carthage", "c. 814 - 146 BC",
+                    "A Phoenician trading colony that grew into the dominant power of the western Mediterranean. Maritime empire built on commerce and naval might.",
+                    "490,200 520,200 525,225 500,230 488,215"),
+            }),
+
+        new Era("200 BC", "200BC", "Rome rises in the west, Han China in the east",
+            new()
+            {
+                new("Roman Republic", C_ROME, "Rome", "509 - 27 BC",
+                    "By 200 BC Rome had defeated Carthage in the Second Punic War and dominated Italy and the western Mediterranean. The Republic's legions would soon swallow the Hellenistic east.",
+                    "490,140 545,140 555,170 545,210 510,215 488,180"),
+                new("Han China", C_CHINA, "Chang'an", "202 BC - 220 AD",
+                    "Founded by Liu Bang after the Qin collapse. Han China matched Rome in scale and sophistication. Confucianism became the state ideology; the Silk Road opened westward.",
+                    "780,170 890,165 905,210 880,255 800,245 775,205"),
+                new("Mauryan India", C_MAURYA, "Pataliputra", "322 - 184 BC",
+                    "The Mauryan empire under Ashoka had unified almost all of South Asia by the mid-3rd century BC, then fragmented. By 200 BC its core in the Ganges plain remained.",
+                    "705,230 760,240 760,290 720,320 695,290 690,250"),
+                new("Parthian Empire", C_PARTHIA, "Ctesiphon", "247 BC - 224 AD",
+                    "An Iranian dynasty that displaced the Seleucids. Famous heavy cavalry (cataphracts) and horse archers. Held the line against Rome along the Euphrates for centuries.",
+                    "605,180 700,185 730,215 710,250 645,250 605,220"),
+                new("Hellenistic Egypt (Ptolemies)", C_GREECE, "Alexandria", "305 - 30 BC",
+                    "The Ptolemaic kingdom ruled Egypt after Alexander's death. Greek culture fused with Egyptian. The Library of Alexandria was the ancient world's greatest center of learning.",
+                    "555,210 588,210 593,275 575,310 558,310 550,255"),
+                new("Xiongnu Confederacy", C_HITTITE, "Steppe", "c. 209 BC - 89 AD",
+                    "A nomadic steppe empire north of Han China, possibly ancestral to the Huns. The Han fought them for over a century; the Great Wall was built largely against them.",
+                    "750,90 880,80 890,140 800,150 760,130"),
+            }),
+
+        new Era("117 AD", "117AD", "Pax Romana and the Han -- two empires at their peaks",
+            new()
+            {
+                new("Roman Empire (Trajan)", C_ROME, "Rome", "27 BC - 476 AD",
+                    "Under Trajan in 117 AD the empire reached its greatest extent: from Britain to Mesopotamia. Roads, aqueducts, and the legions held together a Mediterranean world of 60+ million people.",
+                    "470,130 600,130 670,180 640,250 540,260 480,250 460,200 460,160"),
+                new("Han China", C_CHINA, "Luoyang", "202 BC - 220 AD",
+                    "The Eastern Han dynasty's late peak. Paper was invented; Buddhism arrived along the Silk Road; bureaucracy ran on Confucian exams. Soon to fragment into the Three Kingdoms.",
+                    "780,165 895,160 910,205 880,255 800,250 775,205"),
+                new("Kushan Empire", C_KUSHAN, "Purushapura", "c. 30 - 375 AD",
+                    "A Central Asian empire spanning Bactria, Gandhara, and northern India. Patrons of Mahayana Buddhism and the Greco-Buddhist art of Gandhara. Major node on the Silk Road.",
+                    "680,200 770,210 775,255 720,280 690,255"),
+                new("Parthian Empire", C_PARTHIA, "Ctesiphon", "247 BC - 224 AD",
+                    "Rome's eastern rival, locked in centuries of border war. Trajan briefly took Ctesiphon shortly before this date, but the empire held and later overthrew the Parthians.",
+                    "640,205 700,210 720,235 695,260 650,255"),
+                new("Teotihuacan", C_TEOTI, "Teotihuacan", "c. 100 BC - 550 AD",
+                    "A massive city in the Valley of Mexico with the Pyramids of the Sun and Moon. At its peak, one of the largest cities on Earth. Influenced Maya art and politics from afar.",
+                    "210,275 245,275 252,300 230,315 212,300"),
+            }),
+
+        new Era("600 AD", "600AD", "Late antiquity -- Byzantium, Sassanids, Tang, and the Maya",
+            new()
+            {
+                new("Byzantine Empire", C_BYZANTINE, "Constantinople", "330 - 1453",
+                    "The eastern Roman empire under Justinian's successors. Held the Balkans, Anatolia, and parts of Italy and North Africa. About to be hammered by Persian and Arab onslaughts.",
+                    "520,140 600,140 640,165 615,210 555,215 520,180"),
+                new("Sassanid Persia", C_SASSANID, "Ctesiphon", "224 - 651",
+                    "The last great pre-Islamic Iranian empire, locked in a 400-year struggle with Rome / Byzantium. Khosrow II briefly took Egypt and the Levant before being crushed by Heraclius.",
+                    "605,170 720,180 760,215 740,260 660,260 605,225"),
+                new("Tang China", C_CHINA, "Chang'an", "618 - 907",
+                    "Founded just after this date in 618. The early 600s saw the Sui reunify China; by 600 the framework of Tang cosmopolitan brilliance was being assembled.",
+                    "770,170 890,165 910,210 875,255 800,250 770,205"),
+                new("Maya Classic", C_MAYA, "Tikal", "c. 250 - 900",
+                    "Independent Maya city-states across the Yucatan and Guatemala lowlands. Tikal, Calakmul, and Palenque competed in dynastic politics, astronomy, and monumental architecture.",
+                    "215,280 250,280 258,305 232,318 215,302"),
+                new("Tiwanaku", C_TIWANAKU, "Tiwanaku", "c. 500 - 1000",
+                    "An Andean civilization centered on Lake Titicaca. Massive stone gateways, sophisticated raised-field agriculture at high altitude, and far-reaching cultural influence in the Andes.",
+                    "275,395 300,395 305,425 285,445 272,425"),
+                new("Gupta successors (India)", C_PALA, "Kannauj", "c. 320 - 650",
+                    "After the Gupta golden age, India fragmented again into regional kingdoms. Harsha briefly reunified the north shortly after 600. South India was dominated by the Pallavas and Chalukyas.",
+                    "705,235 760,245 760,295 725,325 700,295"),
+            }),
+
+        new Era("800 AD", "800AD", "Charlemagne crowned, Abbasid Baghdad shines, Tang at full bloom",
+            new()
+            {
+                new("Carolingian Empire", C_CAROLING, "Aachen", "800 - 888",
+                    "Charlemagne was crowned Emperor by the Pope in 800, reviving the imperial idea in the Latin West. His Frankish realm covered France, Germany, and northern Italy.",
+                    "470,120 540,115 560,145 540,170 490,170 470,150"),
+                new("Abbasid Caliphate", C_ABBASID, "Baghdad", "750 - 1258",
+                    "From Baghdad, the Abbasids ruled an Islamic empire from Morocco to Central Asia. The House of Wisdom translated Greek, Persian, and Indian science. The Islamic Golden Age.",
+                    "470,180 600,180 700,200 720,240 660,275 540,295 490,290 465,250"),
+                new("Tang China", C_CHINA, "Chang'an", "618 - 907",
+                    "Cosmopolitan Chang'an was likely the largest city in the world. Block printing, gunpowder beginnings, Buddhism flourishing, and a civil service of poets running an empire.",
+                    "770,170 890,165 910,210 875,255 800,250 770,205"),
+                new("Pala Empire", C_PALA, "Pataliputra", "c. 750 - 1161",
+                    "A Buddhist dynasty that dominated eastern India and Bengal. Patronized the great monastic universities of Nalanda and Vikramashila; spread Mahayana to Tibet.",
+                    "710,240 760,250 760,295 730,320 710,295"),
+                new("Heian Japan", C_HEIAN, "Heian-kyo (Kyoto)", "794 - 1185",
+                    "The Heian capital had just been founded in 794. Aristocratic court culture; a century later Murasaki Shikibu would write The Tale of Genji, often called the world's first novel.",
+                    "900,170 922,170 925,210 905,222"),
+                new("Byzantine Empire", C_BYZANTINE, "Constantinople", "330 - 1453",
+                    "Recovering after the Iconoclast crises. Held Anatolia and the Balkans against Bulgars, Arabs, and Slavs. Empress Irene was on the throne in 800 -- the only sole female ruler so far.",
+                    "525,140 600,140 630,165 605,205 555,210 525,175"),
+            }),
+
+        new Era("1200 AD", "1200AD", "Genghis Khan rises -- the world about to be reordered",
+            new()
+            {
+                new("Song China", C_SONG, "Hangzhou", "960 - 1279",
+                    "The Southern Song after losing the north to the Jin. Economically and technologically the most advanced state on Earth: paper money, gunpowder weapons, magnetic compass, printed books.",
+                    "780,200 890,200 905,235 870,265 800,260 780,225"),
+                new("Mongol confederations (rising)", C_MONGOL, "Karakorum (soon)", "c. 1206+",
+                    "Temujin united the Mongol tribes in 1206 as Genghis Khan. Within a generation his armies would conquer from Korea to the Carpathians. In 1200 the storm was just gathering.",
+                    "720,90 880,80 895,140 800,150 740,135"),
+                new("Ayyubid Sultanate", C_AYYUBID, "Cairo", "1171 - 1260",
+                    "Saladin's dynasty, ruling Egypt, Syria, and parts of Arabia. Recaptured Jerusalem from the Crusaders in 1187. Coexisted (uneasily) with the Crusader states along the coast.",
+                    "545,200 615,205 640,240 600,280 555,275 540,235"),
+                new("Holy Roman Empire", C_HRE, "various", "962 - 1806",
+                    "A loose confederation of German principalities under Hohenstaufen rule. Frederick Barbarossa's grandson Frederick II would soon bring the imperial idea to its medieval height.",
+                    "475,115 540,110 555,145 530,170 490,170 470,140"),
+                new("Khmer Empire", C_PALA, "Angkor", "802 - 1431",
+                    "The Khmer empire centered on the vast hydraulic city of Angkor. Suryavarman II had recently built Angkor Wat; Jayavarman VII was about to build the Bayon and the walled city of Angkor Thom.",
+                    "790,275 840,280 855,305 820,325 790,310"),
+                new("Inca precursors (Killke)", C_INCA, "Cuzco region", "c. 900 - 1200",
+                    "Around Cuzco, the Killke culture laid foundations later inherited by the Inca. The Inca state itself would not dominate the Andes until the mid-1400s.",
+                    "275,390 300,390 305,420 285,440 273,420"),
+            }),
+
+        new Era("1450 AD", "1450AD", "Ottomans take Constantinople, Aztecs and Inca peak",
+            new()
+            {
+                new("Ottoman Empire", C_OTTOMAN, "Edirne / soon Istanbul", "1299 - 1922",
+                    "About to take Constantinople in 1453 under Mehmed II, ending Byzantium. Already controlled most of Anatolia and the Balkans. The dominant power of the eastern Mediterranean.",
+                    "525,150 620,160 660,180 645,215 580,225 540,200 520,175"),
+                new("Ming China", C_MING, "Beijing", "1368 - 1644",
+                    "After throwing off Mongol Yuan rule, the Ming had just moved the capital to Beijing and built the Forbidden City. Zheng He's treasure fleets had recently sailed to East Africa.",
+                    "770,170 890,165 910,210 880,255 795,255 770,210"),
+                new("Aztec Triple Alliance", C_AZTEC, "Tenochtitlan", "1428 - 1521",
+                    "Tenochtitlan, Texcoco, and Tlacopan had just formed the Triple Alliance. Within decades they would dominate central Mexico, demanding tribute and sacrificial captives from subject peoples.",
+                    "210,275 245,275 252,300 230,318 212,302"),
+                new("Inca Empire (Tawantinsuyu)", C_INCA, "Cuzco", "c. 1438 - 1533",
+                    "Pachacuti had just begun the Inca expansion. By 1500 Tawantinsuyu would stretch 4,000 km along the Andes -- the largest empire ever in the pre-Columbian Americas.",
+                    "270,360 305,360 315,420 290,460 270,440 260,395"),
+                new("Songhai Empire", C_SONGHAI, "Gao / Timbuktu", "c. 1464 - 1591",
+                    "About to displace Mali as the dominant West African empire under Sunni Ali. Controlled the Niger bend, the gold trade, and the great learning city of Timbuktu.",
+                    "470,255 540,255 555,290 510,310 475,295"),
+                new("Timurid successors", C_MUGHAL, "Samarkand / Herat", "1370 - 1507",
+                    "After Timur's death in 1405, his successors held a fragmenting empire centered on Samarkand and Herat. Brilliant Persianate court culture; soon to spawn the Mughals in India.",
+                    "640,170 730,180 750,215 705,245 660,235 640,200"),
+            }),
+
+        new Era("1600 AD", "1600AD", "Gunpowder empires and the first global trade networks",
+            new()
+            {
+                new("Ottoman Empire", C_OTTOMAN, "Istanbul", "1299 - 1922",
+                    "Past its 16th-century peak under Suleiman but still vast: Anatolia, the Balkans, the Levant, Egypt, North Africa, Mesopotamia, and Arabia. Suleiman had besieged Vienna in 1529.",
+                    "470,200 545,180 615,170 660,180 660,220 600,250 540,260 480,255 460,225"),
+                new("Mughal Empire", C_MUGHAL, "Agra / Delhi", "1526 - 1857",
+                    "Akbar had died in 1605; Jahangir ruled most of the subcontinent. The Mughals built Agra, then later the Taj Mahal and the Red Fort. A wealthy, multireligious empire.",
+                    "680,210 770,225 775,275 720,310 690,290 675,245"),
+                new("Ming / late Ming", C_MING, "Beijing", "1368 - 1644",
+                    "The Ming were entering crisis: silver inflation, peasant revolts, Manchu pressure. They would fall in 1644 to the Manchu-led Qing. Still the world's largest economy in 1600.",
+                    "770,170 890,165 910,210 880,255 795,255 770,210"),
+                new("Spanish Empire", C_SPAIN, "Madrid", "1492 - 1898",
+                    "Under Philip III. Vast holdings in the Americas (Mexico, Peru, the Philippines), much of Italy, the Low Countries (in revolt), and -- since 1580 -- Portugal and its global empire.",
+                    "150,280 200,260 220,295 240,330 270,330 290,400 270,460 240,455 210,400 175,330 160,300"),
+                new("Russia (early Romanov)", C_RUSSIA, "Moscow", "1547 - 1917",
+                    "Just emerging from the Time of Troubles. Michael Romanov would be elected tsar in 1613. Cossacks were already pushing east; Siberia would be reached within a generation.",
+                    "580,80 850,75 895,115 855,150 750,160 660,150 600,125"),
+                new("Tokugawa Japan", C_HEIAN, "Edo", "1603 - 1868",
+                    "Tokugawa Ieyasu won at Sekigahara in 1600 and would soon found the shogunate at Edo (Tokyo). Japan was about to enter 250 years of self-imposed isolation.",
+                    "900,170 922,170 925,210 905,222"),
+            }),
+
+        new Era("1800 AD", "1800AD", "European empires expand, gunpowder Asia in retreat",
+            new()
+            {
+                new("British Empire", C_BRITAIN, "London", "1583 - 1997",
+                    "Just lost the American colonies but gaining India after Plassey (1757). About to dominate the seas after Trafalgar (1805). Industrial Revolution in full swing at home.",
+                    "455,100 510,95 540,115 530,140 490,150 460,135"),
+                new("Napoleonic France", C_FRANCE, "Paris", "1799 - 1815",
+                    "Napoleon had just become First Consul. Within a few years he would dominate continental Europe before catastrophic defeats in Russia (1812) and at Waterloo (1815).",
+                    "455,135 525,130 540,160 510,190 475,190 455,165"),
+                new("Russian Empire", C_RUSSIA, "St. Petersburg", "1721 - 1917",
+                    "Catherine the Great had just died (1796); Paul then Alexander I now ruled. Vast holdings from Poland to the Pacific; about to fight (and beat) Napoleon.",
+                    "580,75 880,70 905,115 855,155 750,160 660,150 595,120"),
+                new("Qing China", C_QING, "Beijing", "1644 - 1912",
+                    "Under the Qianlong era's twilight. Largest population and economy in the world but increasingly stagnant. The Opium Wars and humiliating treaties lay just decades ahead.",
+                    "720,140 890,150 910,205 880,255 795,255 720,235 700,180"),
+                new("Ottoman Empire (declining)", C_OTTOMAN, "Istanbul", "1299 - 1922",
+                    "The 'sick man of Europe' was already losing ground in the Balkans and the Caucasus. Selim III's reform attempts were running into fierce Janissary opposition.",
+                    "490,180 600,170 660,180 660,220 600,250 540,255 490,245"),
+                new("Spanish America (collapsing)", C_SPAIN, "Madrid", "1492 - 1898",
+                    "Spain still nominally ruled most of the Americas, but within 25 years the Bolivarian wars of independence would dismantle the empire from Mexico to Patagonia.",
+                    "175,260 220,260 265,310 290,400 270,460 245,455 215,395 180,330"),
+            }),
+
+        new Era("1914 AD", "1914AD", "On the eve of the Great War",
+            new()
+            {
+                new("British Empire", C_BRITAIN, "London", "1583 - 1997",
+                    "At its territorial peak: a quarter of the world's land and population. India, Canada, Australia, large swathes of Africa, Egypt in all but name, and a global navy.",
+                    "455,100 510,95 540,115 530,140 490,150 460,135"),
+                new("French Empire", C_FRANCE, "Paris", "1830 - 1962",
+                    "Second-largest colonial empire after Britain. Held most of West and Equatorial Africa, Indochina, and Madagascar. About to bleed in the trenches of Verdun and the Somme.",
+                    "455,135 525,130 540,160 510,180 475,180 455,160"),
+                new("German Empire", C_GERMANY, "Berlin", "1871 - 1918",
+                    "Bismarck's united Germany, now under Wilhelm II, had Europe's strongest army and was challenging Britain at sea. About to invade Belgium and ignite WWI.",
+                    "490,110 545,110 560,140 535,160 500,160 485,135"),
+                new("Austro-Hungarian Empire", C_AUSHUN, "Vienna / Budapest", "1867 - 1918",
+                    "The dual monarchy ruled a polyglot empire from the Alps to the Carpathians. Franz Ferdinand's assassination in Sarajevo in June 1914 would trigger the war.",
+                    "510,140 565,140 580,165 555,180 520,175 510,155"),
+                new("Russian Empire", C_RUSSIA, "St. Petersburg", "1721 - 1917",
+                    "Stretched from Warsaw to Vladivostok. Industrializing rapidly but politically brittle after 1905. Within four years it would collapse into revolution and civil war.",
+                    "580,75 880,70 905,115 855,155 750,160 660,150 595,120"),
+                new("Ottoman Empire", C_OTTOMAN, "Istanbul", "1299 - 1922",
+                    "Reduced to Anatolia and parts of the Middle East. Would join the war on the Central Powers' side and not survive the peace; the empire ended in 1922.",
+                    "525,170 600,165 660,180 660,220 605,250 555,255 525,225"),
+                new("Republic of China", C_ROC, "Beijing", "1912 - 1949",
+                    "The Qing dynasty had collapsed in 1912. The new republic under Yuan Shikai was already fragmenting toward the warlord era. Japan would soon press the Twenty-One Demands.",
+                    "720,150 890,155 910,205 880,255 795,255 720,235 700,185"),
+                new("Empire of Japan", C_HEIAN, "Tokyo", "1868 - 1947",
+                    "Modernized under Meiji. Defeated Russia in 1905, annexed Korea in 1910. Already a great power; about to seize German Pacific colonies during WWI.",
+                    "895,170 925,170 928,215 905,225"),
+            }),
+
+        new Era("1945 AD", "1945AD", "End of WWII -- Cold War borders take shape",
+            new()
+            {
+                new("Soviet Union", C_USSR, "Moscow", "1922 - 1991",
+                    "Triumphant after defeating Nazi Germany at staggering cost. Red Army occupied Eastern Europe; the Iron Curtain about to descend. Stalin reigned with absolute power.",
+                    "510,75 880,70 905,115 855,155 750,160 660,150 580,130 525,110"),
+                new("United States", C_USA, "Washington DC", "1776 - present",
+                    "Emerged from WWII with the world's only intact major economy and a nuclear monopoly. About to launch the Marshall Plan and become the West's hegemon.",
+                    "70,95 195,75 255,110 270,170 230,210 195,255 150,285 110,260 80,200 65,150"),
+                new("British Empire (declining)", C_BRITAIN, "London", "1583 - 1997",
+                    "Bankrupt and exhausted by war. India would be independent in 1947, Palestine abandoned in 1948. Within two decades almost the entire empire would be gone.",
+                    "455,100 510,95 540,115 530,140 490,150 460,135"),
+                new("French Empire (declining)", C_FRANCE, "Paris", "1830 - 1962",
+                    "Liberated from German occupation. Trying to reassert control in Indochina and Algeria -- both would explode into wars of independence within a few years.",
+                    "455,135 525,130 540,160 510,180 475,180 455,160"),
+                new("Republic of China (collapsing)", C_ROC, "Nanjing", "1912 - 1949",
+                    "Chiang Kai-shek's KMT had just won the war against Japan but was about to lose the civil war to Mao's communists. By 1949 the KMT would retreat to Taiwan.",
+                    "720,150 890,155 910,205 880,255 795,255 720,235 700,185"),
+                new("Occupied Japan / Germany", C_GERMANY, "(occupied)", "1945 - 1952 / 1955",
+                    "Both Axis powers were under Allied military occupation: Germany divided among four powers, Japan under General MacArthur. Both would soon become Cold War frontline democracies.",
+                    "490,115 545,115 560,140 535,160 500,160 485,135"),
+            }),
+
+        new Era("2000 AD", "2000AD", "A multipolar world of nation-states",
+            new()
+            {
+                new("United States", C_USA_M, "Washington DC", "1776 - present",
+                    "Sole superpower at the end of the Cold War. Booming dot-com economy; about to be jolted by 9/11 and the wars in Afghanistan and Iraq. Global reach in trade, military, and culture.",
+                    "70,95 195,75 255,110 270,170 230,210 195,255 150,285 110,260 80,200 65,150"),
+                new("People's Republic of China", C_CHINA_M, "Beijing", "1949 - present",
+                    "Two decades into Deng's reforms, growing at near double-digit rates. About to join the WTO in 2001. Would soon become the world's factory and second-largest economy.",
+                    "720,150 890,155 910,205 880,255 795,255 720,235 700,185"),
+                new("European Union", C_EU, "Brussels", "1993 - present",
+                    "The EU had just adopted the euro (1999); coins and notes would circulate from 2002. About to expand eastward in 2004, absorbing former Warsaw Pact members.",
+                    "455,105 575,105 600,150 580,180 510,185 470,170 455,140"),
+                new("Russian Federation", C_RUSSIA, "Moscow", "1991 - present",
+                    "Vladimir Putin had just become president on the last day of 1999. Recovering from the chaotic 1990s. Still the largest country on Earth by area.",
+                    "580,75 880,70 905,115 855,155 750,160 660,150 595,120"),
+                new("India", C_INDIA_M, "New Delhi", "1947 - present",
+                    "Liberalizing since 1991, with a fast-growing IT sector. World's largest democracy, soon to overtake China as the most populous country (around 2023).",
+                    "680,225 770,235 775,285 720,320 690,295 675,255"),
+                new("Brazil", C_BRAZIL, "Brasilia", "1822 - present",
+                    "Stable democracy after decades of military rule. Largest economy in South America. About to enter the boom years of the Lula presidency (2003-2010).",
+                    "260,335 320,320 345,365 330,425 290,470 260,460 245,400"),
+                new("Islamic World (regional powers)", C_ABBASID, "various", "modern",
+                    "A patchwork of nation-states from Morocco to Indonesia. Saudi Arabia, Iran, Turkey, Egypt, and Pakistan are major regional powers. Diverse politically and economically.",
+                    "470,180 600,180 700,200 720,240 660,275 540,295 490,290 465,250"),
+            }),
+    };
+}
+
+<style>
+    .era-display {
+        padding: 12px 14px; margin-bottom: 12px; text-align: center;
+    }
+    .era-year-row {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .era-year {
+        font-size: 1.6rem; font-weight: 800; color: var(--accent);
+        letter-spacing: 0.5px;
+    }
+    .era-headline {
+        margin-top: 4px; color: var(--text-secondary); font-size: 0.85rem; font-style: italic;
+    }
+
+    .map-wrap {
+        padding: 8px; margin-bottom: 12px; overflow: hidden;
+        background: linear-gradient(135deg, #1a1610, #2a2218 60%, #1a1610);
+        border: 1px solid rgba(212, 184, 134, 0.25);
+        box-shadow: inset 0 0 24px rgba(0,0,0,0.5), 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .world-svg {
+        width: 100%; height: auto; display: block;
+        border-radius: var(--radius-sm);
+        background: radial-gradient(ellipse at center, #2c4a6c 0%, #1a2f4a 70%, #0d1a2a 100%);
+    }
+    .continent {
+        fill: #d8c89c;
+        stroke: #6b5634;
+        stroke-width: 1.2;
+        stroke-linejoin: round;
+    }
+    .era-region-group {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.3s ease;
+    }
+    .era-region-group.dimmed { opacity: 0.35; }
+    .era-region-fill {
+        fill-opacity: 0.5;
+        stroke-opacity: 0.95;
+        stroke-width: 1.6;
+        stroke-linejoin: round;
+        transition: fill-opacity 0.25s ease, stroke-width 0.25s ease, d 0.4s ease;
+    }
+    .era-region-glow {
+        fill: none;
+        stroke-opacity: 0.35;
+        stroke-width: 6;
+        stroke-linejoin: round;
+        filter: blur(2px);
+        transition: stroke-width 0.25s ease, stroke-opacity 0.25s ease;
+    }
+    .era-region-group:hover .era-region-fill,
+    .era-region-group.selected .era-region-fill {
+        fill-opacity: 0.78;
+        stroke-width: 2.4;
+    }
+    .era-region-group:hover .era-region-glow,
+    .era-region-group.selected .era-region-glow {
+        stroke-opacity: 0.7;
+        stroke-width: 9;
+    }
+    .era-region-hatch {
+        fill-opacity: 0.45;
+        pointer-events: none;
+    }
+    .capital-pulse {
+        animation: capPulse 1.4s ease-in-out infinite;
+        transform-origin: center;
+        transform-box: fill-box;
+    }
+    @@keyframes capPulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.35); }
+    }
+    .cap-label {
+        font-size: 11px; font-weight: 700; fill: #fff7e0;
+        font-family: 'Cinzel', Georgia, serif;
+        letter-spacing: 0.5px;
+    }
+    .compass-n { font-size: 9px; font-weight: 700; fill: #d4b886; font-family: 'Cinzel', Georgia, serif; }
+    .compass-letter { font-size: 8px; font-weight: 600; fill: #d4b886; font-family: 'Cinzel', Georgia, serif; opacity: 0.85; }
+    .scale-text { font-size: 9px; fill: #e8d9b0; font-family: Georgia, serif; opacity: 0.85; }
+    .cartouche-era {
+        font-size: 14px; font-weight: 700; fill: #f3e3b8;
+        font-family: 'Cinzel', Georgia, serif;
+        letter-spacing: 1.5px;
+    }
+    .cartouche-sub {
+        font-size: 9px; fill: #d4b886; font-family: Georgia, serif;
+        letter-spacing: 0.5px; font-style: italic;
+    }
+
+    .legend {
+        padding: 12px 14px; margin-bottom: 12px;
+    }
+    .legend-title {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 0.8rem; color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+    .legend-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 6px;
+    }
+    .legend-item {
+        display: flex; align-items: center; gap: 8px;
+        padding: 6px 8px; border-radius: var(--radius-sm);
+        background: var(--bg-card); border: 1px solid var(--border);
+        cursor: pointer; transition: all 0.15s ease;
+        text-align: left; -webkit-tap-highlight-color: transparent;
+    }
+    .legend-item:active { transform: scale(0.97); }
+    .legend-item.legend-active {
+        border-color: var(--primary);
+        background: rgba(74,95,224,0.08);
+    }
+    .legend-swatch {
+        width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+        border: 1px solid rgba(0,0,0,0.15);
+    }
+    .legend-name {
+        font-size: 0.82rem; color: var(--text-primary); font-weight: 600;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .info-panel {
+        padding: 0; margin-bottom: 12px; overflow: hidden;
+        animation: slideDown 0.25s ease;
+    }
+    .info-header {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 2px solid var(--border);
+        background: var(--bg-surface);
+    }
+    .info-swatch {
+        width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+    .info-titles { flex: 1; min-width: 0; }
+    .info-titles strong { display: block; font-size: 0.95rem; color: var(--text-primary); }
+    .info-titles small { color: var(--text-muted); font-size: 0.78rem; }
+    .close-btn {
+        background: transparent; border: none; color: var(--text-muted);
+        font-size: 1.1rem; font-weight: 700; cursor: pointer;
+        width: 28px; height: 28px; border-radius: 50%;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .close-btn:hover { background: var(--bg-card); color: var(--text-primary); }
+    .info-desc {
+        margin: 0; padding: 12px 14px;
+        font-size: 0.88rem; line-height: 1.55;
+        color: var(--text-secondary);
+    }
+
+    .slider-card {
+        padding: 12px 14px; margin-bottom: 16px;
+    }
+    .slider-row {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .era-slider {
+        flex: 1; appearance: none; -webkit-appearance: none;
+        height: 6px; border-radius: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        outline: none;
+    }
+    .era-slider::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 20px; height: 20px; border-radius: 50%;
+        background: var(--bg-card); border: 2px solid var(--primary);
+        cursor: pointer; box-shadow: 0 1px 4px var(--shadow);
+    }
+    .era-slider::-moz-range-thumb {
+        width: 20px; height: 20px; border-radius: 50%;
+        background: var(--bg-card); border: 2px solid var(--primary);
+        cursor: pointer; box-shadow: 0 1px 4px var(--shadow);
+    }
+    .slider-count {
+        font-size: 0.8rem; color: var(--text-muted); font-weight: 600;
+        min-width: 40px; text-align: right;
+    }
+
+    .era-ticks {
+        display: flex; flex-wrap: wrap; gap: 4px;
+        margin-top: 10px; justify-content: center;
+    }
+    .era-tick {
+        padding: 4px 8px; font-size: 0.7rem; font-weight: 600;
+        color: var(--text-muted); background: var(--bg-card);
+        border: 1px solid var(--border); border-radius: var(--radius-sm);
+        cursor: pointer; transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .era-tick:hover { color: var(--text-primary); border-color: var(--primary); }
+    .era-tick.tick-active {
+        background: var(--primary); color: white; border-color: var(--primary);
+    }
+
+    .slider-actions {
+        display: flex; justify-content: space-between; gap: 8px; margin-top: 10px;
+    }
+    .slider-actions .btn:last-child :first-child { transform: rotate(180deg); }
+
+    @@keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

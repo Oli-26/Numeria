@@ -1,0 +1,182 @@
+[
+  {
+    "id": "ds-01",
+    "topicId": "cs-data-structures",
+    "order": 1,
+    "title": "Arrays and Linked Lists",
+    "description": "The most fundamental sequence types and their tradeoffs",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "ds-01-c1",
+        "title": "Arrays: Contiguous Memory, Random Access",
+        "contentHtml": "<p>An <strong>array</strong> stores elements in <em>contiguous</em> memory. Element <code>i</code> lives at <code>base_address + i * sizeof(element)</code>. Reading or writing any element is O(1) — direct address arithmetic.</p><p>This contiguity is also what makes arrays fast on real hardware. The CPU's cache loads memory in 64-byte lines; sequential array access prefetches efficiently. A linear scan over an array is dramatically faster than a linear scan over scattered objects, even if they have the same Big-O.</p><p>The cost of contiguity: inserting in the middle is O(n) because everything after must shift. Resizing requires allocating a new (larger) array and copying. Languages handle the latter via <strong>dynamic arrays</strong> — arrays that double in capacity when full, giving amortized O(1) append at the cost of occasional copy operations. Python's <code>list</code>, Java's <code>ArrayList</code>, C++'s <code>std::vector</code>, Go's slices: all dynamic arrays.</p>",
+        "mathExpressions": ["\\text{array access: } O(1) \\quad \\text{insert/delete in middle: } O(n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-01-c2",
+        "title": "Linked Lists: Nodes and Pointers",
+        "contentHtml": "<p>A <strong>singly linked list</strong> stores each element in a separate <strong>node</strong> containing the value and a pointer to the next node. The list itself is just the head pointer. To traverse, follow next-pointers until you hit null.</p><p>Linked lists trade random access (O(n) — must walk from head) for O(1) insertion and deletion at known positions. Splice in a new node by adjusting two pointers; no shifting. <strong>Doubly linked lists</strong> add a previous pointer for O(1) backward iteration and O(1) deletion given just the node.</p><p>In modern programming, linked lists are surprisingly rarely the right choice. Their pointer-chasing access pattern is cache-hostile, and for most use cases a dynamic array beats them in practice. They shine in specific scenarios: implementing other data structures (LRU caches, intrusive lists in kernels), languages with poor reallocation (real-time systems), or as building blocks for queues and deques where only the ends matter.</p>",
+        "mathExpressions": ["\\text{linked-list access: } O(n) \\quad \\text{insert at known node: } O(1)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-01-c3",
+        "title": "Choosing Between Them",
+        "contentHtml": "<p>When deciding between an array and a linked list, the textbook answer focuses on Big-O. The reality is more nuanced.</p><p>If you do many insertions and deletions in the middle, the textbook says use a linked list. But practical measurements often disagree: cache effects make even O(n) array operations beat O(1) linked-list operations until n is large. Bjarne Stroustrup's famous talk demonstrated arrays winning over linked lists up to surprisingly large sizes, simply because cache lines load 64 bytes at a time.</p><p>The real heuristic: <strong>default to arrays</strong>. Use linked lists when you specifically need O(1) splice operations on known nodes, when you need to share sub-lists, or when reallocation is unacceptable. For \"a list of things I'll iterate and occasionally edit,\" a dynamic array is almost always the right answer.</p>",
+        "mathExpressions": ["\\text{cache line: } 64 \\text{ bytes} \\implies \\text{contiguous wins on small-to-medium n}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ds-q01", "ds-q02", "ds-q03", "ds-q04", "ds-q05", "ds-q06", "ds-q07", "ds-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "ds-02",
+    "topicId": "cs-data-structures",
+    "order": 2,
+    "title": "Stacks, Queues, and Deques",
+    "description": "LIFO, FIFO, and the two-ended container",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "ds-02-c1",
+        "title": "Stacks: LIFO and the Call Stack",
+        "contentHtml": "<p>A <strong>stack</strong> is a Last-In-First-Out (LIFO) container: <code>push</code> adds to the top, <code>pop</code> removes from the top. Both operations are O(1). The mental model: a stack of plates — you can only touch the top one.</p><p>Stacks show up everywhere. Function calls are managed by a <strong>call stack</strong>: each call pushes a frame; each return pops it. Undo/redo systems are stacks. Browser back/forward navigation uses two stacks. Expression evaluation uses operator and operand stacks. DFS uses a stack (explicit or via recursion).</p><p>Implementation is trivially easy. A dynamic array works: push by appending, pop by removing from the end. A linked list also works: push at the head. Both are O(1) per operation. Most languages provide a stack via their array type with append/pop methods.</p>",
+        "mathExpressions": ["\\text{stack: push, pop} : O(1) \\quad \\text{LIFO: last in, first out}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-02-c2",
+        "title": "Queues: FIFO and Background Jobs",
+        "contentHtml": "<p>A <strong>queue</strong> is First-In-First-Out (FIFO): <code>enqueue</code> adds to the back, <code>dequeue</code> removes from the front. Mental model: a line at a coffee shop.</p><p>Queues are the backbone of asynchronous systems. Task queues (Celery, Sidekiq, BullMQ) buffer work for background workers. Message queues (RabbitMQ, Kafka, AWS SQS) decouple producers and consumers across services. Operating system schedulers use queues for runnable processes.</p><p>Naive queue implementation: a linked list with head and tail pointers. Each operation is O(1). For arrays, a <strong>circular buffer</strong> avoids the cost of shifting: maintain head and tail indices that wrap around the array. Most languages' deques (Python's <code>collections.deque</code>, Java's <code>ArrayDeque</code>) implement queues efficiently this way.</p>",
+        "mathExpressions": ["\\text{queue: enqueue, dequeue} : O(1) \\quad \\text{FIFO: first in, first out}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-02-c3",
+        "title": "Deques and Priority Queues",
+        "contentHtml": "<p>A <strong>deque</strong> (double-ended queue) supports O(1) insertion and removal at <em>both</em> ends. It's the union of stack and queue functionality. Most modern standard libraries provide one — Python's <code>deque</code>, Java's <code>ArrayDeque</code>, C++'s <code>std::deque</code>. When in doubt, use a deque; it can stand in for either a stack or a queue.</p><p>A <strong>priority queue</strong> is different: instead of FIFO order, it returns the element with the highest priority (or lowest, depending on convention). Implemented as a <strong>binary heap</strong>: <code>insert</code> and <code>extract-max</code> are O(log n). Python's <code>heapq</code>, Java's <code>PriorityQueue</code>.</p><p>Priority queues power many algorithms: Dijkstra's shortest path, Prim's MST, A* pathfinding, Huffman coding, event-driven simulation. The pattern is consistent: \"keep the most urgent item accessible at all times, allow new items to be added with arbitrary priority, extract the most urgent in log time.\" When you see this need, reach for a priority queue.</p>",
+        "mathExpressions": ["\\text{priority queue (heap)}: \\text{insert, extract-max} : O(\\log n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ds-q09", "ds-q10", "ds-q11", "ds-q12", "ds-q13", "ds-q14", "ds-q15", "ds-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "ds-03",
+    "topicId": "cs-data-structures",
+    "order": 3,
+    "title": "Hash Tables",
+    "description": "The O(1) workhorse — hashing, collisions, and load factors",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "ds-03-c1",
+        "title": "Hashing: From Keys to Indices",
+        "contentHtml": "<p>A <strong>hash table</strong> maps keys to values with O(1) average time for insert, lookup, and delete. The trick: a <strong>hash function</strong> turns each key into an integer, which becomes an index into an internal array.</p><p>A good hash function distributes keys uniformly across the array. For strings, polynomial hashing (Java) or SipHash (Python, Rust) works well. For integers, multiplication by a constant near the golden ratio is common. The general property required: similar keys should map to very different hashes (avalanche effect).</p><p>Hash tables are the highest-leverage data structure in everyday programming. Python dicts, JavaScript objects, Java HashMaps, Go maps — all hash tables. Database indexes often use hash tables for exact lookups. Caches, deduplication, set operations, frequency counts — hash tables crush all of them in O(1) average per operation.</p>",
+        "mathExpressions": ["h: \\text{key} \\to [0, m) \\quad \\text{slot} = h(\\text{key}) \\bmod m"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-03-c2",
+        "title": "Collisions: Chaining and Open Addressing",
+        "contentHtml": "<p>A <strong>collision</strong> happens when two keys hash to the same slot. Even with a perfect hash function, collisions are inevitable by the pigeonhole principle: more keys than slots.</p><p><strong>Chaining</strong>: each slot holds a linked list (or small array) of all key-value pairs hashing there. Lookup walks the chain. Simple, predictable, used by Java HashMap and many others.</p><p><strong>Open addressing</strong>: store entries directly in the array. On collision, probe other slots (linearly, quadratically, or via a second hash) until you find an empty one. More memory-efficient and cache-friendly, but trickier when deleting (you can't just leave a hole — it would break probing). Used by Python dicts, modern hash tables in Rust, Go's runtime.</p><p>Both approaches keep operations O(1) average as long as the table isn't too full. The <strong>load factor</strong> α = entries / slots is the key metric: most implementations resize once α exceeds ~0.75 (chaining) or 0.5 (open addressing).</p>",
+        "mathExpressions": ["\\alpha = \\frac{n}{m} \\quad \\text{(load factor)} \\quad \\text{resize when } \\alpha \\text{ exceeds threshold}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-03-c3",
+        "title": "When Hash Tables Go Wrong",
+        "contentHtml": "<p>Hash tables are O(1) <em>on average</em>. The worst case is O(n) — when every key collides into one slot, lookup is a linear scan. This isn't usually a concern, but two scenarios make it real.</p><p><strong>Adversarial inputs</strong>: an attacker who knows the hash function can craft inputs that all collide, turning your hash table into a linked list. This is a real <strong>denial-of-service vector</strong>. The fix is <strong>randomized hashing</strong> with a per-process secret key (Python's SipHash, Java's seeded hash). The hash function still works correctly; the attacker just can't precompute collisions.</p><p><strong>Hash quality</strong>: poor hash functions (using only a few bits of input, or composing badly with table size) cause clustering. A famous Java bug had hash codes for adjacent strings differing in one bit, causing severe clustering. Modern languages use cryptographic-quality hashing for strings; older code with hand-rolled hashes is a frequent source of mysterious slowdowns.</p>",
+        "mathExpressions": ["\\text{worst case: } O(n) \\quad \\text{but average } O(1) \\text{ with good hash and randomization}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ds-q17", "ds-q18", "ds-q19", "ds-q20", "ds-q21", "ds-q22", "ds-q23", "ds-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "ds-04",
+    "topicId": "cs-data-structures",
+    "order": 4,
+    "title": "Trees and Heaps",
+    "description": "Binary search trees, balanced trees, heaps, and tries",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "ds-04-c1",
+        "title": "Binary Search Trees",
+        "contentHtml": "<p>A <strong>binary search tree (BST)</strong> stores keys with the invariant: for every node, all keys in its left subtree are less, all keys in its right subtree are greater. This invariant means lookup, insert, and delete are O(height).</p><p>A balanced BST has height O(log n). An unbalanced one (e.g., inserting sorted keys 1, 2, 3, ... into a naive BST) becomes a linked list with height O(n). The first lesson: a plain BST guarantees nothing.</p><p><strong>Self-balancing BSTs</strong> maintain O(log n) height through rotations. <strong>Red-black trees</strong> (Linux kernel, Java TreeMap, C++ std::map) and <strong>AVL trees</strong> (slightly more strict) are the classic implementations. Modern alternatives include <strong>splay trees</strong> (amortized O(log n), self-tuning) and <strong>treaps</strong> (randomized balance). For sorted-data structures, balanced BSTs are the default in most standard libraries.</p>",
+        "mathExpressions": ["\\text{BST: height} = \\Theta(\\log n) \\text{ if balanced}, \\;\\Theta(n) \\text{ if degenerate}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-04-c2",
+        "title": "Heaps: Priority Queues in Disguise",
+        "contentHtml": "<p>A <strong>binary heap</strong> is a complete binary tree where every parent is greater than or equal to its children (max-heap) or less than (min-heap). The root is always the extreme value.</p><p>The clever part: a complete binary tree can be stored implicitly in an array. Node at index <code>i</code> has children at <code>2i+1</code> and <code>2i+2</code>; parent at <code>(i-1)/2</code>. No pointers, just arithmetic. This makes heaps cache-friendly and memory-efficient.</p><p>Operations: <code>insert</code> and <code>extract-max</code> are O(log n) via sift-up and sift-down. <code>peek</code> is O(1) — just look at index 0. Building a heap from an unsorted array is O(n) (cleverly faster than n log n via a bottom-up algorithm). Heaps power priority queues, heapsort, top-k selection, and event simulators.</p>",
+        "mathExpressions": ["\\text{heap layout: } \\text{children}(i) = (2i+1, 2i+2),\\; \\text{parent}(i) = \\lfloor (i-1)/2 \\rfloor"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-04-c3",
+        "title": "Tries and Specialized Trees",
+        "contentHtml": "<p>A <strong>trie</strong> (pronounced \"try\") is a tree keyed on string prefixes. Each edge is labeled with a character; the path from root to a node spells a prefix. Tries excel at prefix queries — \"all keys starting with 'cat'\" — by traversing to that prefix and enumerating descendants.</p><p>Tries power autocomplete (Google's search box), spell checkers, IP routing tables (longest-prefix match), and dictionaries. <strong>Compressed tries</strong> (radix trees, Patricia tries) collapse single-child chains for memory efficiency. The Linux kernel uses radix trees for page caches and the Linux IP routing table.</p><p>Other specialized trees worth knowing: <strong>B-trees</strong> (the database index workhorse — high branching factor, shallow, disk-friendly), <strong>segment trees</strong> and <strong>Fenwick trees</strong> (range queries on arrays in O(log n)), <strong>Merkle trees</strong> (hash-of-hashes structures used by Git, Bitcoin, distributed databases for integrity verification). Each fits a specific access pattern that general-purpose trees handle poorly.</p>",
+        "mathExpressions": ["\\text{trie: prefix lookup} = O(|\\text{prefix}|) \\quad \\text{independent of total dictionary size}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ds-q25", "ds-q26", "ds-q27", "ds-q28", "ds-q29", "ds-q30", "ds-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "ds-05",
+    "topicId": "cs-data-structures",
+    "order": 5,
+    "title": "Graphs and Probabilistic Structures",
+    "description": "Adjacency lists/matrices, union-find, bloom filters, and skip lists",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "ds-05-c1",
+        "title": "Representing Graphs",
+        "contentHtml": "<p>A <strong>graph</strong> is a set of vertices and edges. The two standard representations have very different trade-offs.</p><p><strong>Adjacency list</strong>: for each vertex, store a list of its neighbors. Space O(V + E). Iterating a vertex's neighbors is O(degree). Edge existence checks are O(degree). This is the default for sparse graphs (most real-world graphs).</p><p><strong>Adjacency matrix</strong>: a V × V boolean matrix where M[i][j] = 1 if edge i-j exists. Space O(V²). Edge existence is O(1). Iterating neighbors is O(V) regardless of degree. Best for dense graphs or algorithms needing constant-time edge queries (Floyd-Warshall, transitive closure).</p><p>Modern graph databases (Neo4j, JanusGraph) and graph processing frameworks (Apache Giraph, GraphX) typically use augmented adjacency-list-like representations because real graphs (social networks, web links) have power-law degree distributions and are spectacularly sparse.</p>",
+        "mathExpressions": ["\\text{adjacency list: } O(V + E) \\quad \\text{vs} \\quad \\text{adjacency matrix: } O(V^2)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-05-c2",
+        "title": "Union-Find: Tracking Disjoint Sets",
+        "contentHtml": "<p>The <strong>union-find</strong> data structure (also called <strong>disjoint set union, DSU</strong>) tracks elements partitioned into disjoint sets. Two operations: <code>find(x)</code> returns the representative of x's set; <code>union(x, y)</code> merges x's and y's sets.</p><p>The clever implementation uses <strong>path compression</strong> (during find, point every visited node directly to the root) and <strong>union by rank</strong> (always make the shorter tree a child of the taller). With both optimizations, amortized cost per operation is O(α(n)), where α is the inverse Ackermann function — effectively constant for any conceivable input.</p><p>Union-find shines in connectivity and clustering problems: <strong>Kruskal's MST algorithm</strong> uses it to detect when adding an edge would create a cycle. <strong>Image segmentation</strong>, <strong>percolation simulation</strong>, <strong>Conway's Game of Life optimization</strong>, and <strong>connected components in dynamic graphs</strong> all lean on union-find. It's the algorithm everyone's heard of but doesn't realize they need until they need it.</p>",
+        "mathExpressions": ["\\text{union-find: } O(\\alpha(n)) \\text{ amortized per op (effectively constant)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ds-05-c3",
+        "title": "Bloom Filters and Probabilistic Structures",
+        "contentHtml": "<p>Some problems don't need exact answers. <strong>Probabilistic data structures</strong> trade some accuracy for huge gains in space or speed.</p><p>A <strong>Bloom filter</strong> is a bit array plus k hash functions. <code>add(x)</code> sets the k bits given by k hashes of x. <code>contains(x)</code> returns true if all k bits are set. The trick: false negatives are impossible, but false positives are possible. \"x might be in the set\" or \"x is definitely not in the set.\" This is exactly what databases want as a pre-filter — Bloom filter says no, skip the disk read; says maybe, do the actual check.</p><p>Other probabilistic structures: <strong>Count-Min Sketch</strong> (frequency estimates for streams), <strong>HyperLogLog</strong> (cardinality estimation — counting unique elements with kilobytes for billions of items), <strong>Skip Lists</strong> (a randomized alternative to balanced BSTs, used by Redis, LevelDB). Each fits a niche where exact answers are too expensive but \"good enough\" suffices. The CDN, database, and analytics worlds run on these.</p>",
+        "mathExpressions": ["\\text{Bloom filter: } P(\\text{false positive}) \\approx (1 - e^{-kn/m})^k"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ds-q32", "ds-q33", "ds-q34", "ds-q35", "ds-q36", "ds-q37"],
+    "puzzleId": null
+  }
+]

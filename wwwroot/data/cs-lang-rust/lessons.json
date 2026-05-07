@@ -1,0 +1,182 @@
+[
+  {
+    "id": "rs-01",
+    "topicId": "cs-lang-rust",
+    "order": 1,
+    "title": "Ownership and Borrowing",
+    "description": "Rust's central innovation: memory safety without garbage collection",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "rs-01-c1",
+        "title": "Each Value Has Exactly One Owner",
+        "contentHtml": "<p><strong>Rust</strong> (Graydon Hoare, Mozilla, first stable 2015) is built around <strong>ownership</strong>: every value has exactly one owner, a variable. When the owner goes out of scope, the value is dropped (its destructor runs, memory freed). This is RAII enforced by the compiler.</p><p>Assignment moves: <code>let s1 = String::from(\"hello\"); let s2 = s1;</code> transfers ownership. Now <code>s2</code> owns the string; <code>s1</code> is no longer usable. Trying to use <code>s1</code> is a compile error: \"value moved here.\" This is dramatically different from C++ (where copy is the default) and from garbage-collected languages (where reference semantics rule).</p><p>Why bother? Because the compiler now knows precisely when each resource is freed and can prevent use-after-free, double-free, and many concurrency bugs at compile time. No garbage collector. No runtime cost. Just rules the compiler enforces.</p>",
+        "mathExpressions": ["\\text{ownership: 1 owner per value, dropped when owner exits scope}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-01-c2",
+        "title": "Borrowing: References Without Moves",
+        "contentHtml": "<p>Always moving would make Rust painful. Instead, you can <strong>borrow</strong> a value by taking a <strong>reference</strong>: <code>let s = String::from(\"hi\"); let r = &amp;s;</code>. Now <code>r</code> is a reference; <code>s</code> still owns the string.</p><p>References come in two flavors. <strong>Shared references (&amp;T)</strong>: many readers, no writers. Multiple <code>&amp;T</code> may exist simultaneously; none can mutate. <strong>Mutable references (&amp;mut T)</strong>: exactly one writer, no readers. While a <code>&amp;mut T</code> exists, no other reference (shared or mutable) to the same value may exist.</p><p>This is the famous <strong>aliasing XOR mutability</strong> rule. You can have many readers OR one writer, never both. The borrow checker enforces this at compile time. Once you internalize it, an entire category of bugs (data races, iterator invalidation, accidental aliasing) becomes impossible. The cost: a learning curve where the compiler refuses code you thought was correct.</p>",
+        "mathExpressions": ["\\text{borrow: } |\\&T| \\geq 0 \\text{ XOR } |\\&\\text{mut } T| = 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-01-c3",
+        "title": "The Borrow Checker and Fighting It",
+        "contentHtml": "<p>The <strong>borrow checker</strong> is the compile-time component that enforces ownership and borrowing rules. It tracks which references are alive, which conflict, and rejects code that would violate the rules.</p><p>New Rust users famously \"fight the borrow checker.\" Common surprises: you can't easily build a doubly linked list (each node would need shared mutable references); iterating over a collection while modifying it is hard; self-referential structs require special handling. These constraints feel painful at first but reveal genuine bugs in C++ designs.</p><p>The pragmatic toolkit: <strong>clone</strong> when ownership is too costly to track but copying is fine; <strong>Rc&lt;T&gt;</strong> for shared ownership (single-threaded reference counting); <strong>Arc&lt;T&gt;</strong> for shared ownership across threads; <strong>RefCell&lt;T&gt;</strong> for runtime-checked interior mutability. These escape hatches are usually unnecessary, but when you need them, they're well-designed and clearly mark code that has \"opted out\" of the default rules.</p>",
+        "mathExpressions": ["\\text{borrow checker: prove all references are valid at compile time}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["rs-q01", "rs-q02", "rs-q03", "rs-q04", "rs-q05", "rs-q06", "rs-q07", "rs-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "rs-02",
+    "topicId": "cs-lang-rust",
+    "order": 2,
+    "title": "Lifetimes and References",
+    "description": "How Rust ensures references never outlive their data",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "rs-02-c1",
+        "title": "Lifetimes Encode Reference Validity",
+        "contentHtml": "<p>A <strong>lifetime</strong> is the scope during which a reference is valid. The borrow checker proves that no reference outlives its referent. If you return a reference, the compiler must prove the data lives at least as long.</p><p>Most lifetimes are inferred. The compiler's <strong>lifetime elision rules</strong> handle simple cases without explicit annotation: <code>fn first(x: &amp;str) -&gt; &amp;str</code> implicitly says \"the returned reference lives as long as the input.\" For most functions, you write no lifetime annotations.</p><p>When lifetimes can't be inferred (multiple references in/out, or stored in structs), you write them explicitly: <code>fn longer&lt;'a&gt;(x: &amp;'a str, y: &amp;'a str) -&gt; &amp;'a str</code>. The <code>'a</code> is a generic lifetime parameter — any concrete lifetime works as long as the relationships hold.</p>",
+        "mathExpressions": ["\\text{lifetime } 'a: \\text{reference valid for scope } 'a"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-02-c2",
+        "title": "Slices, Strings, and References to Parts",
+        "contentHtml": "<p>Rust's reference machinery extends to <strong>slices</strong>: views into contiguous memory. <code>&amp;[T]</code> is a slice of T's; <code>&amp;str</code> is a slice of valid UTF-8 bytes. Slices are non-owning views — they borrow from an underlying owner (Vec, String, array).</p><p>The famous distinction: <strong>String</strong> owns heap memory; <strong>&amp;str</strong> borrows. <strong>Vec&lt;T&gt;</strong> owns; <strong>&amp;[T]</strong> borrows. The slice version is preferred for parameters when you don't need ownership: <code>fn count_words(s: &amp;str) -&gt; usize</code> works on Strings, string literals, substrings — anything coercible to <code>&amp;str</code>.</p><p>This pattern (\"function takes a reference; caller controls ownership\") is everywhere in Rust. It's how you get the flexibility of higher-level languages while keeping the no-allocation guarantee. Idiomatic Rust APIs almost always take slices and references rather than owned types unless they need to take ownership.</p>",
+        "mathExpressions": ["\\text{slice: } \\&[T] = (\\text{ptr}, \\text{length}) \\quad \\text{view, not owner}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-02-c3",
+        "title": "Lifetime Bounds and Higher-Ranked Types",
+        "contentHtml": "<p>Lifetimes participate in the type system. You can constrain types with lifetime bounds: <code>T: 'static</code> means T must not contain any non-static references. This is required for sending values across threads and storing them in long-lived state.</p><p><strong>Higher-ranked trait bounds (HRTB)</strong> handle cases where a function must work for any lifetime: <code>for&lt;'a&gt; Fn(&amp;'a str)</code> means \"a function that works for any reference lifetime.\" Common in advanced trait usage.</p><p>The <strong>NLL (Non-Lexical Lifetimes)</strong> 2018 update made the borrow checker much more permissive. Pre-NLL, a borrow lasted to the end of the scope; post-NLL, only as long as it's actually used. This eliminated many false positives. The further-evolved <strong>Polonius</strong> borrow checker is even more flexible. Each year, valid Rust code accepts more programs while the rules stay sound.</p>",
+        "mathExpressions": ["T: 'static \\implies T \\text{ contains no shorter-lived references}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["rs-q09", "rs-q10", "rs-q11", "rs-q12", "rs-q13", "rs-q14", "rs-q15", "rs-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "rs-03",
+    "topicId": "cs-lang-rust",
+    "order": 3,
+    "title": "Traits and Generics",
+    "description": "Rust's polymorphism: structural protocols without inheritance",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "rs-03-c1",
+        "title": "Traits: Shared Behavior",
+        "contentHtml": "<p>A <strong>trait</strong> is Rust's mechanism for shared behavior. Conceptually like an interface in Java or a typeclass in Haskell. Define a trait: <code>trait Greet { fn hello(&amp;self) -&gt; String; }</code>. Implement it for any type: <code>impl Greet for Cat { fn hello(&amp;self) -&gt; String { \"meow\".into() } }</code>.</p><p>Traits enable <strong>generic constraints</strong>: <code>fn print_greeting&lt;T: Greet&gt;(t: &amp;T) { println!(\"{}\", t.hello()); }</code>. Any T that implements Greet works. The compiler monomorphizes — generates a specialized version per concrete type. Zero runtime cost.</p><p>Critical traits include: <strong>Clone</strong> (explicit deep copy), <strong>Copy</strong> (implicit shallow copy for simple types), <strong>Debug</strong> (debug printing), <strong>Display</strong> (user-facing printing), <strong>PartialEq/Eq</strong> (equality), <strong>PartialOrd/Ord</strong> (ordering), <strong>Iterator</strong>. Many can be auto-derived: <code>#[derive(Debug, Clone, PartialEq)]</code>.</p>",
+        "mathExpressions": ["\\text{trait: shared method protocol; T: Trait constrains generics}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-03-c2",
+        "title": "Static vs Dynamic Dispatch",
+        "contentHtml": "<p>Generic constraints (<code>T: Greet</code>) use <strong>static dispatch</strong>: each call is resolved at compile time, allowing inlining. Fast, but produces multiple specialized instances of the function.</p><p><strong>Trait objects</strong> use <strong>dynamic dispatch</strong>: <code>&amp;dyn Greet</code> or <code>Box&lt;dyn Greet&gt;</code> is a fat pointer (data pointer + vtable pointer). The compiler generates one version of the function; calls go through the vtable at runtime. Smaller binary, slightly slower per call.</p><p>The choice: static dispatch when generics work cleanly (most cases); dynamic dispatch when you genuinely need to mix different types in one collection (<code>Vec&lt;Box&lt;dyn Animal&gt;&gt;</code>) or when the choice is determined at runtime. Rust gives you both with explicit, predictable performance characteristics — neither is hidden.</p>",
+        "mathExpressions": ["\\text{static dispatch: } T: \\text{Trait} \\implies \\text{monomorphized} \\quad \\text{dynamic: } \\&\\text{dyn Trait} \\implies \\text{vtable}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-03-c3",
+        "title": "Associated Types and Advanced Traits",
+        "contentHtml": "<p>Traits can have <strong>associated types</strong> — types defined per implementation. The <code>Iterator</code> trait is the classic example: <code>trait Iterator { type Item; fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt;; }</code>. Each iterator picks its own <code>Item</code> type. <code>impl Iterator for Counter { type Item = u32; ... }</code>.</p><p>Other advanced features: <strong>blanket implementations</strong> (<code>impl&lt;T: Display&gt; ToString for T</code>) auto-implement a trait for many types; <strong>default methods</strong> let traits provide default implementations of some methods; <strong>supertrait</strong> bounds (<code>trait Bar: Foo</code>) require implementers to also implement Foo.</p><p><strong>Coherence rules</strong> prevent conflicting implementations: you can implement <code>Foo for MyType</code> if you defined either Foo or MyType, but not both from external crates. This 'orphan rule' avoids the diamond ambiguity that plagues some other languages.</p>",
+        "mathExpressions": ["\\text{trait Iterator: type Item; fn next(\\&mut self)} \\to \\text{Option}\\langle \\text{Item} \\rangle"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["rs-q17", "rs-q18", "rs-q19", "rs-q20", "rs-q21", "rs-q22", "rs-q23", "rs-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "rs-04",
+    "topicId": "cs-lang-rust",
+    "order": 4,
+    "title": "Error Handling, Enums, and Pattern Matching",
+    "description": "Result, Option, and the algebraic data types that replace null",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "rs-04-c1",
+        "title": "Result<T, E> Replaces Exceptions",
+        "contentHtml": "<p>Rust has no exceptions for normal error handling. Functions that can fail return <strong>Result&lt;T, E&gt;</strong>: either <code>Ok(value)</code> or <code>Err(error)</code>. The caller MUST handle both — pattern match, propagate, or explicitly unwrap.</p><p>The <code>?</code> operator propagates errors concisely: <code>let f = File::open(path)?;</code> returns the file on success or returns the error to the caller on failure. Combined with <code>From</code> conversions, error types compose cleanly. Whole call chains read like normal sequential code.</p><p>The result: <strong>error handling is part of the type system</strong>. You can't accidentally ignore an error — the compiler warns or errors. Functions document their failure modes via their return types. Migrating between success and failure paths is mechanical. Many engineers find this dramatically more reliable than exceptions, where errors hide in invisible call paths.</p>",
+        "mathExpressions": ["\\text{Result}\\langle T, E \\rangle = \\text{Ok}(T) | \\text{Err}(E) \\quad \\text{? propagates Err to caller}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-04-c2",
+        "title": "Option<T>: No More Null",
+        "contentHtml": "<p>Rust has no null. Instead, <strong>Option&lt;T&gt;</strong> models maybe-a-value: <code>Some(t)</code> or <code>None</code>. The compiler refuses to let you use the value without handling None.</p><p>Idiomatic methods: <code>.unwrap()</code> (panic on None — only when you've proven None can't happen), <code>.expect(\"msg\")</code> (panic with a custom message), <code>.unwrap_or(default)</code>, <code>.unwrap_or_else(closure)</code>, <code>.map(f)</code>, <code>.and_then(f)</code>, <code>.ok_or(err)</code> (convert to Result).</p><p>The famous Tony Hoare line: \"I call [null] my billion-dollar mistake.\" Rust just doesn't have that mistake. Whole categories of NullPointerExceptions and segfaults disappear. Combined with Result, error and absence are encoded as values you can compose, not implicit pitfalls. Modern languages are increasingly adopting this — Swift's optionals, Kotlin's nullable types, TypeScript's strict null checking — but Rust's version is the most thoroughly enforced.</p>",
+        "mathExpressions": ["\\text{Option}\\langle T \\rangle = \\text{Some}(T) | \\text{None} \\quad \\text{(no null pointers)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-04-c3",
+        "title": "Enums, Pattern Matching, and Exhaustiveness",
+        "contentHtml": "<p>Rust's <strong>enum</strong> is much more powerful than C's. Enum variants can carry data: <code>enum Shape { Circle(f64), Rect(f64, f64), Triangle { a: f64, b: f64, c: f64 } }</code>. This is an algebraic sum type — exactly one variant at a time.</p><p><strong>match expressions</strong> destructure enums and check <strong>exhaustiveness</strong>: <code>match shape { Shape::Circle(r) =&gt; ..., Shape::Rect(w, h) =&gt; ... }</code> — if you forget a variant, the compiler refuses to compile. Add a new variant, every match expression must be updated. This makes refactoring data types fearless.</p><p>Pattern matching extends beyond enums to tuples, structs, slices, references, ranges, guards (<code>x if x &gt; 0</code>), or-patterns, and bindings. Combined with <code>let else</code>, <code>if let</code>, and <code>while let</code>, you get expressive control flow that's both safe and ergonomic. Modern functional features applied to a systems language.</p>",
+        "mathExpressions": ["\\text{enum: sum type with data} \\quad \\text{match: exhaustive destructuring}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["rs-q25", "rs-q26", "rs-q27", "rs-q28", "rs-q29", "rs-q30", "rs-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "rs-05",
+    "topicId": "cs-lang-rust",
+    "order": 5,
+    "title": "Cargo, Async, and the Ecosystem",
+    "description": "Build tooling, async runtime story, and where Rust is winning",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "rs-05-c1",
+        "title": "Cargo: The Gold Standard for Build Tooling",
+        "contentHtml": "<p><strong>Cargo</strong> is Rust's build tool, package manager, test runner, formatter integration, and benchmark runner — all rolled into one. <code>cargo new</code>, <code>cargo build</code>, <code>cargo test</code>, <code>cargo run</code>, <code>cargo bench</code>, <code>cargo doc</code>. The same commands work on every project.</p><p>Dependencies are listed in <code>Cargo.toml</code>; pinned in <code>Cargo.lock</code>. <strong>crates.io</strong> is the registry — over 150,000 packages and growing. <code>cargo add tokio</code> adds a dependency. <code>cargo update</code> bumps versions. Reproducible installs, fast builds, consistent across platforms.</p><p>Cargo is widely cited as the best build tooling in any language. C++ developers used to fighting CMake, Java developers used to Gradle, Python developers used to pip+venv all comment on how Cargo \"just works.\" The language designers learned from the failures of older ecosystems and shipped a tool that does almost everything you want out of the box.</p>",
+        "mathExpressions": ["\\text{cargo: build + deps + test + bench + doc + format hook} = \\text{single workflow}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-05-c2",
+        "title": "Async Rust: tokio, async/await, and the Two Worlds",
+        "contentHtml": "<p>Rust has <strong>async/await</strong> built into the language. <code>async fn fetch(url: &amp;str) -&gt; Result&lt;Body, Err&gt;</code> creates a future. <code>.await</code> drives it. The compiler turns async functions into state machines — no threads, just stackless coroutines.</p><p>The runtime is separate. <strong>tokio</strong> is the dominant async runtime, providing the executor, timers, networking, and ecosystem. <strong>async-std</strong> and <strong>smol</strong> exist as alternatives. Choosing a runtime is a project-level decision; libraries that depend on a specific runtime are a real friction point.</p><p>The famous \"async Rust is hard\" complaint is real. Lifetimes interact with future state machines in subtle ways. <code>Send + Sync + 'static</code> bounds proliferate. Splitting work across threads or async tasks requires understanding both. The ecosystem has matured significantly (axum, tonic, sqlx, reqwest are all excellent), but onboarding to async Rust is still steeper than to most languages.</p>",
+        "mathExpressions": ["\\text{async fn} \\to \\text{state machine future} \\quad \\text{tokio drives it}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "rs-05-c3",
+        "title": "Where Rust Is Winning",
+        "contentHtml": "<p>Rust's adoption in the 2020s has been remarkable. <strong>Cloudflare</strong> rewrote major portions of their edge in Rust. <strong>Discord</strong> moved its read-states service from Go. <strong>Mozilla</strong> rewrote large parts of Firefox (Servo, Stylo). <strong>Microsoft</strong>, <strong>Amazon</strong>, <strong>Google</strong>, <strong>Meta</strong> all use Rust in production for performance-critical or security-critical systems. The <strong>Linux kernel</strong> now accepts Rust drivers (huge symbolic moment).</p><p>The new wave of high-quality Rust tools has reshaped multiple ecosystems. <strong>ripgrep</strong> (search), <strong>bat</strong> (cat), <strong>fd</strong> (find), <strong>tokei</strong> (LOC), <strong>uv</strong> + <strong>ruff</strong> (Python tooling), <strong>swc</strong> + <strong>turbopack</strong> (JS tooling), <strong>pingora</strong> (Cloudflare's web proxy). Each is faster than its predecessor by 10× or more.</p><p>The frontier areas: <strong>WebAssembly</strong> (Rust is the most popular language compiling to wasm), <strong>embedded</strong> (no_std Rust, Embassy framework), <strong>game engines</strong> (Bevy, rust-gpu), <strong>databases</strong> (Materialize, ScyllaDB rewrite). Rust isn't replacing C++ overnight, but it's winning new green-field systems work and chipping away at C++'s dominance in performance-critical, safety-critical software.</p>",
+        "mathExpressions": ["\\text{Rust adoption: kernel, browser, cloud edge, ML infra, dev tools, embedded}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["rs-q32", "rs-q33", "rs-q34", "rs-q35", "rs-q36", "rs-q37"],
+    "puzzleId": null
+  }
+]

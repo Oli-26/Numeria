@@ -1,0 +1,362 @@
+[
+  {
+    "id": "nano-01",
+    "topicId": "mat-nanomaterials",
+    "order": 1,
+    "title": "What Changes at the Nanoscale",
+    "description": "Surface-to-volume ratio, surface energy, and the onset of quantum effects",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "nano-01-c1",
+        "title": "Surface-to-Volume Ratio Explodes",
+        "contentHtml": "<p>The defining feature of the nanoscale (roughly 1-100 nm) is that <strong>surface area dominates volume</strong>. For a sphere of radius r, the surface-to-volume ratio scales as 3/r. Cut a 1 cm cube into 1 nm cubes and the total surface area grows by a factor of 10⁷ — the same mass now has the area of a football field.</p><p>Consequences are everywhere. A bulk gold bar has only a sliver of atoms at its surface; a 2 nm gold nanoparticle has roughly 50% of its atoms at the surface. Catalysis becomes wildly more efficient because reactions only happen at exposed atoms — this is why platinum nanoparticles, not platinum slabs, sit in your car's catalytic converter and in fuel-cell electrodes.</p><p>Surface atoms are also <em>different</em>. They have fewer neighbors, dangling bonds, and higher energy. Below ~5 nm, gold's melting point drops by hundreds of degrees because surface atoms are easier to liberate. Material properties you took as constants in bulk — melting point, lattice parameter, magnetic ordering — all start to drift as size shrinks. Nano isn't just \"small bulk\"; it's a different physical regime.</p>",
+        "mathExpressions": ["\\frac{S}{V} = \\frac{3}{r} \\quad \\text{(sphere) — diverges as } r \\to 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-01-c2",
+        "title": "Quantum Confinement",
+        "contentHtml": "<p>When a particle becomes smaller than the natural length scale of its electrons (the <strong>exciton Bohr radius</strong>, ~5 nm for CdSe, ~50 nm for InSb), the electrons can no longer behave as if they were in an infinite crystal. They get squeezed, and their energy levels shift up — this is <strong>quantum confinement</strong>.</p><p>The simplest model is a particle in a 3D box. Confinement energy scales as <code>E ∝ ℏ²π² / (2m*L²)</code>, where L is the box size and m* is the effective mass. Halve the dot's size and the bandgap energy quadruples. For CdSe quantum dots: 6 nm dots emit red, 3 nm dots emit green, 2 nm dots emit blue. Same compound, different colors purely from size.</p><p>This is the basis of QLED TVs (Samsung QLED, Sony Triluminos), bio-imaging tags, and solar cell sensitizers. The 2023 Nobel Prize in Chemistry went to Bawendi, Brus, and Ekimov for discovering and synthesizing these size-tunable nanocrystals — recognition that size itself becomes a tunable parameter once you're below the exciton Bohr radius.</p>",
+        "mathExpressions": ["E_{\\text{conf}} = \\frac{\\hbar^2 \\pi^2}{2 m^* L^2} \\quad \\text{(particle in a box)}", "E_g(R) \\approx E_g^{\\text{bulk}} + \\frac{\\hbar^2 \\pi^2}{2 \\mu R^2} - \\frac{1.8\\, e^2}{4\\pi\\varepsilon R} \\quad \\text{(Brus equation)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-01-c3",
+        "title": "Surface Energy Dominates",
+        "contentHtml": "<p>In bulk, surface energy is a tiny correction. At the nanoscale, it's the boss. The total free energy of a particle gains a term proportional to area — and area dominates volume below ~10 nm — so nanoparticles try aggressively to lower their surface energy.</p><p>The consequences shape everything. <strong>Coarsening</strong> (Ostwald ripening): big particles eat small ones because larger curvature has higher chemical potential. This is why bare nanoparticles fuse over time and why surfactant ligands (oleic acid, oleylamine, citrate) are essential to keep them dispersed. <strong>Lattice contraction</strong>: surface tension actually compresses the crystal, shifting X-ray peaks measurably.</p><p>It also dictates <strong>shape</strong>. Equilibrium shapes minimize total surface energy weighted by facet (the Wulff construction): low-energy {111} facets dominate in face-centered-cubic metals, giving truncated octahedra. Kinetically grown shapes — nanorods, nanoprisms, nanostars — are non-equilibrium and stabilized by selective binding of capping agents to specific facets. Shape control is the synthetic chemistry of choosing which surfaces to expose.</p>",
+        "mathExpressions": ["\\Delta G = -V \\Delta G_v + A \\gamma \\quad \\text{(nucleation: volume vs. surface terms)}", "\\Delta\\mu = \\frac{2 \\gamma V_m}{r} \\quad \\text{(Gibbs-Thomson: small particles are more soluble)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q01", "nano-q02", "nano-q03", "nano-q04", "nano-q05", "nano-q06", "nano-q07", "nano-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-02",
+    "topicId": "mat-nanomaterials",
+    "order": 2,
+    "title": "Carbon Allotropes: Graphene, CNTs, Fullerenes",
+    "description": "From C60 to Dirac cones — the carbon nanozoo",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "nano-02-c1",
+        "title": "Graphene and the Dirac Cone",
+        "contentHtml": "<p><strong>Graphene</strong> is a single sheet of sp²-bonded carbon arranged in a honeycomb lattice. Isolated by Geim and Novoselov in 2004 (Nobel 2010) by Scotch-tape exfoliation of graphite, it has electron mobility above 200,000 cm²/V·s, breaking-strength of 130 GPa (200x steel), and thermal conductivity of 5000 W/m·K (better than diamond).</p><p>Its electronic structure is the headline. The honeycomb lattice has two atoms per unit cell, and at the K-points of the Brillouin zone the conduction and valence bands meet at a single point with linear dispersion: <code>E(k) = ℏv_F |k|</code>, with Fermi velocity v_F ≈ 10⁶ m/s. Electrons behave as <strong>massless Dirac fermions</strong>, governed by a 2D analog of the Dirac equation. This gives anomalous transport: Klein tunneling, half-integer quantum Hall effect, and ballistic conduction over micrometers at room temperature.</p><p>The catch: zero bandgap makes graphene unsuitable for digital transistors directly. Strategies to open a gap (nanoribbons, bilayer with displacement field, hBN encapsulation, twisted bilayer) are active research. Commercial uses today: transparent conductive films, composite reinforcement, EMI shielding, and high-frequency analog electronics.</p>",
+        "mathExpressions": ["E(\\mathbf{k}) = \\pm \\hbar v_F |\\mathbf{k}| \\quad v_F \\approx 10^6\\, \\text{m/s}", "\\mu_e \\gtrsim 2 \\times 10^5\\, \\text{cm}^2 / \\text{V} \\cdot \\text{s} \\quad \\text{(suspended graphene at low T)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-02-c2",
+        "title": "Carbon Nanotubes: Chirality Decides Everything",
+        "contentHtml": "<p>Roll up a graphene sheet and you get a <strong>carbon nanotube (CNT)</strong>. The roll-up vector <code>(n, m)</code> — where you bring atom (0,0) onto atom (n, m) — completely determines the tube's structure and electronic behavior.</p><p>The selection rule: a single-walled CNT is <strong>metallic</strong> when (n - m) mod 3 = 0 and <strong>semiconducting</strong> otherwise. Roughly one third of all chiralities are metallic; two thirds are semiconducting with bandgaps inversely proportional to diameter (~0.8 eV for a 1 nm tube). Sumio Iijima's 1991 multi-walled discovery (and 1993 single-walled) launched the field; today CNTs reach mobilities rivaling silicon and were used in IBM's 2019 16-bit microprocessor RV16X-NANO built entirely from CNT FETs.</p><p>Practical bottleneck: as-grown CNT batches contain a mix of chiralities. Separating semiconducting from metallic — by density gradient ultracentrifugation, polymer wrapping, or DNA-based sorting — has been the hard part of commercializing CNT electronics. Outside electronics, CNTs are reinforcement fibers in composites (Tesla S, aerospace), conductive additives in lithium battery cathodes, and the basis of tip materials for AFM probes.</p>",
+        "mathExpressions": ["d = \\frac{a_0}{\\pi} \\sqrt{n^2 + nm + m^2} \\quad a_0 = 0.246\\, \\text{nm}", "\\text{metallic if } (n - m) \\bmod 3 = 0,\\quad \\text{semiconducting otherwise}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-02-c3",
+        "title": "Fullerenes and Graphene Oxide",
+        "contentHtml": "<p><strong>Fullerenes</strong> are closed cages of sp²+sp³ carbon. <code>C₆₀</code> (buckminsterfullerene) — twenty hexagons and twelve pentagons in a soccer-ball pattern — was discovered by Kroto, Curl, and Smalley in 1985 (Nobel 1996). C₆₀ is a strong electron acceptor and is the historical workhorse of organic photovoltaics: PCBM (a soluble C₆₀ derivative) was the standard fullerene acceptor in bulk-heterojunction solar cells before non-fullerene acceptors took over around 2017.</p><p><strong>Endohedral fullerenes</strong> (atoms or molecules trapped inside the cage) include N@C₆₀ (single nitrogen atom — proposed qubit, world's most expensive material at one point) and Sc₃N@C₈₀ (the basis of MRI contrast agent candidates). Higher fullerenes (C₇₀, C₈₄) and nanobuds (CNT + fullerene hybrids) extend the family.</p><p><strong>Graphene oxide (GO)</strong> is graphene functionalized with epoxy, hydroxyl, and carboxyl groups via the Hummers method. It's water-dispersible (unlike graphene), insulating, and easy to process into films and membranes. Reduced GO recovers most of graphene's conductivity. GO membranes are used in water purification (RO desalination) and forms the basis of many graphene-derived inks for printable electronics. Trade-off: defects sacrifice mobility, but processability is essential at industrial scale.</p>",
+        "mathExpressions": ["C_{60}: \\text{12 pentagons} + \\text{20 hexagons},\\; I_h \\text{ symmetry}", "n_{\\text{vertex}} = 60,\\; n_{\\text{edge}} = 90,\\; n_{\\text{face}} = 32 \\implies V - E + F = 2"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q09", "nano-q10", "nano-q11", "nano-q12", "nano-q13", "nano-q14", "nano-q15", "nano-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-03",
+    "topicId": "mat-nanomaterials",
+    "order": 3,
+    "title": "2D Materials Beyond Graphene",
+    "description": "TMDCs, hBN, phosphorene, MXenes, and van der Waals heterostructures",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "nano-03-c1",
+        "title": "Transition Metal Dichalcogenides (TMDCs)",
+        "contentHtml": "<p><strong>TMDCs</strong> have the formula MX₂, where M is a transition metal (Mo, W, Re) and X a chalcogen (S, Se, Te). They form layered crystals with strong in-plane covalent bonding and weak van der Waals interlayer bonding — exactly like graphite — which is why they exfoliate down to monolayers.</p><p>The headline material is <strong>MoS₂</strong>. Bulk MoS₂ is an indirect-gap semiconductor (1.2 eV); a monolayer flips to a <em>direct</em> gap (1.8 eV), making it strongly photoluminescent. This direct-gap turn-on at the monolayer limit is the key to MoS₂'s use as a transistor channel: in 2011 Kis's group at EPFL demonstrated single-layer MoS₂ FETs with on/off ratios above 10⁸, and TSMC has prototyped 2D-material backplane transistors aimed at sub-2 nm nodes.</p><p>WSe₂, WS₂, and MoSe₂ extend the family. They host strong spin-orbit coupling (split valence band) and <strong>valley physics</strong>: circularly polarized light can selectively excite carriers at the K or K' valleys, opening a route to \"valleytronics\" devices that encode information in valley pseudospin in addition to charge and spin.</p>",
+        "mathExpressions": ["E_g^{\\text{bulk}}(\\text{MoS}_2) \\approx 1.2\\, \\text{eV (indirect)}", "E_g^{\\text{monolayer}}(\\text{MoS}_2) \\approx 1.8\\, \\text{eV (direct)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-03-c2",
+        "title": "hBN, Phosphorene, MXenes",
+        "contentHtml": "<p><strong>Hexagonal boron nitride (hBN)</strong> is graphene's chemical twin: same honeycomb lattice, but alternating B and N atoms. The polar bonds open a wide bandgap of ~6 eV, making hBN an electrical insulator. Its atomically flat, dangling-bond-free surface makes it the standard <strong>encapsulation layer</strong> for graphene and TMDC devices — sandwiching channels between hBN sheets boosts mobility by orders of magnitude. hBN is also a deep-UV emitter and a single-photon source (defect centers).</p><p><strong>Phosphorene</strong> is monolayer black phosphorus, a puckered 2D lattice. Tunable direct gap from 0.3 eV (bulk) to 2 eV (monolayer), high mobility, and strong in-plane anisotropy (electronic and optical properties depend on direction). The catch: phosphorene oxidizes in minutes in ambient air. Encapsulation is mandatory.</p><p><strong>MXenes</strong> (pronounced \"max-eens\") are 2D transition-metal carbides and nitrides — Ti₃C₂Tx is the prototype, made by etching Al from the MAX phase Ti₃AlC₂ with HF. Discovered at Drexel in 2011, MXenes combine metallic conductivity with hydrophilic surface terminations (—OH, —O, —F), making them exceptional electrodes for supercapacitors and EMI shielding (Ti₃C₂ films attenuate gigahertz radiation by 90 dB at 45 μm thickness — the best non-metal known).</p>",
+        "mathExpressions": ["E_g(\\text{hBN}) \\approx 5.9\\, \\text{eV} \\quad \\text{(insulator, deep-UV emitter)}", "\\text{MAX} \\xrightarrow{\\text{HF etch}} \\text{MXene}: \\text{M}_{n+1}\\text{AlX}_n \\to \\text{M}_{n+1}\\text{X}_n\\text{T}_x"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-03-c3",
+        "title": "Van der Waals Heterostructures",
+        "contentHtml": "<p>Because 2D materials don't need lattice-matching for bonding (van der Waals interlayer adhesion does the work), you can stack <em>any</em> 2D crystal on <em>any other</em> in <em>any rotational alignment</em>. Geim coined the term <strong>van der Waals heterostructures</strong> for these designer stacks: \"like assembling Lego blocks at the atomic scale.\"</p><p>The relative twist angle becomes a new design knob. <strong>Magic-angle twisted bilayer graphene</strong> (Cao, Jarillo-Herrero, 2018): rotate two graphene layers by 1.1° and a flat band emerges, hosting unconventional superconductivity at 1.7 K and correlated insulator phases. This launched the field of <strong>twistronics</strong> — engineering quantum phases by stacking and twisting alone, no chemistry required.</p><p>Practical devices already exploit heterostructures: graphene/hBN/graphene tunnel transistors, MoS₂/WSe₂ vertical p-n junctions for ultrathin photodiodes, and graphene-on-WSe₂ photodetectors with high gain. Commercial 2D-material chips remain in early prototyping (Samsung and TSMC have shown roadmaps), but heterostructure devices are now standard in research labs and in the slow march of moving past silicon for sub-2 nm nodes.</p>",
+        "mathExpressions": ["\\theta_{\\text{magic}} \\approx 1.1° \\quad \\text{(twisted bilayer graphene flat-band condition)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q17", "nano-q18", "nano-q19", "nano-q20", "nano-q21", "nano-q22", "nano-q23", "nano-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-04",
+    "topicId": "mat-nanomaterials",
+    "order": 4,
+    "title": "Quantum Dots",
+    "description": "Confinement, color tuning, and the 2023 Nobel Prize",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "nano-04-c1",
+        "title": "Quantum Confinement and the Brus Equation",
+        "contentHtml": "<p><strong>Quantum dots (QDs)</strong> are semiconductor nanocrystals — typically 2-10 nm — small enough that their electronic states are quantized in all three dimensions. Their bandgap depends on size, composition, and shape, all tunable.</p><p>The <strong>Brus equation</strong> (Louis Brus, 1984) gives the size-dependent bandgap of a spherical QD: bulk gap, plus a confinement term that grows as <code>1/R²</code>, minus a Coulomb attraction term that grows as <code>1/R</code>. For CdSe (μ ≈ 0.1 m_e, ε ≈ 10), reducing R from 5 nm to 2 nm shifts the absorption edge by hundreds of meV. The quantization of the conduction and valence band states gives discrete, atom-like absorption peaks.</p><p>Excitons in QDs are tightly bound (binding energy ~100 meV in CdSe vs. ~14 meV in bulk Si) because confinement keeps the electron and hole close together. Photoluminescence quantum yields can exceed 90% in well-passivated CdSe/ZnS core/shell QDs, and emission linewidths are narrow (FWHM ~25 nm), giving the saturated colors that QLED displays exploit.</p>",
+        "mathExpressions": ["E_g(R) = E_g^{\\text{bulk}} + \\frac{\\hbar^2 \\pi^2}{2 \\mu R^2} - \\frac{1.8\\, e^2}{4 \\pi \\varepsilon \\varepsilon_0 R}", "\\frac{1}{\\mu} = \\frac{1}{m_e^*} + \\frac{1}{m_h^*} \\quad \\text{(reduced exciton mass)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-04-c2",
+        "title": "The 2023 Nobel: Bawendi, Brus, Ekimov",
+        "contentHtml": "<p>The 2023 Nobel Prize in Chemistry went to <strong>Alexei Ekimov, Louis Brus, and Moungi Bawendi</strong> for discovering and synthesizing quantum dots. Ekimov (1981, in Soviet glass) and Brus (1983, in colloidal solution) independently observed size-dependent absorption. Brus then derived the equation that predicts it.</p><p>Bawendi's contribution (1993) was the synthesis breakthrough that made QDs technologically usable: <strong>hot-injection synthesis</strong>. Inject a chalcogenide precursor (TOPSe) rapidly into a hot solution of a metal precursor (CdMe₂ or later cadmium oleate) in a coordinating solvent (TOPO). Burst nucleation followed by growth gives narrow size distributions (5-10% standard deviation) — narrow enough that ensemble emission isn't smeared into a featureless band.</p><p>The first commercial QD products were biological labels (Quantum Dot Corporation, 2002). The mass-market arrival was Samsung's QLED TVs starting 2015 — QDs converted blue LED light into pure red and green, beating phosphor-based LCDs on color volume and approaching OLED. Today QLED is the dominant premium-LCD technology, and the industry is moving toward QD-OLED hybrids and electroluminescent QLED (direct injection rather than down-conversion).</p>",
+        "mathExpressions": ["\\text{burst nucleation: } J \\propto \\exp\\left(-\\frac{16 \\pi \\gamma^3 V_m^2}{3 (k_B T)^3 (\\ln S)^2}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-04-c3",
+        "title": "Cd-Free Dots and the Path Forward",
+        "contentHtml": "<p>The original CdSe/ZnS QDs are forbidden in EU consumer electronics under <strong>RoHS</strong> (Restriction of Hazardous Substances) without exemption — cadmium is acutely toxic and bioaccumulative. The push to <strong>Cd-free QDs</strong> has driven a generation of materials development.</p><p><strong>InP/ZnS</strong> is the leading commercial alternative, used by Samsung in their post-2017 QLED line. InP is harder to synthesize with narrow size distribution (linewidths ~40 nm vs. ~25 nm for CdSe) but the displays are competitive. <strong>Perovskite QDs</strong> (CsPbBr₃, CsPbI₃) achieve incredibly narrow emission (FWHM <20 nm) and near-unity quantum yields, but stability and the lead content remain hurdles. <strong>Carbon dots</strong> and <strong>Si nanocrystals</strong> are also explored for low-toxicity bioimaging.</p><p>Beyond displays: QDs are used in solar cells (PbS QD multi-junction cells, certified efficiency now ~13%), single-photon sources for quantum cryptography (InGaAs/GaAs self-assembled dots), and biological labeling where their narrow emission and resistance to photobleaching outclass organic dyes. The field is mature enough to be commercial yet still actively pushing efficiency, color, and toxicity frontiers.</p>",
+        "mathExpressions": ["\\text{InP/ZnS, CdSe/ZnS, CsPbBr}_3,\\; \\text{Si}, \\text{C-dots} \\to \\text{commercial QD library}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q25", "nano-q26", "nano-q27", "nano-q28", "nano-q29", "nano-q30", "nano-q31", "nano-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-05",
+    "topicId": "mat-nanomaterials",
+    "order": 5,
+    "title": "Nanowires and Colloidal Synthesis",
+    "description": "VLS growth, sol-gel, and shape control",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "nano-05-c1",
+        "title": "Vapor-Liquid-Solid (VLS) Nanowire Growth",
+        "contentHtml": "<p><strong>Nanowires</strong> are 1D crystals — diameter 5-100 nm, length up to millimeters. The dominant growth method is <strong>VLS (vapor-liquid-solid)</strong>, invented by Wagner and Ellis at Bell Labs in 1964 and resurrected at the nanoscale by Lieber, Yang, and Samuelson in the late 1990s.</p><p>The recipe: deposit a metal nanoparticle (gold for Si, gold or copper for III-V wires) on a substrate. Heat in a precursor vapor (silane SiH₄ for Si, TMG + AsH₃ for GaAs). The metal particle alloys with the precursor, becomes liquid, supersaturates, and precipitates the semiconductor at the liquid-solid interface. The wire grows beneath the catalyst droplet, which sits at the tip and dictates the wire diameter.</p><p>VLS gives single-crystal wires with controlled axial and radial composition: you can switch precursor mid-growth to make heterostructures (Si/Ge superlattices, GaAs/AlGaAs core-shell). Industrial uses include III-V solar cells (Sol Voltaics' GaAs nanowires), tunneling field-effect transistors, and the III-V channel materials Intel and TSMC have explored as silicon successors. Lieber's lab has demonstrated nanowire-based intracellular probes that record neuron action potentials.</p>",
+        "mathExpressions": ["d_{\\text{wire}} \\propto d_{\\text{catalyst}} \\quad \\text{(diameter set by metal nanoparticle)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-05-c2",
+        "title": "Colloidal Synthesis: Murray, Sol-Gel",
+        "contentHtml": "<p><strong>Colloidal synthesis</strong> grows nanocrystals in solution, with surfactant ligands binding to crystal facets to control size, shape, and dispersion. The 1993 <strong>Murray-Norris-Bawendi</strong> synthesis of monodisperse CdSe was the template: hot-injection of a chalcogen precursor into a hot Cd source in trioctylphosphine oxide (TOPO) gave samples with a 5-10% size standard deviation — narrow enough to resolve individual confinement peaks.</p><p>The principle is <strong>LaMer's model</strong>: a brief, intense nucleation burst followed by slower growth from a depleted monomer pool. Burst nucleation produces a uniform population; slow growth lets all particles add atoms at similar rates, narrowing the distribution further (\"size focusing\"). Get nucleation and growth too overlapped and you get a broad mess.</p><p><strong>Sol-gel</strong> is the older, gentler colloidal route: hydrolyze a metal alkoxide (e.g., tetraethyl orthosilicate, Si(OEt)₄), let it polycondense into an oxide network, then dry. Sol-gel makes silica nanoparticles (Stöber method, 1968), titania, and aerogels — extremely lightweight, porous solids used as insulators (NASA's Stardust mission used silica aerogel to capture comet dust without vaporizing it).</p>",
+        "mathExpressions": ["\\text{LaMer: } [\\text{monomer}] \\nearrow \\to \\text{nucleation burst} \\to [\\text{monomer}] \\searrow \\to \\text{growth}", "\\text{Si(OEt)}_4 + 4\\text{H}_2\\text{O} \\to \\text{Si(OH)}_4 \\to \\text{SiO}_2\\, \\text{network (sol-gel)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-05-c3",
+        "title": "Shape Control and Anisotropic Crystals",
+        "contentHtml": "<p>Crystals don't have to be spheres. <strong>Shape-controlled colloidal synthesis</strong> selectively grows nanorods, nanocubes, nanowires, nanoprisms, octahedra, and concave nanostars. The trick: surfactants that bind preferentially to specific crystal facets, slowing growth on those facets and accelerating it on the unprotected ones.</p><p>The canonical example is gold. CTAB (cetyltrimethylammonium bromide) binds tightly to the {100} facets of FCC gold, leaving {111} ends exposed. Seed-mediated growth in a CTAB micelle template produces <strong>gold nanorods</strong> with tunable aspect ratio (1:1 spheres to 1:10 long rods), shifting the longitudinal plasmon resonance from 530 nm into the near-IR — used for photothermal cancer therapy in clinical trials by Nanospectra.</p><p>For Pt and Pd, similar tricks give nanocubes (used as catalysts in PEM fuel cells — the {100} facets are most active for oxygen reduction), tetrahedra, and concave structures with high-index facets that boost catalytic activity per unit metal. Shape control is the most important lever after size: it determines surface chemistry, plasmon spectrum, and which atoms an electrode or biomolecule actually sees.</p>",
+        "mathExpressions": ["\\frac{\\gamma_{\\{100\\}}}{\\gamma_{\\{111\\}}} \\approx 1.15 \\quad \\text{(FCC: {111} is the lowest-energy facet)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q33", "nano-q34", "nano-q35", "nano-q36", "nano-q37", "nano-q38", "nano-q39", "nano-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-06",
+    "topicId": "mat-nanomaterials",
+    "order": 6,
+    "title": "Plasmonics and Magnetic Nanoparticles",
+    "description": "LSPRs, Mie theory, superparamagnetism, and clinical contrast agents",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nano-06-c1",
+        "title": "Localized Surface Plasmon Resonances",
+        "contentHtml": "<p>A <strong>localized surface plasmon (LSP)</strong> is a collective oscillation of conduction electrons in a metal nanoparticle, driven by an incident light field. When the field's frequency matches the natural oscillation, the resonance gives a huge cross-section for absorption and scattering — orders of magnitude larger than the particle's geometric area.</p><p>For a small sphere (R ≪ λ), the quasistatic Drude model predicts the resonance condition <code>ε_metal(ω) = -2 ε_medium</code>. For gold in water this lands around 520 nm, giving the famous ruby red of colloidal gold (the Lycurgus Cup, 4th century AD, scatters green and transmits red because of embedded gold nanoparticles — Roman plasmonics). Silver resonates around 400 nm; the resonance shifts with size, shape, and dielectric environment.</p><p><strong>Mie theory</strong> (1908) gives the full electromagnetic solution for any sphere size, predicting the scattering and absorption cross-sections analytically. For larger particles, higher multipoles (quadrupole, octupole) appear and the plasmon redshifts. For nanorods, two distinct plasmons emerge — transverse and longitudinal — with the longitudinal plasmon tunable from visible to near-IR by changing aspect ratio.</p>",
+        "mathExpressions": ["\\omega_{\\text{LSPR}} = \\frac{\\omega_p}{\\sqrt{1 + 2\\varepsilon_m}} \\quad \\text{(Drude sphere, plasma frequency } \\omega_p\\text{)}", "C_{\\text{abs}} = \\frac{18 \\pi V \\varepsilon_m^{3/2}}{\\lambda} \\frac{\\varepsilon_2}{(\\varepsilon_1 + 2 \\varepsilon_m)^2 + \\varepsilon_2^2}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-06-c2",
+        "title": "SERS and Plasmonic Therapy",
+        "contentHtml": "<p>Plasmons concentrate light into <strong>nanoscale hotspots</strong>: at gaps between two metal NPs (~1 nm), local field intensity is enhanced by 10⁴-10⁶. <strong>Surface-Enhanced Raman Spectroscopy (SERS)</strong> exploits this: the Raman cross-section, normally vanishingly small (~10⁻³⁰ cm²/molecule), is enhanced by 10⁸-10¹⁰ for molecules sitting in a hotspot. Single-molecule SERS detection is routine on rough silver substrates or in nanoparticle dimers.</p><p>SERS is now in commercial sensors (Renishaw's Raman microscopes, MetroSpec's portable SERS readers for narcotics detection at customs). Nanoparticle assays for explosives, food contaminants, and cancer biomarkers exploit SERS encoding to multiplex many analytes in one drop.</p><p><strong>Plasmonic photothermal therapy</strong> uses NIR-resonant gold nanorods or gold nanoshells (Au-coated silica) to absorb light penetrating through tissue and convert it to heat, ablating tumors locally. Nanospectra Biosciences' AuroLase therapy uses ~150 nm gold-silica nanoshells for prostate cancer and is in late-stage clinical trials. Targeting via antibody conjugation can in principle direct heating to specific cells, though selective accumulation in tumors largely relies on the EPR effect (passive leaky-vasculature uptake).</p>",
+        "mathExpressions": ["I_{\\text{SERS}} \\propto |E_{\\text{loc}}/E_0|^4 \\quad \\text{(EM enhancement at the hotspot)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-06-c3",
+        "title": "Superparamagnetism and MRI Contrast",
+        "contentHtml": "<p>A bulk ferromagnet has many domains. Below a critical size (~20 nm for magnetite Fe₃O₄), a particle is too small for a domain wall and behaves as a <strong>single domain</strong>, with one giant moment. Below another threshold related to thermal energy, that moment flips spontaneously — the particle is <strong>superparamagnetic</strong>: it has no remanence, no coercivity, but enormous susceptibility under an applied field.</p><p>The flip rate follows Néel-Arrhenius: <code>τ = τ₀ exp(KV/k_BT)</code>, where K is the magnetic anisotropy. The <strong>blocking temperature</strong> T_B is where the flip time equals the measurement time. Above T_B, superparamagnetic; below, blocked (frozen). For 10 nm Fe₃O₄, T_B ≈ 200 K — superparamagnetic at body temperature.</p><p>Applications: <strong>MRI contrast agents</strong>. Superparamagnetic iron oxide nanoparticles (SPIONs) shorten T₂* relaxation of nearby water protons, darkening MRI signals. Feridex (ferumoxide, FDA-approved 1996, withdrawn 2008) and Resovist were used for liver imaging; ferumoxytol (Feraheme, 2009) is approved for iron deficiency anemia and used off-label for vascular MRI. <strong>Magnetic hyperthermia</strong> applies an alternating magnetic field; SPION moments lag, dissipating heat and locally raising tumor temperature. NanoTherm therapy (MagForce, EU-approved for glioblastoma) uses aminosilane-coated iron oxide injected directly into tumors.</p>",
+        "mathExpressions": ["\\tau = \\tau_0 \\exp\\left(\\frac{K V}{k_B T}\\right) \\quad \\text{(Néel-Arrhenius flip time)}", "T_B = \\frac{K V}{k_B \\ln(\\tau_m / \\tau_0)} \\quad \\text{(blocking temperature)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q41", "nano-q42", "nano-q43", "nano-q44", "nano-q45", "nano-q46", "nano-q47", "nano-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-07",
+    "topicId": "mat-nanomaterials",
+    "order": 7,
+    "title": "Nanocomposites",
+    "description": "Polymer-CNT, polymer-clay, percolation, and synergistic properties",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "nano-07-c1",
+        "title": "Why Nanofillers Beat Microfillers",
+        "contentHtml": "<p>A <strong>nanocomposite</strong> disperses nanoscale filler in a matrix (usually polymer, sometimes ceramic or metal). At equal volume fraction, nanofillers vastly outperform microfillers because their surface area per unit volume is so much larger (recall: 3/r). A 1 vol% nanofiller can have the interface area of 30 vol% of a micron-sized filler — and the matrix-filler interface is where most reinforcing or conducting effects originate.</p><p>The textbook breakthrough is <strong>Toyota's polymer-clay nanocomposite (1985-1993)</strong>: 4.2 wt% montmorillonite clay (exfoliated to 1 nm thick platelets) in nylon 6 doubled the modulus and increased heat distortion temperature by 80 °C. The composite was used in Toyota Camry timing belt covers (1991), the first commercial polymer nanocomposite. Today similar composites are in Mitsubishi gas tanks (clay barrier reduces hydrocarbon permeation) and Mercedes interior trim.</p><p>Mechanically, the matrix near a high-aspect-ratio filler is constrained — it can't deform as if it were free polymer. This <strong>interphase</strong> can extend tens of nanometers from each filler particle and dominates response when fillers are close together. The art of nanocomposite synthesis is dispersing fillers uniformly (avoiding agglomeration) and engineering the interface to actually transfer load or charge.</p>",
+        "mathExpressions": ["E_{\\text{composite}} = E_m (1 + \\xi \\eta \\phi_f)/(1 - \\eta \\phi_f) \\quad \\text{(Halpin-Tsai)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-07-c2",
+        "title": "Percolation Threshold for Conductivity",
+        "contentHtml": "<p>Adding conductive nanofiller to an insulating matrix doesn't create a conductor immediately — you need a continuous network. Below the <strong>percolation threshold</strong> φ_c, particles don't connect; conductivity stays at the matrix's insulating level. At φ_c, a spanning cluster forms abruptly and conductivity jumps by 10-15 orders of magnitude.</p><p>For randomly dispersed spheres φ_c ≈ 16 vol%. For high-aspect-ratio rods (CNTs, with aspect ratio 1000+), percolation theory predicts <code>φ_c ≈ 1/(aspect ratio)</code>, so as low as 0.1 vol%. Experiments routinely see CNT/epoxy percolation at 0.05-0.5 wt%. Above threshold, conductivity scales as <code>σ ∝ (φ - φ_c)ᵗ</code> with t ≈ 2 in 3D.</p><p>This is the principle behind <strong>antistatic plastics</strong>, <strong>EMI shielding composites</strong> (graphene, MXene, carbon black at low loadings), <strong>conductive inks</strong> for printed electronics, and <strong>self-healing strain sensors</strong> (a polymer-CNT skin whose resistance changes with stretch is used in flexible health-monitoring patches). The penalty: even slightly above threshold, mechanical and optical properties degrade — there's a sweet spot to engineer.</p>",
+        "mathExpressions": ["\\phi_c \\approx \\frac{1}{\\text{aspect ratio}} \\quad \\text{(rods)}", "\\sigma \\propto (\\phi - \\phi_c)^t,\\; t \\approx 2 \\text{ in 3D}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-07-c3",
+        "title": "Synergies and Multifunctional Composites",
+        "contentHtml": "<p>The point of a nanocomposite is rarely a single property. The clay-nylon system stiffens AND reduces gas permeability AND raises thermal stability — three improvements at one cost. CNT-polymer composites can simultaneously increase strength, conductivity, and thermal management.</p><p>Industrial cases. <strong>Aerospace (Boeing 787, Airbus A350)</strong>: carbon-fiber/epoxy primary structures use small fractions of CNT or graphene to suppress microcracking and add lightning-strike conductivity. <strong>Sports gear</strong>: tennis rackets (Babolat, Wilson), bike frames, hockey sticks use CNT or graphene fillers in epoxy to stiffen without adding mass. <strong>Tires</strong>: silica nanoparticles plus silanes in tread compounds (Michelin Energy series since the 1990s) cut rolling resistance ~20% — saving billions of liters of fuel annually.</p><p>The frontier is multifunctional materials: a single composite that conducts heat, blocks EMI, senses strain, and self-heals. MXene-polymer films, graphene foams in elastomers, and 3D-printed lattice composites with embedded nanofiller all aim to consolidate functions previously requiring separate components — the structural skin of an aircraft becoming the antenna, the strain gauge, and the deicer at once.</p>",
+        "mathExpressions": ["\\text{nano-filler vol%} \\sim 0.1 - 5\\% \\quad \\text{vs micro: } 20 - 60\\%"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q49", "nano-q50", "nano-q51", "nano-q52", "nano-q53", "nano-q54", "nano-q55", "nano-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-08",
+    "topicId": "mat-nanomaterials",
+    "order": 8,
+    "title": "Synthesis Routes: Top-Down and Bottom-Up",
+    "description": "Lithography, CVD, ALD, exfoliation, and ball milling",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "nano-08-c1",
+        "title": "Top-Down: Lithography, Milling, Exfoliation",
+        "contentHtml": "<p><strong>Top-down</strong> methods carve nanostructures out of bulk material. The dominant industrial example is <strong>photolithography</strong>. ASML's <strong>extreme ultraviolet (EUV) lithography</strong> at 13.5 nm wavelength patterns features down to ~10 nm half-pitch — every leading-edge chip (TSMC N3, Samsung 3GAA, Intel 18A) is made by EUV. The light source is a tin droplet vaporized by a CO₂ laser into a plasma. ASML's Twinscan NXE:3800 systems sell for $200M and weigh 200,000 kg.</p><p><strong>Mechanical exfoliation</strong> is top-down at its simplest: Geim and Novoselov's Scotch tape removed graphene from graphite, giving them the 2010 Nobel. <strong>Liquid-phase exfoliation</strong> (sonicate graphite in NMP solvent) is the scalable version, producing tonnes of few-layer graphene flakes for ink and composite use.</p><p><strong>Ball milling</strong> (mechanical attrition) breaks bulk into nanoparticles by high-energy impacts. Cheap, scalable, and the foundation of nanocrystalline metal alloys (mechanically alloyed superalloys) and nano-clay grinding for composites. Drawback: broad size distributions, high defect density, and potential contamination from the milling media.</p>",
+        "mathExpressions": ["\\text{resolution} \\sim \\frac{k_1 \\lambda}{\\text{NA}} \\quad k_1 \\approx 0.3,\\; \\lambda = 13.5\\, \\text{nm (EUV)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-08-c2",
+        "title": "CVD and ALD: Atomic-Layer Building",
+        "contentHtml": "<p><strong>Chemical Vapor Deposition (CVD)</strong> grows thin films and nanostructures from gas-phase precursors that decompose on a hot substrate. Methane on copper foil at 1000 °C grows large-area monolayer graphene (CVD graphene from Graphenea, BGT Materials is the source for industrial-scale graphene). CVD also grows carbon nanotubes (HiPCO, CoMoCAT processes) and TMDC monolayers (MoS₂ from MoO₃ + S vapor on SiO₂).</p><p><strong>Atomic Layer Deposition (ALD)</strong> is CVD's slow but exquisitely precise sibling. Two precursors are pulsed alternately, each reacting until the substrate surface saturates and shuts off — every cycle deposits exactly one atomic layer. A canonical ALD: trimethylaluminum (TMA) + water gives Al₂O₃ at ~1 Å/cycle. ALD gives perfect conformality on 3D structures (high-aspect-ratio trenches, nanoparticles), pinhole-free films at sub-nm thickness, and atomic-scale control.</p><p>ALD has become essential to advanced semiconductor fabrication: <strong>high-κ gate dielectrics</strong> (HfO₂ replaced SiO₂ in CMOS at 45 nm node), <strong>diffusion barriers</strong> (TiN, TaN in copper interconnects), <strong>finFET sidewall coatings</strong>, and <strong>3D NAND tunnel oxides</strong>. ASM, Applied Materials, and Lam dominate the equipment market. Outside chips, ALD encapsulates OLEDs against moisture and protects perovskite solar cells.</p>",
+        "mathExpressions": ["\\text{ALD growth rate} \\approx \\text{constant Å/cycle (self-limiting)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-08-c3",
+        "title": "Bottom-Up Colloidal and Self-Assembly",
+        "contentHtml": "<p>Bottom-up routes build nanostructures atom-by-atom or molecule-by-molecule from solution or vapor. <strong>Colloidal synthesis</strong> (lesson 5) is the canonical wet-chemistry version: hot-injection for QDs, polyol for metal NPs, sol-gel for oxides, biomineralization-inspired routes for hybrids.</p><p><strong>Self-assembly</strong> is the most elegant bottom-up principle: design building blocks whose interactions drive them to organize spontaneously into a target structure. <strong>Block copolymer self-assembly</strong> (PS-b-PMMA microphase separation) gives lamellar, cylindrical, or spherical patterns on 10-50 nm scales — used as etch templates for sub-resolution lithography in advanced chip nodes. <strong>DNA origami</strong> (Rothemund, 2006) folds a long DNA scaffold into arbitrary 2D and 3D shapes with ~6 nm precision, used as templates for plasmonic clusters and as nanoscale rulers.</p><p>The trade-offs are systemic. Top-down: high precision, integrates with existing fabs, but expensive at small scales and wasteful (most of the wafer is etched away). Bottom-up: cheap, parallel, scalable to tonnes, but harder to register with existing devices and prone to defects. Real industrial nanofabrication usually combines them — bottom-up grows the nanocrystal, top-down patterns the contacts.</p>",
+        "mathExpressions": ["\\Delta G_{\\text{assembly}} = \\Delta H - T \\Delta S \\quad \\text{(self-assembly: enthalpy } \\downarrow,\\; \\text{entropy can } \\downarrow \\text{ or } \\uparrow\\text{)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q57", "nano-q58", "nano-q59", "nano-q60", "nano-q61", "nano-q62", "nano-q63", "nano-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-09",
+    "topicId": "mat-nanomaterials",
+    "order": 9,
+    "title": "Nanoscale Characterization",
+    "description": "AFM, STM, TEM, STEM-EELS, and in-situ techniques",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "nano-09-c1",
+        "title": "Scanning Probe: AFM and STM",
+        "contentHtml": "<p><strong>Scanning Tunneling Microscopy (STM)</strong>, invented by Binnig and Rohrer at IBM Zurich in 1981 (Nobel 1986), brings a sharp metal tip within ~1 nm of a conducting surface and measures the quantum-mechanical tunneling current that flows. Current depends exponentially on distance — increase the gap by 1 Å and current drops by an order of magnitude — giving sub-Ångström vertical resolution. STM resolves individual atoms on Si(111)-7×7 and lets researchers move atoms one at a time (Eigler's IBM logo of 35 xenon atoms, 1989).</p><p><strong>Atomic Force Microscopy (AFM)</strong>, also from Binnig (1986), drags or taps a sharp tip on the end of a flexible cantilever across any surface — conductor, insulator, biological. The cantilever bends under tip-sample force; a laser bounces off the back of the cantilever onto a quadrant photodetector to read the deflection. AFM gives nanoscale topography on nearly anything, including DNA on mica, polymer films, and hydrated cells.</p><p>Both have many modes. Conducting AFM measures local current, magnetic AFM (MFM) maps stray fields, Kelvin probe AFM maps work function, and tapping mode minimizes lateral forces on soft samples. STM at 4 K with spin-polarized tips measures atomic-scale magnetism. Both instruments are essential nanoscale workhorses.</p>",
+        "mathExpressions": ["I_{\\text{tunnel}} \\propto \\exp(-2 \\kappa d) \\quad \\kappa = \\sqrt{2m\\phi}/\\hbar \\approx 1\\, \\text{Å}^{-1}", "F_{\\text{AFM}} = -k z_{\\text{tip}} \\quad k \\sim 0.01 - 100\\, \\text{N/m (cantilever)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-09-c2",
+        "title": "TEM and Atomic-Resolution Imaging",
+        "contentHtml": "<p><strong>Transmission Electron Microscopy (TEM)</strong> shoots high-energy electrons (80-300 keV) through a thin (<100 nm) specimen and forms an image from transmitted/diffracted electrons. The de Broglie wavelength of a 200 keV electron is ~2.5 pm — far below atomic spacings — so TEM can in principle resolve individual atoms.</p><p>For decades, lens aberrations limited TEM resolution to ~1.5-2 Å. <strong>Aberration-corrected TEM</strong> (commercialized by FEI/Thermo Fisher and JEOL in the early 2000s) uses multipole correctors to push resolution to <0.5 Å. You can now image individual columns of atoms in any crystalline material, single dopant atoms in graphene, or surface atoms on Pt nanoparticles. Cryo-EM (Frank-Henderson-Dubochet, Nobel 2017) extends TEM to frozen biological molecules; structural biology now routinely solves protein structures at 2-3 Å resolution this way.</p><p><strong>STEM (Scanning TEM)</strong> rasters a focused electron probe across the sample. With a high-angle annular dark-field (HAADF) detector, intensity scales as Z^~1.7 (Z-contrast), so heavy atoms shine. <strong>STEM-EELS (Electron Energy Loss Spectroscopy)</strong> measures the energy lost by electrons as they excite plasmons or core levels in the sample, giving atomic-resolution chemical maps and bonding information at single-atom sensitivity.</p>",
+        "mathExpressions": ["\\lambda_{\\text{TEM}} = \\frac{h}{\\sqrt{2 m_e e V (1 + eV/2m_ec^2)}} \\approx 2.5\\, \\text{pm at 200 kV}", "I_{\\text{HAADF}} \\propto Z^{1.6 - 1.9} \\quad \\text{(Z-contrast)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-09-c3",
+        "title": "In-Situ and Operando Techniques",
+        "contentHtml": "<p>Static images tell you what a material looks like, not how it changes during use. <strong>In-situ TEM</strong> watches nanomaterials transform under realistic conditions — heat, gas, liquid, electrical bias — inside the microscope. Specialized holders (Protochips, Hummingbird) provide MEMS-based heaters, gas cells with electron-transparent SiN windows, and electrochemistry cells.</p><p>Examples. <strong>Liquid-cell TEM</strong> watches gold nanocrystal nucleation and ripening in real time, validating LaMer growth models. <strong>Gas-cell TEM</strong> tracks CO oxidation on Pt nanoparticles atom-by-atom, identifying active facets. <strong>Battery operando TEM</strong> observes lithium plating and dendrite growth in solid electrolytes — Stanford and Argonne groups use this routinely to debug failure modes in solid-state batteries.</p><p>Beyond TEM, <strong>operando X-ray techniques</strong> (synchrotron-based XAS, XRD, PDF) monitor catalysts and battery electrodes during operation, capturing transient intermediates that ex-situ characterization misses. <strong>Environmental SEM</strong> images at low pressure and humidity, useful for biological and hydrated samples. The shift from \"snapshot\" to \"movie\" has rewritten our understanding of nanomaterial dynamics: the working state of a catalyst or battery electrode often differs substantially from its as-synthesized form.</p>",
+        "mathExpressions": ["\\text{liquid-cell window: SiN}\\, \\sim 50\\, \\text{nm thick}, \\text{ holds 1 atm gas/liquid}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q65", "nano-q66", "nano-q67", "nano-q68", "nano-q69", "nano-q70", "nano-q71", "nano-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "nano-10",
+    "topicId": "mat-nanomaterials",
+    "order": 10,
+    "title": "Toxicity, Regulation, and Sustainability",
+    "description": "Nano-bio interface, environmental fate, and consumer products",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "nano-10-c1",
+        "title": "Nanotoxicology: Why Size and Shape Matter",
+        "contentHtml": "<p>Bulk titania (TiO₂) is a benign white pigment used in everything from sunscreen to toothpaste. <strong>Nano-TiO₂</strong> is a probable Group 2B carcinogen by inhalation per IARC. Same chemistry, different biology — because nanoscale particles can cross cellular and even nuclear membranes that bulk particles cannot.</p><p>Three properties drive nanotoxicity: <strong>size</strong> (under ~30 nm, particles enter cells by endocytosis; under ~5 nm they penetrate nuclear pores), <strong>shape</strong> (long, rigid, biopersistent fibers like certain CNTs trigger frustrated phagocytosis and asbestos-like mesothelioma in mouse models), and <strong>surface chemistry</strong> (charge and ligand identity determine which proteins adsorb and how immune cells react). Reactive oxygen species (ROS) from surface chemistry is the most-studied damage mechanism.</p><p><strong>Real concerns vs. hype</strong>: silver nanoparticles released from antimicrobial textiles do enter wastewater. Nano-TiO₂ in sunscreen is largely safe topically (doesn't cross intact skin), but inhaled aerosols are a workplace hazard. Long, thin MWCNTs of certain dimensions cause asbestos-like pathology in rodents and are regulated accordingly. Most short, tangled CNTs and most metal oxide NPs do not, but workplace exposure limits (NIOSH RELs) are precautionary.</p>",
+        "mathExpressions": ["\\text{ROS production} \\propto \\text{surface area} \\propto 1/r"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-10-c2",
+        "title": "Regulation, Cosmetics, Food, Batteries",
+        "contentHtml": "<p>Regulatory frameworks have lagged the technology, then partially caught up. The <strong>EU's REACH regulation</strong> requires registration of nanomaterials separately from their bulk forms (since 2020). The <strong>EU Cosmetic Products Regulation</strong> (2009/1223) requires \"[nano]\" labeling for any nanoscale ingredient — common for nano-TiO₂ and nano-ZnO sunscreens and CI-77891 (titania) in mascara. The <strong>FDA</strong> in the US uses a less prescriptive guidance approach, evaluating nanomaterials case-by-case.</p><p>Consumer products are everywhere. <strong>Sunscreens</strong>: nano-TiO₂ and nano-ZnO are transparent on skin where micron-sized particles look chalky. <strong>Cosmetics</strong>: silica nanoparticles for texture, gold for anti-aging marketing. <strong>Food</strong>: nano-silica as anti-caking agent (E551), nano-TiO₂ as whitening (E171) — banned in the EU since 2022 after EFSA's 2021 reassessment found it could no longer be considered safe. <strong>Batteries</strong>: silicon nanoparticles in anodes (Sila Nanotechnologies, Group14, Amprius) accommodate Si's 300% volume expansion without pulverizing, boosting energy density 20-40%.</p><p>The regulatory and commercial picture is converging: nanomaterials are mainstream consumer products, and characterization, labeling, and risk assessment are now standard parts of bringing one to market. The Wild West of 2005 is over.</p>",
+        "mathExpressions": ["\\text{EU REACH: nano-form registration distinct from bulk since 2020}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "nano-10-c3",
+        "title": "Environmental Fate and Sustainability",
+        "contentHtml": "<p>Nanomaterials don't sit politely in the products they were designed for. Silver nanoparticles wash out of socks. Nano-TiO₂ runs off sunscreens into coastal waters. CNTs flake from polymer composites at end-of-life. The <strong>environmental fate</strong> question is: where do they go, what do they transform into, and what do they affect?</p><p>The answer is system-specific. In freshwater, nano-Ag rapidly reacts with sulfide to form Ag₂S, which is much less bioavailable and less toxic than the free metal — natural detoxification. In wastewater treatment plants, the activated sludge captures most metal oxide and Ag NPs (>90%), then the contaminated biosolids go to land application or incineration. Nanoplastics (a hot topic since ~2018) are generated by mechanical and UV breakdown of macroplastic and now ubiquitous in ocean water and human blood — the long-term toxicology is still emerging.</p><p>Sustainability counterpoint: nanomaterials enable lighter cars (CNT composites cut 15-30% body mass), more efficient solar cells, longer-lasting batteries, water purification membranes (graphene oxide RO), and catalysts that need less platinum. Lifecycle analyses (LCA) generally show net environmental benefit for nano-enabled energy and transport technologies despite manufacturing impacts. The challenge for the next decade is closing the loop — designing nanomaterials for recyclability, biodegradability, or benign environmental fate from the start.</p>",
+        "mathExpressions": ["\\text{nano-Ag fate: Ag}^0/\\text{AgNP} \\xrightarrow{\\text{sulfidation}} \\text{Ag}_2\\text{S} \\quad \\text{(reduced bioavailability)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["nano-q73", "nano-q74", "nano-q75", "nano-q76", "nano-q77", "nano-q78", "nano-q79", "nano-q80"],
+    "puzzleId": null
+  }
+]

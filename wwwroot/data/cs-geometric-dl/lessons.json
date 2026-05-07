@@ -1,0 +1,254 @@
+[
+  {
+    "id": "gdl-01",
+    "topicId": "cs-geometric-dl",
+    "order": 1,
+    "title": "The 5 G's: A Unified View of Geometric Deep Learning",
+    "description": "Bronstein-Bruna-Cohen-Veličković's grids, groups, graphs, geodesics, and gauges",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "gdl-01-c1",
+        "title": "The Geometric Unification (Bronstein et al., 2021)",
+        "contentHtml": "<p>The 2021 monograph <em>Geometric Deep Learning: Grids, Groups, Graphs, Geodesics, and Gauges</em> by <strong>Michael Bronstein, Joan Bruna, Taco Cohen, and Petar Veličković</strong> argued that nearly every successful neural-network architecture is, at heart, a particular instance of a single design principle: build the <strong>symmetries of the data domain</strong> directly into the function class. CNNs are the right inductive bias for grids because they are equivariant to translations. GNNs are the right bias for graphs because they are equivariant to vertex permutations. Transformers, when applied to sets, are equivariant to permutations too.</p><p>The unifying claim: a learning architecture should respect the <strong>symmetry group</strong> of the underlying domain. Pixels do not change identity under translation, so a digit classifier should not either. Atoms in a molecule have no canonical ordering, so a property predictor must be permutation-invariant. Modeling these constraints exactly — rather than hoping a generic MLP infers them from data — buys massive sample efficiency and generalization.</p><p>The five geometries — grids (translations), groups (general Lie groups), graphs (permutations), geodesics (manifolds), gauges (local frames) — partition the modern landscape. The same blueprint of equivariant linear maps + nonlinearities + invariant pooling underlies all of them.</p>",
+        "mathExpressions": ["\\text{Equivariance: } f(g \\cdot x) = g \\cdot f(x) \\quad \\forall g \\in G", "\\text{Invariance: } f(g \\cdot x) = f(x) \\quad \\forall g \\in G"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-01-c2",
+        "title": "Equivariance vs Invariance: When to Use Which",
+        "contentHtml": "<p><strong>Equivariance</strong> means the function commutes with the group action: rotate the input, the output rotates the same way. <strong>Invariance</strong> means the function ignores the group action: rotate the input, the output is unchanged. Invariance is the special case of equivariance where the group acts trivially on the output.</p><p>The architectural lesson: the <em>final</em> output of a classifier should usually be invariant (a cat is a cat regardless of pose), but the <em>intermediate</em> representations should be equivariant. Collapsing too early — invariant pooling at layer one — destroys the geometric information later layers need to reason about parts and relations. CNNs achieve this via translation-equivariant convolutional stacks → spatial pooling at the end. ViTs do it via permutation-equivariant attention over patches → CLS-token aggregation. Equivariant message passing networks for molecules keep vector features (like atomic forces) covariant under SE(3) until the last invariant readout.</p><p>Mathematically: if <code>ρ_in</code> and <code>ρ_out</code> are representations of group <code>G</code>, then <code>f</code> is equivariant when <code>f(ρ_in(g) x) = ρ_out(g) f(x)</code>. Choosing the output representation is a design knob: scalars (invariant), vectors (rotate as 3-vectors), tensors (rotate as higher-rank objects). Modern equivariant nets like NequIP use multiple irreducible representations simultaneously.</p>",
+        "mathExpressions": ["f \\circ \\rho_{\\text{in}}(g) = \\rho_{\\text{out}}(g) \\circ f", "\\text{trivial output rep} \\implies \\text{invariance}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-01-c3",
+        "title": "Why CNNs Are Translation-Equivariant by Construction",
+        "contentHtml": "<p>A 2D convolution is the canonical equivariant linear map for the translation group. Define translation as <code>(T_v x)(p) = x(p - v)</code>. The convolution <code>(x \\star \\psi)(p) = \\sum_q x(q) \\psi(p - q)</code> satisfies <code>T_v(x \\star \\psi) = (T_v x) \\star \\psi</code>: shifting the input shifts the output by the same amount. This is not a property the network <em>learns</em>; it's hard-coded into the weight-sharing structure.</p><p>This single fact explains a stack of empirical observations: CNNs generalize across image position with very few examples, weight-sharing dramatically reduces parameter count vs MLPs, and translation augmentation barely helps because the architecture is already invariant after pooling. The inductive bias is exactly the symmetry of natural images.</p><p>It also explains failures. CNNs are not equivariant to <em>rotation</em> or <em>scale</em>. A model trained on upright digits will fail on rotated ones unless given rotation augmentation — which is wasteful, since you're using parameters to relearn what could have been baked in. The historical answer to this gap is <strong>group-equivariant CNNs (G-CNNs)</strong>, introduced by Cohen and Welling in 2016, which generalize convolution to any compact group. Translation-equivariant CNNs are the abelian-group special case.</p>",
+        "mathExpressions": ["(x \\star \\psi)(p) = \\sum_q x(q) \\psi(p - q)", "T_v(x \\star \\psi) = (T_v x) \\star \\psi"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q01", "gdl-q02", "gdl-q03", "gdl-q04", "gdl-q05", "gdl-q06", "gdl-q07", "gdl-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "gdl-02",
+    "topicId": "cs-geometric-dl",
+    "order": 2,
+    "title": "Group Representations as a Design Principle",
+    "description": "Irreducible representations, Schur's lemma, and equivariant linear maps",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "gdl-02-c1",
+        "title": "Group Representations and Why They Are the Right Abstraction",
+        "contentHtml": "<p>A <strong>representation</strong> of a group <code>G</code> on a vector space <code>V</code> is a homomorphism <code>ρ : G → GL(V)</code> — a way of acting on vectors that respects group multiplication. Geometric DL treats every neural-network feature as living in some representation. A scalar feature (like an atom's atomic number) lives in the trivial representation. A vector feature (like a velocity) lives in the standard 3D rotation representation. A stress tensor lives in a higher-rank representation.</p><p>This vocabulary clarifies what equivariance even means. The condition <code>f(ρ_in(g) x) = ρ_out(g) f(x)</code> only makes sense once you specify which representations the input and output transform under. Two papers can both claim SE(3) equivariance but describe completely different function classes, depending on what reps they use.</p><p>The structure is rigid. <strong>Maschke's theorem</strong> guarantees that every finite-dimensional representation of a compact group decomposes into <strong>irreducible representations (irreps)</strong>. For SO(3), the irreps are indexed by integer <code>ℓ = 0, 1, 2, ...</code> with dimension <code>2ℓ+1</code>: scalars (ℓ=0, dim 1), vectors (ℓ=1, dim 3), traceless symmetric tensors (ℓ=2, dim 5), and so on. Designing an SE(3)-equivariant network reduces to picking which irreps appear at which layer and how they couple.</p>",
+        "mathExpressions": ["\\rho : G \\to GL(V), \\quad \\rho(gh) = \\rho(g)\\rho(h)", "V \\cong \\bigoplus_i V_i \\quad \\text{(decomposition into irreps)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-02-c2",
+        "title": "Schur's Lemma: The Constraint That Drives Architecture",
+        "contentHtml": "<p><strong>Schur's lemma</strong> is the load-bearing fact in equivariant deep learning. It says that any equivariant linear map between two irreps of a compact group is either zero (if the irreps are inequivalent) or a scalar multiple of the identity (if they are equivalent). Translation: between mismatched irrep types, no information can flow linearly; between matching types, only one learnable scalar per pair.</p><p>This is hugely restrictive — and that is exactly why equivariant networks generalize. A standard linear layer between two 100-dim feature spaces has 10,000 parameters. The same layer constrained to be SO(3)-equivariant, when those features carry several copies of various irreps, may have only a few dozen learnable scalars. The remaining parameters are forced by the symmetry; you cannot violate it even if you want to.</p><p>Applied to nonlinearities, the constraint forces irrep mixing through <strong>tensor products</strong>: the product of two irreps decomposes via <strong>Clebsch-Gordan coefficients</strong> into a sum of irreps, e.g. <code>1 ⊗ 1 = 0 ⊕ 1 ⊕ 2</code> (vector × vector gives a scalar, vector, and rank-2 tensor). Equivariant networks like Tensor Field Networks (Thomas et al., 2018) and SE(3)-Transformer use exactly this machinery. The Clebsch-Gordan tensor product replaces the role of the dense matrix-multiply in conventional networks.</p>",
+        "mathExpressions": ["\\text{Schur: } \\text{Hom}_G(V_i, V_j) = \\begin{cases} \\mathbb{C} \\cdot I & V_i \\cong V_j \\\\ 0 & V_i \\not\\cong V_j \\end{cases}", "\\ell_1 \\otimes \\ell_2 = \\bigoplus_{\\ell = |\\ell_1 - \\ell_2|}^{\\ell_1 + \\ell_2} \\ell"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-02-c3",
+        "title": "Steerable Features and the e3nn Library",
+        "contentHtml": "<p>A <strong>steerable feature</strong> is a feature that transforms in a known irrep when the input is rotated. Instead of representing an atomic environment by a generic 256-dim vector, you represent it by, say, 32 copies of the scalar irrep, 16 copies of the vector irrep, and 8 copies of the ℓ=2 tensor irrep. Each piece transforms predictably under SO(3); the network is forced to respect that.</p><p>The <code>e3nn</code> library, built primarily by <strong>Tess Smidt</strong>, Mario Geiger, and collaborators, is the standard PyTorch toolkit for writing E(3)-equivariant networks. It provides a typed feature system (irreps as first-class objects), Clebsch-Gordan tensor products, and equivariant nonlinearities. With <code>e3nn</code>, the code looks startlingly close to the math: you declare input and output irreps for a layer, and the library automatically constructs the legal equivariant linear map.</p><p>The empirical payoff is large. NequIP (Batzner et al., 2022) showed that an SE(3)-equivariant network reaches the accuracy of an invariant network like SchNet using <em>10x to 1000x less training data</em> on molecular force fields. The symmetry constraint is not a regularizer — it's a hard structural prior that recovers what augmentation cannot.</p>",
+        "mathExpressions": ["x = \\bigoplus_\\ell n_\\ell \\cdot V_\\ell \\quad \\text{(multiplicities of irreps)}", "f_\\text{eq}(x) = \\text{TP}_{\\text{CG}}(x, \\psi(\\hat{r}))"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q09", "gdl-q10", "gdl-q11", "gdl-q12", "gdl-q13", "gdl-q14", "gdl-q15", "gdl-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "gdl-03",
+    "topicId": "cs-geometric-dl",
+    "order": 3,
+    "title": "Group Convolutions and G-CNNs",
+    "description": "Cohen-Welling 2016, rotation-equivariant nets, scale-equivariance, and spherical CNNs",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "gdl-03-c1",
+        "title": "Group Convolution: The Generalization Beyond Translation",
+        "contentHtml": "<p><strong>Group convolution</strong> generalizes the standard convolution from translations to any group <code>G</code>. For functions on a group, the operation is <code>(f \\star_G \\psi)(g) = \\sum_h f(h) \\psi(h^{-1} g)</code>. When <code>G</code> is just translations on <code>ℤ²</code>, this collapses to the familiar 2D convolution. When <code>G</code> includes rotations, scales, or reflections, the same formula gives an equivariant map for the larger group — with no extra effort.</p><p><strong>Taco Cohen and Max Welling's 2016 ICML paper</strong> <em>Group Equivariant Convolutional Networks</em> made this concrete for the discrete group <code>p4</code> (90-degree rotations and translations) and <code>p4m</code> (those plus reflections). A standard CNN learns 90-degree-rotated copies of every filter from data; a G-CNN shares parameters across all rotations by construction. Cohen and Welling reported a several-percentage-point gain on rotated-MNIST and CIFAR with a fraction of the parameters.</p><p>The architectural bookkeeping: feature maps in a G-CNN are functions on the group, not on the input space. After the first layer, an image becomes a function on <code>ℝ² × {0°, 90°, 180°, 270°}</code> for <code>p4</code>. Subsequent layers operate on this richer domain via group convolution. Final invariant prediction comes from pooling over the rotation axis.</p>",
+        "mathExpressions": ["(f \\star_G \\psi)(g) = \\sum_h f(h) \\psi(h^{-1} g)", "\\text{lifting layer: } f_0(g) = \\sum_x \\psi(g^{-1} x) \\, x"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-03-c2",
+        "title": "Steerable CNNs and Continuous Rotation",
+        "contentHtml": "<p>Discrete G-CNNs handle rotations by 90 degrees but not arbitrary angles. To get full SO(2) or SO(3) equivariance you need a continuous formulation: <strong>steerable CNNs</strong>. The idea: parameterize filters as linear combinations of an <em>analytic basis</em> — circular harmonics in 2D, spherical harmonics in 3D — that has known rotation behavior. Rotating the input then permutes the basis coefficients in a closed-form way, no interpolation required.</p><p>Cohen and Welling extended this in 2017 to general steerable CNNs. Weiler and Cesa's 2019 paper unified all 2D rotation- and reflection-equivariant convolutions under a single framework, the <em>e2cnn</em> library. The kernels are no longer learned in pixel space; they are learned coefficients in the equivariant basis, with the basis encoding the symmetry exactly.</p><p>The same logic extends to <strong>scale equivariance</strong> (Worrall &amp; Welling 2019, scale-equivariant steerable nets) and <strong>spherical CNNs</strong> for data on the sphere — climate models, cosmic-microwave-background maps, omnidirectional images. Cohen, Geiger, Köhler, and Welling's 2018 <em>Spherical CNNs</em> used Fourier analysis on SO(3) and showed dramatic gains over flat CNNs applied to sphere-projected images. The general principle: pick the right group for your data, write convolution on it, get equivariance for free.</p>",
+        "mathExpressions": ["\\psi(x) = \\sum_k w_k \\, \\phi_k(x), \\quad \\phi_k \\text{ steerable basis}", "\\text{spherical CNN: convolve on } S^2 \\text{ via Fourier on } SO(3)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-03-c3",
+        "title": "Why Symmetry Beats Augmentation",
+        "contentHtml": "<p>The standard alternative to equivariant architectures is <strong>data augmentation</strong>: train on the original image, the rotated image, the flipped image, and so on. Augmentation works, sort of. But it has fundamental limits. The model must use parameters to redundantly encode rotated copies of features, wasting capacity. Generalization is approximate — it is only as good as your sampled angles. And it doesn't help with input data that is itself unstructured or sparse, like point clouds.</p><p>Equivariant architectures impose the symmetry as a hard constraint, not a soft preference. The network <em>cannot</em> produce a different prediction for a rotated input even at initialization, much less after training. Empirically: G-CNNs match the accuracy of augmented CNNs with 4-8x fewer parameters on rotated-MNIST. Spherical CNNs handily beat flat CNNs on sphere-projected data. NequIP, on molecular force prediction, beats augmentation-trained invariant baselines by orders of magnitude in data efficiency.</p><p>The conceptual takeaway: <em>symmetry is information about your problem</em>. Augmentation forces the model to <em>learn</em> the symmetry; equivariant architectures <em>tell</em> the model the symmetry. When the symmetry is exact and known a priori (3D rotations of molecules, time-reversal of physics simulations, permutations of set elements), telling beats learning by a wide margin.</p>",
+        "mathExpressions": ["\\text{augmented model: } \\mathbb{E}_{g \\sim G} \\, \\mathcal{L}(f(g \\cdot x), y)", "\\text{equivariant model: } f(g \\cdot x) = g \\cdot f(x) \\text{ identically}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q17", "gdl-q18", "gdl-q19", "gdl-q20", "gdl-q21", "gdl-q22", "gdl-q23", "gdl-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "gdl-04",
+    "topicId": "cs-geometric-dl",
+    "order": 4,
+    "title": "Graph Neural Networks: Message Passing and Expressivity",
+    "description": "GCN, GAT, GIN, the Weisfeiler-Lehman test, oversmoothing, oversquashing",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "gdl-04-c1",
+        "title": "Message Passing: The GNN Blueprint",
+        "contentHtml": "<p>Almost every graph neural network can be cast as a <strong>message passing</strong> layer (Gilmer, Schoenholz, Riley, Vinyals, Dahl, 2017). At each step, every node <code>i</code> aggregates messages from its neighbors <code>N(i)</code> and updates its hidden state. The aggregation must be permutation-invariant — sum, mean, or max — because graphs have no canonical node ordering. The whole layer is permutation-equivariant: relabel the nodes, and the output relabels in step.</p><p>Different GNN variants are different choices of message and update functions. <strong>GCN</strong> (Kipf &amp; Welling 2017) uses a symmetric-normalized adjacency-matrix multiplication, equivalent to averaging neighbor features with a degree-normalized weight. <strong>GAT</strong> (Veličković et al. 2018) replaces the fixed weights with attention coefficients learned from the node features themselves. <strong>GraphSAGE</strong> (Hamilton, Ying, Leskovec 2017) samples a fixed number of neighbors per node and is the workhorse for billion-edge industrial graphs at Pinterest, Uber, and Instacart.</p><p>For an L-layer GNN, each node's final embedding depends on its L-hop neighborhood. Stack too few layers and you can't capture long-range structure; stack too many and pathologies emerge. The message-passing template is so general that even transformers fit: a transformer is a GNN on the complete graph with attention as the message function.</p>",
+        "mathExpressions": ["m_i^{(l+1)} = \\sum_{j \\in N(i)} \\phi(h_i^{(l)}, h_j^{(l)}, e_{ij})", "h_i^{(l+1)} = \\gamma(h_i^{(l)}, m_i^{(l+1)})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-04-c2",
+        "title": "Expressivity: The Weisfeiler-Lehman Ceiling",
+        "contentHtml": "<p>How powerful are message-passing GNNs? <strong>Xu, Hu, Leskovec, and Jegelka's 2019</strong> paper <em>How Powerful are Graph Neural Networks?</em> proved a tight bound: any standard message-passing GNN is <em>at most</em> as discriminative as the <strong>1-dimensional Weisfeiler-Lehman (1-WL)</strong> graph isomorphism test. WL iteratively refines node colors based on the multiset of neighbor colors, and two graphs deemed isomorphic by WL may still be non-isomorphic — there are graphs (like two regular graphs of the same degree) that WL cannot tell apart, and no message-passing GNN can either.</p><p>The same paper introduced <strong>GIN</strong> (Graph Isomorphism Network), which uses sum aggregation plus an MLP and matches the 1-WL bound exactly. GCN's mean aggregation and GraphSAGE's max aggregation are strictly less expressive — they can be fooled by simple multi-set differences that sums catch.</p><p>To exceed 1-WL you need either higher-order messages (k-WL networks pass messages between k-tuples of nodes, but cost <code>n^k</code>), explicit subgraph features (count triangles, cycles, etc.), or specialized constructions like Provably Powerful Graph Networks. Most production GNNs accept the 1-WL ceiling because, on real data, the binding constraint is rarely expressivity but oversmoothing or oversquashing.</p>",
+        "mathExpressions": ["h_v^{(t+1)} = \\text{HASH}\\!\\left(h_v^{(t)}, \\{\\!\\!\\{ h_u^{(t)} : u \\in N(v) \\}\\!\\!\\}\\right) \\quad \\text{(1-WL)}", "\\text{GIN: } h_v^{(l+1)} = \\text{MLP}\\!\\left((1+\\epsilon) h_v^{(l)} + \\sum_{u \\in N(v)} h_u^{(l)}\\right)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-04-c3",
+        "title": "Oversmoothing and Oversquashing",
+        "contentHtml": "<p>Stack many GNN layers and two distinct pathologies appear. <strong>Oversmoothing</strong>: as depth grows, all node embeddings converge to nearly the same vector. Repeated neighborhood averaging is a low-pass filter; in the limit it is a graph-Laplacian eigenvector with the constant function on top. After 5-10 GCN layers, distinguishing nodes by their embeddings becomes impossible. Li, Han, and Wu (2018) formalized this connection between GCNs and Laplacian smoothing.</p><p><strong>Oversquashing</strong> is the dual problem at long range. Information from a node L hops away must be compressed through every intermediate node's fixed-dim hidden state. Alon and Yahav (2021) showed exponential information loss as the graph's commute time grows: a GNN simply cannot deliver long-range signal through a bottleneck. Topping, Di Giovanni, Chamberlain, Dong, and Bronstein (2022) connected oversquashing to negative <strong>Ricci curvature</strong> on the graph and proposed surgery (rewiring edges in negatively-curved regions) as a fix.</p><p>Practical mitigations: residual/skip connections (analog of ResNet), normalization layers, graph rewiring (add edges to reduce diameter), and graph transformers that allow attention to skip past the local message-passing constraint. Modern molecule property prediction (e.g. GraphGPS, 2022) typically combines local message passing with global attention to avoid both pathologies.</p>",
+        "mathExpressions": ["\\lim_{L \\to \\infty} h_i^{(L)} \\to c \\cdot v_1 \\quad \\text{(oversmoothing, principal Laplacian eigenvec)}", "\\text{oversquashing: } \\|\\partial h_i^{(L)} / \\partial h_j^{(0)}\\| \\sim e^{-d(i,j)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q25", "gdl-q26", "gdl-q27", "gdl-q28", "gdl-q29", "gdl-q30", "gdl-q31", "gdl-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "gdl-05",
+    "topicId": "cs-geometric-dl",
+    "order": 5,
+    "title": "Equivariant Transformers and Force Fields",
+    "description": "SE(3)-Transformer, EGNN, NequIP, Allegro, and MACE for molecular dynamics",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "gdl-05-c1",
+        "title": "SE(3)-Transformer and EGNN",
+        "contentHtml": "<p>Molecular and physical systems live in <strong>SE(3)</strong> = rotations + translations in 3D. A neural network that predicts forces, energies, or geometries on such systems should be <em>invariant</em> in scalar outputs (the energy of a molecule does not depend on its orientation in the lab frame) and <em>equivariant</em> in vector outputs (the force vectors rotate with the molecule). Two influential 2020-2021 architectures made this practical.</p><p>The <strong>SE(3)-Transformer</strong> (Fuchs, Worrall, Fischer, Welling, 2020) extends self-attention to 3D point clouds with full SE(3) equivariance. Queries, keys, and values are organized into spherical-harmonic irreps; the attention weights themselves are SO(3)-invariant, while the value tensor product preserves equivariance through Clebsch-Gordan coefficients. Compute is dominated by the tensor-product layer, which is expensive but exact.</p><p><strong>EGNN</strong> (Satorras, Hoogeboom, Welling, 2021) takes a much simpler route: keep only invariant scalar features <em>plus</em> the explicit coordinate vectors, and update the coordinates by velocity-like increments that are equivariant by construction. No spherical harmonics, no Clebsch-Gordan — just careful design of the message function. EGNN is dramatically cheaper than SE(3)-Transformer and matches its accuracy on many molecular benchmarks. The pattern: full irrep machinery vs scalarized-with-coordinates is the central design tradeoff in equivariant MD networks.</p>",
+        "mathExpressions": ["\\text{EGNN coord update: } x_i^{(l+1)} = x_i^{(l)} + \\sum_{j \\neq i} (x_i^{(l)} - x_j^{(l)}) \\, \\phi_x(m_{ij})", "\\text{SE(3)-attention: weights invariant, values equivariant}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-05-c2",
+        "title": "NequIP, Allegro, and the Data-Efficiency Revolution",
+        "contentHtml": "<p>Density functional theory (DFT) labels are expensive — a single force evaluation on a 100-atom system costs minutes to hours of supercomputer time. Training a neural force field on millions of DFT samples is a major investment, so <strong>data efficiency</strong> matters enormously. <strong>NequIP</strong> (Batzner, Musaelian, Sun, Geiger, Mailoa, Kornbluth, Molinari, Smidt, Kozinsky, 2022) showed that a <em>strictly equivariant</em> network using e3nn's higher-order tensor products learns from 10x to 1000x less DFT data than equally-accurate invariant predecessors like SchNet.</p><p>The successor <strong>Allegro</strong> (Musaelian et al. 2023, also from the Kozinsky group at Harvard) keeps the equivariance but drops message passing: each atomic environment is processed independently with strictly local features. This breaks the receptive-field bottleneck — Allegro scales to multi-million-atom MD on GPUs because there's no global message-passing graph to maintain.</p><p><strong>MACE</strong> (Batatia, Kovács, Simm, Ortner, Csányi, 2022) goes another direction: include <em>multi-body</em> interactions explicitly via higher-order Clebsch-Gordan products in a single layer. A 2-layer MACE network includes 4-body terms by construction; this lets it match the accuracy of much deeper message-passing nets at far lower cost. MACE-MP-0 (Batatia et al., 2023) is now a near-universal foundation model for materials chemistry, trained on the full Materials Project and useful zero-shot on most stable inorganic systems.</p>",
+        "mathExpressions": ["E_{\\text{total}} = \\sum_i E_i(\\{r_{ij}\\}_{j \\in N(i)}), \\quad F_i = -\\nabla_{r_i} E_{\\text{total}}", "\\text{MACE: } h_i^{(L)} \\sim \\sum_{j_1, ..., j_\\nu} \\text{TP}_{\\text{CG}}(\\phi(r_{ij_1}), ..., \\phi(r_{ij_\\nu}))"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-05-c3",
+        "title": "Energy Conservation: Why You Differentiate the Energy",
+        "contentHtml": "<p>A correct force field must conserve energy: forces are the negative gradient of a scalar potential. If you learn forces directly with a vector-valued network, nothing forces the predicted force field to be conservative. Energy will drift in long molecular-dynamics trajectories, and the simulation becomes unphysical.</p><p>The standard fix is to make the network output a single scalar energy <code>E(\\{r_i\\})</code> and obtain forces by automatic differentiation: <code>F_i = -∂E/∂r_i</code>. This is simultaneously simple, exactly conservative, and equivariant in the right way: <code>E</code> is invariant to rotations, so its gradient is automatically equivariant. NequIP, MACE, SchNet, and Allegro all follow this template.</p><p>The cost is a second backward pass. To compute forces, you backprop once through the energy network during inference. To train against force labels, you need <em>second-order</em> backpropagation — gradient of force loss requires gradient of gradient. Modern autodiff handles this transparently but at roughly 2-3x the cost of inference. For long-timescale MD, this is acceptable; for force-only inference at scale, methods like Allegro's strictly local design or DimeNet-style direct force prediction with conservation constraints become attractive. The deeper lesson: the right output type — scalar energy, not vector force — combined with automatic differentiation, gives you the physics for free.</p>",
+        "mathExpressions": ["F_i = -\\frac{\\partial E}{\\partial r_i}, \\quad \\sum_i F_i = 0 \\text{ (Newton's third law)}", "\\frac{dE}{dt} = \\sum_i \\dot{r}_i \\cdot \\frac{\\partial E}{\\partial r_i} = -\\sum_i \\dot{r}_i \\cdot F_i"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q33", "gdl-q34", "gdl-q35", "gdl-q36", "gdl-q37", "gdl-q38", "gdl-q39", "gdl-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "gdl-06",
+    "topicId": "cs-geometric-dl",
+    "order": 6,
+    "title": "AlphaFold: Equivariance as Load-Bearing Structure",
+    "description": "Triangle attention, Invariant Point Attention, FAPE, and the Evoformer",
+    "xpReward": 190,
+    "concepts": [
+      {
+        "id": "gdl-06-c1",
+        "title": "The Evoformer: Pair Representation and Triangle Attention",
+        "contentHtml": "<p><strong>AlphaFold 2</strong> (Jumper, Evans, Pritzel et al., DeepMind, Nature 2021) solved protein structure prediction at a scale and accuracy that astonished the field — winning CASP14 by such a margin that organizers said the problem was effectively solved for monomeric proteins with reasonable evolutionary signal. The architecture is built around <em>two</em> coupled representations: a per-residue <strong>MSA representation</strong> (rows = sequences in the multiple sequence alignment, columns = residues) and a per-pair <strong>pair representation</strong> (a matrix indexed by residue pairs). The <strong>Evoformer</strong> stack repeatedly mixes these two views.</p><p>The crucial geometric ingredient is <strong>triangle attention</strong> over the pair representation. A pair (i, j) attends to pairs (i, k) and (k, j) for all k — enforcing a triangle inequality–like consistency. If we believe (i, k) and (k, j) are close, then (i, j) should be close too. The pair representation is then updated by triangular multiplicative updates that respect this transitive structure. Conventional attention has no such bias; triangle attention bakes in a piece of the geometry of distance matrices.</p><p>The protein structure is never explicit until the final structure module. The Evoformer instead builds a rich pair representation that encodes confident distance and orientation distributions. This is the load-bearing geometric prior — and ablations showed that removing triangle attention significantly degraded accuracy.</p>",
+        "mathExpressions": ["a_{ij} \\mathrel{+}= \\text{softmax}_k(q_{ik} \\cdot k_{kj}) \\cdot v_{kj}", "z_{ij} \\mathrel{+}= \\sum_k a_{ik} \\odot b_{kj} \\quad \\text{(triangle multiplicative)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-06-c2",
+        "title": "Invariant Point Attention (IPA)",
+        "contentHtml": "<p>The structure module of AlphaFold introduces <strong>Invariant Point Attention (IPA)</strong>, the geometric heart of the network. Each residue is endowed with a local 3D coordinate frame: a translation vector and a rotation matrix specifying the orientation of the backbone at that residue. IPA performs attention over these frames such that the resulting attention weights and updates are <em>invariant to global rigid-body motions</em> of the protein — rotate or translate the entire protein, and IPA produces the same intermediate state.</p><p>The trick: when residue <code>i</code> attends to residue <code>j</code>, queries and keys come not just from features but from <em>points expressed in each residue's local frame</em>. Distances between these points are SE(3)-invariant, so the attention pattern is invariant. The learned displacements applied back to each frame are equivariant to global rigid motions because they are constructed from the local frame's basis vectors. The composition: the predicted structure is equivariant, but its loss against ground truth is computed in a frame-aligned way.</p><p>This is exactly the Bronstein-Cohen design pattern. AlphaFold did not invent equivariance, but it engineered it into a production-scale architecture that, when combined with massive MSA features and weeks of TPU training, broke a 50-year-old open problem in biology. IPA's exact equivariance is not optional — early variants without it failed to train.</p>",
+        "mathExpressions": ["q_i^h \\to T_i \\cdot q_i^h \\quad \\text{(express query points in frame } T_i)", "T_i \\to T_i \\cdot \\Delta T_i \\quad \\text{(equivariant local frame update)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-06-c3",
+        "title": "Frame-Aligned Point Error (FAPE)",
+        "contentHtml": "<p>How do you score a predicted protein structure against ground truth? The naive choice — RMSD after global alignment — is not differentiable in a useful way and does not match how proteins are evaluated in CASP. AlphaFold introduced <strong>Frame-Aligned Point Error (FAPE)</strong>: for each pair of residue frames <code>(T_i^pred, T_j^pred)</code> and <code>(T_i^true, T_j^true)</code>, transform the predicted residue <code>j</code>'s atom coordinates into residue <code>i</code>'s frame, then compute the L2 error against the same transform applied to the ground-truth structure.</p><p>FAPE is invariant to global rigid motions of either prediction or target — exactly the right property for a protein structure loss. It is differentiable, so it backpropagates cleanly through IPA. And it penalizes <em>local</em> errors more aggressively than global RMSD: a wrongly placed loop is captured by the FAPE through every frame near the loop, not averaged out by alignment to the rest of the molecule.</p><p>FAPE plus IPA plus the Evoformer plus MSA-based input plus distillation training plus a structure-recycling loop is the AlphaFold recipe. Subsequent systems — <strong>RoseTTAFold</strong> (David Baker's lab, 2021), <strong>OpenFold</strong> (the open-source reimplementation), and <strong>AlphaFold 3</strong> (2024, extending to small molecules and complexes via diffusion) — keep the equivariant skeleton intact. Removing exact equivariance has been tried in ablations; the resulting models train slower, generalize worse, and do not match AlphaFold-class accuracy.</p>",
+        "mathExpressions": ["\\text{FAPE} = \\frac{1}{N_f N_p} \\sum_{i,j} \\|T_i^{-1} \\cdot x_j^{\\text{pred}} - (T_i^{\\text{true}})^{-1} \\cdot x_j^{\\text{true}}\\|_2", "T_i \\in SE(3), \\quad T_i = (R_i, t_i)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q41", "gdl-q42", "gdl-q43", "gdl-q44", "gdl-q45", "gdl-q46", "gdl-q47", "gdl-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "gdl-07",
+    "topicId": "cs-geometric-dl",
+    "order": 7,
+    "title": "The Modern Frontier: Diffusion, Design, and Foundation Models",
+    "description": "RFdiffusion, equivariant diffusion, AlphaFold 3, and where geometric DL is going",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "gdl-07-c1",
+        "title": "RFdiffusion: Equivariant Diffusion for Protein Design",
+        "contentHtml": "<p><strong>RFdiffusion</strong> (Watson et al., <strong>David Baker's</strong> lab at the Institute for Protein Design, Nature 2023) brought denoising diffusion to protein backbone design. The forward process gradually noises atomic coordinates and orientations toward a Gaussian on SE(3); the reverse process — a denoising network — learns to generate plausible protein backbones. Because the underlying geometry is SE(3), the score-matching network must be SE(3)-equivariant to give physically consistent gradients.</p><p>The architectural backbone is a frozen RoseTTAFold trunk fine-tuned for the denoising objective, taking residue frames as input and predicting cleaned frames as output. Both the input and target live in the SE(3) frame manifold; the loss uses FAPE-like terms. Conditioning is rich: you can specify a binding site, a desired symmetry, an active-site geometry, or a target shape, and RFdiffusion samples backbones that satisfy these constraints.</p><p>Empirically, RFdiffusion designs proteins that <em>fold experimentally</em> at success rates an order of magnitude above prior generative methods. Designed binders against challenging targets (IL-7Ra, TrkA, others) have been validated in the lab. This was the first generative-AI moment in protein design comparable to AlphaFold's structural one — and it depended fundamentally on doing diffusion on the right manifold with the right equivariance.</p>",
+        "mathExpressions": ["dx_t = -\\tfrac{1}{2} \\beta(t) x_t \\, dt + \\sqrt{\\beta(t)} \\, dW_t \\quad \\text{(forward noising)}", "x_{t-1} = x_t + \\Delta t \\cdot s_\\theta(x_t, t), \\quad s_\\theta \\text{ SE(3)-equivariant}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-07-c2",
+        "title": "AlphaFold 3 and the Move to Diffusion",
+        "contentHtml": "<p><strong>AlphaFold 3</strong> (Abramson, Adler, Dunger et al., DeepMind, Nature 2024) replaced the IPA-based structure module with a <strong>diffusion-based structure prediction head</strong>. The Evoformer-equivalent (now called the Pairformer) still produces a rich pair representation, but the final 3D coordinates are sampled by iterated denoising rather than direct regression. This generalizes AlphaFold to ligands, ions, nucleic acids, and arbitrary biomolecular complexes — domains where the original IPA module was awkward.</p><p>A perhaps surprising design choice: AlphaFold 3 dropped strict SE(3) equivariance from the diffusion module. Instead, the model relies on training-time augmentation — randomly rotating the target structure each step. Anecdotally and in the paper's discussion, this works only because of the massive scale of training data and Pairformer pretraining; smaller models without exact equivariance underperform their equivariant counterparts. The lesson is nuanced: at extreme data and compute scale, augmentation can substitute for hard equivariance constraints, but at data-limited scales (like materials, drug design, force fields) exact equivariance still wins decisively.</p><p>The frontier debate — strict equivariance vs scale-plus-augmentation — is unsettled. Recent work like Equiformer (Liao &amp; Smidt 2023) keeps strict equivariance and dominates molecular benchmarks; meanwhile AF3-style augmentation-based models dominate biomolecule-scale problems with abundant data. The right answer probably depends on the data regime.</p>",
+        "mathExpressions": ["\\hat{x}_0 = x_t - \\sigma_t \\, \\epsilon_\\theta(x_t, t, c)", "\\text{equivariance vs augmentation: regime-dependent tradeoff}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gdl-07-c3",
+        "title": "Foundation Models for Materials and Chemistry",
+        "contentHtml": "<p>The most recent shift in geometric deep learning is the rise of <strong>universal force fields</strong>: single equivariant models trained across nearly all of known materials chemistry that generalize zero-shot to new compositions. <strong>MACE-MP-0</strong> (Batatia et al., 2023, Csányi group at Cambridge) trained a MACE network on the full Materials Project (~150,000 inorganic structures with DFT labels) and showed it matched or beat system-specific models for most compounds without any fine-tuning. <strong>Allegro-OFF</strong>, <strong>SevenNet</strong>, and Meta's <strong>UMA</strong> (2024) followed the same template at larger scale.</p><p>This is geometric DL's foundation-model moment, parallel to GPT for language. The architectures matter — exact E(3) equivariance is non-negotiable when training on diverse compositions, because there is no way for a non-equivariant network to learn the rotational invariance of every compound class from finite data. The community now treats equivariance as a structural prior in the same way LLM researchers treat next-token prediction: not the entire story, but a load-bearing default.</p><p>Open frontier problems: combining equivariant force fields with generative diffusion for inverse design, scaling to millions of atoms (Allegro-style strict locality), incorporating long-range electrostatics and dispersion correctly, handling charged states and excited states, and bridging the gap between DFT-accurate networks and experimentally calibrated ones. The decade-long arc from Cohen-Welling 2016 to MACE-MP-0 traces a clean line: geometry first, scale second. The bet now is that this will hold as compute grows.</p>",
+        "mathExpressions": ["E_\\theta : \\{(\\mathbf{Z}_i, \\mathbf{r}_i)\\} \\to \\mathbb{R}, \\quad E_\\theta(g \\cdot x) = E_\\theta(x)", "\\text{universal: one model, many compositions, zero-shot generalization}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gdl-q49", "gdl-q50", "gdl-q51", "gdl-q52", "gdl-q53", "gdl-q54", "gdl-q55", "gdl-q56"],
+    "puzzleId": null
+  }
+]

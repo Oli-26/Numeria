@@ -1,0 +1,266 @@
+[
+  {
+    "id": "econ-crypto-01",
+    "topicId": "econ-crypto",
+    "order": 1,
+    "title": "Blockchain Incentives",
+    "description": "Proof of work, proof of stake, Sybil resistance, the cost of consensus",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "econ-crypto-01-c1",
+        "title": "The Consensus Problem",
+        "contentHtml": "<p>How do you maintain a shared ledger without a central authority?</p><p>The challenge: anyone might lie. Without a trusted central record-keeper, you need a distributed mechanism that produces consensus despite some participants being dishonest.</p><p>This is the <strong>Byzantine Generals Problem</strong> from computer science. Classical solutions exist but require knowing all participants in advance.</p><p>Bitcoin's 2008 contribution: a consensus mechanism that works without identifying participants — anyone can join, anyone can leave, the system stays consistent. The economic incentive design is what makes it work.</p><p>The mechanism is elegant: the chain with the most accumulated work is the canonical history. To change the past, you'd need to redo more work than the rest of the network combined.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-01-c2",
+        "title": "Proof of Work",
+        "contentHtml": "<p>Bitcoin's <strong>Proof of Work (PoW)</strong>: miners compete to solve cryptographic puzzles. Solving a puzzle gives the right to add the next block of transactions. The miner gets a reward (newly minted coins plus transaction fees).</p><p>The puzzles are deliberately hard — they require massive computation, electricity, and specialized hardware (ASICs).</p><p>Why this works:</p><p>– <strong>Sybil resistance:</strong> creating many identities doesn't help. What matters is computational power, which costs real money.</p><p>– <strong>Economic security:</strong> attacking the network requires controlling >50% of compute power, which is enormously expensive.</p><p>– <strong>Honesty incentive:</strong> miners are rewarded in the network's currency. Attacks that destroy trust in the network destroy the value of their rewards.</p><p>The cost: Bitcoin uses ~150 TWh/year — comparable to medium-sized countries. The economic security comes from real resource consumption.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-01-c3",
+        "title": "Proof of Stake",
+        "contentHtml": "<p><strong>Proof of Stake (PoS)</strong> replaces computational competition with economic stake.</p><p>Validators lock up tokens as collateral ('stake'). The protocol selects validators to add blocks based partly on stake size. Honest behavior earns rewards; dishonest behavior loses staked tokens.</p><p>Ethereum transitioned from PoW to PoS in 2022 (the 'Merge'). Energy consumption fell ~99.95%.</p><p>Economic security in PoS comes from forfeitable stake rather than burnt resources. Attacking the network requires controlling >33% (some implementations) or >50% (others) of staked tokens. The attacker would lose those tokens through 'slashing' — protocol-imposed penalties for misbehavior.</p><p>Tradeoffs:</p><p>– <strong>PoW</strong> ties security to external resources (electricity, hardware). Hard to attack without obvious external footprint.</p><p>– <strong>PoS</strong> ties security to internal token economics. More energy-efficient but more complex governance.</p><p>The cryptocurrency community remains debated about which is preferable. The trend has been toward PoS as energy concerns have grown.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-01-c4",
+        "title": "Mining Economics",
+        "contentHtml": "<p>Bitcoin mining is a competitive industry with interesting economic dynamics.</p><p>The supply equation: each miner's expected revenue equals total network rewards times their share of total hash rate. If revenue exceeds operating cost (electricity, hardware depreciation), miners enter; if not, they exit.</p><p>The result: in equilibrium, mining profits are competed down to roughly cover operating costs. Bitcoin's hash rate adjusts to make mining unprofitable for the marginal miner — exactly as it should under competition.</p><p>This is also why mining gravitates to cheap electricity — Iceland (geothermal), Texas (oil/gas waste), China (until 2021 ban; hydroelectric in summer, coal in winter).</p><p>Mining centralization concerns: ASICs are expensive, available only from a few manufacturers. Mining pools concentrate hash rate. Whether Bitcoin's actual decentralization matches its theoretical promise is debated.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-crypto/bitcoin-price.png\" alt=\"Bitcoin price history chart over years\" loading=\"lazy\"><figcaption>Bitcoin price history. Image: Wikimedia Commons / CC0.</figcaption></figure>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-01-c5",
+        "title": "Cost of Decentralization",
+        "contentHtml": "<p>Decentralized consensus has costs traditional payment systems don't have.</p><p>– <strong>Energy or capital:</strong> PoW burns electricity; PoS locks up capital. Either way, real resources are consumed for security.</p><p>– <strong>Speed:</strong> Bitcoin can process ~7 transactions per second. Visa handles ~65,000. The decentralization tradeoff is real.</p><p>– <strong>Storage:</strong> nodes must store the entire transaction history. Bitcoin's ledger is now ~600GB and growing. Running a full node is increasingly expensive.</p><p>– <strong>Coordination:</strong> protocol changes require consensus among many parties. Bitcoin's history of contentious forks (Bitcoin Cash, Bitcoin SV) shows this isn't just theoretical.</p><p>The argument for decentralization: it provides censorship resistance, reduces single-points-of-failure, and creates financial infrastructure beyond government control.</p><p>The argument against: the costs may exceed benefits for most use cases. Centralized systems are faster, cheaper, and more user-friendly.</p><p>The most interesting cryptocurrency applications are where the decentralization premium is worth paying — adversarial environments, censorship resistance, financial inclusion in jurisdictions with weak institutions.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-crypto-02",
+    "topicId": "econ-crypto",
+    "order": 2,
+    "title": "Token Design",
+    "description": "Utility, governance, security tokens — bonding curves, vesting, sinks and faucets",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "econ-crypto-02-c1",
+        "title": "What Tokens Represent",
+        "contentHtml": "<p>A <strong>cryptocurrency token</strong> is a unit of account on a blockchain. Different tokens represent very different things.</p><p><strong>Native cryptocurrencies:</strong> Bitcoin, Ether — base units of their networks.</p><p><strong>Stablecoins:</strong> USDC, USDT, DAI — tokens designed to maintain a peg to fiat or other assets.</p><p><strong>Utility tokens:</strong> grant access to a service or platform. Filecoin (storage), Helium (wireless network), Render (compute).</p><p><strong>Governance tokens:</strong> grant voting rights in protocol decisions. Uniswap (UNI), Maker (MKR), Compound (COMP).</p><p><strong>Security tokens:</strong> represent ownership of underlying assets — equity, debt, real estate. Often regulated as securities.</p><p><strong>NFTs:</strong> non-fungible tokens representing unique items — digital art, collectibles, identity, certificates.</p><p>Each type has different economics and regulatory implications.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-02-c2",
+        "title": "Token Supply Mechanisms",
+        "contentHtml": "<p>How are tokens created and distributed? Several models.</p><p><strong>Fixed supply:</strong> Bitcoin's 21 million cap. Disinflationary by design — supply growth slows over time.</p><p><strong>Predictable issuance:</strong> Ethereum has variable issuance based on validator activity but with built-in deflationary pressure (EIP-1559 burn mechanism).</p><p><strong>Algorithmic supply:</strong> stablecoins like Terra (before collapse) tried algorithmic supply expansion/contraction to maintain pegs.</p><p><strong>Inflationary:</strong> some tokens issue continuously to fund development or pay validators (Cosmos, Solana).</p><p><strong>Bonding curves:</strong> the price of a token is mathematically tied to its supply. As demand rises, supply expands at a rising price.</p><p>Each model creates different incentives. Fixed-supply tokens encourage hoarding; inflationary tokens encourage spending. Bonding curves provide automated market-making.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-02-c3",
+        "title": "Sinks and Faucets",
+        "contentHtml": "<p>Token economies, like videogames, need <strong>sinks</strong> (where tokens are consumed) and <strong>faucets</strong> (where tokens are issued).</p><p><strong>Faucets:</strong> mining rewards, staking rewards, liquidity mining payouts, airdrops.</p><p><strong>Sinks:</strong> transaction fees, protocol fees, token burns, governance staking, locked collateral.</p><p>Without sufficient sinks, tokens become inflationary as faucets keep adding supply. Without sufficient faucets, the economy can't grow or attract participation.</p><p>Examples:</p><p>– <strong>Ethereum's EIP-1559</strong> burns base transaction fees, creating a sink that can exceed issuance during high activity.</p><p>– <strong>Maker DAO's stability fees</strong> are paid in MKR, which is then burned — creating deflationary pressure proportional to system usage.</p><p>– <strong>BNB's quarterly burns</strong> reduce supply over time.</p><p>Token economics is a young field. Many projects design naively, end up with hyperinflation or stagnation. Better designs have learned from videogame and economic theory.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-02-c4",
+        "title": "Vesting and Distribution",
+        "contentHtml": "<p>How tokens are <em>initially distributed</em> shapes long-run dynamics.</p><p><strong>Fair launch:</strong> like Bitcoin's early mining or Dogecoin — anyone can mine; founders don't pre-allocate.</p><p><strong>ICO/IPO-style:</strong> early sales to investors. Typical of 2017-era ICOs. Often subject to SEC scrutiny in the US as unregistered securities offerings.</p><p><strong>Airdrops:</strong> free distribution to existing users (Uniswap's UNI airdrop to past users, worth ~$1,400+ at peak). Bootstrap network effects without explicit sales.</p><p><strong>Liquidity mining:</strong> tokens distributed to users who provide liquidity to protocols. Drove much DeFi growth in 2020-21.</p><p>Vesting schedules:</p><p>Token allocations to founders, employees, and early investors typically vest over years to align incentives. Cliff vesting (no tokens for the first year, then linear release) is standard.</p><p>Without vesting: founders can dump tokens immediately after launch, crashing prices. With long vesting: founders are aligned with long-term success.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-02-c5",
+        "title": "Token Velocity",
+        "contentHtml": "<p>The velocity of money — how fast tokens circulate — affects token value.</p><p>From the equation of exchange: MV = PT, where M is token supply, V is velocity, P is price level (in fiat), T is transaction volume (in fiat).</p><p>Solving for token value: M·P_token = T/V, where P_token is token price in fiat.</p><p>If transaction volume T grows but velocity V grows too (because people use tokens immediately for transactions), token price can stagnate even with rising adoption.</p><p>This is the <strong>velocity problem</strong> for utility tokens. If users buy tokens, transact, and immediately sell, velocity is high and token price is low.</p><p>Solutions involve creating reasons to hold tokens beyond just transacting:</p><p>– <strong>Staking yields</strong> incentivize holding rather than spending.</p><p>– <strong>Governance rights</strong> give holders ongoing influence.</p><p>– <strong>Discounts or fee rebates</strong> for token holders.</p><p>– <strong>Required collateral</strong> for protocol functions.</p><p>Successful token economies engineer multiple reasons to hold. Failed ones optimize for transactions alone and watch prices stagnate or fall despite usage growth.</p>",
+        "mathExpressions": [
+          "MV = PT"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-crypto-03",
+    "topicId": "econ-crypto",
+    "order": 3,
+    "title": "DeFi Primitives",
+    "description": "AMMs, lending protocols, liquidity mining, impermanent loss",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "econ-crypto-03-c1",
+        "title": "What DeFi Is",
+        "contentHtml": "<p><strong>Decentralized Finance (DeFi)</strong> rebuilds traditional financial services — exchange, lending, insurance, derivatives — on blockchains, without traditional intermediaries.</p><p>Smart contracts (programmable code on blockchains) enforce the rules. There's no human banker, no central exchange, no insurance company in the middle. The contract executes deterministically; users interact directly with code.</p><p>The 2020-21 'DeFi summer' saw rapid growth. Total value locked in DeFi protocols peaked above $200 billion in late 2021. After the 2022-23 bear market, the sector remains substantial — $50-100 billion locked across protocols.</p><p>The core appeal: financial services without permission, available 24/7, transparent (anyone can verify code), and accessible to anyone with internet access.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-03-c2",
+        "title": "Automated Market Makers",
+        "contentHtml": "<p>How do you run an exchange without an order book?</p><p><strong>Automated Market Makers (AMMs)</strong>, pioneered by Uniswap (2018), use liquidity pools and a mathematical pricing formula.</p><p>Setup: liquidity providers (LPs) deposit pairs of tokens (e.g., ETH and USDC) into a pool. The protocol uses a formula — most commonly <em>x · y = k</em> — to determine swap prices.</p><p>If you want to swap ETH for USDC, the protocol sells you USDC at a price determined by the current pool ratio. Your trade changes the ratio, which changes the price.</p><p>This is elegant: no need to match buyers and sellers, no order books, no central matching engine. The pool is always available; trades execute against the formula.</p><p>Constraints: prices on AMMs can deviate from external markets. Arbitrageurs profit by aligning AMM prices with external prices, which keeps the system roughly correct.</p><p>Uniswap, Curve, Balancer, and other AMMs handle hundreds of billions in volume. The model has been so successful that even traditional finance is exploring AMM-style mechanisms for some illiquid markets.</p>",
+        "mathExpressions": [
+          "x \\cdot y = k"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-03-c3",
+        "title": "Lending Protocols",
+        "contentHtml": "<p>DeFi lending works through over-collateralized loans.</p><p>Setup: a borrower deposits collateral (say, $1500 worth of ETH) and borrows up to some fraction (say, $1000 in USDC). If the collateral value falls below a threshold, it's automatically liquidated to repay the loan.</p><p>Lenders earn interest on their deposited tokens. Interest rates float based on supply and demand within the pool.</p><p>Major protocols: Aave, Compound, MakerDAO. Each has variations in collateral types, interest rate models, and risk parameters.</p><p>Why over-collateralization? Because the protocol can't enforce traditional credit (no credit scores, no legal recourse against pseudonymous addresses). Over-collateralization protects the lender if the borrower defaults — the collateral covers the loan.</p><p>This means DeFi lending today is essentially leveraged trading. People borrow against crypto collateral to buy more crypto. Real-world unsecured lending, with all its credit-risk pricing, hasn't translated to DeFi.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-03-c4",
+        "title": "Liquidity Mining",
+        "contentHtml": "<p><strong>Liquidity mining</strong>: protocols reward users for providing liquidity by issuing native tokens.</p><p>Compound launched the model in 2020 with COMP token rewards. Users earned both interest on deposits and additional COMP tokens. Massive capital flowed in seeking the combined yield.</p><p>The mechanism: bootstrap a network through token incentives. Distribute ownership to early users. Create deep liquidity that attracts more users.</p><p>Critique: 'mercenary capital.' Yields chase rewards, then exit when rewards stop. Many liquidity-mining schemes attracted capital that vanished when token rewards ended.</p><p>Better designs offer time-locks, escalating rewards for committed liquidity, or revenue-sharing rather than pure inflation rewards.</p><p>The concept echoes Hayek's 'denationalization of money' arguments — multiple competing currencies (now tokens) bidding for adoption. The reality has been messier, with substantial misallocation but also rapid innovation in financial primitives.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-03-c5",
+        "title": "Impermanent Loss",
+        "contentHtml": "<p>A peculiar feature of providing liquidity to AMMs: <strong>impermanent loss</strong>.</p><p>Setup: you provide $1000 of ETH and $1000 of USDC to a Uniswap pool. ETH rises 4×. The pool rebalances; you end up with less ETH and more USDC.</p><p>Comparison: if you'd just held the original ETH and USDC, you'd have $4000 ETH + $1000 USDC = $5000.</p><p>Actual outcome from the pool: you have ~$4000 worth of tokens (the pool rebalanced you out of ETH as it rose). Less than just holding.</p><p>The gap is impermanent loss — 'impermanent' because if prices return to the original ratio, the loss disappears. 'Permanent' if prices stay diverged.</p><p>Liquidity providers earn fees from trades to compensate for IL. Whether fees outweigh IL depends on volatility and trading volume.</p><p>The concept is widely misunderstood — many liquidity providers don't realize they're effectively short volatility. More sophisticated AMM designs (Uniswap V3 concentrated liquidity, Curve's stable pools) try to mitigate IL for specific use cases.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-crypto-04",
+    "topicId": "econ-crypto",
+    "order": 4,
+    "title": "MEV & Mechanism Risks",
+    "description": "Maximal extractable value, front-running, sandwich attacks, fair ordering",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "econ-crypto-04-c1",
+        "title": "What MEV Is",
+        "contentHtml": "<p><strong>Maximal Extractable Value (MEV)</strong> — formerly Miner Extractable Value — is the value that block producers can extract from users by exploiting their privileged position in transaction ordering.</p><p>The mechanism: when you submit a transaction to a blockchain, it sits in a public mempool waiting to be included in a block. The block producer (miner in PoW, validator in PoS) decides which transactions to include and in what order.</p><p>This power isn't trivial. Order can determine profits. Smart actors competing for limited transaction slots create elaborate strategies to extract value.</p><p>Estimated MEV extracted on Ethereum since 2020: $700+ million. The actual figure may be substantially higher when factoring in less-visible forms.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-04-c2",
+        "title": "Front-Running",
+        "contentHtml": "<p>The simplest MEV strategy: <strong>front-running</strong>.</p><p>Setup: you see a large pending transaction in the mempool. You submit a similar transaction with a higher gas fee (higher priority) so yours executes first. You profit from the price impact your front-run trade caused.</p><p>This is illegal in traditional finance. In crypto, it's not — anyone can see the mempool, anyone can pay for higher priority. The asymmetry between sophisticated bots and ordinary users is structural.</p><p>Real-world impact: large DeFi trades pay an implicit 'tax' to MEV bots. A retail trader trying to swap a meaningful amount on Uniswap gets a worse price because bots front-run them.</p><p>Defensive techniques: private mempools (Flashbots Protect, MEV Blocker), batch auctions, time delays. None fully eliminate MEV; they shift who captures it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-04-c3",
+        "title": "Sandwich Attacks",
+        "contentHtml": "<p>A more sophisticated MEV strategy: the <strong>sandwich attack</strong>.</p><p>Setup: you see a victim's pending swap that will move the AMM price. Your bot:</p><p>1. <strong>Front-runs</strong>: buys the asset before the victim, raising its price.</p><p>2. The victim's swap executes at the now-worse price.</p><p>3. <strong>Back-runs</strong>: sells the asset right after, profiting from the temporary price move you created.</p><p>The victim pays substantial slippage. The attacker captures the spread.</p><p>Sandwich attacks are pervasive on Ethereum mainnet. Major DEXs report that 5-15% of transactions are sandwiched in any given week, with cumulative damages running into the hundreds of millions.</p><p>User defenses: setting tight slippage tolerances (which can cause failed transactions), using private routing services, using stable pools that resist sandwiching by design.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-04-c4",
+        "title": "Arbitrage and Liquidations",
+        "contentHtml": "<p>Not all MEV is malicious. Some is legitimate market-making.</p><p><strong>Arbitrage:</strong> when DEX prices diverge from CEX prices, bots profit by aligning them. Total MEV from arbitrage: hundreds of millions per year. Without it, DEX prices would diverge persistently from external markets.</p><p><strong>Liquidations:</strong> when DeFi loans fall below collateral thresholds, bots execute liquidations and earn fees. Without timely liquidations, lending protocols would suffer bad debt.</p><p>These activities provide market services. The bots earn returns by performing them. The economic cost is partly inefficient — bots compete with each other, often paying most of their profits in gas — but the underlying functions are valuable.</p><p>The line between 'predatory' MEV (extracting value from users without service) and 'legitimate' MEV (providing market services) is blurry. Most complex MEV strategies do some of each.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-04-c5",
+        "title": "MEV Mitigation",
+        "contentHtml": "<p>The crypto community has developed several approaches to limit harmful MEV.</p><p><strong>Flashbots:</strong> a private auction system where bundle proposers compete to include MEV transactions. This concentrates MEV extraction but reduces user-visible impact.</p><p><strong>Proposer-builder separation (PBS):</strong> Ethereum's roadmap separates block proposing (validator) from block building (specialized builders). Reduces validator-level MEV concentration.</p><p><strong>Batch auctions:</strong> protocols like CoW Swap aggregate user trades into batches with uniform clearing prices, eliminating order-dependent MEV.</p><p><strong>Encrypted mempools:</strong> hide pending transactions until ordering is finalized. Hard to implement but theoretically eliminates much MEV.</p><p><strong>Single-block proposers:</strong> reduce MEV opportunities by making block-building atomic with proposing.</p><p>The MEV problem is one of the most active research areas in crypto. It exposes a fundamental tension: blockchain transparency (anyone can see pending transactions) creates exactly the conditions for value extraction. Solving it requires either changing the transparency model or designing mechanisms that internalize MEV in welfare-improving ways.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-crypto-05",
+    "topicId": "econ-crypto",
+    "order": 5,
+    "title": "Stablecoins & Monetary Theory",
+    "description": "Fiat-backed, crypto-backed, algorithmic — the Terra collapse and what stability requires",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "econ-crypto-05-c1",
+        "title": "Why Stablecoins Exist",
+        "contentHtml": "<p>Cryptocurrencies are volatile. Bitcoin can move 10% in a day. This makes them poor mediums of exchange — buyers and sellers don't want a unit of account that swings widely.</p><p><strong>Stablecoins</strong> are tokens designed to maintain a stable value, typically pegged to a fiat currency (most often the US dollar).</p><p>Use cases:</p><p>– <strong>DeFi base currency:</strong> stable lending, predictable trade pairs.</p><p>– <strong>Cross-border payments:</strong> faster and cheaper than traditional remittances.</p><p>– <strong>Inflation hedge in unstable economies</strong>: USDC use in Argentina, Turkey, parts of Africa.</p><p>– <strong>Trading liquidity:</strong> moving between volatile crypto and stable value within crypto markets.</p><p>Total stablecoin market cap: ~$160 billion in 2024. Daily transaction volume often exceeds Visa.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-05-c2",
+        "title": "Fiat-Backed Stablecoins",
+        "contentHtml": "<p>The simplest model: <strong>fiat-backed stablecoins</strong>. The issuer holds dollar reserves equal to outstanding tokens. One token = one dollar redeemable.</p><p>Major examples:</p><p><strong>USDT (Tether):</strong> first major stablecoin. Long-running concerns about reserve quality and transparency. Now ~$120B in circulation.</p><p><strong>USDC (Circle):</strong> regulated, audited monthly, backed by cash and short-term Treasuries. ~$30B.</p><p><strong>BUSD (Binance):</strong> previously regulated by NYDFS. Wound down 2023.</p><p>The economic logic is straightforward: it's effectively a money-market fund issued as crypto tokens. The risk is whether the issuer actually holds claimed reserves.</p><p>Reserve transparency has improved over time. USDC publishes monthly attestations showing reserve composition. Tether resisted full transparency for years; recent attestations show predominantly Treasury bills.</p><p>Regulatory framework is evolving. The EU's MiCA regulation imposed strict reserve requirements. US legislation has been proposed but not passed.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-05-c3",
+        "title": "Crypto-Backed Stablecoins",
+        "contentHtml": "<p>Some stablecoins use cryptocurrency collateral instead of fiat reserves.</p><p><strong>DAI</strong> is the canonical example. Users deposit ETH (or other approved crypto) at over-collateralization (typically 150-300%) and mint DAI tokens against it.</p><p>Advantages: more decentralized than fiat-backed; doesn't require trust in a specific issuer.</p><p>Disadvantages: capital-inefficient (need much more collateral than tokens issued); vulnerable to collateral price crashes (March 2020 ETH crash nearly broke DAI).</p><p>Hybrid approaches: DAI now backs partially with USDC (a fiat-backed stablecoin), reintroducing some centralization but improving stability.</p><p>The economic logic resembles classic banking: assets (crypto collateral) back liabilities (DAI tokens). Solvency requires maintaining over-collateralization through volatile markets — challenging during crashes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-05-c4",
+        "title": "Algorithmic Stablecoins and the Terra Collapse",
+        "contentHtml": "<p>The most ambitious — and most catastrophic — stablecoin design: <strong>algorithmic stablecoins</strong>.</p><p>Idea: maintain peg through programmatic supply adjustments rather than reserves. When the stablecoin trades above peg, mint more; when below, contract supply.</p><p>UST (TerraUSD) was the largest such project. By early 2022, UST had a market cap of ~$18B, supported by a sister token LUNA. The mechanism: users could always swap 1 UST for $1 worth of LUNA, and vice versa.</p><p>The collapse (May 2022): a large UST sell-off triggered LUNA inflation as the protocol minted LUNA to absorb UST. As LUNA price fell, the math broke. UST de-pegged. The death spiral consumed both tokens within a week. Both went to near-zero. ~$60 billion of value evaporated.</p><p>The lesson: algorithmic stability without reserves is structurally fragile. The mechanism only works while market participants believe it works. Once belief erodes, the spiral is self-reinforcing.</p><p>Many algorithmic stablecoins have failed since (USN/Near, USDD, others). The category is now widely viewed with skepticism. Future designs may add partial reserves to algorithmic mechanisms.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-crypto-05-c5",
+        "title": "Stablecoins as Monetary Phenomenon",
+        "contentHtml": "<p>Stablecoins now hold ~$160B in dollar-denominated reserves, mostly in US Treasuries. They're effectively private dollar issuers.</p><p>Implications:</p><p>– <strong>Demand for Treasuries:</strong> stablecoins are a major non-trivial buyer of T-bills, supporting Treasury demand.</p><p>– <strong>Monetary policy transmission:</strong> stablecoin reserves earn interest rate; the spread funds operations and may pass through to users (some stablecoins now offer yield).</p><p>– <strong>Dollar dominance:</strong> ~99% of stablecoins are USD-pegged. Stablecoins extend dollar use globally, potentially counter to local monetary sovereignty.</p><p>– <strong>Financial stability:</strong> a 'run' on a major stablecoin could disrupt Treasury markets, given the concentration of reserves.</p><p>– <strong>Privacy and surveillance:</strong> dollar use via stablecoins is at least somewhat traceable through blockchain analytics, with implications for capital controls.</p><p>Regulatory developments: the US Federal Reserve, EU, and major regulators are all developing stablecoin frameworks. Most aim to maintain stability while limiting systemic risks. The eventual settled architecture isn't clear.</p><p>Whatever the final form, stablecoins represent a significant innovation in private monetary arrangements — the most successful new form of money since money market funds, with similar regulatory and stability questions.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  }
+]

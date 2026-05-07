@@ -1,0 +1,320 @@
+[
+  {
+    "id": "econ-game-01",
+    "topicId": "econ-game-theory",
+    "order": 1,
+    "title": "Strategic Form Games",
+    "description": "Players, strategies, payoffs — the basic grammar of strategic interaction",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "econ-game-01-c1",
+        "title": "Players, Strategies, Payoffs",
+        "contentHtml": "<p>A <strong>game</strong> in the formal sense has three ingredients.</p><p><strong>Players:</strong> the decision-makers (people, firms, countries, algorithms).</p><p><strong>Strategies:</strong> the actions available to each player.</p><p><strong>Payoffs:</strong> the value each player gets from each combination of strategies.</p><p>Game theory studies what rational players do — and what outcomes emerge — when each player's payoff depends on what the others choose. The key word is <em>strategic</em>: I care about what you do, you care about what I do, and we both know it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-01-c2",
+        "title": "Normal Form: The Payoff Matrix",
+        "contentHtml": "<p>For two-player games with finite strategies, the standard representation is the <strong>payoff matrix</strong>. Rows are player 1's strategies, columns are player 2's, and each cell holds the payoff pair (u_1, u_2).</p><p>Conventional ordering: row's payoff first, column's second. So (3, 5) in cell (Top, Left) means: if row plays Top and column plays Left, row gets 3 and column gets 5.</p><p>The matrix shows everything strategic: each player's options, the opponent's options, and the consequences of every combination. Most introductory game theory works in 2×2 matrices because the logic generalizes but the algebra explodes quickly.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-01-c3",
+        "title": "The Prisoner's Dilemma",
+        "contentHtml": "<p>The most famous game in social science. Two suspects, each independently choose to <em>cooperate</em> (stay silent) or <em>defect</em> (testify against the other).</p><p>If both cooperate: 3 years each. If both defect: 5 years each. If one defects while the other cooperates: defector goes free, cooperator gets 10 years.</p><p>For each player, defection is better regardless of what the other does. Both defect → both get 5 years. Yet if both had cooperated, both would get 3.</p><p>Individual rationality leads to a collectively bad outcome. The dilemma captures the tension between self-interest and cooperation, and shows up everywhere — arms races, oligopoly pricing, free-riding on public goods, climate negotiation, doping in sports.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-01-c4",
+        "title": "Dominant & Dominated Strategies",
+        "contentHtml": "<p>A strategy is <strong>strictly dominant</strong> if it gives a higher payoff than every other strategy, no matter what the opponent does.</p><p>A strategy is <strong>strictly dominated</strong> if some other strategy beats it under every opponent move.</p><p>Rational players never play strictly dominated strategies and always play strictly dominant ones (when available).</p><p>This gives us a simple solution method: <strong>iterated elimination of dominated strategies</strong>. Cross out dominated rows and columns; in the smaller game, more strategies may now be dominated; repeat. Sometimes you reach a unique outcome (in the prisoner's dilemma, one round of elimination gives 'both defect'). Often you don't, and you need stronger concepts.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-01-c5",
+        "title": "Coordination Games",
+        "contentHtml": "<p>Not all interaction is conflict. <strong>Coordination games</strong> have payoffs aligned — but multiple equilibria.</p><p><em>Battle of the sexes:</em> two players want to do something together, but disagree on what. Both prefer being together (say, at the opera) to being together at the football, but both prefer either coordination to going alone.</p><p><em>Stag hunt:</em> hunting a stag yields a big payoff but requires cooperation; hunting a hare is safe but yields less. The risk of your partner defecting may push you to the safer hare.</p><p>The lesson: in many real settings, the strategic problem isn't 'should I betray you?' but 'which of several good outcomes will we land on?' Conventions, focal points, and history often determine which equilibrium is selected.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-game-theory/battle-sexes.png\" alt=\"Battle of the Sexes coordination game payoff matrix\" loading=\"lazy\"><figcaption>Battle of the Sexes — a classic coordination game with multiple equilibria. Image: Wikimedia Commons / CC BY-SA 3.0.</figcaption></figure>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-game-02",
+    "topicId": "econ-game-theory",
+    "order": 2,
+    "title": "Nash Equilibrium",
+    "description": "Mutual best responses — the central solution concept and its discontents",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "econ-game-02-c1",
+        "title": "Best Response",
+        "contentHtml": "<p>A player's <strong>best response</strong> to an opponent's strategy is the strategy that maximizes their payoff <em>given</em> what the opponent is doing.</p><p>Best response is conditional. 'If you play Left, I should play Up. If you play Right, I should play Down.' The best response function maps every opponent strategy to your optimal reply.</p><p>This is the building block of equilibrium analysis. We don't ask 'what's the best strategy in general?' (often there isn't one) but 'what's the best strategy given specific beliefs about what others will do?'</p>",
+        "mathExpressions": [
+          "BR_i(s_{-i}) = \\arg\\max_{s_i} u_i(s_i, s_{-i})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-02-c2",
+        "title": "Nash Equilibrium Defined",
+        "contentHtml": "<p>A <strong>Nash equilibrium</strong> is a strategy profile where every player is best-responding to every other player simultaneously. No one wants to unilaterally deviate.</p><p>It's a fixed point: starting from a NE, no individual player can improve their payoff by changing strategy alone, given that others stay put.</p><p>John Nash's 1950 result: every finite game has at least one Nash equilibrium (possibly in mixed strategies). Existence is guaranteed; uniqueness is not — many games have multiple equilibria, and selecting among them requires extra structure.</p>",
+        "mathExpressions": [
+          "s^*: \\;\\forall i, \\; u_i(s^*_i, s^*_{-i}) \\geq u_i(s_i, s^*_{-i}) \\;\\forall s_i"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-02-c3",
+        "title": "Finding Nash Equilibria",
+        "contentHtml": "<p>The 'best-response method' for 2×2 games: in each column, underline the row's best payoff; in each row, underline the column's best payoff. Cells with both underlined are Nash equilibria.</p><p>For the prisoner's dilemma: (Defect, Defect) is the unique NE — both are best-responding even though both prefer (Cooperate, Cooperate). The dilemma is precisely that the Pareto-superior outcome isn't an equilibrium.</p><p>For coordination games: typically multiple pure-strategy NE plus a mixed-strategy one.</p><p>For larger games or continuous strategy spaces, you set best-response equations equal to each other and solve.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-02-c4",
+        "title": "Nash and Pareto",
+        "contentHtml": "<p>Nash equilibrium and <strong>Pareto efficiency</strong> are different concepts that often diverge.</p><p>A Pareto-efficient outcome is one where no one can be made better off without making someone else worse off. The cooperate-cooperate outcome in the prisoner's dilemma is Pareto efficient but not a Nash equilibrium.</p><p>Conversely, Nash equilibria can be Pareto inefficient — the (Defect, Defect) trap is the canonical example. This is exactly why public policy and institutions exist: to nudge or constrain behavior toward better outcomes than what individual rationality alone produces.</p><p>Many of the deepest results in microeconomics (the welfare theorems) are about when, and under what assumptions, Nash equilibrium and Pareto efficiency coincide. They do under perfect competition; they often don't elsewhere.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-02-c5",
+        "title": "Critiques and Refinements",
+        "contentHtml": "<p>Nash equilibrium is a powerful organizing concept, but it has known limitations.</p><p><strong>Multiple equilibria.</strong> Many games have many NEs. NE alone doesn't predict which one will be played.</p><p><strong>Implausible threats.</strong> Some NEs rely on threats that wouldn't actually be carried out (a player threatens to play something disastrous off-path). This motivates <strong>subgame perfection</strong> for sequential games.</p><p><strong>Bounded rationality.</strong> Real humans don't compute fixed points. Behavioral game theory (Camerer) examines how actual play deviates from NE — level-k thinking, quantal response.</p><p><strong>Equilibrium selection.</strong> Schelling's focal points, evolutionary game theory, risk dominance — extra concepts to handle multiplicity.</p><p>NE remains the workhorse, but it's better thought of as a <em>consistency condition</em> on strategies than a literal description of how rational agents reason their way to play.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-game-03",
+    "topicId": "econ-game-theory",
+    "order": 3,
+    "title": "Mixed Strategies",
+    "description": "Randomizing to keep opponents guessing — matching pennies and beyond",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "econ-game-03-c1",
+        "title": "When No Pure Strategy Works",
+        "contentHtml": "<p>Some games have no pure-strategy Nash equilibrium. <strong>Matching pennies</strong>: each player chooses heads or tails. If they match, player 1 wins; if not, player 2 wins.</p><p>Whatever player 1 does, player 2 wants to do the opposite. Whatever player 2 does, player 1 wants to match. There's no resting point in pure strategies — best responses chase each other in a cycle.</p><p>The fix: <strong>mixed strategies</strong>. Each player randomizes over their pure strategies according to some probability distribution. In matching pennies, the unique NE has each player playing 50-50.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-03-c2",
+        "title": "The Indifference Principle",
+        "contentHtml": "<p>How do you compute mixed-strategy equilibria? The <strong>indifference principle</strong>: in a mixed-strategy NE, each player must be <em>indifferent</em> across all pure strategies they play with positive probability.</p><p>If you weren't indifferent, you'd shift weight to the better strategy. Indifference is what stabilizes the mixing.</p><p>Procedure: solve for opponent's mixing probabilities such that <em>you</em> are indifferent. Then check that those probabilities give them indifference too. The system pins down the mixed equilibrium.</p><p>Slightly counterintuitive consequence: <em>your</em> mixing probabilities are determined by what makes <em>your opponent</em> indifferent — not by your own payoffs.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-03-c3",
+        "title": "Tennis Serves and Penalty Kicks",
+        "contentHtml": "<p>Matching pennies isn't just a toy. Empirical work has tested mixed-strategy predictions in real strategic situations.</p><p>Walker and Wooders (2001) studied where professional tennis players serve. The mixed-strategy NE predicts wide and down-the-line serves should be roughly equally successful — and they are.</p><p>Chiappori-Levitt-Groseclose studied penalty kicks in soccer. Strikers and goalkeepers each have a left/center/right choice. The data closely matches mixed-strategy predictions: goalkeepers' diving probabilities make strikers indifferent, and vice versa.</p><p>Real strategic agents in high-stakes settings — through experience, not necessarily explicit calculation — converge to behavior closely matching the mixed-strategy equilibrium.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-03-c4",
+        "title": "Existence Theorem",
+        "contentHtml": "<p>Nash's existence theorem: <em>every finite game has at least one Nash equilibrium in mixed strategies</em>.</p><p>The proof uses Kakutani's fixed-point theorem: the best-response correspondence (mapping mixed strategies to mixed strategies) is upper-hemicontinuous and convex-valued, so it has a fixed point. The fixed point is a NE.</p><p>This is a deep guarantee. No matter how convoluted the payoff matrix, no matter how many players, mixed-strategy equilibrium exists. You may have to find it numerically, but it's there.</p><p>For infinite games (continuous strategy spaces), existence requires extra conditions (compactness, continuity), but generalizations like Glicksberg's theorem extend the result.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-03-c5",
+        "title": "Interpreting Mixed Strategies",
+        "contentHtml": "<p>What does it really mean to 'randomize'?</p><p><strong>Literal randomization:</strong> the player flips a biased coin. Sensible in poker bluffing or tennis serving.</p><p><strong>Beliefs interpretation:</strong> mixed strategies represent the opponent's <em>belief</em> about what you'll do. You play pure, but they don't know which pure strategy. Your 60-40 'mix' is their uncertainty about you.</p><p><strong>Population interpretation:</strong> in a large population of player-1 types, 60% play heads and 40% play tails. The 'mixed strategy' is the population frequency.</p><p>All three give the same equilibrium math, but they differ on what's actually happening at the individual level. The tension highlights why mixed strategies have been philosophically contentious despite being technically necessary for the existence theorem.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-game-04",
+    "topicId": "econ-game-theory",
+    "order": 4,
+    "title": "Extensive Form & Subgame Perfection",
+    "description": "Game trees, backward induction, credible threats",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "econ-game-04-c1",
+        "title": "Sequential Games and Game Trees",
+        "contentHtml": "<p>Many real games unfold sequentially: one player moves, then another, possibly back and forth. The <strong>extensive form</strong> represents this with a <em>game tree</em>.</p><p>Nodes are decision points. Branches are possible actions. Terminal nodes hold payoffs. Information sets indicate what a player knows when moving (perfect information = each player knows the entire history).</p><p>Sequential structure changes everything. In simultaneous games, you can't observe and react. In sequential games, players who move later get to see — and respond to — earlier moves. This creates new strategic possibilities (commitment, credibility, signaling) that simultaneous-form games can't capture.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-game-theory/extensive-form.png\" alt=\"Centipede game tree extensive form\" loading=\"lazy\"><figcaption>Extensive form (game tree): the centipede game. Image: Wikimedia Commons / CC BY-SA 3.0.</figcaption></figure>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-04-c2",
+        "title": "Backward Induction",
+        "contentHtml": "<p>The natural way to solve perfect-information sequential games: <strong>backward induction</strong>. Start at the end of the tree and work backward.</p><p>At each terminal decision, figure out what the moving player will choose (the highest-payoff option). Replace the subtree with that payoff. Step back one node and do the same. Repeat until you reach the root.</p><p>The result is the <strong>subgame-perfect equilibrium</strong> — a strategy profile that's a Nash equilibrium in every subgame, not just along the equilibrium path.</p><p>The classic illustration: <em>Stackelberg duopoly</em>, where firm 1 sets quantity first and firm 2 responds. Firm 1 picks knowing firm 2 will best-respond, and earns the leader's premium.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-04-c3",
+        "title": "Credible vs Empty Threats",
+        "contentHtml": "<p>Subgame perfection rules out <strong>non-credible threats</strong>.</p><p>Example: an entrant considers entering an industry. The incumbent threatens 'if you enter, I'll start a price war that ruins us both!' The threat would deter entry — if believed.</p><p>But would the incumbent actually start a price war? At the entry decision node, fighting hurts the incumbent too. Once the entrant has entered, the incumbent's best response is to accommodate, not fight. The threat to fight is empty.</p><p>Backward induction kills empty threats: you can't sustain a strategy that requires you to act against your interest if the choice ever arises. Only threats that would be carried out 'in the moment' are credible.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-04-c4",
+        "title": "Commitment as a Strategic Asset",
+        "contentHtml": "<p>If you can <em>commit</em> to a strategy you wouldn't otherwise carry out, you can change other players' incentives.</p><p>Cortés burning his ships removed the option to retreat — and signaled to his soldiers (and to the Aztecs) that he was committed to victory. Doomsday machines in Cold War deterrence theory worked similarly: take the choice out of human hands so the threat is automatic.</p><p>In business: capacity expansion as a commitment to compete aggressively. Patents and contracts as commitments to behave a certain way. Reputations as accumulated commitment capital.</p><p>The deep point: in strategic settings, <em>removing options can make you better off</em>. Game theory turns the everyday wisdom that 'flexibility is good' on its head — sometimes inflexibility is the whole point.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-04-c5",
+        "title": "The Centipede Game",
+        "contentHtml": "<p>A puzzle for backward induction. Two players take turns; at each turn, a player can take a growing pot or pass to the opponent. If they pass too long, eventually someone takes — but if they could keep passing, the pot would grow more.</p><p>Backward induction says: at the last node, the mover takes. So at the second-to-last, the other mover takes (anticipating). Walking back, the very first mover should take immediately. Equilibrium: the game ends in one move with a tiny payoff.</p><p>Experimentally, real people pass several rounds before someone takes — leaving more on the table than predicted. This challenges the assumption that everyone reasons through unbounded backward induction. Either people don't reason that way, or they doubt others will, or they value cooperation per se.</p><p>Behavioral game theory uses this as evidence of bounded rationality and reciprocity preferences — refining how we apply game theory to real human decisions.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-game-05",
+    "topicId": "econ-game-theory",
+    "order": 5,
+    "title": "Repeated Games",
+    "description": "Cooperation through repetition — folk theorem, tit-for-tat, reputation",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "econ-game-05-c1",
+        "title": "One-Shot vs Repeated",
+        "contentHtml": "<p>The prisoner's dilemma has only one equilibrium: defect. But what if the same two players play it many times?</p><p>Now defection has a cost: tomorrow, the opponent can punish you by defecting back. The shadow of the future creates incentives for cooperation that don't exist in one-shot play.</p><p>The crucial parameter is the <strong>discount factor</strong> δ — how much future payoffs matter. Patient players (δ near 1) can sustain cooperation; impatient ones (δ near 0) effectively play one-shot. The threshold δ above which cooperation is sustainable depends on the gains from defection vs. the punishment.</p>",
+        "mathExpressions": [
+          "U = u_0 + \\delta u_1 + \\delta^2 u_2 + \\dots"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-05-c2",
+        "title": "Tit-for-Tat",
+        "contentHtml": "<p>The strategy that won Robert Axelrod's famous computer tournament in 1980: <strong>tit-for-tat</strong>. Cooperate on the first move; then copy whatever the opponent did last time.</p><p>It's nice (cooperates first), retaliatory (punishes defection immediately), forgiving (returns to cooperation as soon as opponent does), and clear (transparent and predictable). These four properties together explain its success against a wide range of strategies.</p><p>Axelrod's tournaments suggested: in repeated interaction, simple reciprocity strategies do remarkably well. They also helped pull game theory into political science and biology, where iterated dilemmas are central to questions about cooperation between nations and species.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-05-c3",
+        "title": "Grim Trigger and Folk Theorem",
+        "contentHtml": "<p><strong>Grim trigger</strong>: cooperate as long as the other does; once they defect, defect forever. Brutal but credible — and supports cooperation as long as the discount factor is high enough.</p><p>The <strong>folk theorem</strong>: in infinitely repeated games with sufficient patience, almost any individually rational outcome can be sustained as a NE. Cooperation, alternation, complex schemes — all are equilibria for some δ.</p><p>The good news: repeated interaction enables cooperation. The bad news: it enables almost anything. Predicting which equilibrium emerges is hard, and theory has to lean on equilibrium selection arguments — focal points, evolution, history.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-05-c4",
+        "title": "Finite Horizons and Unraveling",
+        "contentHtml": "<p>If the game ends at a known finite date T, backward induction destroys cooperation. At T, defect is dominant. So at T-1, knowing T will be defection, defect. And so on back to round 1.</p><p>This <strong>unraveling</strong> seems to suggest cooperation can't be sustained in finite-horizon games — but real people cooperate in finite repeated dilemmas anyway.</p><p>Resolution: small uncertainty about types, end-dates, or rationality can sustain cooperation in long-but-finite games (Kreps-Milgrom-Roberts-Wilson). A small chance the opponent is a 'cooperator type' incentivizes building a cooperative reputation, which others reciprocate. Cooperation breaks down only in the very last few rounds.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-05-c5",
+        "title": "Reputation",
+        "contentHtml": "<p>The deepest application of repeated-game logic: <strong>reputation</strong> as an asset that sustains cooperative behavior even without explicit contracts.</p><p>A merchant who cheats once can be punished by all future customers. A lender's reputation for non-renegotiation lets them extend credit. A country's reputation for honoring treaties enables future treaties.</p><p>Reputation is built by costly action — turning down short-term gains to maintain the equilibrium. It's why luxury brands defend trademarks, why governments invest in central bank credibility, why eBay built reputation systems.</p><p>The flip side: reputation can be destroyed quickly. One Equifax breach, one Volkswagen emissions scandal, one Lehman collapse undoes decades of accumulated trust. The asymmetry between building and destroying reputation is a core fact of repeated strategic interaction.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-game-06",
+    "topicId": "econ-game-theory",
+    "order": 6,
+    "title": "Bayesian Games & Signaling",
+    "description": "Strategic play under incomplete information — types, beliefs, separating equilibria",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "econ-game-06-c1",
+        "title": "Incomplete Information",
+        "contentHtml": "<p>Standard game theory assumes everyone knows everything — payoffs, strategies, rationality. Real interactions almost never satisfy this.</p><p>You don't know whether the seller's car is a lemon. The job applicant doesn't know how much you'll pay. The opposing nation doesn't know your willingness to fight.</p><p><strong>Bayesian games</strong> add private information. Each player has a <em>type</em> — drawn from some distribution — that summarizes their private information. Players know their own type but only have probabilistic beliefs about others'.</p><p>Harsanyi's insight (Nobel 1994): treat 'nature' as a player who randomly assigns types at the start. This converts incomplete-information games into well-defined games of imperfect information.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-06-c2",
+        "title": "Bayesian Nash Equilibrium",
+        "contentHtml": "<p>A <strong>Bayesian Nash equilibrium</strong> specifies a strategy for each <em>type</em> of each player, such that every type is best-responding given beliefs about other types.</p><p>The 'beliefs' part is crucial. Players use Bayes' rule to update beliefs based on what they observe. A high-quality seller's pricing might reveal their type to a buyer, who updates accordingly.</p><p>Equilibria come in three flavors based on what gets revealed:</p><p><strong>Pooling:</strong> all types choose the same action; nothing is revealed.</p><p><strong>Separating:</strong> different types choose different actions; private information is fully revealed.</p><p><strong>Hybrid/semi-separating:</strong> some types pool, some separate.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-06-c3",
+        "title": "Spence's Signaling Model",
+        "contentHtml": "<p>Michael Spence's 1973 PhD thesis (Nobel 2001) is the classic. Workers have private information about their productivity. They can choose to acquire education, which is costly — and crucially, <em>more costly for less productive types</em>.</p><p>If the cost gap is large enough, only high-productivity workers find education worthwhile. Education becomes a <strong>signal</strong> of type, even if it doesn't actually raise productivity.</p><p>Employers, observing the signal, can pay separating wages. High-education workers get high wages; low-education workers get low wages. Both types separate to truth-revealing equilibria.</p><p>Spence's striking implication: education's social value can come purely from signaling, not skill-building. The implication has deep consequences for thinking about credentialing, certification, and the value of degrees — though most economists believe both signaling and human capital effects matter in practice.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-06-c4",
+        "title": "Adverse Selection: The Market for Lemons",
+        "contentHtml": "<p>George Akerlof's 1970 paper (Nobel 2001) shows how private information can collapse a market.</p><p>Used cars vary in quality. Sellers know which are good and which are lemons; buyers don't. Buyers offer the average price, scaled by their belief about the mix. At that price, owners of good cars walk away — they value their cars at more than average. Now only lemons remain. Average quality falls. Price drops further. Eventually only the worst cars trade, or the market collapses entirely.</p><p>This <strong>adverse selection</strong> spiral explains why used-car markets actually function via warranties, certification, and brand reputation — institutions that solve the information problem the market can't.</p><p>The same logic explains health insurance issues, lending markets, freelance platforms, and many others where buyers can't see quality before buying.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-game-06-c5",
+        "title": "Cheap Talk and Costly Signals",
+        "contentHtml": "<p>Why don't sellers just <em>say</em> their cars are great? <strong>Cheap talk</strong> — costless messages — typically can't credibly transmit information when interests conflict. Everyone would claim to be high-quality.</p><p>Credible signaling requires the signal to be <strong>costly</strong>, and costlier for low types than high types. This is the core insight of signaling theory: only signals that are differentially costly across types can separate them in equilibrium.</p><p>Examples: warranty length (costly to lemon-sellers, cheap to honest sellers); peacock tails (energetically expensive, only sustainable for fit males); luxury brand spending (only those with high time-discounted income can afford it); higher education (more costly time/effort for less productive students).</p><p>The signaling logic has spread across economics, biology, and game theory — anywhere parties interact across an information gap and need a way to make claims credible.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  }
+]

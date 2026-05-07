@@ -1,0 +1,465 @@
+@page "/rock-id"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Rock ID</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Rock ID" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Rock ID</h1>
+</div>
+
+<div class="rock-tabs">
+    <button class="rock-tab @(viewMode == "quiz" ? "active" : "")" @onclick='() => SwitchMode("quiz")'>
+        <Icon Name="brain" Size="16" /> Quiz
+    </button>
+    <button class="rock-tab @(viewMode == "library" ? "active" : "")" @onclick='() => SwitchMode("library")'>
+        <Icon Name="book" Size="16" /> Reference Library
+    </button>
+</div>
+
+@if (viewMode == "quiz")
+{
+    <div class="rock-score-bar">
+        <div class="score-block">
+            <Icon Name="target" Size="16" Stroke="var(--accent)" />
+            <span class="score-text">Score: <strong>@correctCount</strong> / <strong>@totalCount</strong></span>
+            @if (totalCount > 0)
+            {
+                <span class="score-pct">(@((correctCount * 100 / totalCount))%)</span>
+            }
+        </div>
+        <button class="btn-mini" @onclick="ResetSession" title="Reset session">Reset</button>
+    </div>
+
+    @if (currentRock != null)
+    {
+        <div class="card rock-sample-card">
+            <div class="sample-svg-wrap">
+                @((MarkupString)currentRock.Svg)
+            </div>
+            <div class="sample-props">
+                <h3>Sample Properties</h3>
+                <div class="prop-grid">
+                    <div class="prop"><span class="prop-key">Hardness</span><span class="prop-val">@currentRock.Hardness Mohs</span></div>
+                    <div class="prop"><span class="prop-key">Grain</span><span class="prop-val">@currentRock.GrainSize</span></div>
+                    <div class="prop"><span class="prop-key">Color</span><span class="prop-val">@currentRock.Color</span></div>
+                    <div class="prop"><span class="prop-key">Formation</span><span class="prop-val">@currentRock.Formation</span></div>
+                    <div class="prop prop-wide"><span class="prop-key">Key Minerals</span><span class="prop-val">@currentRock.Minerals</span></div>
+                </div>
+            </div>
+        </div>
+
+        @if (stage == "class")
+        {
+            <div class="card question-card">
+                <div class="q-label">Step 1 of 2</div>
+                <h3 class="q-text">What class of rock is this?</h3>
+                <div class="class-buttons">
+                    <button class="class-btn cb-igneous" @onclick='() => GuessClass("igneous")'>Igneous</button>
+                    <button class="class-btn cb-sedimentary" @onclick='() => GuessClass("sedimentary")'>Sedimentary</button>
+                    <button class="class-btn cb-metamorphic" @onclick='() => GuessClass("metamorphic")'>Metamorphic</button>
+                </div>
+            </div>
+        }
+        else if (stage == "specific")
+        {
+            <div class="card question-card">
+                <div class="q-label">
+                    Step 2 of 2 -
+                    @if (classCorrect)
+                    {
+                        <span class="q-feedback ok"><Icon Name="check" Size="14" Stroke="var(--success)" /> Class correct!</span>
+                    }
+                    else
+                    {
+                        <span class="q-feedback err"><Icon Name="x-mark" Size="14" Stroke="var(--error)" /> Class was @currentRock.Class</span>
+                    }
+                </div>
+                <h3 class="q-text">Which rock is it?</h3>
+                <div class="specific-buttons">
+                    @foreach (var opt in specificOptions)
+                    {
+                        var name = opt;
+                        <button class="specific-btn" @onclick="() => GuessSpecific(name)">@name</button>
+                    }
+                </div>
+            </div>
+        }
+        else if (stage == "reveal")
+        {
+            <div class="card reveal-card @(specificCorrect ? "reveal-ok" : "reveal-err")">
+                <div class="reveal-header">
+                    @if (specificCorrect)
+                    {
+                        <Icon Name="check" Size="22" Stroke="var(--success)" />
+                        <span class="reveal-title ok">Correct!</span>
+                    }
+                    else
+                    {
+                        <Icon Name="x-mark" Size="22" Stroke="var(--error)" />
+                        <span class="reveal-title err">Not quite</span>
+                    }
+                </div>
+                <div class="reveal-name">@currentRock.Name</div>
+                <div class="reveal-class class-tag class-@currentRock.Class">@currentRock.Class</div>
+                <p class="reveal-desc">@currentRock.Description</p>
+                <button class="btn btn-primary next-btn" @onclick="NextSample">
+                    <Icon Name="dice" Size="16" /> Next Sample
+                </button>
+            </div>
+        }
+    }
+}
+else
+{
+    <div class="library-intro">
+        <Icon Name="search" Size="16" Stroke="var(--text-muted)" />
+        <span>Browse all @rocks.Count rock samples</span>
+    </div>
+    <div class="library-grid">
+        @foreach (var r in rocks)
+        {
+            <div class="card lib-card">
+                <div class="lib-svg">@((MarkupString)r.Svg)</div>
+                <div class="lib-name">@r.Name</div>
+                <div class="lib-class class-tag class-@r.Class">@r.Class</div>
+                <div class="lib-props">
+                    <div><span>Hardness:</span> @r.Hardness</div>
+                    <div><span>Grain:</span> @r.GrainSize</div>
+                    <div><span>Color:</span> @r.Color</div>
+                    <div><span>Formation:</span> @r.Formation</div>
+                    <div><span>Minerals:</span> @r.Minerals</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+}
+
+@code {
+    private bool unlocked;
+    private string viewMode = "quiz";
+    private string stage = "class"; // class -> specific -> reveal
+    private Rock? currentRock;
+    private List<string> specificOptions = new();
+    private bool classCorrect;
+    private bool specificCorrect;
+    private int correctCount;
+    private int totalCount;
+    private bool classGuessed;
+    private bool specificGuessed;
+    private readonly Random rng = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-rock-id");
+            if (unlocked && currentRock == null)
+            {
+                NextSample();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void SwitchMode(string mode)
+    {
+        viewMode = mode;
+        if (mode == "quiz" && currentRock == null)
+        {
+            NextSample();
+        }
+    }
+
+    private void ResetSession()
+    {
+        correctCount = 0;
+        totalCount = 0;
+        NextSample();
+    }
+
+    private void NextSample()
+    {
+        currentRock = rocks[rng.Next(rocks.Count)];
+        stage = "class";
+        classCorrect = false;
+        specificCorrect = false;
+        classGuessed = false;
+        specificGuessed = false;
+        BuildSpecificOptions();
+    }
+
+    private void BuildSpecificOptions()
+    {
+        if (currentRock == null) return;
+        var sameClass = rocks.Where(r => r.Class == currentRock.Class && r.Name != currentRock.Name)
+                             .OrderBy(_ => rng.Next()).Take(3).Select(r => r.Name).ToList();
+        sameClass.Add(currentRock.Name);
+        specificOptions = sameClass.OrderBy(_ => rng.Next()).ToList();
+    }
+
+    private void GuessClass(string guess)
+    {
+        if (currentRock == null || classGuessed) return;
+        classGuessed = true;
+        classCorrect = guess == currentRock.Class;
+        stage = "specific";
+    }
+
+    private void GuessSpecific(string name)
+    {
+        if (currentRock == null || specificGuessed) return;
+        specificGuessed = true;
+        specificCorrect = name == currentRock.Name;
+        totalCount++;
+        if (specificCorrect && classCorrect) correctCount++;
+        stage = "reveal";
+    }
+
+    public record Rock(
+        string Name,
+        string Class,
+        int Hardness,
+        string GrainSize,
+        string Color,
+        string Formation,
+        string Minerals,
+        string Description,
+        string Svg
+    );
+
+    // SVG helpers (inline strings)
+    private const string SvgGranite = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#d8b8b8'/><circle cx='20' cy='25' r='6' fill='#f0d0c8'/><circle cx='80' cy='35' r='8' fill='#a99898'/><circle cx='45' cy='60' r='5' fill='#3a3a3a'/><circle cx='95' cy='75' r='6' fill='#f0d0c8'/><circle cx='30' cy='85' r='7' fill='#a99898'/><circle cx='70' cy='95' r='5' fill='#3a3a3a'/><circle cx='60' cy='25' r='4' fill='#3a3a3a'/><circle cx='105' cy='50' r='4' fill='#3a3a3a'/><circle cx='15' cy='55' r='5' fill='#a99898'/><circle cx='55' cy='90' r='4' fill='#f0d0c8'/></svg>";
+
+    private const string SvgBasalt = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#2c2c2c'/><circle cx='30' cy='30' r='2' fill='#5a5a5a'/><circle cx='60' cy='40' r='2' fill='#5a5a5a'/><circle cx='90' cy='35' r='2' fill='#4a4a4a'/><circle cx='25' cy='70' r='2' fill='#5a5a5a'/><circle cx='80' cy='80' r='2' fill='#4a4a4a'/><circle cx='50' cy='90' r='2' fill='#5a5a5a'/><circle cx='100' cy='65' r='2' fill='#5a5a5a'/></svg>";
+
+    private const string SvgLimestone = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#e8dec8'/><path d='M10 40 Q 30 35 50 42 T 110 38' stroke='#c8b890' stroke-width='1' fill='none'/><path d='M10 70 Q 40 65 70 72 T 110 68' stroke='#c8b890' stroke-width='1' fill='none'/><ellipse cx='30' cy='55' rx='4' ry='2' fill='#a89868'/><ellipse cx='80' cy='90' rx='5' ry='2' fill='#a89868'/><ellipse cx='65' cy='25' rx='3' ry='1.5' fill='#a89868'/></svg>";
+
+    private const string SvgSandstone = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#d4a574'/><rect y='30' width='120' height='2' fill='#b08050'/><rect y='55' width='120' height='2' fill='#b08050'/><rect y='80' width='120' height='2' fill='#b08050'/><rect y='100' width='120' height='2' fill='#b08050'/><circle cx='25' cy='15' r='1.5' fill='#8a6030'/><circle cx='70' cy='45' r='1.5' fill='#8a6030'/><circle cx='90' cy='70' r='1.5' fill='#8a6030'/><circle cx='40' cy='95' r='1.5' fill='#8a6030'/></svg>";
+
+    private const string SvgSlate = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#3d4654'/><line x1='0' y1='40' x2='120' y2='35' stroke='#252a35' stroke-width='1.5'/><line x1='0' y1='65' x2='120' y2='62' stroke='#252a35' stroke-width='1.5'/><line x1='0' y1='90' x2='120' y2='88' stroke='#252a35' stroke-width='1.5'/><rect width='120' height='120' fill='url(#sg)' opacity='0.2'/><defs><linearGradient id='sg' x1='0' x2='1'><stop offset='0' stop-color='#5a6478'/><stop offset='1' stop-color='#2a323e'/></linearGradient></defs></svg>";
+
+    private const string SvgGneiss = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#a89888'/><path d='M0 25 Q 60 18 120 28' stroke='#3a3028' stroke-width='6' fill='none'/><path d='M0 55 Q 60 48 120 58' stroke='#e8d8c0' stroke-width='5' fill='none'/><path d='M0 80 Q 60 73 120 83' stroke='#3a3028' stroke-width='5' fill='none'/><path d='M0 105 Q 60 98 120 108' stroke='#e8d8c0' stroke-width='4' fill='none'/></svg>";
+
+    private const string SvgMarble = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#f5f0e8'/><path d='M5 30 Q 40 20 70 35 T 115 25' stroke='#a8a098' stroke-width='1.5' fill='none'/><path d='M10 60 Q 50 50 90 70' stroke='#888078' stroke-width='1' fill='none'/><path d='M0 85 Q 30 100 60 88 T 120 95' stroke='#a8a098' stroke-width='1.2' fill='none'/><path d='M40 10 Q 50 50 70 110' stroke='#b8b0a8' stroke-width='0.8' fill='none'/></svg>";
+
+    private const string SvgObsidian = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#0a0a0a'/><polygon points='30,20 50,15 60,30 45,45 25,40' fill='#1a1a1a' stroke='#2a2a2a'/><polygon points='70,50 95,45 100,70 80,80 65,65' fill='#1a1a1a' stroke='#2a2a2a'/><polygon points='20,80 40,75 50,95 30,105' fill='#1a1a1a' stroke='#2a2a2a'/><line x1='35' y1='25' x2='45' y2='40' stroke='#404040' stroke-width='0.5'/><line x1='80' y1='55' x2='90' y2='75' stroke='#404040' stroke-width='0.5'/></svg>";
+
+    private const string SvgPumice = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#c8c0b0'/><circle cx='25' cy='25' r='4' fill='#7a7060'/><circle cx='50' cy='35' r='3' fill='#7a7060'/><circle cx='80' cy='25' r='5' fill='#7a7060'/><circle cx='100' cy='50' r='3' fill='#7a7060'/><circle cx='20' cy='55' r='4' fill='#7a7060'/><circle cx='60' cy='60' r='4' fill='#7a7060'/><circle cx='85' cy='75' r='3' fill='#7a7060'/><circle cx='30' cy='85' r='5' fill='#7a7060'/><circle cx='65' cy='95' r='3' fill='#7a7060'/><circle cx='100' cy='95' r='4' fill='#7a7060'/><circle cx='45' cy='100' r='3' fill='#7a7060'/></svg>";
+
+    private const string SvgShale = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#5a5448'/><line x1='0' y1='25' x2='120' y2='25' stroke='#3a3428' stroke-width='1'/><line x1='0' y1='40' x2='120' y2='40' stroke='#3a3428' stroke-width='1'/><line x1='0' y1='55' x2='120' y2='55' stroke='#3a3428' stroke-width='1'/><line x1='0' y1='70' x2='120' y2='70' stroke='#3a3428' stroke-width='1'/><line x1='0' y1='85' x2='120' y2='85' stroke='#3a3428' stroke-width='1'/><line x1='0' y1='100' x2='120' y2='100' stroke='#3a3428' stroke-width='1'/></svg>";
+
+    private const string SvgSchist = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#6a6058'/><line x1='10' y1='20' x2='110' y2='30' stroke='#c8c0b8' stroke-width='2'/><line x1='10' y1='35' x2='110' y2='45' stroke='#3a3028' stroke-width='2'/><line x1='10' y1='50' x2='110' y2='60' stroke='#c8c0b8' stroke-width='2'/><line x1='10' y1='65' x2='110' y2='75' stroke='#3a3028' stroke-width='2'/><line x1='10' y1='80' x2='110' y2='90' stroke='#c8c0b8' stroke-width='2'/><line x1='10' y1='95' x2='110' y2='105' stroke='#3a3028' stroke-width='2'/></svg>";
+
+    private const string SvgQuartzite = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#e8e0d8'/><polygon points='15,15 45,20 35,40 12,35' fill='#d8d0c8'/><polygon points='50,20 85,15 90,45 55,42' fill='#f0e8e0'/><polygon points='90,18 110,30 105,55 88,50' fill='#d8d0c8'/><polygon points='10,45 35,50 30,80 8,75' fill='#f0e8e0'/><polygon points='38,55 75,50 80,85 42,82' fill='#d8d0c8'/><polygon points='80,55 108,60 105,95 82,90' fill='#f0e8e0'/><polygon points='10,85 50,90 45,115 5,108' fill='#d8d0c8'/><polygon points='55,90 105,100 100,115 50,113' fill='#f0e8e0'/></svg>";
+
+    private const string SvgConglomerate = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#b89878'/><circle cx='25' cy='30' r='12' fill='#7a5a3a'/><circle cx='65' cy='25' r='8' fill='#d8b890'/><circle cx='95' cy='40' r='10' fill='#5a4028'/><circle cx='20' cy='65' r='9' fill='#a87858'/><circle cx='55' cy='60' r='14' fill='#7a5a3a'/><circle cx='90' cy='75' r='8' fill='#d8b890'/><circle cx='30' cy='95' r='11' fill='#5a4028'/><circle cx='70' cy='100' r='9' fill='#a87858'/><circle cx='105' cy='100' r='6' fill='#7a5a3a'/></svg>";
+
+    private const string SvgCoal = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#0f0f0f'/><polygon points='10,20 35,25 30,50 8,45' fill='#1f1f1f'/><polygon points='40,15 70,22 65,45 38,40' fill='#181818'/><polygon points='75,25 105,30 100,55 78,52' fill='#1f1f1f'/><polygon points='15,55 45,60 40,90 12,85' fill='#181818'/><polygon points='50,55 85,62 80,92 48,88' fill='#1f1f1f'/><polygon points='90,60 110,72 108,98 88,95' fill='#181818'/><polygon points='20,95 60,102 55,115 18,110' fill='#1f1f1f'/><polygon points='65,98 105,108 100,115 62,112' fill='#181818'/></svg>";
+
+    private const string SvgChalk = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#fafaf5'/><circle cx='25' cy='30' r='2' fill='#d8d8d0'/><circle cx='55' cy='25' r='1.5' fill='#d8d8d0'/><circle cx='85' cy='35' r='2' fill='#d8d8d0'/><circle cx='100' cy='60' r='1.5' fill='#d8d8d0'/><circle cx='30' cy='65' r='2' fill='#d8d8d0'/><circle cx='65' cy='60' r='1.5' fill='#d8d8d0'/><circle cx='90' cy='85' r='2' fill='#d8d8d0'/><circle cx='40' cy='90' r='1.5' fill='#d8d8d0'/><circle cx='70' cy='100' r='2' fill='#d8d8d0'/><circle cx='15' cy='100' r='1.5' fill='#d8d8d0'/><circle cx='110' cy='100' r='1.5' fill='#d8d8d0'/></svg>";
+
+    private const string SvgDiorite = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#a8a898'/><circle cx='20' cy='25' r='6' fill='#f8f8f0'/><circle cx='55' cy='30' r='7' fill='#1a1a1a'/><circle cx='90' cy='25' r='5' fill='#f8f8f0'/><circle cx='30' cy='60' r='8' fill='#1a1a1a'/><circle cx='65' cy='65' r='6' fill='#f8f8f0'/><circle cx='100' cy='55' r='7' fill='#1a1a1a'/><circle cx='15' cy='90' r='5' fill='#f8f8f0'/><circle cx='50' cy='95' r='7' fill='#1a1a1a'/><circle cx='85' cy='95' r='6' fill='#f8f8f0'/></svg>";
+
+    private const string SvgGabbro = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#383428'/><circle cx='22' cy='25' r='8' fill='#5a5240'/><circle cx='60' cy='30' r='10' fill='#1a1810'/><circle cx='95' cy='28' r='7' fill='#5a5240'/><circle cx='25' cy='65' r='9' fill='#1a1810'/><circle cx='65' cy='70' r='8' fill='#5a5240'/><circle cx='100' cy='60' r='9' fill='#1a1810'/><circle cx='20' cy='100' r='7' fill='#5a5240'/><circle cx='55' cy='100' r='9' fill='#1a1810'/><circle cx='95' cy='100' r='8' fill='#5a5240'/></svg>";
+
+    private const string SvgRhyolite = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#d8a098'/><path d='M0 30 Q 60 20 120 35' stroke='#a86058' stroke-width='2' fill='none'/><path d='M0 55 Q 60 50 120 60' stroke='#a86058' stroke-width='2' fill='none'/><path d='M0 80 Q 60 75 120 85' stroke='#a86058' stroke-width='2' fill='none'/><circle cx='30' cy='40' r='2' fill='#f8e0d8'/><circle cx='80' cy='65' r='2' fill='#f8e0d8'/><circle cx='50' cy='95' r='2' fill='#f8e0d8'/></svg>";
+
+    private const string SvgTuff = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#b8a898'/><polygon points='15,20 25,15 30,28 18,30' fill='#5a4838'/><polygon points='50,18 65,22 60,35 48,33' fill='#7a6858'/><polygon points='80,15 100,20 95,35 82,32' fill='#5a4838'/><circle cx='40' cy='50' r='3' fill='#3a2818'/><circle cx='85' cy='55' r='4' fill='#3a2818'/><polygon points='15,65 28,68 25,82 12,80' fill='#7a6858'/><polygon points='50,70 70,75 65,90 48,88' fill='#5a4838'/><polygon points='90,75 108,78 105,92 88,90' fill='#7a6858'/><circle cx='30' cy='100' r='3' fill='#3a2818'/><circle cx='75' cy='105' r='3' fill='#3a2818'/></svg>";
+
+    private const string SvgMudstone = @"<svg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'><rect width='120' height='120' rx='10' fill='#7a6850'/><line x1='0' y1='30' x2='120' y2='32' stroke='#5a4838' stroke-width='0.6'/><line x1='0' y1='45' x2='120' y2='47' stroke='#5a4838' stroke-width='0.6'/><line x1='0' y1='60' x2='120' y2='62' stroke='#5a4838' stroke-width='0.6'/><line x1='0' y1='75' x2='120' y2='77' stroke='#5a4838' stroke-width='0.6'/><line x1='0' y1='90' x2='120' y2='92' stroke='#5a4838' stroke-width='0.6'/><line x1='0' y1='105' x2='120' y2='107' stroke='#5a4838' stroke-width='0.6'/></svg>";
+
+    private static readonly List<Rock> rocks = new()
+    {
+        new("Granite", "igneous", 7, "coarse", "Pink/grey speckled", "Deep crustal intrusion", "Quartz, feldspar, mica",
+            "Granite is a coarse-grained intrusive igneous rock formed from slowly cooled magma deep in the crust. Its visible crystals make up much of the continental crust.", SvgGranite),
+        new("Basalt", "igneous", 6, "fine", "Dark grey to black", "Lava flows", "Plagioclase, pyroxene, olivine",
+            "Basalt is a fine-grained extrusive igneous rock that solidifies rapidly from lava at the surface. It dominates ocean floors and forms features like the Giant's Causeway.", SvgBasalt),
+        new("Obsidian", "igneous", 6, "glassy", "Black, glassy", "Rapid lava cooling", "Volcanic glass (silica)",
+            "Obsidian is a natural volcanic glass formed when felsic lava cools so quickly that crystals cannot grow. It fractures conchoidally and was prized for ancient blades and arrowheads.", SvgObsidian),
+        new("Pumice", "igneous", 6, "fine, vesicular", "Pale cream", "Frothy lava ejecta", "Volcanic glass with gas pockets",
+            "Pumice is a highly vesicular volcanic rock so full of gas bubbles that it often floats on water. It forms when frothy, gas-rich lava cools and solidifies almost instantly.", SvgPumice),
+        new("Diorite", "igneous", 6, "coarse", "Salt-and-pepper", "Intermediate intrusion", "Plagioclase, hornblende",
+            "Diorite is a coarse-grained intrusive igneous rock with a striking black-and-white speckled appearance. It forms at depth from intermediate-composition magmas and was a favourite stone of the Inca.", SvgDiorite),
+        new("Gabbro", "igneous", 6, "coarse", "Dark green/black", "Deep mafic intrusion", "Plagioclase, pyroxene, olivine",
+            "Gabbro is the coarse-grained, intrusive equivalent of basalt, crystallizing slowly from mafic magma deep underground. It forms much of the lower oceanic crust.", SvgGabbro),
+        new("Rhyolite", "igneous", 6, "fine", "Pink, banded", "Felsic lava flows", "Quartz, feldspar",
+            "Rhyolite is the fine-grained, extrusive equivalent of granite, formed when silica-rich lava cools quickly at the surface. It often shows flow-banding from the viscous, sticky lava.", SvgRhyolite),
+        new("Tuff", "igneous", 4, "fine to mixed", "Tan with fragments", "Compacted volcanic ash", "Volcanic glass, ash, lithic fragments",
+            "Tuff is formed from compacted and welded volcanic ash and ejected fragments after explosive eruptions. Many ancient cities, including parts of Rome, were carved from soft tuff.", SvgTuff),
+
+        new("Limestone", "sedimentary", 3, "fine", "Cream to grey", "Shallow marine basins", "Calcite (often with fossils)",
+            "Limestone is a sedimentary rock made primarily of calcium carbonate, often built up from shells and skeletons of marine organisms. It reacts with dilute acid and forms vast cave systems.", SvgLimestone),
+        new("Sandstone", "sedimentary", 6, "medium", "Tan to red", "Beaches, dunes, rivers", "Quartz with iron oxide cement",
+            "Sandstone is a clastic sedimentary rock made of cemented sand-sized grains, usually quartz. Its visible bedding records ancient deserts, rivers, and shorelines.", SvgSandstone),
+        new("Shale", "sedimentary", 3, "very fine", "Grey to black", "Quiet, deep water", "Clay minerals, quartz",
+            "Shale is a fissile sedimentary rock formed from compacted mud and clay in still water. It is the most abundant sedimentary rock and a major source of oil and natural gas.", SvgShale),
+        new("Conglomerate", "sedimentary", 6, "very coarse", "Mixed, multicoloured", "High-energy rivers, beaches", "Rounded pebbles in matrix",
+            "Conglomerate is a coarse sedimentary rock made of rounded pebbles cemented together in a finer matrix. The rounded clasts indicate transport by fast-flowing water.", SvgConglomerate),
+        new("Coal", "sedimentary", 2, "organic", "Black, dull to shiny", "Ancient swamps", "Carbon, plant remains",
+            "Coal is a combustible sedimentary rock formed from compressed plant material in ancient swamps. Its grade ranges from soft lignite to hard, shiny anthracite.", SvgCoal),
+        new("Chalk", "sedimentary", 1, "very fine", "Bright white", "Deep marine, plankton-rich", "Coccolithophore calcite",
+            "Chalk is a soft, porous variety of limestone made from microscopic plankton skeletons that settled on warm sea floors. The white cliffs of Dover are a classic example.", SvgChalk),
+        new("Mudstone", "sedimentary", 2, "very fine", "Brown to grey", "Quiet lakes, lagoons", "Clay, silt, organics",
+            "Mudstone is a fine-grained sedimentary rock similar to shale but lacking the clear layering. It forms when mud and silt are slowly compacted in calm water.", SvgMudstone),
+
+        new("Slate", "metamorphic", 4, "very fine", "Dark grey-blue", "Low-grade metamorphism of shale", "Clay minerals, mica, quartz",
+            "Slate is a fine-grained metamorphic rock that splits into flat sheets along its slaty cleavage. It is widely used for roofing tiles and traditional school writing slates.", SvgSlate),
+        new("Schist", "metamorphic", 5, "medium", "Silvery, foliated", "Medium-grade metamorphism", "Mica, quartz, feldspar",
+            "Schist is a medium-grade metamorphic rock with strong foliation defined by aligned mica flakes that give it a sparkling sheen. It often contains visible garnets and other index minerals.", SvgSchist),
+        new("Gneiss", "metamorphic", 7, "coarse", "Banded light/dark", "High-grade metamorphism", "Quartz, feldspar, mica",
+            "Gneiss is a high-grade metamorphic rock characterized by alternating light and dark mineral bands. It forms deep in the crust under intense heat and pressure, often from granite or sedimentary rocks.", SvgGneiss),
+        new("Marble", "metamorphic", 3, "medium", "White with grey veins", "Metamorphism of limestone", "Recrystallized calcite",
+            "Marble is a metamorphic rock formed when limestone recrystallizes under heat and pressure. Its workability and beauty made it the favourite stone of classical sculptors.", SvgMarble),
+        new("Quartzite", "metamorphic", 7, "medium", "Pale, glassy", "Metamorphism of sandstone", "Recrystallized quartz",
+            "Quartzite is an extremely hard metamorphic rock formed when quartz sandstone is fused under heat and pressure. It fractures through the grains rather than around them, unlike its parent rock.", SvgQuartzite)
+    };
+}
+
+<style>
+    .rock-tabs {
+        display: flex; gap: 4px; background: var(--bg-surface); border-radius: var(--radius-md);
+        padding: 4px; margin-bottom: 16px;
+    }
+    .rock-tab {
+        flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted);
+        font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-sm); cursor: pointer;
+        transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .rock-tab.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow); }
+
+    .rock-score-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--bg-surface); border-radius: var(--radius-md); padding: 10px 14px;
+        margin-bottom: 14px;
+    }
+    .score-block { display: inline-flex; align-items: center; gap: 8px; }
+    .score-text { font-size: 0.9rem; color: var(--text-secondary); }
+    .score-text strong { color: var(--text-primary); }
+    .score-pct { font-size: 0.8rem; color: var(--text-muted); margin-left: 4px; }
+    .btn-mini {
+        padding: 5px 12px; font-size: 0.75rem; background: var(--bg-card); color: var(--text-secondary);
+        border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;
+        font-weight: 600; -webkit-tap-highlight-color: transparent;
+    }
+    .btn-mini:active { transform: scale(0.95); }
+
+    .rock-sample-card { padding: 16px; margin-bottom: 14px; }
+    .sample-svg-wrap {
+        display: flex; justify-content: center; align-items: center;
+        background: var(--bg-surface); border-radius: var(--radius-sm);
+        padding: 16px; margin-bottom: 14px;
+    }
+    .sample-svg-wrap svg { display: block; max-width: 140px; height: auto; }
+
+    .sample-props h3 {
+        font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;
+        letter-spacing: 0.5px; margin: 0 0 8px;
+    }
+    .prop-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .prop {
+        display: flex; flex-direction: column; gap: 2px;
+        background: var(--bg-surface); border-radius: var(--radius-sm); padding: 6px 10px;
+    }
+    .prop-wide { grid-column: 1 / -1; }
+    .prop-key { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .prop-val { font-size: 0.85rem; color: var(--text-primary); font-weight: 600; }
+
+    .question-card { padding: 16px; }
+    .q-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .q-feedback { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; font-weight: 700; text-transform: none; letter-spacing: 0; font-size: 0.78rem; }
+    .q-feedback.ok { color: var(--success); }
+    .q-feedback.err { color: var(--error); }
+    .q-text { margin: 0 0 12px; font-size: 1rem; color: var(--text-primary); }
+
+    .class-buttons { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .class-btn {
+        padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+        background: var(--bg-surface); color: var(--text-primary); font-weight: 700; font-size: 0.9rem;
+        cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.15s ease;
+        text-align: left;
+    }
+    .class-btn:active { transform: scale(0.98); }
+    .class-btn:hover { border-color: var(--primary); }
+    .cb-igneous { border-left: 4px solid #c7613f; }
+    .cb-sedimentary { border-left: 4px solid #d4a574; }
+    .cb-metamorphic { border-left: 4px solid #6a9088; }
+
+    .specific-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .specific-btn {
+        padding: 14px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+        background: var(--bg-surface); color: var(--text-primary); font-weight: 600; font-size: 0.9rem;
+        cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.15s ease;
+    }
+    .specific-btn:hover { border-color: var(--primary); background: var(--bg-card); }
+    .specific-btn:active { transform: scale(0.97); }
+
+    .reveal-card { padding: 18px; text-align: center; border: 2px solid var(--border); }
+    .reveal-card.reveal-ok { border-color: var(--success); }
+    .reveal-card.reveal-err { border-color: var(--error); }
+    .reveal-header { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .reveal-title { font-size: 1.05rem; font-weight: 800; }
+    .reveal-title.ok { color: var(--success); }
+    .reveal-title.err { color: var(--error); }
+    .reveal-name { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 4px 0; }
+    .reveal-class { display: inline-block; margin-bottom: 10px; }
+    .reveal-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 14px; text-align: left; }
+    .next-btn { display: inline-flex; align-items: center; gap: 6px; }
+
+    .class-tag {
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        font-size: 0.72rem; font-weight: 700; text-transform: capitalize;
+        letter-spacing: 0.3px;
+    }
+    .class-igneous { background: rgba(199,97,63,0.18); color: #c7613f; }
+    .class-sedimentary { background: rgba(212,165,116,0.22); color: #b88752; }
+    .class-metamorphic { background: rgba(106,144,136,0.22); color: #6a9088; }
+
+    /* Library */
+    .library-intro {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;
+    }
+    .library-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .lib-card { padding: 12px; }
+    .lib-svg {
+        display: flex; justify-content: center; background: var(--bg-surface);
+        border-radius: var(--radius-sm); padding: 8px; margin-bottom: 8px;
+    }
+    .lib-svg svg { width: 90px; height: 90px; }
+    .lib-name { font-weight: 700; color: var(--text-primary); font-size: 0.95rem; }
+    .lib-class { margin: 4px 0 8px; }
+    .lib-props {
+        display: flex; flex-direction: column; gap: 3px;
+        font-size: 0.72rem; color: var(--text-secondary); line-height: 1.35;
+    }
+    .lib-props span { color: var(--text-muted); margin-right: 3px; }
+
+    @@media (max-width: 360px) {
+        .specific-buttons { grid-template-columns: 1fr; }
+        .prop-grid { grid-template-columns: 1fr; }
+        .library-grid { grid-template-columns: 1fr; }
+    }
+</style>

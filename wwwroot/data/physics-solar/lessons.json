@@ -1,0 +1,221 @@
+[
+  {
+    "id": "phy-sol-01",
+    "topicId": "physics-solar",
+    "order": 1,
+    "title": "The Photovoltaic Effect",
+    "description": "How light becomes electricity — from Becquerel to silicon",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "phy-sol-01-c1",
+        "title": "A Brief History",
+        "contentHtml": "<p>The <strong>photovoltaic (PV) effect</strong> — generating an electric voltage from light — was first observed by <strong>Edmond Becquerel</strong> in 1839, aged just 19, using silver-coated electrodes in an electrolyte.</p><p>The mechanism stayed mysterious until <strong>Einstein's 1905</strong> paper on the photoelectric effect (which won him the Nobel Prize, not relativity) explained that light comes in quanta — photons — and a single photon either has enough energy to release an electron or it does not. Wave intensity is irrelevant.</p><p>Modern photovoltaics began at <strong>Bell Labs in 1954</strong>, when Chapin, Fuller, and Pearson built the first practical silicon solar cell with ~6 % efficiency. Within four years, Vanguard 1 carried PV cells into orbit — and the satellite industry has powered itself with them ever since.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-01-c2",
+        "title": "Photons and Band Gaps",
+        "contentHtml": "<p>A semiconductor has a forbidden energy range — the <strong>band gap</strong> E_g — between its filled valence band and empty conduction band. Three things can happen when a photon strikes the material:</p><ul><li>Photon energy <strong>below</strong> E_g → photon passes straight through (transmitted, wasted).</li><li>Photon energy <strong>equal to</strong> E_g → an electron is lifted from valence to conduction band, creating an <em>electron-hole pair</em>. Most of the photon's energy is captured.</li><li>Photon energy <strong>above</strong> E_g → an electron-hole pair is created, but the excess energy is rapidly lost as heat (<strong>thermalisation</strong>) — the electron drops to the band edge.</li></ul><p>For silicon, E_g ≈ 1.12 eV, corresponding to a wavelength of about 1100 nm (near infrared). Photons longer than that are invisible to a silicon cell.</p>",
+        "mathExpressions": [
+          "E = hf = hc/λ",
+          "E_g(Si) ≈ 1.12 eV ≈ 1.79 × 10⁻¹⁹ J"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-01-c3",
+        "title": "Why Silicon?",
+        "contentHtml": "<p>Of every photovoltaic material studied, silicon dominates real-world deployment — over <strong>95 % of installed PV capacity</strong>. Why?</p><ul><li>Its band gap (1.12 eV) is reasonably close to the optimum for the solar spectrum (~1.34 eV).</li><li>It is the second most abundant element in the crust — supply is essentially unlimited.</li><li>The microelectronics industry already perfected silicon purification, doping, and wafer processing.</li><li>Silicon cells are stable for 25+ years outdoors with negligible degradation.</li></ul><p>Its main weakness is being an <strong>indirect-band-gap</strong> semiconductor, which makes it a poor light absorber per unit thickness. That is why silicon cells need to be ~100–200 µm thick — a thousand times thicker than direct-gap materials like GaAs or CdTe would require.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "phy-sol-q01",
+      "phy-sol-q02",
+      "phy-sol-q03",
+      "phy-sol-q04",
+      "phy-sol-q05"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "phy-sol-02",
+    "topicId": "physics-solar",
+    "order": 2,
+    "title": "The p-n Junction Solar Cell",
+    "description": "How doped silicon turns light into a current",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "phy-sol-02-c1",
+        "title": "Doping: n-type and p-type",
+        "contentHtml": "<p>Pure silicon barely conducts. To make a working solar cell, two thin layers are <strong>doped</strong> with impurity atoms:</p><ul><li><strong>n-type</strong> region — doped with phosphorus (5 valence electrons). The extra electron is loosely bound and acts as a free negative charge carrier.</li><li><strong>p-type</strong> region — doped with boron (3 valence electrons). The missing electron — a 'hole' — behaves as a free positive charge carrier.</li></ul><p>Concentrations are tiny: about one dopant atom per 10⁶–10⁸ silicon atoms is enough to control conductivity completely. This is the same physics underlying every transistor — solar cells and microelectronics share the same parent technology.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-02-c2",
+        "title": "The Depletion Region and Built-in Field",
+        "contentHtml": "<p>Where n-type and p-type silicon meet, electrons diffuse into the p-side and holes diffuse into the n-side. They recombine near the interface, leaving behind exposed dopant ions: positive on the n-side, negative on the p-side. This forms a <strong>depletion region</strong> — empty of mobile carriers — with a strong <strong>built-in electric field</strong> pointing from n to p, typically ~10⁵ V/cm across a region only ~1 µm wide.</p><p>This field is the engine of the cell. When a photon creates an electron-hole pair anywhere within (or near) the depletion region:</p><ul><li>The electron is swept into the n-side.</li><li>The hole is swept into the p-side.</li></ul><p>The two charges are now separated. Connecting an external load with wires lets the electron travel through it back to the p-side to recombine — and along the way, it does electrical work.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-02-c3",
+        "title": "Cell Architecture in Practice",
+        "contentHtml": "<p>A modern crystalline-silicon cell is layered like this:</p><ul><li><strong>Anti-reflective coating</strong> (often Si₃N₄ — the dark blue colour you see) — reduces reflection from ~30 % bare-silicon down to ~2 %.</li><li><strong>Front metal grid</strong> — fine silver fingers that collect electrons while shading as little of the surface as possible.</li><li><strong>n-type emitter</strong> — thin (~0.5 µm) phosphorus-doped layer at the surface.</li><li><strong>p-type base</strong> — bulk of the wafer (~150 µm), boron-doped.</li><li><strong>Back surface field & rear contact</strong> — heavily doped layer plus aluminium back contact.</li></ul><p>A single silicon cell produces about <strong>0.6 V open-circuit and ~10 A in full sun</strong>. Cells are wired in series in a module to add voltage, and modules in series and parallel to build a system at useful voltages.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "phy-sol-q06",
+      "phy-sol-q07",
+      "phy-sol-q08",
+      "phy-sol-q09",
+      "phy-sol-q10"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "phy-sol-03",
+    "topicId": "physics-solar",
+    "order": 3,
+    "title": "Real-World Efficiency",
+    "description": "I-V curves, fill factor, and where the energy actually goes",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "phy-sol-03-c1",
+        "title": "The I-V Curve",
+        "contentHtml": "<p>A solar cell's behaviour is summarised by its <strong>current-voltage (I-V) curve</strong> under standard illumination (1000 W/m², 25 °C, AM1.5 spectrum). Three key points define performance:</p><ul><li><strong>Short-circuit current</strong> I_sc — the current when V = 0 (terminals shorted). Set by how many photons the cell absorbs and converts to carriers.</li><li><strong>Open-circuit voltage</strong> V_oc — the voltage when I = 0 (terminals disconnected). Limited by the band gap and recombination losses; ~0.6–0.7 V for silicon.</li><li><strong>Maximum power point</strong> (V_mp, I_mp) — the operating point that maximises P = IV. Real systems use <em>maximum power point tracking</em> (MPPT) to stay there as light and temperature change.</li></ul>",
+        "mathExpressions": [
+          "η = P_max / (irradiance × area) = (V_mp · I_mp) / (E · A)",
+          "FF = (V_mp · I_mp) / (V_oc · I_sc)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-03-c2",
+        "title": "Where the Energy Goes",
+        "contentHtml": "<p>For a silicon cell illuminated by the standard AM1.5 spectrum (1000 W/m²), the loss budget is roughly:</p><ul><li><strong>~19 %</strong> — sub-band-gap photons (infrared) pass straight through.</li><li><strong>~33 %</strong> — above-band-gap excess energy lost as heat (thermalisation).</li><li><strong>~16 %</strong> — recombination of electron-hole pairs, especially Shockley-Read-Hall and Auger.</li><li><strong>~5 %</strong> — reflection, shading by metal contacts, ohmic series resistance.</li><li><strong>~27 %</strong> — useful electricity at the terminals (a top commercial cell delivers 22–24 %).</li></ul><p>The two largest losses — sub-bandgap and thermalisation — together waste about half the incident sunlight. They are intrinsic to a single-band-gap material and cannot be eliminated within that constraint.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-03-c3",
+        "title": "Temperature and Real-World Performance",
+        "contentHtml": "<p>Solar cells are tested at 25 °C, but in summer a roof module easily reaches 60–70 °C. Performance degrades with temperature for two reasons:</p><ul><li>The band gap shrinks slightly as temperature rises, lowering V_oc.</li><li>Reverse saturation current grows, increasing recombination.</li></ul><p>For silicon, the temperature coefficient is roughly <strong>−0.3 to −0.5 % per °C</strong> for power. A panel rated 400 W at 25 °C may deliver only ~340 W at 70 °C.</p><p>That is why hot, sunny climates are not always the most productive. Cool, sunny climates — high-altitude desert, or sunny winter days — can outperform tropical roofs on a per-watt basis. Mounting design, ventilation, and tilt all influence module operating temperature.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "phy-sol-q11",
+      "phy-sol-q12",
+      "phy-sol-q13",
+      "phy-sol-q14",
+      "phy-sol-q15"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "phy-sol-04",
+    "topicId": "physics-solar",
+    "order": 4,
+    "title": "The Shockley-Queisser Limit",
+    "description": "The theoretical ceiling for a single-junction solar cell",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "phy-sol-04-c1",
+        "title": "The 1961 Calculation",
+        "contentHtml": "<p>In 1961, William Shockley and Hans Queisser asked: ignoring engineering imperfections entirely, what is the maximum efficiency a single-band-gap solar cell could ever achieve under sunlight?</p><p>Their <strong>detailed-balance</strong> argument used only:</p><ul><li>The full solar spectrum at the top of Earth's atmosphere (initially treated as a 6000 K black-body).</li><li>The principle that an excited cell must re-emit thermal radiation in equilibrium.</li><li>One adjustable parameter — the band gap.</li></ul><p>The answer: a maximum efficiency of about <strong>30 %</strong> at a band gap near 1.1 eV (close to silicon). With the modern AM1.5G terrestrial spectrum, the optimum shifts slightly upward to a band gap of about <strong>1.34 eV</strong> with a maximum efficiency of <strong>33.7 %</strong>.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-04-c2",
+        "title": "Why a Limit Exists",
+        "contentHtml": "<p>Two losses dominate even the most ideal single-junction cell:</p><ul><li><strong>Sub-band-gap loss</strong>: Photons with energy < E_g are not absorbed at all. Lowering E_g captures more of the spectrum.</li><li><strong>Thermalisation loss</strong>: Photons with energy > E_g create high-energy carriers that quickly drop to the band edge, dumping the excess as heat. Raising E_g reduces this waste.</li></ul><p>These two effects pull in opposite directions. The Shockley-Queisser optimum is a balance: low enough to absorb most of the spectrum, high enough to keep the voltage useful. There is also an unavoidable <strong>radiative recombination</strong> floor — any material that absorbs light must also emit it.</p><p>The S-Q limit is <em>not</em> a statement about engineering; it is a statement about thermodynamics. No matter how good your material, antireflective coating, or wiring, a single-band-gap cell cannot exceed ~33.7 % under unconcentrated sunlight.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-04-c3",
+        "title": "How Close Are Real Cells?",
+        "contentHtml": "<p>The Shockley-Queisser limit for silicon (E_g = 1.12 eV) is about <strong>32.0 %</strong> under AM1.5G. Real records:</p><ul><li><strong>Lab silicon cell</strong> (Kaneka, 2017): 26.7 %</li><li><strong>Lab GaAs cell</strong> (Alta Devices, near-S-Q optimum): 29.1 %</li><li><strong>Top commercial silicon panel</strong>: ~22–24 %</li></ul><p>The remaining gap from S-Q is dominated by non-radiative recombination at defects and surfaces. The crystalline-silicon record is now <em>so close</em> to its theoretical limit that further improvements at the cell level are tiny. Future gains have to come from going beyond the single-junction architecture itself.</p>",
+        "mathExpressions": [
+          "η_SQ ≈ 33.7 % at E_g ≈ 1.34 eV",
+          "η_SQ(Si) ≈ 32.0 %"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "phy-sol-q16",
+      "phy-sol-q17",
+      "phy-sol-q18",
+      "phy-sol-q19",
+      "phy-sol-q20"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "phy-sol-05",
+    "topicId": "physics-solar",
+    "order": 5,
+    "title": "Beyond Shockley-Queisser",
+    "description": "Multi-junctions, perovskites, and the next generation",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "phy-sol-05-c1",
+        "title": "Multi-Junction (Tandem) Cells",
+        "contentHtml": "<p>The way around the single-band-gap limit is to use <strong>multiple junctions</strong> stacked on top of each other, each tuned to a different part of the spectrum:</p><ul><li>Top cell — wide band gap (e.g. ~1.9 eV) absorbs blue and UV; lets longer wavelengths through.</li><li>Middle cell — moderate band gap (~1.4 eV) absorbs visible.</li><li>Bottom cell — narrow band gap (~0.7 eV) absorbs near-infrared.</li></ul><p>Thermalisation loss in each layer is greatly reduced because the photons just exceed the local E_g. Theoretical limits rise rapidly:</p><ul><li>Two-junction tandem: <strong>~42 %</strong> under one-sun illumination.</li><li>Three-junction: <strong>~49 %</strong>.</li><li>Infinite-junction limit: <strong>~68 %</strong> under one-sun.</li></ul><p>The current world record is <strong>47.6 %</strong> (Fraunhofer ISE, 4-junction, concentrated sunlight). Multi-junction cells dominate satellites and concentrator PV but remain too expensive for general rooftop use.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-05-c2",
+        "title": "Perovskite-Silicon Tandems",
+        "contentHtml": "<p>Lead-halide <strong>perovskites</strong> (CH₃NH₃PbI₃ and relatives) appeared in 2009 with single-cell efficiencies of just 3.8 %. By 2024 they had passed <strong>26 %</strong> — a faster trajectory than any other PV technology in history. Their band gap is tunable across roughly 1.5–2.3 eV, making them an excellent top-cell partner for silicon.</p><p>Perovskite-on-silicon tandems have already exceeded <strong>33 %</strong> in the lab, breaking the silicon S-Q ceiling. Commercial products are expected later this decade.</p><p>The remaining hurdles are <strong>stability</strong> (perovskites degrade in heat, moisture, and UV faster than silicon) and the use of <strong>lead</strong> in the most efficient compositions. Active research targets lead-free analogues and encapsulation strategies to match silicon's 25-year lifetime.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "phy-sol-05-c3",
+        "title": "Concentration and Beyond",
+        "contentHtml": "<p>Two further routes raise the practical limit:</p><ul><li><strong>Concentrator PV (CPV)</strong> — focus sunlight onto small high-efficiency cells using lenses or mirrors. Concentration raises V_oc logarithmically and the S-Q limit itself: at 1000-sun concentration the single-junction limit rises to ~40 %, and triple-junction concentrator cells have been demonstrated above 47 %. CPV makes economic sense only in regions with very high direct-normal irradiance.</li><li><strong>Beyond detailed balance</strong>: hot-carrier cells (extract energy before thermalisation), <em>multiple exciton generation</em> (one high-energy photon → two electron-hole pairs in quantum dots), <em>singlet fission</em> (similar effect in organic molecules), and <em>intermediate-band</em> cells. Each promises a route around S-Q in principle; none is yet a commercial product.</li></ul><p>The fundamental thermodynamic ceiling under unconcentrated sunlight is the <strong>Landsberg limit</strong> at about <strong>86 %</strong>, requiring an idealised infinite stack of converters. The journey from today's ~24 % to anything close to that is one of the great open challenges in applied physics.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "phy-sol-q21",
+      "phy-sol-q22",
+      "phy-sol-q23",
+      "phy-sol-q24",
+      "phy-sol-q25"
+    ],
+    "puzzleId": null
+  }
+]

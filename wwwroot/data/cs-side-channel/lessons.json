@@ -1,0 +1,182 @@
+[
+  {
+    "id": "side-01",
+    "topicId": "cs-side-channel",
+    "order": 1,
+    "title": "What Is a Side Channel?",
+    "description": "Leaking secrets through timing, power, and other physical observations — not through code bugs",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "side-01-c1",
+        "title": "Computation Leaks Through Physics",
+        "contentHtml": "<p>Cryptographic algorithms are usually proven secure on paper: given the algorithm and the ciphertext, an attacker cannot recover the key in any reasonable amount of time. But real implementations run on real hardware, and real hardware <em>tells on itself</em>. The time a CPU takes, the power it draws, the heat it dissipates, the electromagnetic field it radiates, even the sounds it makes — all of these depend, in subtle ways, on the data being processed.</p><p>A <strong>side channel</strong> is any information that leaks from a system <em>incidentally</em>, outside the abstract input/output interface the designer intended. The math of RSA does not leak the private key. But the C implementation of RSA, running on a CPU, takes slightly different amounts of time depending on the bits of the key. That timing is a side channel. Recover enough of those tiny differences and you recover the key — without ever finding a bug in the algorithm.</p><p>This is what makes side channels uniquely scary. The code can be correct. The crypto can be unbroken. The audit can be clean. And the system can still be wide open, because the abstraction the designer reasoned about (\"a black box that maps plaintext to ciphertext\") is not the abstraction the attacker observes.</p>",
+        "mathExpressions": ["\\text{leak} = f(\\text{secret},\\, \\text{physical state}) \\quad \\text{not visible in abstract I/O}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-01-c2",
+        "title": "Kocher 1996: The Timing Attack on RSA",
+        "contentHtml": "<p>The field as we know it began with a 1996 paper by <strong>Paul Kocher</strong>: <em>Timing Attacks on Implementations of Diffie-Hellman, RSA, DSS, and Other Systems</em>. Kocher noticed that RSA decryption uses <strong>square-and-multiply</strong> modular exponentiation: for each bit of the private exponent <code>d</code>, the algorithm always squares, but only multiplies if the bit is 1. The multiply is not free — it takes a measurable amount of time.</p><p>So an attacker who can time many decryptions of chosen ciphertexts can statistically infer, bit by bit, which exponent bits triggered the multiply. With enough samples, the entire private key falls out. Kocher demonstrated this against real RSA implementations of the time. No bug in the math, no buffer overflow, no leaked key file — just a stopwatch.</p><p>The fix is <strong>constant-time code</strong>: arrange the computation so its execution time does not depend on secret data. For modular exponentiation, this means using techniques like the Montgomery ladder, where every iteration does the same operations regardless of bit value. Constant-time programming is now mandatory for any code that touches keys — and it is shockingly hard to get right, because compilers, branch predictors, and caches can reintroduce timing variation that wasn't in the source.</p>",
+        "mathExpressions": ["t(\\text{decrypt}) \\approx t_0 + \\sum_{i} b_i \\cdot t_{\\text{mul}} \\quad b_i \\in \\{0,1\\} = \\text{key bits}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-01-c3",
+        "title": "Threat Model: What Does the Attacker Need?",
+        "contentHtml": "<p>Side-channel attacks span a wide range of attacker capabilities. The simplest is the <strong>remote timing</strong> attacker, who only sends network requests and measures response times. The strongest is the <strong>physical-access</strong> attacker, who can hook an oscilloscope to the chip's power pins. Most academic attacks sit somewhere between, often requiring a <em>colocated</em> attacker — a process on the same machine as the victim, or a virtual machine on the same physical host in a shared cloud.</p><p>Modern cloud computing made this last category dramatically more relevant. When your VM and an attacker's VM share an Intel Xeon, you also share L3 cache, branch predictors, DRAM rows, and frequency-scaling state. Each is a potential side channel that did not exist in the single-tenant world. <strong>Co-residency attacks</strong> turned theoretical lab demos into practical concerns.</p><p>The defender's question is therefore not \"is my crypto algorithm correct\" but \"<em>given who can observe my hardware, and how precisely, what can they learn?</em>\" That question has no clean answer — it requires modeling the actual physical system, not just the algorithm.</p>",
+        "mathExpressions": ["\\text{attacker capability} \\subset \\{\\text{remote timing},\\, \\text{co-resident},\\, \\text{physical probe},\\, \\text{EM near-field}\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["side-q01", "side-q02", "side-q03", "side-q04", "side-q05", "side-q06", "side-q07", "side-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "side-02",
+    "topicId": "cs-side-channel",
+    "order": 2,
+    "title": "Cache Timing Attacks",
+    "description": "Prime+Probe, Flush+Reload, and stealing AES keys from cache hit/miss patterns",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "side-02-c1",
+        "title": "Why Caches Leak",
+        "contentHtml": "<p>A CPU cache makes memory access fast by keeping recently used lines close to the core. A cache hit takes a few nanoseconds; a miss takes a hundred or more. That timing difference is a measurable signal — and crucially, it depends on which addresses have recently been accessed, which can depend on secret data.</p><p>Consider AES. Most software AES implementations use precomputed lookup tables (\"T-tables\") indexed by bytes of the round state, which itself depends on the key and plaintext. Different plaintexts cause different table entries to be loaded into cache. An attacker who can observe which cache lines were touched — even without seeing their contents — learns information about the key.</p><p>This was first practically demonstrated by <strong>Daniel J. Bernstein</strong> in 2005, attacking OpenSSL's AES across a network. Subsequent work by Osvik, Shamir, and Tromer (2006) showed full AES-128 key recovery in seconds with co-resident attackers. The lesson: if a lookup index depends on a secret, and the lookup uses cacheable memory, you have a side channel.</p>",
+        "mathExpressions": ["\\text{access time} = \\begin{cases} t_{\\text{hit}} & \\text{line in cache} \\\\ t_{\\text{miss}} & \\text{otherwise} \\end{cases}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-02-c2",
+        "title": "Prime+Probe and Flush+Reload",
+        "contentHtml": "<p>Two techniques dominate cache side-channel literature. <strong>Prime+Probe</strong>: the attacker fills (\"primes\") an entire cache set with their own data, lets the victim run, then re-accesses the same lines (\"probe\"). Lines that are now slow (evicted by the victim) reveal which sets the victim used. The attacker learns which sets, and therefore which addresses modulo the cache geometry, the victim touched.</p><p><strong>Flush+Reload</strong> is sharper but needs shared memory between attacker and victim — typically through page deduplication, shared libraries, or a shared read-only kernel page. The attacker uses the <code>clflush</code> instruction to evict a specific line, lets the victim run, then reloads the line and times it. Fast = victim brought it back; slow = victim did not. Yarom and Falkner (2014) used Flush+Reload to extract a full GnuPG private key from a co-resident victim — sub-millisecond per cache observation, full key in minutes.</p><p>Both techniques are remarkably general. They have been used against AES, RSA, ECDSA, TLS, web browsers, and virtual machine isolation. The defenses are painful: avoid secret-dependent memory accesses entirely (constant-time AES via AES-NI hardware instructions), partition caches between tenants (rarely deployed), or accept that shared caches are a leak channel.</p>",
+        "mathExpressions": ["\\text{Flush+Reload: } t_{\\text{reload}} \\text{ small} \\Rightarrow \\text{victim accessed line}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-02-c3",
+        "title": "Constant-Time Programming Is Hard",
+        "contentHtml": "<p>The defense against most software side channels is <strong>constant-time</strong> code: no branches on secrets, no memory accesses indexed by secrets, no variable-time operations on secrets (like integer division or floating point). In principle, simple. In practice, devastatingly subtle.</p><p>Compilers helpfully optimize. A handwritten constant-time conditional swap can be turned back into a branch by an aggressive optimizer. The <code>memcmp</code> in your equality check returns early on the first mismatch — a timing oracle that has broken HMAC validation in real libraries. Even processor features fight you: branch predictors, prefetchers, cache replacement policies, and dynamic frequency scaling all introduce data-dependent timing that is invisible at the source-code level.</p><p>The only way to be confident is to <strong>verify the binary</strong>: use tools like ctgrind, dudect, or formal verification (e.g., HACL*, Jasmin) that check timing leaks at the machine-code level. Cryptographic libraries like libsodium, BoringSSL, and BearSSL employ heroic engineering to deliver constant-time primitives. \"I wrote it in constant-time C\" is necessary but very far from sufficient.</p>",
+        "mathExpressions": ["\\text{constant-time} \\Leftrightarrow t(\\text{op}) \\text{ independent of secret inputs}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["side-q09", "side-q10", "side-q11", "side-q12", "side-q13", "side-q14", "side-q15", "side-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "side-03",
+    "topicId": "cs-side-channel",
+    "order": 3,
+    "title": "Power Analysis",
+    "description": "Reading keys from the power consumption trace of smart cards and embedded chips",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "side-03-c1",
+        "title": "Simple Power Analysis (SPA)",
+        "contentHtml": "<p>In 1998, Paul Kocher (with Joshua Jaffe and Benjamin Jun) published the second landmark paper of the field: <em>Differential Power Analysis</em>. With a small resistor in series with the power pin of a smart card and an oscilloscope, the researchers showed that the chip's instantaneous current draw depends on what it is computing. A multiplication consumes a different amount of power than a load. A 0 bit being processed differs measurably from a 1 bit.</p><p><strong>Simple Power Analysis (SPA)</strong> reads the secret directly from a single trace. For RSA on a smart card using square-and-multiply, the power trace literally shows which iterations did a multiply (the 1 bits) and which did not (the 0 bits) — sometimes visible to the naked eye on the scope screen. An attacker who can record one decryption can read off the entire private exponent.</p><p>This shocked industry. Smart cards were considered tamper-resistant — the entire premise of EMV credit cards, satellite TV access, and SIM authentication. Kocher's group (at Cryptography Research) demonstrated extracting keys from production smart cards in minutes, with equipment costing a few thousand dollars. Every chip vendor had to redesign.</p>",
+        "mathExpressions": ["P(t) = P_{\\text{static}} + P_{\\text{switching}}(\\text{data}_t) + \\text{noise}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-03-c2",
+        "title": "Differential Power Analysis (DPA)",
+        "contentHtml": "<p><strong>Differential Power Analysis</strong> is far more powerful than SPA. Where SPA reads a single trace, DPA records thousands of traces with different known plaintexts and uses statistics to extract keys even when the per-trace signal is buried in noise. The attacker guesses one byte of the key (256 possibilities), predicts an intermediate value of the cipher under each guess, and checks which guess produces the strongest correlation with measured power at the corresponding clock cycle.</p><p>Crucially, DPA does not need to know the implementation in detail. It only needs a power model — usually the <strong>Hamming weight</strong> (number of 1-bits) or <strong>Hamming distance</strong> (bits flipped) of an intermediate variable. CMOS gates dissipate power roughly proportional to bits flipped, so this model fits real silicon well. AES-128 falls to DPA in seconds with a few thousand traces from an unprotected implementation.</p><p>Defenses include <strong>masking</strong> (split every secret into random shares so no intermediate variable equals the secret), <strong>hiding</strong> (reduce the data-dependence of power, e.g., dual-rail logic that always flips the same number of bits), and <strong>noise injection</strong>. Every protection has a cost; high-assurance smart cards combine many. Side-channel resistance is now a major part of certification standards like Common Criteria and FIPS 140-3.</p>",
+        "mathExpressions": ["\\text{DPA: } \\rho(\\text{HW}(s_k(p_i)),\\, P_i) \\text{ peaks at } k = k_{\\text{true}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-03-c3",
+        "title": "Electromagnetic Variants",
+        "contentHtml": "<p>Power analysis requires touching the device. <strong>Electromagnetic (EM) analysis</strong> does not — current flowing through wires creates a magnetic field, and a small probe held near the chip can record the same data-dependent signal without electrical contact. Quisquater and Samyde (2001) and Gandolfi, Mourtel, and Olivier (2001) demonstrated EM attacks recovering keys from smart cards through their plastic packaging.</p><p>EM has a key advantage over power: spatial resolution. By scanning the probe across the die, the attacker can isolate signals from specific functional units — the AES engine, the RNG, the bus — discarding noise from unrelated activity. This makes EM attacks effective against System-on-Chip designs where many things happen simultaneously and a single power pin sees an unhelpful sum of everything.</p><p>EM has also gone <em>remote</em>. The 2015 attack \"Stealing Keys from PCs Using a Radio\" (Genkin, Pachmanov, Pipman, Tromer) extracted RSA and ElGamal keys from laptops several meters away using an AM radio antenna and a $300 receiver, picking up EM emanations from the CPU's voltage regulator while it ran GnuPG. The attack works through walls. \"Air-gap\" is not a complete defense.</p>",
+        "mathExpressions": ["\\vec{B}(\\vec{r},t) \\propto \\int \\frac{\\vec{J}(\\vec{r}',t) \\times (\\vec{r}-\\vec{r}')}{|\\vec{r}-\\vec{r}'|^3} d^3r' \\quad \\text{Biot-Savart}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["side-q17", "side-q18", "side-q19", "side-q20", "side-q21", "side-q22", "side-q23", "side-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "side-04",
+    "topicId": "cs-side-channel",
+    "order": 4,
+    "title": "TEMPEST, Acoustic, and Optical Channels",
+    "description": "Van Eck phreaking, listening to RSA through a microphone, and other unlikely leaks",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "side-04-c1",
+        "title": "TEMPEST and Van Eck Phreaking",
+        "contentHtml": "<p><strong>TEMPEST</strong> is the codename for a U.S. classified program (started in the 1950s) on protecting and exploiting electromagnetic emanations from electronic equipment. Cathode-ray tube monitors radiate the video signal as a strong, structured EM field — strong enough that, in 1985, Dutch researcher <strong>Wim van Eck</strong> publicly demonstrated reconstructing the displayed image from a van parked outside the building, using off-the-shelf TV equipment. The technique became known as <strong>Van Eck phreaking</strong>.</p><p>Van Eck's paper was a public bombshell because TEMPEST shielding had been classified. Suddenly the existence of the attack — and the rough cost of executing it — was on the open record. NATO countries had already been deploying TEMPEST-shielded computer rooms (\"red/black separation,\" copper-mesh-lined rooms, expensive shielded monitors), but the threat became part of the academic conversation.</p><p>The attack survives the move to flat panels. Markus Kuhn's PhD work (2003) showed that LCDs, video cables, and even keyboards leak reconstructable EM signatures. Kuhn even demonstrated reading the screen of a laptop several rooms away by aiming a directional antenna through a wall. Modern TEMPEST research now tracks emanations from displays, keyboards, USB cables, GPUs, and even the supply voltage of the power outlet a target shares with the attacker.</p>",
+        "mathExpressions": ["\\text{video raster signal} \\to \\text{periodic EM emission} \\to \\text{remotely reconstructable image}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-04-c2",
+        "title": "Acoustic Cryptanalysis",
+        "contentHtml": "<p>In 2013, <strong>Daniel Genkin, Adi Shamir, and Eran Tromer</strong> showed that a laptop running GnuPG emits a high-frequency whine — from coil noise in voltage regulators — that depends on what it is computing. With a parabolic microphone four meters away, or even an off-the-shelf smartphone resting on the laptop, the researchers extracted full 4096-bit RSA keys in about an hour. The paper title — <em>RSA Key Extraction via Low-Bandwidth Acoustic Cryptanalysis</em> — became iconic.</p><p>The signal is very faint and spans tens of kilohertz. To make it usable, the attack uses chosen ciphertexts that exercise key-dependent code paths, repeated thousands of times until the statistical signature of each key bit emerges. The same group later showed similar attacks via the laptop's chassis voltage (touch the metal case, ground yourself, measure the voltage) and via the far end of an Ethernet cable.</p><p>Acoustic side channels are not limited to crypto. Researchers have eavesdropped on dot-matrix and 3D printers, recovered text typed on keyboards by listening to the click pattern, and even read CPU activity from the whine of overhead-mounted drone motors picking up induced vibration. Nearly any moving or switching component can radiate audibly.</p>",
+        "mathExpressions": ["\\text{coil whine: } f(t) = g(\\text{CPU current}(t)) \\Rightarrow \\text{audible signature of computation}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-04-c3",
+        "title": "Optical and Other Exotic Channels",
+        "contentHtml": "<p>Disk activity LEDs, router status lights, and indicator lamps blink in patterns that depend on what the device is doing. <strong>Optical TEMPEST</strong> attacks use telescopes and photodiodes to read these blinks across line-of-sight distances. Loughry and Umphress (2002) showed that LEDs on serial-port devices were often wired directly to the data line, transmitting every bit they handled. Guri's group (Ben-Gurion University) extended this to malware-controlled hard-drive activity LEDs as a covert exfiltration channel from air-gapped machines.</p><p>The catalog of demonstrated channels is now long and strange: heat (modulating CPU temperature to signal between air-gapped machines via a thermal sensor), ultrasound (speakers playing inaudible carriers picked up by other speakers acting as microphones), magnetic fields (a smartphone's magnetometer reading the CPU activity of a neighboring computer), router LEDs filmed from a drone, and webcam-image reflections off coffee mugs and eyeglasses revealing on-screen content.</p><p>The defender's takeaway is unsettling: <strong>any physical observable that depends on internal state is a potential channel</strong>. Air-gapping, faraday cages, and TEMPEST shielding raise the bar — they don't categorically close it. For the most sensitive systems (HSMs, secure enclaves, certified payment terminals) defenders accept that they cannot enumerate every channel and instead constrain the leak: use the device only briefly, in shielded environments, with constant-time and DPA-resistant primitives, behind multiple physical and procedural layers.</p>",
+        "mathExpressions": ["\\text{covert channels} \\supset \\{\\text{LED, thermal, ultrasonic, magnetometer, fan-speed, screen-glow}\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["side-q25", "side-q26", "side-q27", "side-q28", "side-q29", "side-q30", "side-q31", "side-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "side-05",
+    "topicId": "cs-side-channel",
+    "order": 5,
+    "title": "Microarchitectural Attacks: Spectre, Meltdown, RowHammer",
+    "description": "When CPU performance optimizations become exploitable across processes, VMs, and the kernel boundary",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "side-05-c1",
+        "title": "Speculative Execution: Spectre and Meltdown (2018)",
+        "contentHtml": "<p>In January 2018 the security community was upended by the simultaneous disclosure of <strong>Spectre</strong> and <strong>Meltdown</strong>. Both exploited a feature CPUs had used for 20 years: <strong>speculative execution</strong>. To hide memory latency, modern CPUs guess the outcome of branches and run ahead. If the guess is wrong, the architectural state is rolled back — but the <em>microarchitectural</em> state (caches, branch predictors, TLBs) is not. That residual microarchitectural state was the side channel.</p><p><strong>Meltdown</strong> (CVE-2017-5754, Intel-specific) abused out-of-order execution to read kernel memory from a userspace process. The trick: speculatively dereference a kernel address, use the byte read to index a user-controlled array, then measure cache timing on the array to recover the byte. The privilege check happens at retirement, but the cache is already polluted. <strong>Spectre</strong> (CVE-2017-5753 / 5715) is broader: train the branch predictor to mispredict, slip a speculative read of a victim secret through that mispredict, and exfiltrate via the same cache side channel. Spectre crosses process and even VM boundaries.</p><p>The discovery launched a vulnerability-class explosion: Foreshadow, ZombieLoad, RIDL, MDS, LVI, Retbleed, INCEPTION. Mitigations — KPTI, microcode updates, retpolines, IBRS, LFENCE — slow down workloads measurably. The deeper lesson: <em>microarchitectural state is a system-wide side channel</em>, and the abstraction \"the CPU does what the ISA says\" was always a polite fiction.</p>",
+        "mathExpressions": ["\\text{secret} \\xrightarrow{\\text{speculative load}} \\text{cache state} \\xrightarrow{\\text{Flush+Reload}} \\text{attacker bytes}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-05-c2",
+        "title": "RowHammer: From Read-Only to Bit-Flip",
+        "contentHtml": "<p><strong>RowHammer</strong> (Kim et al., ISCA 2014) is the strangest attack on this list because it is not, strictly, a passive side channel — it lets an attacker <em>actively</em> corrupt memory they do not have permission to write. As DRAM cells shrunk, they became electrically noisy: rapidly activating one DRAM row (\"hammering\") leaks charge to neighboring rows and can flip bits there. An attacker hammering memory inside their own process can flip bits in pages owned by the kernel.</p><p>Project Zero's 2015 followup turned this physics curiosity into a sandbox escape and a privilege-escalation primitive. Subsequent attacks (Drammer, RAMBleed, Half-Double, Blacksmith) have run from JavaScript in a browser, from a VM, and across DDR4 mitigations. RAMBleed (2019) flipped the model again: instead of writing, it <em>reads</em> bits — a row's flip propensity reveals the value in adjacent rows, making RowHammer into a memory-disclosure side channel.</p><p>Mitigations are partial. ECC memory catches single-bit flips but RowHammer can produce multi-bit patterns that defeat ECC. Target Row Refresh (TRR) was implemented in DDR4 but found to be circumventable. DDR5 includes on-die refresh management, which raises the bar but does not categorically close the gap. Like Spectre, RowHammer is a hardware property that software has been forced to defend against without ever being able to fully eliminate.</p>",
+        "mathExpressions": ["\\text{hammer row } r \\Rightarrow P(\\text{bit flip in row } r{\\pm}1) > 0"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "side-05-c3",
+        "title": "Hertzbleed and the Frequency Channel (2022)",
+        "contentHtml": "<p>Just when the field thought it had catalogued the major channels, <strong>Hertzbleed</strong> (Wang et al., USENIX Security 2022) opened a new one: <strong>dynamic frequency scaling</strong>. Modern CPUs vary their clock frequency in response to workload-dependent power and thermal headroom. The frequency they pick depends on which instructions ran and what data those instructions processed.</p><p>The implication is dramatic: even <em>perfectly constant-time code</em> can leak through frequency. If the data-dependent power consumption causes data-dependent frequency throttling, then the wall-clock time of a constant-time algorithm becomes data-dependent again. Hertzbleed used this to extract SIKE post-quantum key-agreement secrets via remote timing — work the SIKE designers had specifically engineered to be constant-time at the instruction level.</p><p>Defenses required protocol-level fixes (eventually a redesign of SIKE, which fell to a different attack shortly after) and engineering changes — disabling frequency boost on cryptographic cores, or running crypto on isolated execution units. Hertzbleed crystallized a sobering pattern across the entire field: <strong>every layer of optimization the hardware adds is a potential side channel, and the security community is in a permanent game of whack-a-mole with chip designers.</strong></p>",
+        "mathExpressions": ["f_{\\text{CPU}}(t) = f(\\text{power}(t),\\, \\text{thermal}) \\Rightarrow t_{\\text{exec}} \\text{ leaks data even when instruction count is constant}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["side-q33", "side-q34", "side-q35", "side-q36", "side-q37", "side-q38", "side-q39", "side-q40"],
+    "puzzleId": null
+  }
+]

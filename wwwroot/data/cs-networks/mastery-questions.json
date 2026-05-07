@@ -1,0 +1,127 @@
+[
+  {
+    "id": "mastery-net-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why does TCP perform poorly over high-latency links with occasional packet loss?",
+    "options": ["TCP uses too much CPU", "TCP retransmissions and congestion control halve the throughput on each loss event", "TCP requires manual tuning per connection", "TCP cannot run on satellite links"],
+    "correctAnswer": "TCP retransmissions and congestion control halve the throughput on each loss event",
+    "explanation": "Classical TCP congestion control treats packet loss as a sign of congestion and reduces the send rate. On lossy high-latency links (satellites, mobile, cross-continent), this kneecaps throughput. BBR and other modern algorithms behave better in these conditions.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-net-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "DNS over HTTPS (DoH) encrypts DNS queries to hide them from on-path observers.",
+    "correctAnswer": "True",
+    "explanation": "Traditional DNS is plaintext UDP, easily snooped. DoH wraps DNS queries in HTTPS to your resolver, denying eavesdroppers visibility into which domains you're looking up. DoT (DNS over TLS) is a similar approach.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-net-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Public logs that record every certificate issued by major CAs, used to detect mis-issuance, are called what?",
+    "correctAnswer": "Certificate Transparency",
+    "acceptableAnswers": ["Certificate Transparency", "CT", "certificate transparency"],
+    "explanation": "Certificate Transparency (CT) logs are append-only public logs of issued certificates. Browsers require certs be in CT logs; domain owners can monitor logs to detect unauthorized issuance.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-net-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each HTTP version to its key innovation:",
+    "pairs": [
+      {"left": "HTTP/1.1", "right": "Persistent connections"},
+      {"left": "HTTP/2", "right": "Multiplexed streams over one TCP connection"},
+      {"left": "HTTP/3", "right": "Runs over QUIC/UDP, no TCP head-of-line blocking"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Each version preserves HTTP semantics while overhauling the wire format. HTTP/3's UDP foundation is the most radical change.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-net-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why might a request to api.example.com from app.example.com still trigger a CORS preflight?",
+    "options": ["Different subdomains are different origins", "All requests trigger preflight", "CORS only matters across protocols", "Same-origin policy is disabled in modern browsers"],
+    "correctAnswer": "Different subdomains are different origins",
+    "explanation": "The origin is (scheme, host, port). app.example.com and api.example.com differ in host, so they are different origins. Cross-origin requests with custom headers or non-simple methods trigger a preflight.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-net-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this firewall reasoning:",
+    "steps": [
+      "I configure my firewall to allow only inbound 80 and 443",
+      "All inbound web traffic is now safe",
+      "Outbound traffic is fully allowed by default",
+      "Therefore my server cannot be compromised over the network",
+      "I do not need to patch web app vulnerabilities"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 is wrong. Allowing 80/443 inbound means HTTP requests reach your application. Application-layer vulnerabilities (SQL injection, XSS, RCE) live ON those allowed ports. A firewall does not protect against vulnerabilities in the services it permits. Patching is essential.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-net-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Post-quantum cryptography aims to remain secure against attacks by sufficiently large quantum computers.",
+    "correctAnswer": "True",
+    "explanation": "Shor's algorithm would break RSA and ECC on a large quantum computer. Post-quantum schemes (lattice-based, hash-based, code-based) are designed to resist quantum attacks. NIST has standardized Kyber and Dilithium.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-net-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which problem does QUIC solve that TCP+TLS does not?",
+    "options": ["Encryption", "Reliable delivery", "Head-of-line blocking when one stream loses a packet", "Address translation"],
+    "correctAnswer": "Head-of-line blocking when one stream loses a packet",
+    "explanation": "TCP delivers a single byte stream. If packet 5 is lost, packets 6, 7, 8 wait — even if they belong to different HTTP streams. QUIC has independent streams, so loss in one doesn't block others.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-net-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of resolving www.example.com via DNS (typical recursive lookup, no cache):",
+    "steps": [
+      "Client asks recursive resolver for www.example.com",
+      "Resolver asks a root server for the .com NS records",
+      "Resolver asks a .com TLD server for example.com NS records",
+      "Resolver asks example.com authoritative server for www.example.com",
+      "Authoritative server returns the A record",
+      "Resolver caches and returns the answer to the client"
+    ],
+    "correctAnswer": null,
+    "explanation": "DNS resolution walks the hierarchy from root to TLD to authoritative. Each level points the resolver toward the next. In practice most lookups hit cache long before reaching the root.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-net-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Which key-exchange algorithm using elliptic curves is the default in TLS 1.3?",
+    "correctAnswer": "X25519",
+    "acceptableAnswers": ["X25519", "x25519", "Curve25519", "ECDH X25519"],
+    "explanation": "X25519 is the modern default ECDH curve in TLS 1.3 and elsewhere. It's fast, side-channel resistant, and avoids many parameter pitfalls of older curves.",
+    "xpReward": 40
+  }
+]

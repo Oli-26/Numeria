@@ -1,0 +1,226 @@
+[
+  {
+    "id": "dim-01",
+    "topicId": "dimensional-analysis",
+    "order": 1,
+    "title": "Base Units and Dimensions",
+    "description": "The seven SI base units and how every other unit is built from them",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "dim-01-c1",
+        "title": "The Seven SI Base Units",
+        "contentHtml": "<p>The International System of Units (SI) is built on seven independent base units. Every measurable physical quantity is expressed in terms of these:</p><ul><li><strong>Metre</strong> (m) — length</li><li><strong>Kilogram</strong> (kg) — mass</li><li><strong>Second</strong> (s) — time</li><li><strong>Ampere</strong> (A) — electric current</li><li><strong>Kelvin</strong> (K) — temperature</li><li><strong>Mole</strong> (mol) — amount of substance</li><li><strong>Candela</strong> (cd) — luminous intensity</li></ul><p>Since 2019, all seven are defined by fixing exact numerical values of fundamental constants (Planck's constant h, the elementary charge e, Boltzmann's constant k, and so on). The metric system is no longer tied to physical artefacts — it is anchored in nature.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-01-c2",
+        "title": "Dimensions vs Units",
+        "contentHtml": "<p>A <strong>unit</strong> (metre, foot, light-year) is a specific scale chosen for a measurement. A <strong>dimension</strong> is the more abstract underlying quantity — length, irrespective of which unit you measure it in.</p><p>Each base unit corresponds to a base dimension, written in square brackets:</p><ul><li>length [L]</li><li>mass [M]</li><li>time [T]</li><li>electric current [I]</li><li>temperature [Θ]</li><li>amount [N]</li><li>luminous intensity [J]</li></ul><p>Every physical quantity has a fixed dimensional formula. Velocity is [L][T]⁻¹; force is [M][L][T]⁻²; energy is [M][L]²[T]⁻². Two quantities can only be added, subtracted, or compared if they share the same dimensions — regardless of the units used to measure them.</p>",
+        "mathExpressions": [
+          "[v] = [L][T]^{-1}",
+          "[F] = [M][L][T]^{-2}",
+          "[E] = [M][L]^{2}[T]^{-2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-01-c3",
+        "title": "Derived Units",
+        "contentHtml": "<p>Most named units are <strong>derived</strong> — combinations of base units, often given a special name for convenience.</p><ul><li><strong>Newton</strong> (N) = kg·m·s⁻² (force).</li><li><strong>Joule</strong> (J) = kg·m²·s⁻² = N·m (energy).</li><li><strong>Watt</strong> (W) = kg·m²·s⁻³ = J·s⁻¹ (power).</li><li><strong>Pascal</strong> (Pa) = kg·m⁻¹·s⁻² = N·m⁻² (pressure).</li><li><strong>Volt</strong> (V) = kg·m²·s⁻³·A⁻¹ (electric potential).</li><li><strong>Ohm</strong> (Ω) = kg·m²·s⁻³·A⁻² (resistance).</li></ul><p>Notice the pattern: derived units are always products of base units raised to integer (occasionally fractional) powers. There is no derived unit involving, say, log(mass).</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "dim-q01",
+      "dim-q02",
+      "dim-q03",
+      "dim-q04",
+      "dim-q05"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "dim-02",
+    "topicId": "dimensional-analysis",
+    "order": 2,
+    "title": "Dimensional Algebra",
+    "description": "Multiplying and combining units — and using it to catch mistakes",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "dim-02-c1",
+        "title": "Multiplying and Dividing Units",
+        "contentHtml": "<p>Units behave like algebraic symbols. They multiply and divide just like ordinary variables, and exponents add normally.</p><p>If a car covers 120 km in 2 h:</p><p style=\"text-align:center\"><em>v = (120 km) / (2 h) = 60 km/h</em></p><p>The unit km/h is the literal quotient of the distance and time units. Convert by substituting:</p><p style=\"text-align:center\"><em>60 km/h × (1000 m / 1 km) × (1 h / 3600 s) = 16.67 m/s</em></p><p>The 'units cancel like fractions' rule is just multiplication and division applied to the dimensional symbols.</p>",
+        "mathExpressions": [
+          "60 \\, \\text{km/h} \\cdot \\frac{1000 \\, \\text{m}}{1 \\, \\text{km}} \\cdot \\frac{1 \\, \\text{h}}{3600 \\, \\text{s}} = 16.67 \\, \\text{m/s}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-02-c2",
+        "title": "The Principle of Dimensional Homogeneity",
+        "contentHtml": "<p>Any equation describing a physical relationship must have the <strong>same dimensions on both sides</strong>. You can never have an equation that says 'mass = energy + length'. This is called <strong>dimensional homogeneity</strong> and it is the single most useful sanity check in all of physics.</p><p>For example, in Newton's second law F = ma:</p><p style=\"text-align:center\"><em>[F] = [M][L][T]⁻² and [m][a] = [M] · [L][T]⁻² = [M][L][T]⁻² ✓</em></p><p>If you ever derive an equation and the dimensions on the two sides do not match, you have made an algebra mistake. Catching it costs nothing; not catching it can cost a Mars probe.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-02-c3",
+        "title": "Functions Only Take Dimensionless Arguments",
+        "contentHtml": "<p>Transcendental functions — sin, cos, exp, log — are defined by Taylor series:</p><p style=\"text-align:center\"><em>e^x = 1 + x + x²/2 + x³/6 + …</em></p><p>Every term must have the same dimensions. Since 1 is dimensionless, x must be dimensionless too — otherwise terms like x and x² would have different dimensions and could not be added. The same applies to log, sin, and any other non-polynomial function.</p><p>Therefore, the argument of any such function must be a <strong>dimensionless ratio</strong>. You never write 'log(time)' but rather 'log(t/t₀)' for some reference time t₀. This is why physical quantities like the time constant in a discharging capacitor appear in expressions of the form e^(−t/τ) — both t and τ are times, so the ratio is dimensionless.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "dim-q06",
+      "dim-q07",
+      "dim-q08",
+      "dim-q09",
+      "dim-q10"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "dim-03",
+    "topicId": "dimensional-analysis",
+    "order": 3,
+    "title": "Deriving Equations from Dimensions",
+    "description": "Solve real physics problems using only units — no calculus required",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "dim-03-c1",
+        "title": "The Period of a Simple Pendulum",
+        "contentHtml": "<p>What variables could the period T of a pendulum depend on? Plausibly: its length ℓ, its mass m, and the gravitational acceleration g. Suppose:</p><p style=\"text-align:center\"><em>T ∝ ℓᵃ mᵇ gᶜ</em></p><p>Equating dimensions on both sides:</p><p style=\"text-align:center\"><em>[T] = [L]ᵃ [M]ᵇ ([L][T]⁻²)ᶜ = [L]^{a+c} [M]^b [T]^{-2c}</em></p><p>Comparing powers: T → −2c = 1, so c = −½. M → b = 0 (mass does not enter!). L → a + c = 0, so a = ½.</p><p>The pendulum period must therefore have the form:</p><p style=\"text-align:center\"><strong><em>T ∝ √(ℓ/g)</em></strong></p><p>The full result T = 2π√(ℓ/g) requires solving the equation of motion to determine the dimensionless prefactor, but the <em>scaling law</em> falls out from dimensions alone — and we learned that the period is independent of mass without ever writing a differential equation.</p>",
+        "mathExpressions": [
+          "T \\propto \\sqrt{\\ell / g}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-03-c2",
+        "title": "Drag on a Sphere at Low Speed",
+        "contentHtml": "<p>What is the drag force F on a sphere of radius r moving slowly through a fluid of viscosity η at speed v?</p><p>Assume F depends on r, v, and η:</p><p style=\"text-align:center\"><em>F ∝ rᵃ vᵇ ηᶜ</em></p><p>Dimensions: [η] = [M][L]⁻¹[T]⁻¹ (viscosity), [v] = [L][T]⁻¹, [r] = [L].</p><p>Setting [F] = [M][L][T]⁻² and matching:</p><ul><li>[M]: c = 1</li><li>[T]: −b − c = −2 → b = 1</li><li>[L]: a + b − c = 1 → a = 1</li></ul><p>So <strong>F ∝ η r v</strong>. The full Stokes formula F = 6π η r v just adds the geometric prefactor 6π. Dimensional analysis got the structure for free.</p>",
+        "mathExpressions": [
+          "F \\propto \\eta\\, r\\, v"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-03-c3",
+        "title": "When Dimensional Analysis Fails",
+        "contentHtml": "<p>Dimensional analysis is powerful but blind to two things:</p><ul><li><strong>Dimensionless prefactors</strong> — the 2π in the pendulum, the 6π in Stokes drag. These come from real geometry/integration and dimensional analysis cannot supply them.</li><li><strong>Dimensionless variables</strong> — angles, Mach numbers, Reynolds numbers. They can appear in any function (like sine of an angle) without breaking dimensional homogeneity, so the answer can secretly depend on them in arbitrary ways.</li></ul><p>The classic warning: trying to compute the energy of a falling raindrop. Naively energy ∝ mgh, but at high speeds drag dominates and the answer involves a dimensionless drag coefficient that depends on Reynolds number — and dimensional analysis alone cannot tell you that.</p><p>Use dimensions to find the <em>form</em>, then experiments or full theory to fill in numerical constants.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "dim-q11",
+      "dim-q12",
+      "dim-q13",
+      "dim-q14",
+      "dim-q15"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "dim-04",
+    "topicId": "dimensional-analysis",
+    "order": 4,
+    "title": "The Buckingham π Theorem",
+    "description": "The formal framework — and dimensionless numbers everywhere",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "dim-04-c1",
+        "title": "Statement of the Theorem",
+        "contentHtml": "<p>The <strong>Buckingham π theorem</strong> (1914) generalises every dimensional argument:</p><p>Suppose a physical relationship involves <em>n</em> variables and uses <em>k</em> independent base dimensions. Then the relationship can always be rewritten in terms of just <strong>n − k</strong> independent dimensionless groups, called π-groups.</p><p>Concretely: if a problem has 7 variables and uses 3 base dimensions (length, mass, time), the answer is fully described by just 7 − 3 = 4 dimensionless quantities. Vast experimental and computational savings come from this — engineers can scan one π-group at a time instead of every variable separately.</p>",
+        "mathExpressions": [
+          "\\text{n variables, k dimensions} \\Rightarrow \\text{n - k dimensionless groups}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-04-c2",
+        "title": "The Reynolds Number",
+        "contentHtml": "<p>The most famous dimensionless group is the <strong>Reynolds number</strong>:</p><p style=\"text-align:center\"><em>Re = ρ v L / η</em></p><p>where ρ is fluid density, v is flow speed, L is a characteristic length scale, and η is dynamic viscosity. Re is the ratio of inertial to viscous forces — entirely dimensionless.</p><p>Two flows are dynamically similar — qualitatively the same — if their Reynolds numbers match, regardless of the specific values of v, L, ρ, η individually. This is why model-aircraft tests in wind tunnels can predict full-size aircraft behaviour: as long as the model and full-scale flows share the same Re, they share the same physics.</p><p>At Re &lt; ~1, flow is dominated by viscosity and is laminar; at Re &gt; ~10⁵, inertia dominates and flow is turbulent. The dimensionless number predicts the regime — even before solving Navier-Stokes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-04-c3",
+        "title": "A Zoo of Dimensionless Numbers",
+        "contentHtml": "<p>Every branch of physics has its own π-groups:</p><ul><li><strong>Mach number</strong> Ma = v/c — flow speed relative to the speed of sound. Ma &lt; 1 subsonic, Ma &gt; 1 supersonic.</li><li><strong>Froude number</strong> Fr = v/√(gL) — ship hull speed relative to gravity-wave speed.</li><li><strong>Prandtl number</strong> Pr = ν/α — viscous to thermal diffusivity in heat transfer.</li><li><strong>Strouhal number</strong> St = fL/v — dimensionless oscillation frequency in vortex shedding.</li><li><strong>Knudsen number</strong> Kn = λ/L — mean free path versus length scale; sets when continuum mechanics fails.</li><li><strong>Fine-structure constant</strong> α ≈ 1/137 — strength of electromagnetism, dimensionless and universal.</li></ul><p>Dimensionless numbers are how physicists and engineers compress complicated systems into a handful of meaningful ratios — the heart of similitude, scaling, and modelling.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "dim-q16",
+      "dim-q17",
+      "dim-q18",
+      "dim-q19",
+      "dim-q20"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "dim-05",
+    "topicId": "dimensional-analysis",
+    "order": 5,
+    "title": "Pitfalls and Famous Lessons",
+    "description": "When the units fight back — and what they have taught us",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "dim-05-c1",
+        "title": "The Mars Climate Orbiter",
+        "contentHtml": "<p>In September 1999 the <strong>Mars Climate Orbiter</strong> burned up in the Martian atmosphere because one team had encoded thrust impulses in pound-seconds (imperial) while the navigation software expected newton-seconds (metric). The factor of 4.45 between them, accumulated over months of trajectory corrections, sent the spacecraft 100 km too close to the planet.</p><p>The probe — a $327 million NASA-Lockheed mission — was lost on the spot. The inquiry blamed inadequate end-to-end checking of unit conventions across team boundaries. The case became a textbook example of why mixing unit systems is not just untidy but operationally catastrophic.</p><p>Modern code increasingly uses 'units libraries' that attach a dimensional tag to every numeric quantity at compile time, so a unit mismatch is caught before runtime — the dimensional-analysis principle baked into software.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-05-c2",
+        "title": "Energy Levels and the Hydrogen Atom",
+        "contentHtml": "<p>Dimensional analysis can guess the right answer in quantum mechanics with no quantum mechanics. The energy scale of a bound electron in a hydrogen atom must be built from the electron mass m_e, the elementary charge e, the permittivity of free space ε₀, and ħ:</p><p>The unique combination of these constants with units of energy is:</p><p style=\"text-align:center\"><em>E ~ m_e e⁴ / (ħ² ε₀²) ≈ 27.2 eV</em></p><p>This is the <strong>Hartree energy</strong>. The Bohr model and the full Schrödinger calculation confirm that hydrogen's ground-state binding energy is exactly half this — 13.6 eV — and excited states are simple fractions of that. Dimensional analysis got the order of magnitude right with no quantum theory at all.</p>",
+        "mathExpressions": [
+          "E_H = \\frac{m_e e^4}{(4\\pi\\varepsilon_0)^2 \\hbar^2} \\approx 27.2 \\, \\text{eV}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "dim-05-c3",
+        "title": "Tips for Practical Use",
+        "contentHtml": "<p>Habits that prevent unit disasters:</p><ul><li>Always carry units through every calculation — don't strip them at the start and put them back at the end.</li><li>Check the dimensions of any final result. If a 'distance' has units of (length·time), look for the bug.</li><li>For numerical estimates, plug in SI everywhere; convert only at the final step.</li><li>If a problem feels intractable, list the variables and base dimensions involved and write down the dimensionless groups using Buckingham. Often the structure of the answer becomes obvious.</li><li>Watch for hidden dimensions: torque is N·m and energy is also N·m, but they are <em>not</em> the same physically — torque is a vector cross product. Dimensions agree but contexts differ.</li><li>Logarithms, exponentials, and trig functions only ever take dimensionless arguments. If you find log(distance), look for a missing reference scale.</li></ul><p>Treated seriously, units are the cheapest and most reliable form of error correction in physics and engineering.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "dim-q21",
+      "dim-q22",
+      "dim-q23",
+      "dim-q24",
+      "dim-q25"
+    ],
+    "puzzleId": null
+  }
+]

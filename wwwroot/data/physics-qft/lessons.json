@@ -1,0 +1,482 @@
+[
+  {
+    "id": "qft-01",
+    "topicId": "physics-qft",
+    "order": 1,
+    "title": "Why Fields? From Particles to Operators",
+    "description": "Reconciling quantum mechanics with special relativity demands fields, not wavefunctions",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "qft-01-c1",
+        "title": "The Failure of Single-Particle Relativistic QM",
+        "contentHtml": "<p>Non-relativistic quantum mechanics treats particle number as fixed: the Schrödinger equation evolves a wavefunction <code>ψ(x, t)</code> over a fixed configuration space. Combining quantum mechanics with special relativity breaks this picture. Energies above <code>2mc²</code> can produce particle–antiparticle pairs, so any consistent theory must allow particle number to <strong>change</strong>.</p><p>Two early attempts illustrate the problem. The <strong>Klein–Gordon equation</strong>, <code>(∂² + m²)φ = 0</code>, admits negative-energy solutions and a charge density that isn't positive-definite — fatal as a probability density. The <strong>Dirac equation</strong> resolves the spinor issue and gives positive probabilities, but its negative-energy 'sea' still implies an infinite reservoir of particles.</p><p>The resolution is radical: stop treating <code>φ</code> or <code>ψ</code> as a single-particle wavefunction. Promote it instead to an <strong>operator-valued field</strong> on spacetime that creates and annihilates quanta. The Hilbert space is then Fock space — a direct sum over n-particle sectors. <strong>QFT is what you get when you insist on locality, Lorentz invariance, and unitarity simultaneously</strong>; nothing less can hold the structure together.</p>",
+        "mathExpressions": [
+          "(\\partial_\\mu \\partial^\\mu + m^2)\\phi(x) = 0",
+          "(i\\gamma^\\mu \\partial_\\mu - m)\\psi(x) = 0",
+          "\\mathcal{H} = \\bigoplus_{n=0}^{\\infty} \\mathcal{H}_n \\quad \\text{(Fock space)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-01-c2",
+        "title": "Fields as Continuum Oscillators",
+        "contentHtml": "<p>The cleanest way to motivate field quantization is to imagine a chain of coupled harmonic oscillators and take the continuum limit. The discrete Hamiltonian <code>H = Σ p_i²/2m + ½k(q_{i+1} − q_i)²</code> becomes, as lattice spacing goes to zero, a free scalar field theory with Lagrangian density <code>ℒ = ½(∂φ)² − ½m²φ²</code>.</p><p>Each Fourier mode <code>φ_k(t)</code> is itself a quantum harmonic oscillator, with creation and annihilation operators <code>a_k†, a_k</code>. The vacuum <code>|0⟩</code> is annihilated by every <code>a_k</code>; one-particle states <code>|k⟩ = a_k†|0⟩</code> have momentum <code>k</code> and energy <code>ω_k = √(k² + m²)</code>. Multi-particle states are tensor products of single-mode excitations.</p><p>This <strong>oscillator picture</strong> is the entire conceptual core of free QFT. Particles are not lumps of substance but discrete quanta of field oscillation, like phonons in a crystal. The infinite zero-point energy <code>½Σ_k ω_k</code> is our first sign of trouble — the source of cosmological-constant headaches and a foreshadowing of the divergences that pervade interacting QFT.</p>",
+        "mathExpressions": [
+          "\\mathcal{L} = \\tfrac{1}{2}(\\partial_\\mu \\phi)(\\partial^\\mu \\phi) - \\tfrac{1}{2} m^2 \\phi^2",
+          "\\phi(x) = \\int \\frac{d^3k}{(2\\pi)^3 \\, 2\\omega_k} \\left( a_k e^{-ik\\cdot x} + a_k^{\\dagger} e^{+ik\\cdot x} \\right)",
+          "[a_k, a_{k'}^{\\dagger}] = (2\\pi)^3 (2\\omega_k) \\, \\delta^3(\\vec{k} - \\vec{k}')"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-01-c3",
+        "title": "Locality, Causality, and the Spin–Statistics Connection",
+        "contentHtml": "<p>A Lorentz-invariant quantum theory must respect <strong>microcausality</strong>: operators at spacelike separation must commute (or anticommute), so measurements at one event cannot influence another outside its lightcone. For a free scalar field, <code>[φ(x), φ(y)] = 0</code> whenever <code>(x − y)² &lt; 0</code>. This is not optional — it is what 'no faster-than-light signaling' means at the operator level.</p><p>Imposing microcausality together with positivity of energy forces a startling rigidity on which fields can describe which particles. Integer-spin fields must be quantized with <strong>commutators</strong> (Bose–Einstein statistics); half-integer-spin fields must be quantized with <strong>anticommutators</strong> (Fermi–Dirac statistics). Try the wrong choice and either causality or positive-definite norms collapse. This is the <strong>spin–statistics theorem</strong> due to Fierz and Pauli.</p><p>Antiparticles are then forced upon us. A real scalar field has <code>φ = φ†</code> and creates its own antiparticle (it <em>is</em> its antiparticle, like the π⁰). A complex scalar has separate <code>a, b†</code> operators and describes a particle distinct from its antiparticle (like a charged pion). Causality requires that 'particle goes from x to y' and 'antiparticle goes from y to x' interfere coherently — this is why Feynman propagators sum both time orderings.</p>",
+        "mathExpressions": [
+          "[\\phi(x), \\phi(y)] = 0 \\quad \\text{for } (x-y)^2 < 0",
+          "\\{\\psi_\\alpha(x), \\psi_\\beta^{\\dagger}(y)\\} = \\delta_{\\alpha\\beta} \\, \\delta^3(\\vec{x}-\\vec{y}) \\text{ at equal time}",
+          "\\text{integer spin} \\to \\text{commutators}; \\quad \\text{half-integer spin} \\to \\text{anticommutators}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q01", "qft-q02", "qft-q03", "qft-q04", "qft-q05", "qft-q06", "qft-q07", "qft-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-02",
+    "topicId": "physics-qft",
+    "order": 2,
+    "title": "Klein–Gordon and Dirac Fields",
+    "description": "Classical relativistic field theories ready for canonical quantization",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "qft-02-c1",
+        "title": "The Klein–Gordon Field",
+        "contentHtml": "<p>The simplest relativistic field is a <strong>real scalar</strong> obeying <code>(□ + m²)φ = 0</code>. Its Lagrangian density <code>ℒ = ½(∂_μ φ)(∂^μ φ) − ½m²φ²</code> is manifestly Lorentz-invariant; the conjugate momentum is <code>π = ∂ℒ/∂(∂_t φ) = ∂_t φ</code>. Plugging into the Hamiltonian gives the familiar <code>H = ½∫d³x [π² + (∇φ)² + m²φ²]</code>.</p><p>Solving in momentum space, every Fourier mode oscillates at <code>ω_k = √(k² + m²)</code>. The general field decomposes as <code>φ(x) = ∫(d³k/(2π)³)(1/2ω_k)[a_k e^{−ik·x} + a_k† e^{+ik·x}]</code>. The <strong>two terms with opposite frequency signs</strong> are not separate solutions to be discarded — both are required for a Hermitian field, and after quantization the negative-frequency piece becomes the antiparticle creation operator.</p><p>A complex scalar <code>φ = (φ_1 + iφ_2)/√2</code> doubles the degrees of freedom and introduces a global U(1) symmetry <code>φ → e^{iα}φ</code>, whose conserved Noether charge counts particles minus antiparticles. <strong>Charged scalars</strong> like the kaon doublet, the Higgs field, or composite pions are physically realized examples; even though no fundamental scalar charged particle has been observed, complex scalar fields are central to the Standard Model's symmetry-breaking sector.</p>",
+        "mathExpressions": [
+          "\\mathcal{L} = \\tfrac{1}{2}(\\partial_\\mu \\phi)^2 - \\tfrac{1}{2} m^2 \\phi^2",
+          "j^\\mu = i(\\phi^* \\partial^\\mu \\phi - \\phi \\partial^\\mu \\phi^*) \\quad \\partial_\\mu j^\\mu = 0",
+          "\\omega_k = \\sqrt{\\vec{k}^2 + m^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-02-c2",
+        "title": "The Dirac Equation and Spinors",
+        "contentHtml": "<p>Dirac sought a relativistic equation <strong>linear</strong> in derivatives whose square would yield Klein–Gordon. The result is <code>(iγ^μ ∂_μ − m)ψ = 0</code>, where the four <code>γ^μ</code> matrices satisfy the Clifford algebra <code>{γ^μ, γ^ν} = 2η^{μν}</code>. The smallest representation is 4×4, so <code>ψ</code> is a four-component <strong>Dirac spinor</strong> — not a scalar wavefunction.</p><p>The Dirac Lagrangian <code>ℒ = ψ̄(iγ^μ ∂_μ − m)ψ</code>, where <code>ψ̄ = ψ†γ⁰</code>, is Hermitian and Lorentz-invariant under the spinor representation <code>ψ → S(Λ)ψ</code> with <code>S(Λ) = exp(−i ω_{μν} S^{μν}/2)</code>, <code>S^{μν} = (i/4)[γ^μ, γ^ν]</code>. The field decomposes into four plane-wave solutions: two positive-energy spinors <code>u^s(p)</code> with spin up/down, and two negative-energy <code>v^s(p)</code> reinterpreted as antiparticle creation amplitudes.</p><p>Concrete payoffs: the gyromagnetic ratio falls out as <code>g = 2</code> automatically — a result you'd struggle to get from non-relativistic QM by hand. The <strong>anomalous magnetic moment</strong> of the electron, <code>(g − 2)/2 ≈ α/(2π) ≈ 0.00116</code>, is the radiative correction first computed by Schwinger in 1948 and is now measured and predicted to twelve significant figures, making QED arguably the most precisely tested theory in physics.</p>",
+        "mathExpressions": [
+          "(i\\gamma^\\mu \\partial_\\mu - m)\\psi = 0",
+          "\\{\\gamma^\\mu, \\gamma^\\nu\\} = 2\\eta^{\\mu\\nu} \\mathbb{1}",
+          "\\mathcal{L}_{\\text{Dirac}} = \\bar{\\psi}(i\\gamma^\\mu \\partial_\\mu - m)\\psi"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-02-c3",
+        "title": "Symmetries and Noether Currents",
+        "contentHtml": "<p><strong>Noether's theorem</strong> ties continuous symmetries of the action to conserved currents. For each one-parameter family <code>φ → φ + ε δφ</code> leaving <code>ℒ</code> invariant up to a total derivative, there is a current <code>j^μ = (∂ℒ/∂(∂_μ φ)) δφ − K^μ</code> obeying <code>∂_μ j^μ = 0</code> on shell. The integrated charge <code>Q = ∫d³x j⁰</code> is conserved.</p><p>Spacetime translations give the <strong>stress–energy tensor</strong> <code>T^{μν}</code> with conserved energy and momentum. Lorentz transformations give angular momentum. The U(1) phase rotation of a complex scalar gives <code>j^μ = i(φ*∂^μφ − φ∂^μφ*)</code>, the conserved electric current that will couple to the photon. For Dirac fermions, the same logic gives <code>j^μ = ψ̄γ^μψ</code>.</p><p>Two distinctions matter for QFT later. <strong>Internal symmetries</strong> (acting in field-component space) can be global or gauged; gauging requires introducing a connection field. <strong>Spontaneously broken</strong> symmetries leave the Lagrangian invariant but not the vacuum, producing massless Goldstone bosons or — when the broken symmetry is local — massive gauge bosons via the Higgs mechanism. Anomalies are the third subtle category: classical symmetries that fail to survive quantization, producing physical effects like the π⁰ → γγ rate.</p>",
+        "mathExpressions": [
+          "\\partial_\\mu j^\\mu = 0 \\quad \\text{(Noether current)}",
+          "T^{\\mu\\nu} = \\frac{\\partial \\mathcal{L}}{\\partial(\\partial_\\mu \\phi)} \\partial^\\nu \\phi - \\eta^{\\mu\\nu} \\mathcal{L}",
+          "Q = \\int d^3x \\, j^0(x), \\quad \\frac{dQ}{dt} = 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q09", "qft-q10", "qft-q11", "qft-q12", "qft-q13", "qft-q14", "qft-q15", "qft-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-03",
+    "topicId": "physics-qft",
+    "order": 3,
+    "title": "Canonical Quantization of Free Fields",
+    "description": "Equal-time commutators, mode expansions, propagators, and Wick rotation",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "qft-03-c1",
+        "title": "Equal-Time Commutators and the Mode Expansion",
+        "contentHtml": "<p><strong>Canonical quantization</strong> promotes the classical Poisson bracket <code>{φ(x), π(y)} = δ³(x − y)</code> to the equal-time commutator <code>[φ(x⃗, t), π(y⃗, t)] = iδ³(x⃗ − y⃗)</code>. All other equal-time commutators vanish. This single postulate, combined with the Heisenberg equations of motion, uniquely determines the quantum theory of the free Klein–Gordon field.</p><p>Substituting the mode expansion <code>φ(x) = ∫(d³k/(2π)³)(1/2ω_k)[a_k e^{−ikx} + a_k†e^{+ikx}]</code> into the canonical commutator translates it into <code>[a_k, a_{k'}†] = (2π)³(2ω_k)δ³(k⃗ − k⃗')</code>. The Hamiltonian becomes <code>H = ∫(d³k/(2π)³)(1/2ω_k) ω_k a_k† a_k</code> after dropping a divergent <strong>zero-point energy</strong> via normal ordering.</p><p>Normal ordering, denoted <code>:O:</code>, places all annihilation operators to the right of all creation operators. It is a prescription for sweeping vacuum-energy infinities under the rug — perfectly safe in flat-space scattering but morally dubious when gravity (which couples to all forms of energy) is on the table. The cosmological constant problem is, in part, the question of how to take the discarded zero-point energy seriously.</p>",
+        "mathExpressions": [
+          "[\\phi(\\vec{x}, t), \\pi(\\vec{y}, t)] = i\\delta^3(\\vec{x}-\\vec{y})",
+          "H = \\int \\frac{d^3k}{(2\\pi)^3} \\, \\omega_k \\, a_k^{\\dagger} a_k + (\\text{zero-point})",
+          ":a_k a_{k'}^{\\dagger}: = a_{k'}^{\\dagger} a_k"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-03-c2",
+        "title": "The Feynman Propagator",
+        "contentHtml": "<p>The central object of perturbative QFT is the <strong>Feynman propagator</strong>, the time-ordered two-point function <code>D_F(x − y) = ⟨0|T φ(x)φ(y)|0⟩</code>. The time-ordering symbol <code>T</code> places the later operator on the left. For a free scalar, the result in momentum space is <code>D_F(p) = i/(p² − m² + iε)</code>.</p><p>The famous <strong>+iε prescription</strong> tells you how to navigate the poles at <code>p⁰ = ±ω_k</code> on the contour integral over <code>p⁰</code>. Closing the contour above retrieves negative-frequency (antiparticle) propagation; below retrieves positive-frequency. The propagator therefore encodes both: a particle moving forward in time from y to x, and an antiparticle moving from x to y. Stueckelberg and Feynman gave this its causal interpretation.</p><p>Position-space evaluation gives a Bessel-function form decaying like <code>e^{−mr}/r</code> at spacelike separation — the <strong>Yukawa potential</strong> in disguise. This is why exchanging a massive particle produces a short-ranged interaction and exchanging a massless one (the photon) produces the <code>1/r</code> Coulomb law. The propagator is literally the amplitude for a virtual particle to bridge two interaction vertices.</p>",
+        "mathExpressions": [
+          "D_F(x-y) = \\langle 0 | T\\, \\phi(x)\\phi(y) | 0 \\rangle",
+          "D_F(p) = \\frac{i}{p^2 - m^2 + i\\epsilon}",
+          "V_{\\text{Yukawa}}(r) = -\\frac{g^2}{4\\pi} \\frac{e^{-mr}}{r}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-03-c3",
+        "title": "Wick Rotation and the Euclidean Path",
+        "contentHtml": "<p>Many oscillatory Minkowski integrals become well-defined <strong>Gaussian</strong> integrals after rotating <code>t → −iτ</code>. This <strong>Wick rotation</strong> converts the Lorentzian metric <code>η_{μν} = diag(+, −, −, −)</code> into the Euclidean <code>δ_{μν}</code>, turning <code>e^{iS}</code> into <code>e^{−S_E}</code> with a positive-definite action. The Feynman propagator becomes <code>1/(p_E² + m²)</code> — no <code>iε</code>, no contour subtleties.</p><p>The Euclidean theory is mathematically more comfortable: convergent path integrals, well-defined Schwinger functions, rigorous lattice formulations. The <strong>Osterwalder–Schrader axioms</strong> tell you exactly when a Euclidean theory analytically continues back to a sensible Minkowski quantum field theory. Nearly all rigorous results in constructive QFT are obtained Euclidean-first.</p><p>The same trick anchors thermal field theory: a finite-temperature partition function <code>Z = Tr e^{−βH}</code> has the same structure as a Euclidean path integral on a circle of circumference <code>β = 1/(k_B T)</code>. Bosons get periodic boundary conditions, fermions antiperiodic. Hawking temperature, the Unruh effect, and lattice-QCD thermodynamics all emerge from this single observation: <strong>imaginary time = inverse temperature</strong>.</p>",
+        "mathExpressions": [
+          "t \\to -i\\tau \\implies e^{iS} \\to e^{-S_E}",
+          "D_E(p_E) = \\frac{1}{p_E^2 + m^2}",
+          "Z(\\beta) = \\text{Tr}\\, e^{-\\beta H} = \\int_{\\phi(\\beta) = \\pm\\phi(0)} \\mathcal{D}\\phi \\, e^{-S_E[\\phi]}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q17", "qft-q18", "qft-q19", "qft-q20", "qft-q21", "qft-q22", "qft-q23", "qft-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-04",
+    "topicId": "physics-qft",
+    "order": 4,
+    "title": "The Path Integral Formulation",
+    "description": "Sum over field histories, generating functionals, and connected diagrams",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "qft-04-c1",
+        "title": "From Quantum Mechanics to the Functional Integral",
+        "contentHtml": "<p>Feynman's reformulation of quantum mechanics expresses transition amplitudes as a sum over all paths weighted by <code>e^{iS/ℏ}</code>. In QFT the analogue is a <strong>functional integral over field configurations</strong>: the vacuum-to-vacuum amplitude in the presence of a source <code>J(x)</code> is <code>Z[J] = ∫ Dφ exp(iS[φ] + i∫d⁴x J(x)φ(x))</code>.</p><p>The classical equations of motion emerge as the <strong>stationary-phase</strong> condition <code>δS/δφ = 0</code>; quantum corrections are organized in powers of <code>ℏ</code> by Gaussian integration around the classical trajectory. The path-integral viewpoint makes spacetime symmetries manifest, treats gauge symmetries naturally (with the Faddeev–Popov procedure), and underpins lattice methods, the Wilsonian renormalization group, and instanton calculations.</p><p>The price: the measure <code>Dφ</code> is hard to define rigorously in Minkowski signature. Wick rotation rescues you for most calculations. The reward is conceptual unity: <strong>statistical mechanics, condensed matter, and quantum gravity all share the same Z[J] machinery</strong>. The transfer matrix of a 2D Ising model, the partition function of a critical fluid, and the generating functional of QED are mathematically the same object, evaluated in different limits.</p>",
+        "mathExpressions": [
+          "Z[J] = \\int \\mathcal{D}\\phi \\; \\exp\\left(iS[\\phi] + i\\int d^4x \\, J(x)\\phi(x)\\right)",
+          "\\langle 0 | T\\, \\phi(x_1) \\cdots \\phi(x_n) | 0 \\rangle = \\frac{1}{i^n} \\frac{\\delta^n Z[J]}{\\delta J(x_1) \\cdots \\delta J(x_n)}\\bigg|_{J=0} / Z[0]",
+          "\\frac{\\delta S}{\\delta \\phi(x)} = 0 \\quad \\text{(classical EOM as stationary phase)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-04-c2",
+        "title": "Generating Functionals and Connected Diagrams",
+        "contentHtml": "<p>Three generating functionals, related by Legendre transforms, organize correlation functions. <strong>Z[J]</strong> generates all time-ordered Green's functions. <strong>W[J] = −i log Z[J]</strong> generates only <strong>connected</strong> Green's functions — the linked-cluster theorem says disconnected diagrams exponentiate, so taking a logarithm strips them off cleanly. <strong>Γ[φ_cl] = W[J] − ∫Jφ_cl</strong> generates <strong>one-particle-irreducible (1PI)</strong> vertex functions, the building blocks of any amputated amplitude.</p><p>Why this matters: physical observables — scattering cross sections, bound-state energies, decay rates — depend only on connected, amputated diagrams. The hierarchy <code>Z → W → Γ</code> systematically discards redundancy. Once you know the 1PI effective action <code>Γ</code>, you can read off masses (poles), couplings (vertices), and quantum corrections (loop expansion of Γ around the classical action) in one stroke.</p><p><strong>The effective action</strong> <code>Γ[φ_cl]</code> contains all quantum information. Its derivative gives the quantum equation of motion <code>δΓ/δφ_cl = −J</code>; its second derivative gives the inverse propagator including all self-energy corrections; its higher derivatives give renormalized vertices. Modern QFT texts (Peskin–Schroeder, Weinberg, Schwartz) treat Γ as the central object — it cleans up the Wilsonian RG, makes spontaneous symmetry breaking a statement about the convexity of <code>Γ</code>, and connects directly to the variational ground state.</p>",
+        "mathExpressions": [
+          "W[J] = -i \\log Z[J]",
+          "\\Gamma[\\phi_{cl}] = W[J] - \\int d^4x \\, J(x)\\phi_{cl}(x), \\quad \\phi_{cl} = \\frac{\\delta W}{\\delta J}",
+          "\\frac{\\delta \\Gamma}{\\delta \\phi_{cl}(x)} = -J(x)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-04-c3",
+        "title": "Grassmann Variables and Fermionic Path Integrals",
+        "contentHtml": "<p>Bosonic path integrals integrate over ordinary commuting numbers. <strong>Fermionic</strong> path integrals require <strong>Grassmann variables</strong>: anticommuting numbers satisfying <code>{θ, η} = 0</code>, hence <code>θ² = 0</code>. Berezin integration is defined formally by <code>∫dθ = 0</code>, <code>∫dθ θ = 1</code>. The Gaussian Grassmann integral gives a <strong>determinant</strong> rather than the inverse-square-root determinant you'd get bosonically: <code>∫DψDψ̄ exp(−ψ̄Mψ) = det M</code>.</p><p>Physical consequence: closed fermion loops contribute a <strong>minus sign</strong> in Feynman diagrams. This single sign is the diagrammatic embodiment of Pauli exclusion and is responsible for the stability of matter, asymptotic freedom in QCD, and the cancellation between fermionic and bosonic contributions in supersymmetry.</p><p>The path-integral viewpoint also clarifies <strong>fermion doubling</strong> on the lattice: naive discretizations of <code>γ^μ ∂_μ</code> produce 2⁴ species instead of one (the Nielsen–Ninomiya theorem proves this is unavoidable under chiral symmetry), forcing Wilson, staggered, or domain-wall fermion constructions in lattice QCD. Grassmann variables are also the natural framework for Berry phases, supersymmetric quantum mechanics, and the BRST quantization of gauge theories — anywhere a <code>−1</code> from a closed fermion loop carries physical content.</p>",
+        "mathExpressions": [
+          "\\{\\theta_i, \\theta_j\\} = 0 \\implies \\theta_i^2 = 0",
+          "\\int d\\theta = 0, \\quad \\int d\\theta \\, \\theta = 1",
+          "\\int \\mathcal{D}\\bar{\\psi} \\mathcal{D}\\psi \\; e^{-\\bar{\\psi} M \\psi} = \\det M"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q25", "qft-q26", "qft-q27", "qft-q28", "qft-q29", "qft-q30", "qft-q31", "qft-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-05",
+    "topicId": "physics-qft",
+    "order": 5,
+    "title": "Interactions, Wick's Theorem, and Feynman Rules",
+    "description": "Perturbation theory, contractions, and the diagrammatic dictionary",
+    "xpReward": 135,
+    "concepts": [
+      {
+        "id": "qft-05-c1",
+        "title": "The Interaction Picture and Dyson Expansion",
+        "contentHtml": "<p>For interacting theories like <code>ℒ = ½(∂φ)² − ½m²φ² − (λ/4!)φ⁴</code>, an exact solution is hopeless. <strong>Perturbation theory</strong> splits <code>H = H₀ + H_int</code> and works in the <strong>interaction picture</strong> where free fields evolve with <code>H₀</code> and states evolve with <code>H_int</code>. The S-matrix is then the time-ordered exponential <code>S = T exp(−i∫d⁴x ℋ_int)</code>, expanded order-by-order in the coupling.</p><p>The leading <strong>Dyson expansion</strong> for an n-point function is <code>⟨T φ(x_1)…φ(x_n) e^{−i∫H_int}⟩_0</code>, where <code>⟨…⟩_0</code> denotes free-vacuum expectation. Every term is a free-field correlator that we know how to compute. The price of perturbation theory is exactly that the answer is an <strong>asymptotic series</strong> — typically Borel-summable in scalar theories, often divergent in QED at the n! level (Dyson's argument), and hopelessly so in QCD without non-perturbative input.</p><p>For QED at electron-photon couplings <code>α ≈ 1/137</code>, the series is so slowly divergent that ten loops still gives staggering precision: <code>(g − 2)/2</code> is computed analytically through five-loop, agreeing with experiment to better than one part in 10¹⁰. But the same series, summed naively beyond <code>1/α ≈ 137</code> terms, would diverge — a reminder that perturbation theory is a tool, not a definition of the theory.</p>",
+        "mathExpressions": [
+          "S = T \\exp\\left(-i \\int d^4x \\; \\mathcal{H}_{int}(x)\\right)",
+          "\\langle f | S | i \\rangle = \\sum_{n=0}^{\\infty} \\frac{(-i)^n}{n!} \\int d^4x_1 \\cdots d^4x_n \\, \\langle f | T\\, \\mathcal{H}_{int}(x_1) \\cdots \\mathcal{H}_{int}(x_n) | i \\rangle",
+          "\\mathcal{L}_{\\phi^4} = \\tfrac{1}{2}(\\partial\\phi)^2 - \\tfrac{1}{2} m^2 \\phi^2 - \\tfrac{\\lambda}{4!}\\phi^4"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-05-c2",
+        "title": "Wick's Theorem: Reducing T-Products to Contractions",
+        "contentHtml": "<p>Computing <code>⟨0|T φ(x_1)φ(x_2)…φ(x_n)|0⟩</code> directly is hopeless without an organizing principle. <strong>Wick's theorem</strong> states that any time-ordered product equals the sum over all <strong>complete pairings</strong> of fields into propagators (called 'contractions'), plus a normal-ordered remainder that vanishes in vacuum expectation values.</p><p>For four scalar fields: <code>⟨0|T φ_1 φ_2 φ_3 φ_4|0⟩ = D_F(x_1−x_2)D_F(x_3−x_4) + D_F(x_1−x_3)D_F(x_2−x_4) + D_F(x_1−x_4)D_F(x_2−x_3)</code> — three terms, one for each way to pair four points. For 2n fields you get <code>(2n−1)!! = (2n)!/(2ⁿ n!)</code> terms, the double-factorial of contractions.</p><p>This is where <strong>Feynman diagrams</strong> are born. Each contraction is drawn as a line between two points. Each interaction vertex from <code>ℋ_int</code> contributes a fixed combinatorial factor. The resulting picture is unambiguous: <strong>diagrams are bookkeeping, not metaphors</strong>. Each line is a propagator, each vertex a coupling, each external leg a particle entering or leaving. Symmetry factors (1/2 for self-loops, 1/n! for n identical vertices) are determined by counting graph automorphisms, and getting these right is the most error-prone part of any perturbative calculation.</p>",
+        "mathExpressions": [
+          "T\\,\\phi(x_1)\\phi(x_2) = :\\phi(x_1)\\phi(x_2): + D_F(x_1-x_2)",
+          "\\langle 0 | T\\,\\phi(x_1)\\cdots\\phi(x_{2n}) | 0 \\rangle = \\sum_{\\text{pairings}} \\prod_{\\text{pairs}(i,j)} D_F(x_i - x_j)",
+          "(2n-1)!! = \\frac{(2n)!}{2^n \\, n!}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-05-c3",
+        "title": "Feynman Rules and Cross Sections",
+        "contentHtml": "<p>The output of Wick's theorem is a set of <strong>Feynman rules</strong>: a recipe to translate any diagram directly into an algebraic expression. For QED the rules are: <code>−ieγ^μ</code> at each electron-photon vertex, <code>i(p̸ + m)/(p² − m² + iε)</code> for each electron internal line, <code>−iη^{μν}/(k² + iε)</code> for each photon internal line in Feynman gauge, <code>u(p)</code>, <code>v(p)</code>, <code>ε^μ(k)</code> for external legs. Multiply, integrate over loop momenta, divide by symmetry factors.</p><p>The amputated amplitude <code>iℳ</code> feeds into the <strong>Lehmann–Symanzik–Zimmermann (LSZ) reduction formula</strong>, which connects time-ordered correlators to S-matrix elements. The differential cross section for 2 → n scattering is <code>dσ = |ℳ|²/(2E_A 2E_B |v_A − v_B|) × dΠ_n</code>, with <code>dΠ_n</code> the n-body Lorentz-invariant phase space.</p><p>Concrete example: <strong>e⁻e⁺ → μ⁻μ⁺</strong> in the high-energy limit. One s-channel photon exchange. Squared matrix element averaged over initial spins: <code>|ℳ|² = (e⁴/s²)(t² + u²)</code>. Integrated total cross section: <code>σ = 4πα²/(3s)</code>. This 1/s falloff is the signature of a contact interaction at fixed angle and is one of the cleanest QED predictions tested at every collider since SPEAR — a textbook example where theory and experiment agree at the percent level over five decades of s.</p>",
+        "mathExpressions": [
+          "i\\mathcal{M}(e^-e^+ \\to \\mu^-\\mu^+) \\sim (-ie)^2 \\bar{v}(p_2)\\gamma^\\mu u(p_1) \\frac{-i\\eta_{\\mu\\nu}}{s} \\bar{u}(k_1)\\gamma^\\nu v(k_2)",
+          "\\sigma(e^-e^+ \\to \\mu^-\\mu^+) = \\frac{4\\pi \\alpha^2}{3s}",
+          "d\\sigma = \\frac{|\\mathcal{M}|^2}{F} \\, d\\Pi_n, \\quad F = 4\\sqrt{(p_A \\cdot p_B)^2 - m_A^2 m_B^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q33", "qft-q34", "qft-q35", "qft-q36", "qft-q37", "qft-q38", "qft-q39", "qft-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-06",
+    "topicId": "physics-qft",
+    "order": 6,
+    "title": "Quantum Electrodynamics",
+    "description": "Vertex, propagator, and the canonical scattering processes",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "qft-06-c1",
+        "title": "The QED Lagrangian and Gauge Fixing",
+        "contentHtml": "<p>QED is the gauge theory of a Dirac fermion coupled to a U(1) gauge field. The Lagrangian is <code>ℒ_QED = ψ̄(iγ^μ D_μ − m)ψ − ¼F_{μν}F^{μν}</code> with covariant derivative <code>D_μ = ∂_μ + ieA_μ</code> and field strength <code>F_{μν} = ∂_μA_ν − ∂_νA_μ</code>. The minimal-coupling prescription <code>∂ → D</code> is forced by demanding invariance under the local phase rotation <code>ψ → e^{iα(x)}ψ</code>, <code>A_μ → A_μ − (1/e)∂_μα</code>.</p><p>Gauge invariance makes <code>A_μ</code> redundant: only two of its four components are physical (the two transverse photon polarizations). To path-integrate over <code>A_μ</code> one must <strong>fix the gauge</strong>, e.g. with the Lorenz condition <code>∂_μA^μ = 0</code> implemented by adding <code>−(1/2ξ)(∂_μA^μ)²</code> to the Lagrangian. The parameter <code>ξ</code> labels a one-parameter family of gauges (Feynman <code>ξ = 1</code>, Landau <code>ξ = 0</code>); physical observables are <code>ξ</code>-independent, a non-trivial check on any calculation.</p><p>The photon propagator in <code>R_ξ</code> gauge is <code>−i[η^{μν} − (1 − ξ)k^μk^ν/k²]/(k² + iε)</code>. The <strong>QED vertex</strong> is <code>−ieγ^μ</code>, with charge <code>e</code> (or <code>Q_f e</code> for fermion <code>f</code> with charge <code>Q_f</code>) — that's the entire interaction. From this single vertex flows everything: Compton scattering, pair production, the Lamb shift, and the most precisely tested predictions in physics.</p>",
+        "mathExpressions": [
+          "\\mathcal{L}_{QED} = \\bar{\\psi}(i\\gamma^\\mu D_\\mu - m)\\psi - \\tfrac{1}{4} F_{\\mu\\nu} F^{\\mu\\nu}",
+          "D_\\mu = \\partial_\\mu + ieA_\\mu, \\quad F_{\\mu\\nu} = \\partial_\\mu A_\\nu - \\partial_\\nu A_\\mu",
+          "D_F^{\\mu\\nu}(k) = \\frac{-i}{k^2 + i\\epsilon}\\left[\\eta^{\\mu\\nu} - (1-\\xi)\\frac{k^\\mu k^\\nu}{k^2}\\right]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-06-c2",
+        "title": "Tree-Level Processes: Compton, Bhabha, Møller",
+        "contentHtml": "<p>The classic tree-level QED scatterings each test a different combination of <code>s, t, u</code> Mandelstam channels. <strong>Compton scattering</strong> <code>γe⁻ → γe⁻</code> has s- and u-channel diagrams; the spin-averaged <code>|ℳ|²</code> gives the <strong>Klein–Nishina formula</strong>, which interpolates between the Thomson limit (<code>ω ≪ m</code>, <code>σ_T = 8πα²/(3m²)</code>) and the deep-inelastic regime (<code>ω ≫ m</code>, <code>σ ∼ (πα²/mω) ln(2ω/m)</code>).</p><p><strong>Bhabha scattering</strong> <code>e⁻e⁺ → e⁻e⁺</code> has both s- and t-channel diagrams that interfere. <strong>Møller scattering</strong> <code>e⁻e⁻ → e⁻e⁻</code> has t- and u-channel diagrams (no s-channel because lepton number is conserved). The asymmetry between Bhabha and Møller in t-channel + s-channel structure is one of the simplest tests of QED Feynman rule consistency.</p><p><strong>Pair annihilation</strong> <code>e⁻e⁺ → γγ</code> requires two final-state photons (a single photon would violate four-momentum conservation in the rest frame). The total cross section is <code>σ = (πα²/s)[(s² + 4sm² − 8m⁴)/(s²√(s−4m²)/√s) ln(...) − ...]</code>. Inverting it via crossing gives <strong>pair production</strong> <code>γγ → e⁻e⁺</code>, the textbook example of crossing symmetry: the same amplitude evaluated in different physical regions of <code>(s, t, u)</code> yields four distinct experimental processes.</p>",
+        "mathExpressions": [
+          "\\sigma_{T} = \\frac{8\\pi \\alpha^2}{3 m_e^2} \\quad \\text{(Thomson limit, } \\omega \\ll m_e\\text{)}",
+          "\\frac{d\\sigma_{KN}}{d\\Omega} = \\frac{\\alpha^2}{2 m_e^2}\\left(\\frac{\\omega'}{\\omega}\\right)^2 \\left[\\frac{\\omega'}{\\omega} + \\frac{\\omega}{\\omega'} - \\sin^2\\theta\\right]",
+          "s + t + u = \\sum_i m_i^2 \\quad \\text{(Mandelstam constraint)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-06-c3",
+        "title": "The Anomalous Magnetic Moment",
+        "contentHtml": "<p>The Dirac equation predicts a fermion gyromagnetic ratio <code>g = 2</code>. Quantum corrections shift this. Schwinger's 1948 one-loop calculation of the vertex correction gave <code>a_e ≡ (g − 2)/2 = α/(2π) ≈ 0.00116141</code>. This was the first triumph of renormalized QED and remains the cleanest demonstration that virtual particles are real.</p><p>The current state of the art for the electron is mind-bending. Theory: five loops in pure QED (12,672 diagrams), plus hadronic vacuum polarization, plus electroweak. Experiment: <code>a_e = 1.00115965218059(13) × 10⁻³</code> — agreement at twelve significant figures. Inverting the comparison gives the most precise determination of the fine-structure constant <code>α</code> currently available.</p><p>The <strong>muon</strong> <code>g − 2</code> is more sensitive to new physics by a factor <code>(m_μ/m_e)² ≈ 4 × 10⁴</code>. The current Fermilab measurement disagrees with Standard Model predictions at roughly <code>4σ</code> — assuming the data-driven hadronic vacuum polarization is correct (lattice QCD calculations now suggest the SM value is closer to experiment, leaving the discrepancy unsettled). This is one of the strongest currently-living hints of physics beyond the Standard Model and a perfect example of how multi-loop QFT and precision experiment have made the once-abstract notion of 'virtual particle' an engineering tool.</p>",
+        "mathExpressions": [
+          "a_e^{(1)} = \\frac{\\alpha}{2\\pi} \\quad \\text{(Schwinger, 1948)}",
+          "g = 2(1 + a_e), \\quad a_e = \\frac{g-2}{2}",
+          "a_\\mu^{\\text{NP}} \\sim a_\\mu \\cdot \\left(\\frac{m_\\mu}{\\Lambda_{\\text{NP}}}\\right)^2"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q41", "qft-q42", "qft-q43", "qft-q44", "qft-q45", "qft-q46", "qft-q47", "qft-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-07",
+    "topicId": "physics-qft",
+    "order": 7,
+    "title": "Renormalization",
+    "description": "UV divergences, regularization, counterterms, and running couplings",
+    "xpReward": 145,
+    "concepts": [
+      {
+        "id": "qft-07-c1",
+        "title": "Where the Divergences Come From",
+        "contentHtml": "<p>Loop diagrams require integrating over internal four-momenta <code>∫d⁴k</code>. By power counting, a generic 1PI diagram with <code>L</code> loops, <code>I_B</code> bosonic and <code>I_F</code> fermionic internal lines has superficial degree of divergence <code>D = 4L − 2I_B − I_F</code>. <code>D ≥ 0</code> means UV divergent; <code>D &lt; 0</code> generically convergent. For QED the vertex (D = 0, log), electron self-energy (D = 1, linear → log by chiral protection), and photon self-energy (D = 2, log by gauge symmetry) are the only primitively divergent diagrams.</p><p>A theory is <strong>renormalizable</strong> if all UV divergences can be absorbed into a finite number of parameter redefinitions in the original Lagrangian. By Dyson's criterion, this happens precisely when no operator in <code>ℒ</code> has mass dimension <code>&gt; 4</code>. QED, QCD, the electroweak sector — all renormalizable. Pure quantum gravity at the Einstein–Hilbert level — not.</p><p>The <strong>regulator</strong> tames divergences while preserving structure. <strong>Cutoff</strong> regularization (integrate up to <code>|k| &lt; Λ</code>) is intuitive but breaks Lorentz and gauge invariance. <strong>Pauli–Villars</strong> introduces heavy ghost fields. <strong>Dimensional regularization</strong> analytically continues to <code>d = 4 − 2ε</code> dimensions, manifestly preserving Lorentz and (most) gauge symmetries — at the price of subtleties for chiral fermions and <code>γ⁵</code>. Modern QFT is conducted almost entirely in dim reg.</p>",
+        "mathExpressions": [
+          "D = 4L - 2I_B - I_F",
+          "[\\mathcal{O}] \\leq 4 \\iff \\text{renormalizable}",
+          "\\int \\frac{d^d k}{(2\\pi)^d} \\frac{1}{(k^2 - \\Delta)^n} = \\frac{(-1)^n i}{(4\\pi)^{d/2}} \\frac{\\Gamma(n - d/2)}{\\Gamma(n)} \\Delta^{d/2 - n}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-07-c2",
+        "title": "Counterterms and Renormalization Conditions",
+        "contentHtml": "<p>Renormalization rewrites the bare Lagrangian <code>ℒ_0</code> in terms of <strong>physical</strong> (renormalized) parameters plus <strong>counterterms</strong>. For QED: <code>ψ_0 = √Z₂ ψ</code>, <code>A_0^μ = √Z₃ A^μ</code>, <code>m_0 = m + δm</code>, <code>e_0 = (Z_1/(Z_2√Z₃)) e μ^ε</code>. The Z-factors absorb infinities order by order; finite renormalization conditions then fix the physical mass and coupling.</p><p>Common renormalization schemes. <strong>On-shell</strong>: define <code>m</code> as the pole of the propagator and <code>e</code> as the Thomson-limit electron–photon coupling. Physically transparent, ties directly to experiment. <strong>MS-bar</strong> (modified minimal subtraction): subtract only the <code>1/ε + γ_E − ln(4π)</code> pole pieces, leaving renormalized parameters that depend on an arbitrary scale <code>μ</code>. Nicer for high-energy calculations and the renormalization group, but less directly physical.</p><p>The crucial conceptual point: <strong>infinities are not pathologies, they are a sign that bare parameters are unphysical</strong>. Wilson's reinterpretation (1971) makes this transparent: every QFT is defined with a UV cutoff, and the cutoff dependence is absorbed into the running of effective parameters. Renormalizable theories are the special ones where this absorption works at any cutoff with finitely many parameters; non-renormalizable theories work too, but only as <strong>effective field theories</strong> below their natural scale.</p>",
+        "mathExpressions": [
+          "\\mathcal{L}_0 = \\mathcal{L}_R + \\mathcal{L}_{ct}",
+          "Z_i = 1 + \\delta_i, \\quad \\delta_i \\sim \\frac{\\alpha}{4\\pi} \\cdot \\frac{1}{\\epsilon} + \\text{finite}",
+          "e_0 = \\frac{Z_1}{Z_2 \\sqrt{Z_3}} \\, e \\, \\mu^\\epsilon \\stackrel{\\text{Ward}}{=} \\frac{e \\, \\mu^\\epsilon}{\\sqrt{Z_3}}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-07-c3",
+        "title": "The Renormalization Group and Running Couplings",
+        "contentHtml": "<p>Physical observables cannot depend on the arbitrary scale <code>μ</code> introduced by the regulator. This invariance, expressed as the <strong>Callan–Symanzik equation</strong> <code>(μ∂_μ + β(g)∂_g + γ(g))G = 0</code>, governs how renormalized parameters must run with energy. The <strong>beta function</strong> <code>β(g) = μ dg/dμ</code> determines the flow.</p><p>For QED, <code>β(e) = e³/(12π²) + O(e⁵)</code>, so the coupling <em>grows</em> with energy. The fine-structure constant runs from <code>α(0) = 1/137.036</code> at zero momentum to <code>α(M_Z) ≈ 1/127.94</code> at the Z mass. The naive Landau-pole singularity at <code>μ ∼ m_e exp(3π/(2α))</code> sits absurdly far above the Planck scale and is irrelevant; QED gets embedded in the electroweak theory long before this matters.</p><p>For QCD, the sign flips: <code>β(g) = −(11N_c − 2N_f)g³/(48π²)</code> with <code>N_c = 3</code>, <code>N_f = 6</code> active flavors. The gluonic <code>11N_c</code> term beats the fermionic <code>2N_f</code> term, so <code>β &lt; 0</code> — the coupling <em>decreases</em> with energy. This is <strong>asymptotic freedom</strong>, the 1973 result by Gross, Wilczek, and Politzer (Nobel 2004) that turned QCD from a candidate to <em>the</em> theory of strong interactions. At low energies <code>α_s</code> blows up, producing confinement; at high energies (deep-inelastic scattering, jets at colliders) <code>α_s ≪ 1</code> and perturbation theory is excellent.</p>",
+        "mathExpressions": [
+          "\\beta(g) = \\mu \\frac{dg}{d\\mu}",
+          "\\beta_{QED}(e) = \\frac{e^3}{12\\pi^2}, \\quad \\alpha(\\mu^2) = \\frac{\\alpha(\\mu_0^2)}{1 - \\frac{\\alpha(\\mu_0^2)}{3\\pi}\\ln(\\mu^2/\\mu_0^2)}",
+          "\\beta_{QCD}(g) = -\\frac{g^3}{(4\\pi)^2}\\left(\\frac{11 N_c - 2 N_f}{3}\\right)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q49", "qft-q50", "qft-q51", "qft-q52", "qft-q53", "qft-q54", "qft-q55", "qft-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-08",
+    "topicId": "physics-qft",
+    "order": 8,
+    "title": "Gauge Theories: U(1) to Yang–Mills",
+    "description": "Local symmetry, non-abelian connections, and ghosts",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "qft-08-c1",
+        "title": "Local Symmetry as a Construction Principle",
+        "contentHtml": "<p>Demanding that a global symmetry hold <em>at every spacetime point independently</em> — a <strong>local</strong> symmetry — is enormously restrictive. The free Dirac Lagrangian <code>iψ̄γ^μ∂_μψ</code> is invariant under global <code>ψ → e^{iα}ψ</code>. Promote <code>α</code> to <code>α(x)</code> and the kinetic term picks up <code>−ψ̄γ^μ(∂_μα)ψ</code>. Cancelling this requires a <strong>connection</strong> <code>A_μ</code> transforming as <code>A_μ → A_μ − (1/e)∂_μα</code>, with the modified kinetic term <code>iψ̄γ^μD_μψ</code>, <code>D_μ = ∂_μ + ieA_μ</code>.</p><p>The connection comes for free; you only need to add its kinetic term <code>−¼F_{μν}F^{μν}</code>. Suddenly you have built the entire structure of QED from scratch, with the photon as the gauge boson of a U(1). The same logic, with a <strong>non-abelian</strong> Lie group <code>G</code>, builds Yang–Mills theory.</p><p>For SU(N), the gauge field <code>A_μ = A_μ^a T^a</code> takes values in the Lie algebra. The connection transforms inhomogeneously: <code>A_μ → UA_μU^{−1} − (i/g)U∂_μU^{−1}</code>. Crucially, the field strength <code>F_{μν} = ∂_μA_ν − ∂_νA_μ + ig[A_μ, A_ν]</code> picks up a <strong>self-interaction</strong> from the commutator. The Yang–Mills kinetic term <code>−½ Tr F_{μν}F^{μν}</code> contains 3- and 4-gluon vertices intrinsic to the gauge sector — this is what makes QCD so different from QED.</p>",
+        "mathExpressions": [
+          "\\mathcal{L}_{YM} = -\\tfrac{1}{2} \\text{Tr}\\, F_{\\mu\\nu} F^{\\mu\\nu} = -\\tfrac{1}{4} F^a_{\\mu\\nu} F^{a\\,\\mu\\nu}",
+          "F_{\\mu\\nu} = \\partial_\\mu A_\\nu - \\partial_\\nu A_\\mu + ig[A_\\mu, A_\\nu]",
+          "F^a_{\\mu\\nu} = \\partial_\\mu A^a_\\nu - \\partial_\\nu A^a_\\mu - g f^{abc} A^b_\\mu A^c_\\nu"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-08-c2",
+        "title": "Faddeev–Popov Ghosts and BRST",
+        "contentHtml": "<p>Quantizing a gauge theory by path integral overcounts: gauge-equivalent configurations are summed over redundantly. Faddeev and Popov fixed this by inserting <code>1 = Δ_{FP}[A] ∫Dα δ(G[A^α])</code> into the path integral, where <code>G</code> is a gauge condition. The Jacobian <code>Δ_{FP} = det(δG/δα)</code> can be exponentiated as a Grassmann integral, introducing <strong>ghost fields</strong> <code>c, c̄</code>.</p><p>For SU(N) in covariant gauge, the ghost Lagrangian is <code>ℒ_{gh} = (∂^μ c̄^a)(D_μ c)^a</code>. Ghosts are scalar but anticommuting — a violation of spin–statistics, hence 'ghost'. They never appear as external states; they only run in loops to cancel unphysical longitudinal-polarization contributions of gauge bosons. In QED ghosts decouple (the photon self-coupling vanishes); in QCD they are essential.</p><p>The full gauge-fixed action enjoys a global <strong>BRST symmetry</strong> with anticommuting parameter <code>θ</code>: <code>δA_μ = θ D_μ c</code>, <code>δc = −(g/2)θ[c, c]</code>, <code>δc̄ = (1/ξ)θ G</code>. BRST is nilpotent (<code>Q² = 0</code>), and physical states are defined as <code>Q</code>-cohomology classes — a beautiful generalization of gauge invariance to the gauge-fixed quantum theory. BRST is the modern tool for proving unitarity and renormalizability of non-abelian gauge theories (Becchi, Rouet, Stora, Tyutin, ~1975); it generalizes to gravity and string theory.</p>",
+        "mathExpressions": [
+          "\\mathcal{L}_{gf} = -\\frac{1}{2\\xi}(\\partial^\\mu A^a_\\mu)^2",
+          "\\mathcal{L}_{ghost} = (\\partial^\\mu \\bar{c}^a)(D_\\mu c)^a = (\\partial^\\mu \\bar{c}^a)(\\partial_\\mu c^a + g f^{abc} A^b_\\mu c^c)",
+          "Q^2 = 0, \\quad \\mathcal{H}_{phys} = \\ker Q / \\text{im}\\, Q"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-08-c3",
+        "title": "Asymptotic Freedom and Confinement",
+        "contentHtml": "<p>The QCD beta function <code>β(g) = −b_0 g³</code> with <code>b_0 = (11N_c − 2N_f)/(48π²) &gt; 0</code> for <code>N_f &lt; 16.5</code> means the coupling <strong>decreases logarithmically</strong> with energy. Solving the RG equation gives <code>α_s(Q²) = 2π/[b_0 ln(Q²/Λ_{QCD}²)]</code>, a hallmark form. <code>Λ_{QCD} ≈ 200 MeV</code> is the dynamically generated scale where perturbation theory breaks down.</p><p>This single sign change versus QED has staggering consequences. At <code>Q ≫ Λ_{QCD}</code> (collider energies, deep-inelastic regime), partons interact weakly; jets are well-described by perturbative QCD with <code>α_s(M_Z) ≈ 0.118</code>. At <code>Q ∼ Λ_{QCD}</code> the coupling becomes <code>O(1)</code> and quarks bind into hadrons. <strong>Confinement</strong> — the absence of free colored states in the spectrum — is widely believed but not yet proven analytically (it's one of the Clay Millennium Problems).</p><p>Lattice QCD is the practical tool: discretize spacetime, simulate Monte Carlo on a Euclidean grid, extract hadron masses, form factors, decay constants from correlation functions. Modern lattice calculations reproduce the proton mass to <code>1%</code> from first principles, with no input but the quark masses and <code>α_s</code>. The 't Hooft large-<code>N_c</code> limit, color-flux-tube models, and dual-superconductor pictures all give complementary glimpses of confinement, but the full quantitative story is still numerical.</p>",
+        "mathExpressions": [
+          "\\alpha_s(Q^2) = \\frac{2\\pi}{b_0 \\ln(Q^2/\\Lambda_{QCD}^2)}, \\quad b_0 = \\frac{11 N_c - 2 N_f}{12\\pi}",
+          "\\Lambda_{QCD} \\approx 200 \\text{ MeV}, \\quad \\alpha_s(M_Z) \\approx 0.118",
+          "V(r) \\sim \\sigma r \\quad \\text{(linear quark-antiquark potential at large } r\\text{)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q57", "qft-q58", "qft-q59", "qft-q60", "qft-q61", "qft-q62", "qft-q63", "qft-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-09",
+    "topicId": "physics-qft",
+    "order": 9,
+    "title": "Spontaneous Symmetry Breaking and the Higgs Mechanism",
+    "description": "Goldstone bosons, gauge boson masses, and the Standard Model",
+    "xpReward": 155,
+    "concepts": [
+      {
+        "id": "qft-09-c1",
+        "title": "Goldstone's Theorem",
+        "contentHtml": "<p>A symmetry of the Lagrangian need not be a symmetry of the vacuum. Consider a complex scalar with the 'Mexican hat' potential <code>V = −μ²|φ|² + λ|φ|⁴</code>, <code>μ², λ &gt; 0</code>. The minimum sits at <code>|φ| = v/√2</code>, <code>v = √(μ²/λ)</code>, on a circle in the complex plane. The vacuum picks one phase — say <code>⟨φ⟩ = v/√2</code> — and the U(1) symmetry is <strong>spontaneously broken</strong>. The Lagrangian still has the symmetry; the chosen vacuum does not.</p><p>Expand <code>φ = (v + h + iπ)/√2</code> around the vacuum. The radial mode <code>h</code> picks up mass <code>√(2μ²) = √(2λ) v</code>. The angular mode <code>π</code> remains <strong>massless</strong>. This is <strong>Goldstone's theorem</strong>: every spontaneously broken continuous global symmetry generates a massless boson, a <em>Goldstone mode</em>, parameterizing fluctuations along the flat direction of the vacuum manifold.</p><p>Concrete realizations. <strong>Pions</strong> are pseudo-Goldstone bosons of the spontaneously broken approximate chiral SU(2)_L × SU(2)_R symmetry of QCD; their small mass comes from the small explicit breaking by quark masses. <strong>Phonons</strong> in a crystal are Goldstones of broken translational symmetry. <strong>Magnons</strong> are Goldstones of broken rotational symmetry in a ferromagnet. The pattern is universal: order parameter ≠ 0, broken generators, gapless modes parameterizing the order-parameter manifold.</p>",
+        "mathExpressions": [
+          "V(\\phi) = -\\mu^2 |\\phi|^2 + \\lambda |\\phi|^4, \\quad \\langle \\phi \\rangle = v/\\sqrt{2}, \\quad v = \\sqrt{\\mu^2/\\lambda}",
+          "m_h^2 = 2\\mu^2 = 2\\lambda v^2, \\quad m_\\pi = 0",
+          "\\mathcal{M}_{vac} = G/H \\quad \\text{(broken to unbroken; dim} \\, \\mathcal{M} = \\text{number of Goldstones)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-09-c2",
+        "title": "The Higgs Mechanism",
+        "contentHtml": "<p>When a <strong>local</strong> (gauged) symmetry breaks, Goldstone's theorem famously fails. Instead, the would-be Goldstone modes get <strong>eaten</strong> by the gauge bosons, which acquire mass while remaining renormalizable. This is the <strong>Higgs mechanism</strong> (Anderson 1962; Brout, Englert, Higgs, Guralnik, Hagen, Kibble 1964).</p><p>Toy U(1) model: complex scalar <code>φ</code> with charge <code>e</code>, kinetic term <code>|D_μφ|² = |(∂_μ + ieA_μ)φ|²</code>, Mexican-hat potential. Expand around <code>⟨φ⟩ = v/√2</code> in unitary gauge (<code>π = 0</code>). The kinetic term yields <code>½(∂_μh)² + ½e²v²A_μA^μ + …</code> The gauge boson now has mass <code>m_A = ev</code>. The would-be Goldstone has been gauged away into the longitudinal polarization of <code>A_μ</code>: a massless gauge boson has 2 polarizations, a massive one has 3 — the missing degree of freedom is the eaten Goldstone.</p><p>In the electroweak Standard Model, the SU(2)_L × U(1)_Y symmetry breaks to U(1)_em via the Higgs doublet <code>Φ</code>, <code>⟨Φ⟩ = (0, v/√2)</code> with <code>v ≈ 246 GeV</code>. Three of the four real components are eaten by W⁺, W⁻, Z, giving them masses <code>m_W = gv/2</code>, <code>m_Z = √(g² + g'²) v/2</code>. The fourth — the radial mode — is the physical <strong>Higgs boson</strong>, discovered at the LHC in July 2012 with <code>m_h ≈ 125 GeV</code>. Its self-coupling, mass, and decay branching ratios all match SM predictions to within a few percent so far.</p>",
+        "mathExpressions": [
+          "m_A = e v \\quad \\text{(U(1) Higgs)}",
+          "m_W = \\tfrac{1}{2} g v, \\quad m_Z = \\tfrac{1}{2} \\sqrt{g^2 + g'^2}\\, v, \\quad v \\approx 246 \\text{ GeV}",
+          "m_h^2 = 2\\lambda v^2, \\quad m_h \\approx 125.25 \\text{ GeV}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-09-c3",
+        "title": "The Standard Model in One Page",
+        "contentHtml": "<p>The Standard Model gauge group is <code>SU(3)_C × SU(2)_L × U(1)_Y</code>. Three generations of fermions transform as: left-handed quark doublets <code>Q_L = (u_L, d_L)</code> in <code>(3, 2, 1/6)</code>; right-handed quarks <code>u_R</code> in <code>(3, 1, 2/3)</code>, <code>d_R</code> in <code>(3, 1, −1/3)</code>; left-handed lepton doublets <code>L_L = (ν_L, e_L)</code> in <code>(1, 2, −1/2)</code>; right-handed charged leptons <code>e_R</code> in <code>(1, 1, −1)</code>. No right-handed neutrinos in the minimal SM.</p><p>The Higgs doublet <code>Φ</code> in <code>(1, 2, 1/2)</code> breaks <code>SU(2)_L × U(1)_Y → U(1)_em</code> via its vev. <strong>Yukawa couplings</strong> <code>−y_d Q̄_L Φ d_R − y_u Q̄_L Φ̃ u_R − y_e L̄_L Φ e_R + h.c.</code> generate fermion masses upon EWSB. Diagonalizing the Yukawa matrices in family space yields the <strong>CKM matrix</strong> for quarks (and the PMNS for neutrinos, once neutrino masses are added).</p><p>Free parameters: 3 gauge couplings, 2 Higgs (mass and self-coupling, or equivalently <code>m_h, v</code>), 9 quark/lepton masses, 4 CKM (3 angles + 1 phase) — about 19 in the minimal SM, plus 7 more in the neutrino sector. Despite this, the SM has resisted every collider test for fifty years: precision electroweak measurements at LEP, top-quark properties at the Tevatron, Higgs couplings at LHC. The known shortcomings — neutrino masses, dark matter, baryogenesis, hierarchy problem, gravity — are real but indirect; <strong>no laboratory experiment has yet decisively contradicted the SM</strong>.</p>",
+        "mathExpressions": [
+          "G_{SM} = SU(3)_C \\times SU(2)_L \\times U(1)_Y",
+          "\\mathcal{L}_{Yuk} = -y_d \\bar{Q}_L \\Phi d_R - y_u \\bar{Q}_L \\tilde{\\Phi} u_R - y_e \\bar{L}_L \\Phi e_R + \\text{h.c.}",
+          "Q_{em} = T_3 + Y \\quad \\text{(Gell-Mann–Nishijima)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q65", "qft-q66", "qft-q67", "qft-q68", "qft-q69", "qft-q70", "qft-q71", "qft-q72"],
+    "puzzleId": null
+  },
+  {
+    "id": "qft-10",
+    "topicId": "physics-qft",
+    "order": 10,
+    "title": "Anomalies and Effective Field Theory",
+    "description": "Quantum violations of classical symmetries; QFT below the cutoff",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "qft-10-c1",
+        "title": "The Chiral Anomaly",
+        "contentHtml": "<p>Classically, massless QED with both vector current <code>j^μ = ψ̄γ^μψ</code> and axial current <code>j_5^μ = ψ̄γ^μγ⁵ψ</code> conserves both: <code>∂_μj^μ = 0</code> and <code>∂_μj_5^μ = 0</code>. Quantization breaks the second. Computing the triangle diagram with one axial and two vector vertices gives <strong>the Adler–Bell–Jackiw anomaly</strong>: <code>∂_μj_5^μ = (e²/16π²) F_{μν}F̃^{μν}</code>, where <code>F̃^{μν} = ½ε^{μνρσ}F_{ρσ}</code>.</p><p>This is not a calculational mistake to be regularized away — there is no regulator that preserves <em>both</em> currents simultaneously. The anomaly is a <strong>physical fact</strong> about the quantum theory. It explains the otherwise puzzling π⁰ → γγ decay rate, which depends on the number of colors and famously confirmed <code>N_c = 3</code> when the predicted rate matched experiment only with three colors.</p><p>Anomalies have far-reaching uses. <strong>'t Hooft anomaly matching</strong>: the same anomaly must appear at all energy scales, constraining low-energy effective theories of confining gauge dynamics. <strong>Anomaly cancellation</strong>: in the SM, the gauge anomalies of the SU(2)_L × U(1)_Y currents cancel between quarks and leptons within each generation — an extraordinary consistency check that the matter content of one generation is not arbitrary. <strong>Topology</strong>: the Atiyah–Singer index theorem connects anomalies to topology of gauge bundles, instantons, and the <code>θ</code>-angle of QCD.</p>",
+        "mathExpressions": [
+          "\\partial_\\mu j_5^\\mu = \\frac{e^2}{16\\pi^2} F_{\\mu\\nu} \\tilde{F}^{\\mu\\nu}",
+          "\\Gamma(\\pi^0 \\to \\gamma\\gamma) = \\frac{N_c^2 \\alpha^2 m_\\pi^3}{64\\pi^3 f_\\pi^2}",
+          "\\sum_{f \\in \\text{gen}} (\\text{Tr}\\, T^a T^b T^c)_f = 0 \\quad \\text{(SM anomaly cancellation)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-10-c2",
+        "title": "Effective Field Theory",
+        "contentHtml": "<p>An <strong>effective field theory (EFT)</strong> describes physics below an energy scale <code>Λ</code> in terms of light degrees of freedom only. Heavy modes are integrated out, leaving an infinite tower of operators in <code>ℒ_eff = Σ (c_i/Λ^{d_i − 4}) O_i</code>. Higher-dimension operators are suppressed by powers of <code>E/Λ</code>, so a finite truncation is predictive at low energy.</p><p>Canonical examples. <strong>Fermi theory</strong> of beta decay: integrating out the W boson at <code>E ≪ m_W</code> gives <code>(G_F/√2)(ψ̄γ^μψ)(ψ̄γ_μψ)</code> with <code>G_F = g²/(4√2 m_W²)</code>. <strong>Chiral perturbation theory</strong>: pions as Goldstone bosons of broken chiral symmetry, with <code>Λ ≈ 4πf_π ≈ 1 GeV</code>. <strong>Heavy-quark effective theory</strong> exploits <code>m_b ≫ Λ_{QCD}</code> for B-meson physics. <strong>SMEFT</strong> extends the Standard Model with all dimension-six (and beyond) operators consistent with SM gauge symmetries — the modern parametrization for new-physics searches at the LHC.</p><p>The Wilsonian view: <strong>every QFT is an EFT</strong>. Even renormalizable theories have a finite range of validity; their UV completion is just shifted to higher scales. The hierarchy problem (why <code>m_h ≪ M_Pl</code>) is a question about EFTs: why is the dimensionful Higgs mass parameter not naturally <code>O(Λ²)</code>? Answers attempted include supersymmetry, compositeness, anthropic selection, and asymptotic safety. The hierarchy puzzle remains the best motivation for new physics at the TeV scale that decades of LHC running has so far failed to find.</p>",
+        "mathExpressions": [
+          "\\mathcal{L}_{eff} = \\sum_i \\frac{c_i}{\\Lambda^{d_i - 4}} \\mathcal{O}_i",
+          "G_F = \\frac{g^2}{4\\sqrt{2} \\, m_W^2} \\approx 1.166 \\times 10^{-5} \\text{ GeV}^{-2}",
+          "\\delta m_h^2 \\sim \\frac{\\Lambda^2}{16\\pi^2} \\quad \\text{(quadratic UV sensitivity → hierarchy problem)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "qft-10-c3",
+        "title": "Beyond the Standard Model: Where QFT Goes Next",
+        "contentHtml": "<p>The Standard Model is not the end. Empirical gaps demand explanation: (1) <strong>neutrino masses</strong>, established by oscillation experiments, require either Dirac partners (<code>ν_R</code>) or Majorana mass terms (and likely the seesaw <code>m_ν ∼ y² v² / M</code> with right-handed Majorana scale <code>M ≫ v</code>); (2) <strong>dark matter</strong>, gravitationally evident, consistent with no SM particle; (3) <strong>baryogenesis</strong>, which requires extra CP violation beyond the CKM phase; (4) the <strong>strong CP problem</strong>, why <code>θ_QCD &lt; 10⁻¹⁰</code>, with the axion as the leading explanation.</p><p>Theoretical motivations push further. <strong>Grand unification</strong> embeds <code>SU(3) × SU(2) × U(1)</code> into <code>SU(5)</code>, <code>SO(10)</code>, or <code>E_6</code>, predicting proton decay (so far unobserved at <code>τ_p &gt; 10³⁴</code> years). <strong>Supersymmetry</strong> stabilizes the Higgs mass and unifies couplings precisely at <code>10¹⁶ GeV</code> — but no superpartners have appeared at the LHC. <strong>String theory</strong> aspires to a UV completion including gravity, with QFT as its low-energy limit on a chosen vacuum.</p><p>Three frontier directions for QFT itself. <strong>Conformal field theory</strong> at fixed points of the RG; the conformal bootstrap revolutionized the 3D Ising universality class. <strong>Topological QFTs</strong> describe condensed-matter phases and quantum-Hall systems; modular tensor categories classify their universality classes. <strong>Holography</strong> (AdS/CFT) gives a non-perturbative definition of certain strongly coupled QFTs as gravity in higher-dimensional spaces — perhaps the most surprising development of modern theoretical physics, and a glimpse of what 'beyond QFT' might look like.</p>",
+        "mathExpressions": [
+          "m_\\nu^{\\text{seesaw}} \\sim \\frac{y_\\nu^2 v^2}{M_R}, \\quad M_R \\sim 10^{14} \\text{ GeV}",
+          "\\bar{\\theta}_{QCD} = \\theta + \\arg \\det M_q < 10^{-10}",
+          "Z_{\\text{CFT}}[\\partial \\text{AdS}] = Z_{\\text{string}}[\\text{AdS}] \\quad \\text{(holographic duality)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["qft-q73", "qft-q74", "qft-q75", "qft-q76", "qft-q77", "qft-q78", "qft-q79", "qft-q80"],
+    "puzzleId": null
+  }
+]

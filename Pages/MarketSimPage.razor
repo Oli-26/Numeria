@@ -1,0 +1,222 @@
+@page "/market-sim"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Market Sim</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Market Sim" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Market Sim</h1>
+    </div>
+
+    <div class="card ms-intro">
+        <Icon Name="coin" Size="22" Stroke="var(--accent)" />
+        <p>Slide supply and demand. Find equilibrium. Apply a price ceiling, a tax, or a quota -- watch the deadweight loss appear.</p>
+    </div>
+
+    <div class="card ms-controls">
+        <div class="ms-row">
+            <label>Demand intercept</label>
+            <input type="range" min="60" max="160" step="2" @bind="demandIntercept" @bind:event="oninput" />
+            <span>@demandIntercept</span>
+        </div>
+        <div class="ms-row">
+            <label>Demand slope</label>
+            <input type="range" min="0.4" max="2.5" step="0.1" @bind="demandSlope" @bind:event="oninput" />
+            <span>@demandSlope.ToString("0.0")</span>
+        </div>
+        <div class="ms-row">
+            <label>Supply intercept</label>
+            <input type="range" min="0" max="60" step="2" @bind="supplyIntercept" @bind:event="oninput" />
+            <span>@supplyIntercept</span>
+        </div>
+        <div class="ms-row">
+            <label>Supply slope</label>
+            <input type="range" min="0.4" max="2.5" step="0.1" @bind="supplySlope" @bind:event="oninput" />
+            <span>@supplySlope.ToString("0.0")</span>
+        </div>
+        <div class="ms-row">
+            <label>Intervention</label>
+            <select @bind="intervention">
+                <option value="none">None</option>
+                <option value="ceiling">Price ceiling</option>
+                <option value="floor">Price floor</option>
+                <option value="tax">Per-unit tax</option>
+            </select>
+        </div>
+        @if (intervention != "none")
+        {
+            <div class="ms-row">
+                <label>Level</label>
+                <input type="range" min="5" max="160" step="2" @bind="interventionLevel" @bind:event="oninput" />
+                <span>@interventionLevel</span>
+            </div>
+        }
+    </div>
+
+    <div class="card ms-chart-card">
+        @{
+            var (eqQ, eqP) = Equilibrium();
+            var dwl = DeadweightLoss();
+        }
+        <svg viewBox="0 0 320 240" class="ms-svg">
+            <line x1="40" y1="20" x2="40" y2="200" stroke="var(--text-muted)" stroke-width="1"/>
+            <line x1="40" y1="200" x2="300" y2="200" stroke="var(--text-muted)" stroke-width="1"/>
+
+            @{
+                var demandTopY = 200 - Math.Min(180, demandIntercept * 1.0);
+                var demandRightY = 200 - Math.Max(0, (demandIntercept - demandSlope * 100) * 1.0);
+                var supplyLeftY = 200 - Math.Min(180, supplyIntercept * 1.0);
+                var supplyRightY = 200 - Math.Min(180, (supplyIntercept + supplySlope * 100) * 1.0);
+            }
+            <line x1="40" y1="@demandTopY.ToString(System.Globalization.CultureInfo.InvariantCulture)" x2="300" y2="@demandRightY.ToString(System.Globalization.CultureInfo.InvariantCulture)" stroke="#4A90D9" stroke-width="2.5"/>
+            <line x1="40" y1="@supplyLeftY.ToString(System.Globalization.CultureInfo.InvariantCulture)" x2="300" y2="@supplyRightY.ToString(System.Globalization.CultureInfo.InvariantCulture)" stroke="#E74C3C" stroke-width="2.5"/>
+
+            @if (intervention == "ceiling" || intervention == "floor")
+            {
+                var y = 200 - Math.Min(180, interventionLevel);
+                <g>
+                    <line x1="40" y1="@y.ToString(System.Globalization.CultureInfo.InvariantCulture)" x2="300" y2="@y.ToString(System.Globalization.CultureInfo.InvariantCulture)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <text x="295" y="@((y - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))" font-size="9" fill="var(--accent)" text-anchor="end">@(intervention == "ceiling" ? "Ceiling" : "Floor") = @interventionLevel</text>
+                </g>
+            }
+
+            @{
+                var eqX = 40 + Math.Min(260, eqQ * 2.6);
+                var eqY = 200 - Math.Min(180, eqP);
+            }
+            <circle cx="@eqX.ToString(System.Globalization.CultureInfo.InvariantCulture)" cy="@eqY.ToString(System.Globalization.CultureInfo.InvariantCulture)" r="5" fill="#2ECC71" stroke="white" stroke-width="2"/>
+
+            <text x="295" y="@((demandRightY - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))" text-anchor="end" font-size="10" fill="#4A90D9">D</text>
+            <text x="295" y="@((supplyRightY - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))" text-anchor="end" font-size="10" fill="#E74C3C">S</text>
+            <text x="38" y="14" font-size="9" fill="var(--text-muted)" text-anchor="end">Price</text>
+            <text x="298" y="218" font-size="9" fill="var(--text-muted)" text-anchor="end">Quantity</text>
+        </svg>
+
+        <div class="ms-readouts">
+            <div class="ms-stat"><span>Equilibrium price</span><strong>$@eqP.ToString("0.0")</strong></div>
+            <div class="ms-stat"><span>Equilibrium quantity</span><strong>@eqQ.ToString("0.#")</strong></div>
+            @if (intervention != "none")
+            {
+                <div class="ms-stat ms-stat-warn"><span>Deadweight loss</span><strong>$@dwl.ToString("0.#")</strong></div>
+            }
+        </div>
+
+        <div class="ms-blurb">
+            @((MarkupString)Blurb())
+        </div>
+    </div>
+}
+
+@code {
+    private bool unlocked;
+    private double demandIntercept = 120;
+    private double demandSlope = 1.0;
+    private double supplyIntercept = 20;
+    private double supplySlope = 1.0;
+    private string intervention = "none";
+    private double interventionLevel = 60;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-market-sim");
+            StateHasChanged();
+        }
+    }
+
+    private (double Q, double P) Equilibrium()
+    {
+        var taxAdj = intervention == "tax" ? interventionLevel : 0;
+        var q = (demandIntercept - supplyIntercept - taxAdj) / (demandSlope + supplySlope);
+        var p = demandIntercept - demandSlope * q;
+        if (q < 0) q = 0;
+        return (q, p);
+    }
+
+    private double DeadweightLoss()
+    {
+        if (intervention == "none") return 0;
+        var (eqQ, eqP) = Equilibrium();
+        if (intervention == "ceiling" && interventionLevel < eqP)
+        {
+            var qSupplied = (interventionLevel - supplyIntercept) / supplySlope;
+            if (qSupplied < 0) qSupplied = 0;
+            var qDemanded = (demandIntercept - interventionLevel) / demandSlope;
+            return 0.5 * (eqQ - qSupplied) * Math.Max(0, qDemanded - qSupplied) * 0.5;
+        }
+        if (intervention == "floor" && interventionLevel > eqP)
+        {
+            var qDemanded = (demandIntercept - interventionLevel) / demandSlope;
+            if (qDemanded < 0) qDemanded = 0;
+            return 0.5 * (eqQ - qDemanded) * (interventionLevel - eqP);
+        }
+        if (intervention == "tax")
+        {
+            var qWithTax = (demandIntercept - supplyIntercept - interventionLevel) / (demandSlope + supplySlope);
+            if (qWithTax < 0) qWithTax = 0;
+            var qNoTax = (demandIntercept - supplyIntercept) / (demandSlope + supplySlope);
+            return 0.5 * (qNoTax - qWithTax) * interventionLevel;
+        }
+        return 0;
+    }
+
+    private string Blurb()
+    {
+        var (eqQ, eqP) = Equilibrium();
+        switch (intervention)
+        {
+            case "ceiling":
+                return interventionLevel < eqP
+                    ? "<strong>Binding ceiling.</strong> Below market price -> shortage, queues, black market. Rent control debate lives here."
+                    : "<strong>Non-binding ceiling.</strong> Set above equilibrium, the ceiling does nothing.";
+            case "floor":
+                return interventionLevel > eqP
+                    ? "<strong>Binding floor.</strong> Above market price -> surplus. Minimum wage debates: surplus = unemployment."
+                    : "<strong>Non-binding floor.</strong> Set below equilibrium, the floor is symbolic.";
+            case "tax":
+                return "<strong>Per-unit tax.</strong> Wedge between buyer and seller price. Loss split by elasticity -- the steeper curve eats more.";
+            default:
+                return "<strong>No intervention.</strong> Curves cross. Marshall called this the most useful diagram in economics.";
+        }
+    }
+}
+
+<style>
+    .ms-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .ms-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .ms-controls { padding: 14px; }
+    .ms-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.8rem; }
+    .ms-row label { width: 130px; color: var(--text-muted); font-weight: 600; }
+    .ms-row input[type=range] { flex: 1; accent-color: var(--primary); }
+    .ms-row select { flex: 1; padding: 4px 8px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); }
+    .ms-row span { width: 36px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+    .ms-chart-card { padding: 14px; }
+    .ms-svg { width: 100%; height: auto; max-height: 280px; display: block; }
+
+    .ms-readouts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+    .ms-stat { background: var(--bg-surface); padding: 8px 10px; border-radius: var(--radius-sm); }
+    .ms-stat span { display: block; font-size: 0.7rem; color: var(--text-muted); }
+    .ms-stat strong { font-size: 1rem; color: var(--text-primary); }
+    .ms-stat-warn { background: rgba(231,76,60,0.08); }
+    .ms-stat-warn strong { color: var(--error); }
+
+    .ms-blurb { margin-top: 10px; padding: 10px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+</style>

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "c-01",
+    "topicId": "cs-lang-c",
+    "order": 1,
+    "title": "Pointers and the Memory Model",
+    "description": "Addresses, dereferencing, and why C is so close to the metal",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "c-01-c1",
+        "title": "What a Pointer Actually Is",
+        "contentHtml": "<p>A <strong>pointer</strong> in C is a variable that holds a <strong>memory address</strong>. <code>int *p</code> declares a pointer to an int; <code>p = &amp;x</code> takes the address of x; <code>*p</code> dereferences — reading or writing the int at that address. That's it. Pointers are just numbers indexing into memory.</p><p>This explicit access to memory is C's defining feature. Where higher-level languages hide pointers behind references and garbage collection, C exposes them directly. You can do pointer arithmetic (<code>p + 1</code> moves to the next int), cast between pointer types, take the address of any variable, and store pointers in data structures.</p><p>The cost: the compiler can't protect you. Dereferencing an invalid pointer (NULL, freed memory, out-of-bounds) corrupts memory or crashes. C trusts you completely. This is why C remains essential for systems programming (kernels, drivers, embedded, runtimes) and why it's been the source of decades of memory-safety bugs.</p>",
+        "mathExpressions": ["\\text{int *p; p = \\&x;} \\quad p = \\text{address}(x), \\;\\; *p = \\text{value at address}(x)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-01-c2",
+        "title": "Stack vs Heap Allocation",
+        "contentHtml": "<p>C distinguishes two main memory regions. The <strong>stack</strong> grows and shrinks with function calls — local variables live there, allocated on entry, freed on return. Stack allocation is just a register decrement; basically free. But stack values can't outlive their function: returning <code>&amp;localVar</code> creates a <strong>dangling pointer</strong>, the canonical undefined-behavior bug.</p><p>The <strong>heap</strong> is for dynamic allocation. Call <code>malloc(size)</code> to request bytes; you get back a pointer that's valid until you call <code>free(ptr)</code>. Heap memory persists across function calls but you must explicitly manage its lifetime. Forget to free → memory leak. Free twice → double-free corruption. Use after free → exploitable bug. Free a pointer you didn't malloc → crash.</p><p>The third region is <strong>static/global</strong> memory — variables declared <code>static</code> or at file scope. Allocated once at program start, freed at exit. No lifetime questions, but no per-call state either. C programmers must consciously choose where each value lives.</p>",
+        "mathExpressions": ["\\text{stack: auto-managed, scoped} \\quad \\text{heap: malloc/free} \\quad \\text{static: program-lifetime}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-01-c3",
+        "title": "Pointer Arithmetic and Arrays",
+        "contentHtml": "<p>In C, an <strong>array decays to a pointer</strong> when used in most expressions. <code>int arr[10]; int *p = arr;</code> is valid — <code>arr</code> evaluates to a pointer to its first element. <code>arr[i]</code> is exactly equivalent to <code>*(arr + i)</code>. There's no separate \"array type\" at runtime; just a pointer and a (compile-time) length.</p><p>Pointer arithmetic respects type sizes. <code>p + 1</code> on an <code>int*</code> moves 4 bytes (typical int size); on a <code>char*</code> it moves 1 byte. <code>p2 - p1</code> returns the number of elements between them, not bytes. This makes it natural to walk through arrays element by element.</p><p>The danger: <strong>no bounds checking</strong>. <code>arr[100]</code> on a 10-element array is undefined behavior — usually you read or write whatever happens to be at that memory address. Buffer overflows are precisely this: writing past the end of an array, often onto the stack where return addresses live. Decades of security exploits have lived in this gap.</p>",
+        "mathExpressions": ["\\text{arr}[i] \\equiv *(\\text{arr} + i) \\quad \\text{(no bounds check)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["c-q01", "c-q02", "c-q03", "c-q04", "c-q05", "c-q06", "c-q07", "c-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "c-02",
+    "topicId": "cs-lang-c",
+    "order": 2,
+    "title": "Manual Memory Management",
+    "description": "malloc, free, and the bugs they enable",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "c-02-c1",
+        "title": "malloc, calloc, realloc, free",
+        "contentHtml": "<p>The C standard library provides four heap-management functions. <code>malloc(size)</code> returns a pointer to <code>size</code> bytes of uninitialized memory (or NULL on failure). <code>calloc(n, size)</code> allocates zeroed memory for <code>n</code> elements. <code>realloc(ptr, new_size)</code> resizes an existing allocation, possibly moving it. <code>free(ptr)</code> releases memory back to the system.</p><p>Always check <code>malloc</code>'s return: <code>if (!p) { handle_oom(); }</code>. Skipping this check means dereferencing NULL on memory exhaustion, crashing your program. Production C code checks every allocation.</p><p>Always pair allocations with frees. The standard pattern: every successful path to creating an object also has a path to destroying it. Common idioms: errors free and return early; functions that return ownership document it; functions that borrow promise not to free. C has no syntax to enforce these contracts — they live in comments and convention.</p>",
+        "mathExpressions": ["\\text{malloc} \\to \\text{free} \\quad \\text{(every allocation has exactly one free)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-02-c2",
+        "title": "The Classic Memory Bugs",
+        "contentHtml": "<p>Manual memory management opens up famous categories of bugs.</p><p><strong>Memory leak</strong>: forget to free, memory grows forever. In long-running services, leaks crash production. Tools like <strong>Valgrind</strong> and <strong>AddressSanitizer (ASan)</strong> detect them. <strong>Use-after-free</strong>: free a pointer, then read or write through it. The memory may have been reallocated; you're stomping on something else. Highly exploitable.</p><p><strong>Double free</strong>: call free twice on the same pointer. Heap metadata corrupts, often crashing later or letting attackers control allocations. <strong>Buffer overflow</strong>: write past the end of an array. Smashes the stack frame, overwriting return addresses or function pointers. This was the classic 1990s exploit; modern mitigations (ASLR, DEP, stack canaries) make it harder but not impossible.</p><p>The unifying lesson: C requires discipline. Every memory bug is silent until it triggers. Modern C developers use ASan (compile with <code>-fsanitize=address</code>), valgrind, static analyzers, fuzz testing, and code review to find these before production.</p>",
+        "mathExpressions": ["\\text{leak, UAF, double free, overflow} \\quad \\text{(all silent until exploited)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-02-c3",
+        "title": "Ownership Conventions and RAII (in C)",
+        "contentHtml": "<p>C has no destructors. The compiler can't run cleanup code when a variable leaves scope. So C programmers establish <strong>ownership conventions</strong>: who's responsible for freeing each allocation?</p><p>Common patterns: <strong>creator owns</strong> (the function that allocates also frees, or hands ownership to a caller documented as such). <strong>Borrowed pointers</strong> (function uses a pointer but doesn't free — caller retains ownership). <strong>Containers own elements</strong> (a list owns its nodes; freeing the list also frees each node).</p><p>Some C codebases simulate RAII using <strong>cleanup attributes</strong> (GCC's <code>__attribute__((cleanup))</code>, also via <code>defer</code> in modern C25). The Linux kernel uses <code>kfree</code> + carefully named lifetimes; FFmpeg uses ref-counting on certain objects; OpenSSL has explicit init/free pairs. Without a borrow checker, every C codebase reinvents these conventions and pays vigilance tax forever. This is the gap Rust exists to close.</p>",
+        "mathExpressions": ["\\text{ownership: who frees this?} \\quad \\text{(by convention, not by language)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["c-q09", "c-q10", "c-q11", "c-q12", "c-q13", "c-q14", "c-q15", "c-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "c-03",
+    "topicId": "cs-lang-c",
+    "order": 3,
+    "title": "Strings, Arrays, and Structs",
+    "description": "C's lean data types and their many footguns",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "c-03-c1",
+        "title": "C Strings: Just Null-Terminated char Arrays",
+        "contentHtml": "<p>C has no string type. A C string is just an array of <code>char</code> ending in <strong>'\\0'</strong> (the null terminator). Standard library functions (<code>strlen</code>, <code>strcpy</code>, <code>printf</code>) walk the array until they find the terminator.</p><p>This design has serious downsides. <strong>strlen is O(n)</strong> — must scan to find the end. <strong>strcpy has no length parameter</strong> and writes until it hits a terminator, easily overrunning the destination buffer. The <strong>strn-</strong> variants (strncpy, strncat) take lengths but have their own subtle bugs (strncpy may not null-terminate the result).</p><p>Modern C code uses safer alternatives: <strong>snprintf</strong> for formatted strings, careful length tracking, often custom string types. Some codebases adopt <strong>length-prefixed strings</strong> (length + buffer) to avoid the terminator entirely. The key safety habit: always know the maximum size you can write; never trust input lengths from outside.</p>",
+        "mathExpressions": ["\\text{C string: } [c_0, c_1, \\ldots, c_{n-1}, \\backslash 0] \\quad \\text{strlen} = n, \\text{ no length stored}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-03-c2",
+        "title": "Structs and Memory Layout",
+        "contentHtml": "<p>A <strong>struct</strong> groups multiple values into one type: <code>struct Point { int x; int y; };</code>. Structs are stored contiguously in memory; you can take pointers to them, pass by value (copies the whole struct), or pass by pointer (shares the same one).</p><p>The catch is <strong>padding</strong>. Compilers may insert unused bytes between struct members to satisfy alignment requirements. <code>struct { char c; int i; }</code> typically takes 8 bytes (1 + 3 padding + 4), not 5. Reordering members from largest to smallest minimizes padding. Performance-critical or wire-format code uses <code>__attribute__((packed))</code> to disable padding (with portability and speed costs).</p><p>Structs are the foundation of C's data modeling. Linked lists, trees, hash tables — all are structs with pointer fields. Without classes or methods, the design pattern is: <code>struct</code> for state, free functions taking a pointer to the struct as their first parameter. The Linux kernel and most C libraries follow this pattern systematically.</p>",
+        "mathExpressions": ["\\text{sizeof(struct)} \\geq \\sum \\text{sizeof(member)} + \\text{padding}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-03-c3",
+        "title": "Function Pointers and Generic Code",
+        "contentHtml": "<p>C lets you store function addresses in pointers: <code>int (*compare)(const void *, const void *)</code>. The standard <code>qsort</code> uses this for generic sorting — pass it an array, an element size, and a comparison function pointer.</p><p>Function pointers enable many patterns: <strong>callbacks</strong> (event handlers, signal handlers), <strong>dispatch tables</strong> (interpreters, jump tables), <strong>plugin systems</strong> (loaded with <code>dlopen</code>, address resolved with <code>dlsym</code>), <strong>vtables</strong> for OOP-in-C (Linux kernel structs with function-pointer fields).</p><p>For <strong>generic code</strong>, C uses <code>void *</code> (untyped pointers) plus explicit size info. <code>qsort(arr, n, sizeof(*arr), cmp)</code> works on any type because it manipulates raw bytes via the size and comparator. Tradeoff: zero compile-time type checks. C++ templates and Rust generics evolved as type-safe alternatives, but the void-pointer trick is everywhere in idiomatic C.</p>",
+        "mathExpressions": ["\\text{void *: untyped pointer + sizeof(T)} \\implies \\text{generic, but unsafe}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["c-q17", "c-q18", "c-q19", "c-q20", "c-q21", "c-q22", "c-q23", "c-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "c-04",
+    "topicId": "cs-lang-c",
+    "order": 4,
+    "title": "Undefined Behavior",
+    "description": "The compiler's right to do anything when you break the rules",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "c-04-c1",
+        "title": "What Undefined Behavior Means",
+        "contentHtml": "<p>The C standard defines a set of <strong>rules</strong> programs must follow. Violating any rule is <strong>undefined behavior (UB)</strong>: the compiler is allowed to do <em>literally anything</em>. Crash, return wrong values, format your hard drive (theoretically), travel back in time. The standard provides no guarantees.</p><p>Common UBs: signed integer overflow, out-of-bounds array access, dereferencing NULL or freed pointers, reading uninitialized memory, breaking strict aliasing rules, modifying a variable twice between sequence points (<code>i = i++</code>), shift past the type width.</p><p>The shocking part: modern compilers actively <strong>exploit</strong> UB for optimization. If your code performs UB, the compiler assumes you didn't (because you promised to follow the rules) and may delete the code path entirely. <code>if (x + 1 &lt; x) panic();</code> looks like an overflow check, but on a signed int, the compiler knows signed overflow is UB, so it deletes the panic call. This is real and surprising; many CVEs trace back to UB-based optimizer behavior.</p>",
+        "mathExpressions": ["\\text{UB: standard says nothing} \\implies \\text{compiler may do anything}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-04-c2",
+        "title": "The Strict Aliasing Rule",
+        "contentHtml": "<p>The <strong>strict aliasing rule</strong> says you can't access an object through a pointer of an incompatible type (with a few exceptions). <code>float f = 1.5; uint32_t bits = *(uint32_t*)&amp;f;</code> looks like a reasonable bit reinterpretation but is undefined behavior — accessing a float through a uint32_t pointer.</p><p>The compiler uses this rule for optimization: it assumes pointers of different types don't alias, so it can reorder reads and writes between them. Code that violates strict aliasing may work for years, then break with a new compiler version or optimization level.</p><p>The correct way to bit-reinterpret: use <strong>memcpy</strong>: <code>memcpy(&amp;bits, &amp;f, sizeof(bits));</code>. The compiler optimizes memcpy of a known size into a single load/store, with no UB. Or use a <strong>union</strong> (well-defined on most compilers, technically UB pre-C99). Or <strong>std::bit_cast</strong> in C++20. Modern systems code does this constantly; doing it correctly is mandatory.</p>",
+        "mathExpressions": ["\\text{type T pointer cannot alias type U pointer} \\implies \\text{compiler reorders freely}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-04-c3",
+        "title": "Sanitizers, Static Analysis, and Defensive Coding",
+        "contentHtml": "<p>The defense against UB is rigorous tooling. <strong>AddressSanitizer (ASan)</strong> catches use-after-free, buffer overflows, and many heap bugs at runtime — compile with <code>-fsanitize=address</code>. <strong>UndefinedBehaviorSanitizer (UBSan)</strong> catches signed overflow, null deref, alignment violations. <strong>ThreadSanitizer (TSan)</strong> catches data races. <strong>MemorySanitizer (MSan)</strong> finds reads of uninitialized memory.</p><p><strong>Static analyzers</strong> (clang-tidy, cppcheck, Coverity, PVS-Studio) catch many bugs at compile time without running the code. <strong>Compilers themselves</strong> warn about many issues with <code>-Wall -Wextra -Wpedantic -Werror</code>. <strong>Fuzzers</strong> (libFuzzer, AFL++, OSS-Fuzz) feed random inputs into your code looking for crashes — Google's OSS-Fuzz has found tens of thousands of bugs in major open-source C projects.</p><p>Modern C development is unimaginable without these tools. Production-quality C requires running the test suite under all sanitizers in CI, fuzzing the parser surfaces, and treating warnings as errors. The language hasn't gotten safer, but the tooling has.</p>",
+        "mathExpressions": ["\\text{C safety} = \\text{discipline} + \\text{tooling (sanitizers, fuzzers, analyzers)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["c-q25", "c-q26", "c-q27", "c-q28", "c-q29", "c-q30", "c-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "c-05",
+    "topicId": "cs-lang-c",
+    "order": 5,
+    "title": "The Standard Library and Tooling",
+    "description": "libc, build systems, and where C still wins",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "c-05-c1",
+        "title": "The C Standard Library",
+        "contentHtml": "<p>C's standard library is small and remarkably stable. <strong>stdio.h</strong>: I/O (<code>printf</code>, <code>scanf</code>, <code>fopen</code>). <strong>stdlib.h</strong>: memory, conversions, exit. <strong>string.h</strong>: string manipulation. <strong>math.h</strong>: floating point. <strong>time.h</strong>: clock and date functions. <strong>stdint.h</strong>: fixed-size integers (<code>uint32_t</code>). <strong>assert.h</strong>: debugging assertions.</p><p>Compared to other languages, libc is tiny. There are no containers (no list, no hashmap), no networking, no JSON parsing, no regex (well, <code>regex.h</code> is POSIX but not C standard), no thread synchronization until C11. The philosophy: provide primitives, let third-party libraries fill the rest.</p><p>For practical work, you reach for system libraries (POSIX functions like sockets, mmap, pthreads), libraries from your platform (Win32, libdispatch on macOS), or community projects (zlib, libcurl, OpenSSL, SDL, GTK). C is the universal interface — almost every other language can call C functions, which is why C ABIs are the lingua franca of cross-language interop.</p>",
+        "mathExpressions": ["\\text{libc: small primitives} \\quad \\text{POSIX/system libs: rest of the OS}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-05-c2",
+        "title": "Compiling and Linking",
+        "contentHtml": "<p>The C build process has clear stages. <strong>Preprocessor</strong>: handles <code>#include</code>, <code>#define</code>, <code>#ifdef</code>. <strong>Compiler</strong>: turns each <code>.c</code> file into an object file (<code>.o</code>). <strong>Linker</strong>: combines object files and libraries into the final executable.</p><p>Each step has its own tooling. <strong>cpp</strong> for preprocessing, <strong>cc1</strong> or <strong>clang</strong> for compilation, <strong>ld</strong> for linking. Most of the time you invoke them all together via <code>gcc</code> or <code>clang</code>. Build systems orchestrate this for large projects: <strong>Make</strong> (the original), <strong>CMake</strong> (cross-platform meta-build), <strong>Meson + Ninja</strong> (modern, fast), <strong>Bazel</strong> (Google-scale).</p><p>The classic pain point: <strong>header files</strong>. Every file that uses a function needs to include its declaration. Forward declarations, include guards (<code>#ifndef</code>...<code>#define</code>...<code>#endif</code>), <code>#pragma once</code>, transitive include chains, and recompilation cascades all stem from this design. C++20's <strong>modules</strong> aim to fix this; C is still working on it.</p>",
+        "mathExpressions": ["\\text{preprocess} \\to \\text{compile} \\to \\text{assemble} \\to \\text{link} \\to \\text{executable}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "c-05-c3",
+        "title": "Where C Still Wins, and What's Replacing It",
+        "contentHtml": "<p>C remains the language of choice in domains where memory layout, performance, and tight resource control matter most: <strong>operating system kernels</strong> (Linux, FreeBSD), <strong>embedded systems</strong> (firmware, microcontrollers), <strong>language runtimes</strong> (CPython, V8, JVM are partly C/C++), <strong>databases</strong> (PostgreSQL, SQLite, Redis), <strong>cryptography libraries</strong> (OpenSSL, libsodium), and <strong>video codecs</strong>.</p><p>The reasons: ABI stability (libc has been compatible since the 1980s), tiny runtime, every platform has a C compiler, predictable performance, and the ability to interop with everything. When a new language wants to be \"systems-level,\" being able to call into and be called from C is mandatory.</p><p>The challengers are real. <strong>Rust</strong> offers memory safety without GC and is being adopted in the Linux kernel, Firefox, Cloudflare. <strong>Zig</strong> offers C's spirit with better ergonomics. <strong>C++</strong> has long offered higher-level abstractions on the C foundation. But C itself isn't going anywhere — its installed base, ecosystem, and ABI lock-in are too deep. Knowing C is still the foundational systems-programming skill.</p>",
+        "mathExpressions": ["\\text{C: smallest abstraction over machine} \\implies \\text{universal ABI, slow to die}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["c-q32", "c-q33", "c-q34", "c-q35", "c-q36", "c-q37"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,533 @@
+@page "/etymology"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Etymology Tracer</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Etymology Tracer" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Etymology Tracer</h1>
+    </div>
+
+    <div class="card etym-intro">
+        <Icon Name="scroll" Size="22" Stroke="var(--accent)" />
+        <p>Trace a modern English word back through history to its earliest reconstructable ancestor. Each branch shows a sound change, borrowing, or sister language.</p>
+    </div>
+
+    <div class="card etym-search-card">
+        <div class="etym-search-wrap">
+            <span class="etym-search-icon"><Icon Name="search" Size="18" Stroke="var(--text-muted)" /></span>
+            <input class="etym-search" type="text" placeholder="Search a word (e.g. father, heart, tea)..."
+                   @bind="searchText" @bind:event="oninput" />
+            @if (!string.IsNullOrEmpty(searchText))
+            {
+                <button class="etym-clear" @onclick="() => searchText = string.Empty">Clear</button>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(searchText) && Suggestions().Any())
+        {
+            <div class="etym-suggestions">
+                @foreach (var s in Suggestions())
+                {
+                    var sx = s;
+                    <button class="etym-suggest" @onclick="() => Pick(sx)">@sx</button>
+                }
+            </div>
+        }
+
+        <div class="etym-chips">
+            @foreach (var w in Families.Keys.OrderBy(k => k))
+            {
+                var wx = w;
+                <button class="etym-chip @(selectedWord == wx ? "etym-chip-active" : "")" @onclick="() => Pick(wx)">@wx</button>
+            }
+        </div>
+    </div>
+
+    @if (selectedWord != null && Families.TryGetValue(selectedWord, out var family))
+    {
+        <div class="card etym-detail">
+            <div class="etym-detail-header">
+                <div>
+                    <div class="etym-word">@selectedWord</div>
+                    <div class="etym-root">Root: @family.Root</div>
+                </div>
+                <div class="etym-meaning">@family.Gloss</div>
+            </div>
+
+            <div class="etym-tree-wrap">
+                @{
+                    var layout = Layout(family);
+                    var minX = layout.Nodes.Min(n => n.X) - 90;
+                    var maxX = layout.Nodes.Max(n => n.X) + 90;
+                    var w = maxX - minX;
+                    var h = layout.Height;
+                }
+                <svg class="etym-tree" viewBox="@($"{minX} 0 {w} {h}")" preserveAspectRatio="xMidYMin meet" style="@($"min-width:{Math.Max((int)w, 320)}px;height:{(int)h}px")">
+                    @foreach (var e in layout.Edges)
+                    {
+                        <line x1="@e.X1.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              y1="@e.Y1.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              x2="@e.X2.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              y2="@e.Y2.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                              stroke="var(--border)" stroke-width="1.5" />
+                        @if (!string.IsNullOrEmpty(e.Label))
+                        {
+                            var midX = (e.X1 + e.X2) / 2;
+                            var midY = (e.Y1 + e.Y2) / 2;
+                            <g>
+                                <rect x="@((midX - 60).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                      y="@((midY - 9).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                      width="120" height="18" rx="6"
+                                      fill="var(--bg-surface)" stroke="var(--border)" stroke-width="0.5" />
+                                <text x="@midX.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                      y="@((midY + 4).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                      text-anchor="middle" font-size="9" fill="var(--text-secondary)">@Truncate(e.Label, 22)</text>
+                            </g>
+                        }
+                    }
+                    @foreach (var n in layout.Nodes)
+                    {
+                        var fill = n.IsMain ? "var(--primary)" : (n.IsRoot ? "var(--accent)" : "var(--bg-card)");
+                        var textColor = n.IsMain || n.IsRoot ? "white" : "var(--text-primary)";
+                        var subColor = n.IsMain || n.IsRoot ? "rgba(255,255,255,0.85)" : "var(--text-muted)";
+                        <g>
+                            <rect x="@((n.X - 75).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                  y="@((n.Y - 24).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                  width="150" height="48" rx="8"
+                                  fill="@fill" stroke="var(--border)" stroke-width="1" />
+                            <text x="@n.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                  y="@((n.Y - 9).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                  text-anchor="middle" font-size="8" fill="@subColor">@Truncate(n.LangPeriod, 28)</text>
+                            <text x="@n.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                  y="@((n.Y + 5).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                  text-anchor="middle" font-size="13" font-weight="700" fill="@textColor">@Truncate(n.Form, 18)</text>
+                            @if (!string.IsNullOrEmpty(n.Meaning))
+                            {
+                                <g><text x="@n.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                      y="@((n.Y + 17).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                      text-anchor="middle" font-size="8" font-style="italic" fill="@subColor">"@Truncate(n.Meaning, 24)"</text></g>
+                            }
+                        </g>
+                    }
+                </svg>
+            </div>
+
+            <div class="etym-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Proto-root</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--primary)"></span>Modern English</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--bg-card);border:1px solid var(--border)"></span>Cognate / ancestor</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(family.Note))
+            {
+                <div class="etym-note">
+                    <Icon Name="book" Size="16" Stroke="var(--accent)" />
+                    <span>@family.Note</span>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card etym-empty">
+            <Icon Name="brain" Size="32" Stroke="var(--text-muted)" />
+            <p>Pick a word above to see its family tree.</p>
+        </div>
+    }
+}
+
+@code {
+    private bool unlocked;
+    private string searchText = string.Empty;
+    private string? selectedWord;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-etymology");
+            StateHasChanged();
+        }
+    }
+
+    private void Pick(string w)
+    {
+        selectedWord = w;
+        searchText = string.Empty;
+    }
+
+    private IEnumerable<string> Suggestions() =>
+        Families.Keys
+            .Where(k => k.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase))
+            .OrderBy(k => k)
+            .Take(8);
+
+    private static string Truncate(string s, int max) =>
+        string.IsNullOrEmpty(s) ? string.Empty : (s.Length <= max ? s : s.Substring(0, max - 1) + "…");
+
+    // ---- Tree model ----
+    private record Node(string Id, string LangPeriod, string Form, string Meaning, string? ParentId, string? EdgeLabel, bool IsMain = false, bool IsRoot = false);
+    private record Family(string Root, string Gloss, string? Note, List<Node> Nodes);
+
+    private record PosNode(double X, double Y, string LangPeriod, string Form, string Meaning, bool IsMain, bool IsRoot);
+    private record PosEdge(double X1, double Y1, double X2, double Y2, string? Label);
+    private record TreeLayout(List<PosNode> Nodes, List<PosEdge> Edges, double Height);
+
+    private TreeLayout Layout(Family family)
+    {
+        // Compute depth for each node by walking parent chain
+        var byId = family.Nodes.ToDictionary(n => n.Id);
+        int Depth(Node n) {
+            int d = 0;
+            var c = n;
+            while (c.ParentId != null && byId.ContainsKey(c.ParentId)) { c = byId[c.ParentId]; d++; }
+            return d;
+        }
+
+        var depths = family.Nodes.ToDictionary(n => n.Id, n => Depth(n));
+        var maxDepth = depths.Values.Max();
+
+        // Group nodes by depth, assign x positions evenly
+        var byDepth = family.Nodes.GroupBy(n => depths[n.Id]).OrderBy(g => g.Key).ToList();
+        var posMap = new Dictionary<string, (double X, double Y)>();
+        const double rowH = 100;
+        const double colW = 180;
+
+        foreach (var grp in byDepth)
+        {
+            var list = grp.ToList();
+            // Sort so main-line node (IsMain or has descendant chain to a main) is centered
+            // Simple: keep input order, center around 0
+            int n = list.Count;
+            for (int i = 0; i < n; i++)
+            {
+                double x = (i - (n - 1) / 2.0) * colW;
+                double y = 40 + grp.Key * rowH;
+                posMap[list[i].Id] = (x, y);
+            }
+        }
+
+        var posNodes = family.Nodes.Select(n => new PosNode(
+            posMap[n.Id].X, posMap[n.Id].Y, n.LangPeriod, n.Form, n.Meaning, n.IsMain, n.IsRoot
+        )).ToList();
+
+        var posEdges = new List<PosEdge>();
+        foreach (var n in family.Nodes)
+        {
+            if (n.ParentId != null && posMap.ContainsKey(n.ParentId))
+            {
+                var p = posMap[n.ParentId];
+                var c = posMap[n.Id];
+                posEdges.Add(new PosEdge(p.X, p.Y + 24, c.X, c.Y - 24, n.EdgeLabel));
+            }
+        }
+
+        double height = 80 + maxDepth * rowH + 40;
+        return new TreeLayout(posNodes, posEdges, height);
+    }
+
+    // ---- Word families ----
+    // Each tree: root at depth 0, descendants flow down. Modern English form is marked IsMain.
+    private static readonly Dictionary<string, Family> Families = new()
+    {
+        ["father"] = new Family("PIE *ph₂tér-", "male parent", "Grimm's Law turned PIE *p- into Germanic *f-, giving 'father' rather than Latin 'pater'.", new() {
+            new("r", "PIE (~4500 BCE)", "*ph₂tér-", "father", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*fadēr", "father", "r", "Grimm's Law: p > f"),
+            new("oe", "Old English (~900)", "fæder", "father", "gmc", "vowel shift"),
+            new("en", "Modern English", "father", "father", "oe", "Great Vowel Shift", IsMain: true),
+            new("lat", "Latin", "pater", "father", "r", "kept *p-"),
+            new("fr", "French", "père", "father", "lat", "Vulgar Latin > OFr"),
+            new("skt", "Sanskrit", "pitṛ́", "father", "r", "Indo-Iranian branch"),
+        }),
+        ["mother"] = new Family("PIE *méh₂tēr-", "female parent", null, new() {
+            new("r", "PIE", "*méh₂tēr-", "mother", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*mōdēr", "mother", "r", "vowel shift"),
+            new("oe", "Old English", "mōdor", "mother", "gmc", null),
+            new("en", "Modern English", "mother", "mother", "oe", "th from d", IsMain: true),
+            new("lat", "Latin", "mater", "mother", "r", null),
+            new("gk", "Greek", "mḗtēr", "mother", "r", null),
+        }),
+        ["brother"] = new Family("PIE *bʰréh₂tēr-", "brother", null, new() {
+            new("r", "PIE", "*bʰréh₂tēr-", "brother", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*brōþēr", "brother", "r", "Grimm's Law"),
+            new("oe", "Old English", "brōþor", "brother", "gmc", null),
+            new("en", "Modern English", "brother", "brother", "oe", null, IsMain: true),
+            new("lat", "Latin", "frater", "brother", "r", "bʰ > f"),
+            new("skt", "Sanskrit", "bhrātṛ", "brother", "r", null),
+        }),
+        ["sister"] = new Family("PIE *swésōr-", "sister", null, new() {
+            new("r", "PIE", "*swésōr-", "sister", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*swestēr", "sister", "r", null),
+            new("on", "Old Norse", "systir", "sister", "gmc", "borrowed into Eng."),
+            new("en", "Modern English", "sister", "sister", "on", "replaced OE sweostor", IsMain: true),
+            new("lat", "Latin", "soror", "sister", "r", null),
+            new("skt", "Sanskrit", "svásṛ", "sister", "r", null),
+        }),
+        ["name"] = new Family("PIE *h₁nómn̥-", "name", null, new() {
+            new("r", "PIE", "*h₁nómn̥-", "name", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*namô", "name", "r", null),
+            new("oe", "Old English", "nama", "name", "gmc", null),
+            new("en", "Modern English", "name", "name", "oe", null, IsMain: true),
+            new("lat", "Latin", "nomen", "name", "r", null),
+            new("gk", "Greek", "ónoma", "name", "r", null),
+        }),
+        ["heart"] = new Family("PIE *ḱérd-", "heart", "Latin cord- gave us 'cordial' and 'courage'; Greek kardia gave 'cardiac'.", new() {
+            new("r", "PIE", "*ḱérd-", "heart", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*hertô", "heart", "r", "Grimm's Law: ḱ > h"),
+            new("oe", "Old English", "heorte", "heart", "gmc", null),
+            new("en", "Modern English", "heart", "heart", "oe", null, IsMain: true),
+            new("lat", "Latin", "cor / cordis", "heart", "r", null),
+            new("cordial", "English (via Lat.)", "cordial", "of the heart", "lat", "borrowed"),
+            new("gk", "Greek", "kardía", "heart", "r", null),
+            new("cardiac", "English (via Gk.)", "cardiac", "of the heart", "gk", "borrowed"),
+        }),
+        ["foot"] = new Family("PIE *pṓds / *ped-", "foot", "Greek pous gave podiatry; Latin pes/pedis gave pedal, pedestrian.", new() {
+            new("r", "PIE", "*pṓds", "foot", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*fōts", "foot", "r", "Grimm's Law: p > f"),
+            new("oe", "Old English", "fōt", "foot", "gmc", null),
+            new("en", "Modern English", "foot", "foot", "oe", null, IsMain: true),
+            new("lat", "Latin", "pes / pedis", "foot", "r", null),
+            new("pedal", "English (via Lat.)", "pedal", "foot lever", "lat", "borrowed"),
+            new("gk", "Greek", "pous / podos", "foot", "r", null),
+            new("podiatry", "English (via Gk.)", "podiatry", "foot care", "gk", "borrowed"),
+        }),
+        ["water"] = new Family("PIE *wódr̥-", "water", null, new() {
+            new("r", "PIE", "*wódr̥-", "water", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*watōr", "water", "r", null),
+            new("oe", "Old English", "wæter", "water", "gmc", null),
+            new("en", "Modern English", "water", "water", "oe", null, IsMain: true),
+            new("gk", "Greek", "húdōr", "water", "r", "h- from w-"),
+            new("hydro", "English (via Gk.)", "hydro-", "water-", "gk", "combining form"),
+        }),
+        ["fire"] = new Family("PIE *péh₂wr̥-", "fire (inanimate)", "PIE had two words: *péh₂wr̥- (the substance, gave English 'fire') and *h₁n̥gʷnis (animate, gave Latin 'ignis' > ignite).", new() {
+            new("r", "PIE", "*péh₂wr̥-", "fire", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*fōr / *fuiri", "fire", "r", "Grimm's Law: p > f"),
+            new("oe", "Old English", "fȳr", "fire", "gmc", null),
+            new("en", "Modern English", "fire", "fire", "oe", "Great Vowel Shift", IsMain: true),
+            new("gk", "Greek", "pŷr", "fire", "r", null),
+            new("pyro", "English (via Gk.)", "pyro-", "fire-", "gk", "combining form"),
+        }),
+        ["star"] = new Family("PIE *h₂stḗr-", "star", "Greek aster gave astronomy, asterisk; Latin stella gave stellar.", new() {
+            new("r", "PIE", "*h₂stḗr-", "star", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*sternô", "star", "r", null),
+            new("oe", "Old English", "steorra", "star", "gmc", null),
+            new("en", "Modern English", "star", "star", "oe", null, IsMain: true),
+            new("lat", "Latin", "stella", "star", "r", "diminutive form"),
+            new("gk", "Greek", "astḗr", "star", "r", null),
+            new("astro", "English (via Gk.)", "astronomy", "study of stars", "gk", "borrowed"),
+        }),
+        ["night"] = new Family("PIE *nókʷts", "night", null, new() {
+            new("r", "PIE", "*nókʷts", "night", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*nahts", "night", "r", "kʷ > h"),
+            new("oe", "Old English", "niht", "night", "gmc", null),
+            new("en", "Modern English", "night", "night", "oe", "silent gh", IsMain: true),
+            new("lat", "Latin", "nox / noctis", "night", "r", null),
+            new("nocturnal", "English (via Lat.)", "nocturnal", "of night", "lat", "borrowed"),
+            new("gk", "Greek", "núx", "night", "r", null),
+        }),
+        ["salt"] = new Family("PIE *séh₂ls", "salt", "Latin sal gave salary (Roman soldiers paid in salt allowance).", new() {
+            new("r", "PIE", "*séh₂ls", "salt", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*saltą", "salt", "r", null),
+            new("oe", "Old English", "sealt", "salt", "gmc", null),
+            new("en", "Modern English", "salt", "salt", "oe", null, IsMain: true),
+            new("lat", "Latin", "sal", "salt", "r", null),
+            new("salary", "English (via Lat.)", "salary", "salt money", "lat", "borrowed"),
+        }),
+        ["cow"] = new Family("PIE *gʷṓws", "cow / ox", "Same root gave English 'cow' and Latin 'bos' > 'bovine', 'beef'.", new() {
+            new("r", "PIE", "*gʷṓws", "cow", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*kūz", "cow", "r", "gʷ > k"),
+            new("oe", "Old English", "cū", "cow", "gmc", null),
+            new("en", "Modern English", "cow", "cow", "oe", null, IsMain: true),
+            new("lat", "Latin", "bos / bovis", "ox", "r", null),
+            new("bovine", "English (via Lat.)", "bovine", "of cattle", "lat", "borrowed"),
+            new("gk", "Greek", "boûs", "ox", "r", null),
+        }),
+        ["wheel"] = new Family("PIE *kʷékʷlos", "wheel", "Reduplication of the root for 'turn'. Greek kuklos gave cycle, cyclone, encyclopedia.", new() {
+            new("r", "PIE", "*kʷékʷlos", "wheel", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*hwehwlą", "wheel", "r", "kʷ > hw"),
+            new("oe", "Old English", "hwēol", "wheel", "gmc", null),
+            new("en", "Modern English", "wheel", "wheel", "oe", null, IsMain: true),
+            new("gk", "Greek", "kúklos", "circle", "r", null),
+            new("cycle", "English (via Gk.)", "cycle", "circular run", "gk", "borrowed"),
+            new("skt", "Sanskrit", "cakra", "wheel", "r", null),
+        }),
+        ["knee"] = new Family("PIE *ǵónu-", "knee", "Latin genu gave 'genuflect' (bend the knee).", new() {
+            new("r", "PIE", "*ǵónu-", "knee", null, null, IsRoot: true),
+            new("gmc", "Proto-Germanic", "*knewą", "knee", "r", null),
+            new("oe", "Old English", "cnēo", "knee", "gmc", "k pronounced"),
+            new("en", "Modern English", "knee", "knee", "oe", "silent k", IsMain: true),
+            new("lat", "Latin", "genu", "knee", "r", null),
+            new("genuflect", "English (via Lat.)", "genuflect", "bend knee", "lat", "borrowed"),
+            new("gk", "Greek", "gónu", "knee", "r", null),
+        }),
+        ["philosophy"] = new Family("Greek philos + sophia", "love of wisdom", "Coined by ancient Greeks; philos and sophia spread to many sister words.", new() {
+            new("r", "Ancient Greek", "philosophía", "love of wisdom", null, null, IsRoot: true),
+            new("lat", "Latin", "philosophia", "philosophy", "r", "borrowed"),
+            new("ofr", "Old French", "filosofie", "philosophy", "lat", null),
+            new("en", "Modern English", "philosophy", "philosophy", "ofr", "via Middle Eng.", IsMain: true),
+            new("philia", "Greek (sister)", "philía", "friendship", "r", "from philos"),
+            new("sophia", "Greek (sister)", "sophía", "wisdom", "r", "from sophos"),
+        }),
+        ["computer"] = new Family("Latin computare", "to reckon, count", "From com- (with) + putare (to think, prune). Same root gives dispute, reputation, amputate.", new() {
+            new("r", "Latin", "computare", "to reckon", null, null, IsRoot: true),
+            new("ofr", "Old French", "computer", "to count", "r", "borrowed"),
+            new("en16", "Early Modern Eng.", "compute", "calculate", "ofr", "1630s"),
+            new("en", "Modern English", "computer", "machine that computes", "en16", "agent suffix -er", IsMain: true),
+            new("putare", "Latin (sister)", "putare", "to think, prune", "r", "base verb"),
+            new("dispute", "English (via Lat.)", "dispute", "argue against", "putare", "dis- + putare"),
+        }),
+        ["butter"] = new Family("Greek bouturon", "cow-cheese", "Possibly from bous (cow) + turos (cheese). Loaned through Latin into Germanic.", new() {
+            new("r", "Ancient Greek", "bouturon", "cow-cheese", null, null, IsRoot: true),
+            new("lat", "Latin", "butyrum", "butter", "r", "borrowed"),
+            new("oe", "Old English", "butere", "butter", "lat", "early loan"),
+            new("en", "Modern English", "butter", "butter", "oe", null, IsMain: true),
+            new("butyric", "English (via Lat.)", "butyric", "buttery (acid)", "lat", "scientific"),
+        }),
+        ["alcohol"] = new Family("Arabic al-kuḥl", "the kohl (eye powder)", "Arabic al-kuḥl meant powdered antimony eyeliner; Europeans extended it to any fine powder, then to distilled spirits.", new() {
+            new("r", "Arabic", "al-kuḥl", "the kohl", null, null, IsRoot: true),
+            new("mlat", "Medieval Latin", "alcohol", "fine powder", "r", "borrowed"),
+            new("fr", "Middle French", "alcohol", "spirits", "mlat", "sense shift"),
+            new("en", "Modern English", "alcohol", "spirits", "fr", "1540s", IsMain: true),
+            new("kohl", "English (sister loan)", "kohl", "eye cosmetic", "r", "re-borrowed"),
+        }),
+        ["tea"] = new Family("Old Chinese *lˤa", "tea leaf", "Two roads: the Min Chinese 'te' went by sea (Dutch traders) giving 'tea, thé'; the Mandarin 'cha' went by land giving 'chai, chay'.", new() {
+            new("r", "Old Chinese", "*lˤa", "tea", null, null, IsRoot: true),
+            new("min", "Min (Hokkien)", "tê", "tea", "r", "coastal dialect"),
+            new("nl", "Dutch", "thee", "tea", "min", "via Dutch traders"),
+            new("en", "Modern English", "tea", "tea", "nl", "1650s", IsMain: true),
+            new("man", "Mandarin", "chá", "tea", "r", "northern dialect"),
+            new("chai", "Hindi/Russian", "chai / чай", "tea", "man", "overland route"),
+        }),
+        ["robot"] = new Family("Czech robota", "forced labor, drudgery", "Coined by Karel Čapek's brother Josef for the 1920 play R.U.R. From Slavic 'rabota' = work.", new() {
+            new("r", "Proto-Slavic", "*orbota", "hard work", null, null, IsRoot: true),
+            new("cz", "Czech", "robota", "forced labor", "r", null),
+            new("rur", "Czech (1920)", "robot", "artificial worker", "cz", "Čapek, R.U.R."),
+            new("en", "Modern English", "robot", "machine", "rur", "borrowed 1923", IsMain: true),
+            new("ru", "Russian (sister)", "rabota", "work", "r", null),
+        }),
+        ["ketchup"] = new Family("Hokkien kê-tsiap", "fish sauce", "Originally a fermented fish brine from Fujian. British traders adopted it; tomatoes were added in 19th-century America.", new() {
+            new("r", "Hokkien", "kê-tsiap", "fish sauce", null, null, IsRoot: true),
+            new("ms", "Malay", "kicap", "soy sauce", "r", "regional spread"),
+            new("en17", "Early English", "catchup", "spiced sauce", "ms", "1690s"),
+            new("en", "Modern English", "ketchup", "tomato sauce", "en17", "tomato added 1800s", IsMain: true),
+        }),
+        ["boss"] = new Family("Dutch baas", "master", "Adopted in colonial New York to avoid the British 'master' (with its slavery overtones).", new() {
+            new("r", "Middle Dutch", "baes", "master", null, null, IsRoot: true),
+            new("nl", "Dutch", "baas", "boss, master", "r", null),
+            new("en", "Modern English", "boss", "supervisor", "nl", "Amer. Eng. 1640s", IsMain: true),
+        }),
+    };
+}
+
+<style>
+    .etym-intro {
+        display: flex; align-items: flex-start; gap: 12px;
+        padding: 14px 16px; margin-bottom: 14px;
+    }
+    .etym-intro p {
+        margin: 0; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;
+    }
+
+    .etym-search-card { padding: 14px; margin-bottom: 14px; }
+
+    .etym-search-wrap {
+        position: relative; display: flex; align-items: center; gap: 8px;
+        background: var(--bg-surface); border: 1px solid var(--border);
+        border-radius: var(--radius-md); padding: 8px 10px;
+    }
+    .etym-search-icon { display: flex; align-items: center; }
+    .etym-search {
+        flex: 1; background: transparent; border: none; outline: none;
+        color: var(--text-primary); font-size: 0.95rem; padding: 4px 0;
+    }
+    .etym-search::placeholder { color: var(--text-muted); }
+    .etym-clear {
+        background: transparent; border: none; color: var(--text-muted);
+        font-size: 0.78rem; cursor: pointer; padding: 4px 8px;
+    }
+
+    .etym-suggestions {
+        display: flex; flex-direction: column; gap: 2px;
+        margin-top: 8px; background: var(--bg-surface);
+        border: 1px solid var(--border); border-radius: var(--radius-sm);
+        padding: 4px; max-height: 220px; overflow-y: auto;
+    }
+    .etym-suggest {
+        text-align: left; background: transparent; border: none;
+        padding: 8px 10px; color: var(--text-primary); font-size: 0.88rem;
+        border-radius: 4px; cursor: pointer;
+    }
+    .etym-suggest:hover { background: var(--bg-card); }
+
+    .etym-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .etym-chip {
+        background: var(--bg-surface); border: 1px solid var(--border);
+        color: var(--text-secondary); padding: 5px 10px; font-size: 0.78rem;
+        border-radius: 12px; cursor: pointer; transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .etym-chip:hover { border-color: var(--primary); color: var(--text-primary); }
+    .etym-chip-active {
+        background: var(--primary); color: white !important; border-color: var(--primary);
+    }
+
+    .etym-detail { padding: 16px; margin-bottom: 14px; }
+    .etym-detail-header {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        gap: 12px; padding-bottom: 12px; margin-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+    .etym-word {
+        font-size: 1.4rem; font-weight: 700; color: var(--text-primary);
+        text-transform: lowercase; letter-spacing: 0.5px;
+    }
+    .etym-root { font-size: 0.78rem; color: var(--accent); font-weight: 600; margin-top: 2px; }
+    .etym-meaning {
+        font-size: 0.82rem; color: var(--text-muted); font-style: italic;
+        text-align: right; max-width: 50%;
+    }
+
+    .etym-tree-wrap {
+        overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+        background: var(--bg-surface); border-radius: var(--radius-sm);
+        padding: 8px 0; margin-bottom: 12px;
+    }
+    .etym-tree { display: block; }
+
+    .etym-legend {
+        display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+        font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+    .etym-note {
+        display: flex; align-items: flex-start; gap: 8px;
+        background: rgba(240,160,48,0.08); border-radius: var(--radius-sm);
+        padding: 10px 12px; font-size: 0.82rem; color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+    .etym-empty {
+        text-align: center; padding: 32px 20px;
+        color: var(--text-muted);
+    }
+    .etym-empty p { margin: 10px 0 0; font-size: 0.88rem; }
+</style>

@@ -1,0 +1,434 @@
+[
+  {
+    "id": "gr-01",
+    "topicId": "physics-gr-advanced",
+    "order": 1,
+    "title": "Tensor Calculus on Manifolds",
+    "description": "Indices, the metric, Christoffel symbols, and what 'covariant' really means",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "gr-01-c1",
+        "title": "Manifolds, Tensors, and the Index Conventions",
+        "contentHtml": "<p>General relativity lives on a <strong>4-dimensional Lorentzian manifold</strong> — a smooth space that locally looks like Minkowski spacetime. Coordinates <code>x^μ</code> (μ = 0, 1, 2, 3) label points; physical statements must not depend on the chart you happen to choose. <strong>Tensors</strong> are the multilinear objects that transform predictably under coordinate changes: a vector <code>V^μ</code> upstairs, a covector <code>ω_μ</code> downstairs, a (p, q)-tensor with p upper and q lower indices.</p><p><strong>Einstein summation</strong> contracts a repeated upper-and-lower pair: <code>A^μ B_μ</code> means a sum over μ. The cardinal sin of GR notation is having two upper or two lower indices repeated — that's not a tensor equation.</p><p>The <strong>metric tensor</strong> <code>g_μν</code> is the central object. It defines lengths, angles, and the line element <code>ds² = g_μν dx^μ dx^ν</code>. In Minkowski coordinates with signature (−, +, +, +), <code>g_μν = diag(−1, 1, 1, 1)</code>. The metric raises and lowers indices via <code>V_μ = g_μν V^ν</code>, so vectors and covectors aren't really separate things on a metric manifold — just two faces of the same geometric object.</p>",
+        "mathExpressions": [
+          "ds^2 = g_{\\mu\\nu}\\, dx^\\mu dx^\\nu",
+          "V_\\mu = g_{\\mu\\nu} V^\\nu, \\quad V^\\mu = g^{\\mu\\nu} V_\\nu",
+          "T'^{\\mu}{}_\\nu = \\frac{\\partial x'^\\mu}{\\partial x^\\alpha}\\, \\frac{\\partial x^\\beta}{\\partial x'^\\nu}\\, T^\\alpha{}_\\beta"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-01-c2",
+        "title": "Christoffel Symbols and the Covariant Derivative",
+        "contentHtml": "<p>Ordinary partial derivatives <code>∂_μ V^ν</code> aren't tensors: when you change coordinates, the basis vectors themselves rotate, polluting the derivative with non-tensorial junk. The <strong>covariant derivative</strong> <code>∇_μ</code> fixes this by adding correction terms — the <strong>Christoffel symbols</strong> <code>Γ^λ_μν</code> — that absorb the basis-rotation pieces.</p><p>The Christoffel symbols are not tensors themselves; they're the connection coefficients of the unique torsion-free metric-compatible connection (the <strong>Levi-Civita connection</strong>). They are computed entirely from the metric: <code>Γ^λ_μν = ½ g^{λσ}(∂_μ g_νσ + ∂_ν g_μσ − ∂_σ g_μν)</code>. Compute them once, reuse them everywhere.</p><p>For a vector field, <code>∇_μ V^ν = ∂_μ V^ν + Γ^ν_μλ V^λ</code>. For a covector, the sign flips: <code>∇_μ ω_ν = ∂_μ ω_ν − Γ^λ_μν ω_λ</code>. The covariant derivative reduces to the partial derivative in flat Cartesian coordinates (where Γ vanishes), but in any curved or curvilinear setting the Γ-terms are essential. Without them, even the divergence of a vector field would depend on your coordinate choice — physics would fall apart.</p>",
+        "mathExpressions": [
+          "\\Gamma^{\\lambda}_{\\mu\\nu} = \\tfrac{1}{2} g^{\\lambda\\sigma}\\left(\\partial_\\mu g_{\\nu\\sigma} + \\partial_\\nu g_{\\mu\\sigma} - \\partial_\\sigma g_{\\mu\\nu}\\right)",
+          "\\nabla_\\mu V^\\nu = \\partial_\\mu V^\\nu + \\Gamma^\\nu_{\\mu\\lambda} V^\\lambda",
+          "\\nabla_\\lambda g_{\\mu\\nu} = 0 \\quad \\text{(metric compatibility)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-01-c3",
+        "title": "Parallel Transport and Geodesics",
+        "contentHtml": "<p>On a curved manifold, there's no global notion of \"the same direction over there\" — to compare vectors at different points you must <strong>parallel transport</strong> one to the other along a path. A vector <code>V^μ</code> is parallel-transported along a curve with tangent <code>u^μ</code> when <code>u^ν ∇_ν V^μ = 0</code>. The covariant derivative along the curve is what \"keep the vector unchanged\" means in curved space.</p><p>A <strong>geodesic</strong> is a curve that parallel-transports its own tangent: <code>u^ν ∇_ν u^μ = 0</code>. In coordinates, this becomes the <strong>geodesic equation</strong>: <code>d²x^μ/dτ² + Γ^μ_νσ (dx^ν/dτ)(dx^σ/dτ) = 0</code>. Geodesics are the straightest possible paths and (for timelike curves) extremize proper time.</p><p>In GR, freely falling particles follow timelike geodesics; light rays follow null geodesics. The Christoffel terms encode gravity: a planet orbiting the Sun is moving \"as straight as possible\" through curved spacetime, with Γ supplying what Newton called the gravitational force. Parallel transport around closed loops measures curvature — go around a small loop on a sphere with a tangent vector and you'll return rotated. That rotation per unit area is the Riemann tensor, the topic of the next lesson.</p>",
+        "mathExpressions": [
+          "u^\\nu \\nabla_\\nu V^\\mu = 0 \\quad \\text{(parallel transport)}",
+          "\\frac{d^2 x^\\mu}{d\\tau^2} + \\Gamma^\\mu_{\\nu\\sigma} \\frac{dx^\\nu}{d\\tau} \\frac{dx^\\sigma}{d\\tau} = 0",
+          "\\tau = \\int \\sqrt{-g_{\\mu\\nu}\\, dx^\\mu dx^\\nu}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q01", "gr-q02", "gr-q03", "gr-q04", "gr-q05", "gr-q06", "gr-q07", "gr-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-02",
+    "topicId": "physics-gr-advanced",
+    "order": 2,
+    "title": "Curvature: Riemann, Ricci, and Einstein Tensors",
+    "description": "How parallel transport around a loop reveals the geometry of gravity",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "gr-02-c1",
+        "title": "The Riemann Curvature Tensor",
+        "contentHtml": "<p>The <strong>Riemann curvature tensor</strong> <code>R^ρ_σμν</code> measures the failure of covariant derivatives to commute: <code>[∇_μ, ∇_ν] V^ρ = R^ρ_σμν V^σ</code>. Geometrically, parallel-transport a vector around an infinitesimal loop spanned by <code>dx^μ ∧ dx^ν</code>; the vector returns rotated by an amount proportional to <code>R^ρ_σμν</code>. Flat space has <code>R^ρ_σμν = 0</code> identically at every point; any nonzero component anywhere is genuine, coordinate-invariant curvature that no clever change of chart can remove.</p><p>In components, <code>R^ρ_σμν = ∂_μ Γ^ρ_νσ − ∂_ν Γ^ρ_μσ + Γ^ρ_μλ Γ^λ_νσ − Γ^ρ_νλ Γ^λ_μσ</code>. In 4 dimensions Riemann has 256 raw components, but symmetries reduce the independent count to 20. Computing it from a given metric is brutal by hand and routinely outsourced to symbolic algebra packages like xAct or Cadabra.</p><p>The key symmetries: <code>R_ρσμν = −R_σρμν = −R_ρσνμ = R_μνρσ</code>, and the first <strong>Bianchi identity</strong> <code>R_ρ[σμν] = 0</code> (antisymmetrize the last three indices). The second (differential) Bianchi identity <code>∇_[λ R_ρσ]μν = 0</code> is the geometric statement that makes Einstein's equations consistent — it forces the Einstein tensor's divergence to vanish, which guarantees energy-momentum conservation in any solution.</p>",
+        "mathExpressions": [
+          "R^\\rho{}_{\\sigma\\mu\\nu} = \\partial_\\mu \\Gamma^\\rho_{\\nu\\sigma} - \\partial_\\nu \\Gamma^\\rho_{\\mu\\sigma} + \\Gamma^\\rho_{\\mu\\lambda} \\Gamma^\\lambda_{\\nu\\sigma} - \\Gamma^\\rho_{\\nu\\lambda} \\Gamma^\\lambda_{\\mu\\sigma}",
+          "[\\nabla_\\mu, \\nabla_\\nu] V^\\rho = R^\\rho{}_{\\sigma\\mu\\nu} V^\\sigma",
+          "\\nabla_{[\\lambda} R_{\\rho\\sigma]\\mu\\nu} = 0 \\quad \\text{(2nd Bianchi)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-02-c2",
+        "title": "Ricci Tensor, Ricci Scalar, and Geodesic Deviation",
+        "contentHtml": "<p>Contracting the Riemann tensor on its first and third indices gives the <strong>Ricci tensor</strong>: <code>R_μν = R^λ_μλν</code>. It's a symmetric (0,2)-tensor with 10 independent components in 4D. Tracing again with the metric gives the <strong>Ricci scalar</strong>: <code>R = g^μν R_μν</code>. These contractions throw away pieces of Riemann (the <strong>Weyl tensor</strong>, which carries the trace-free part) but capture exactly the information that couples to energy and momentum.</p><p>The physical meaning of Ricci comes from <strong>geodesic deviation</strong>: nearby freely falling particles accelerate toward or away from each other at a rate set by curvature. The geodesic deviation equation <code>D²ξ^μ/dτ² = −R^μ_νρσ u^ν u^ρ ξ^σ</code> describes <strong>tidal forces</strong> — the stretching and squeezing that distinguishes real gravity from a uniform acceleration. A free-falling lab can't detect uniform gravity (equivalence principle), but it can detect tidal effects, and those are exactly the Riemann tensor.</p><p>For example, an astronaut falling feet-first into a black hole is stretched along the radial direction and squeezed transversely — \"spaghettification.\" The strength is set by the relevant Riemann components, which scale as <code>~ M / r³</code> for a Schwarzschild black hole.</p>",
+        "mathExpressions": [
+          "R_{\\mu\\nu} = R^\\lambda{}_{\\mu\\lambda\\nu}, \\quad R = g^{\\mu\\nu} R_{\\mu\\nu}",
+          "\\frac{D^2 \\xi^\\mu}{d\\tau^2} = -R^\\mu{}_{\\nu\\rho\\sigma}\\, u^\\nu u^\\rho \\xi^\\sigma",
+          "R^\\rho{}_{\\sigma\\mu\\nu} = C^\\rho{}_{\\sigma\\mu\\nu} + (\\text{Ricci pieces}) \\quad \\text{(Weyl decomposition)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-02-c3",
+        "title": "The Einstein Tensor",
+        "contentHtml": "<p>The <strong>Einstein tensor</strong> is defined as <code>G_μν = R_μν − ½ g_μν R</code>. It's the unique symmetric (0,2)-tensor built from the metric and its first two derivatives that is automatically <strong>divergence-free</strong>: <code>∇^μ G_μν = 0</code>. This identity follows from the contracted second Bianchi identity, and it's no accident — it's the geometric reason GR is consistent with energy-momentum conservation.</p><p>If you'd written Einstein's equations as <code>R_μν = κ T_μν</code> (which Einstein himself tried before 1915), you'd be in trouble: the Ricci tensor is not generally divergence-free, so this would constrain matter unphysically. The trace correction <code>−½ g_μν R</code> exactly fixes this. Einstein arrived at <code>G_μν</code> after years of false starts, finally landing on the tensor whose conservation is automatic.</p><p>The Einstein tensor inherits 10 independent components in 4D, the same count as the metric (modulo coordinate gauge). That match — 10 equations for 10 unknowns — is why Einstein's equations have the right form to determine the geometry from the matter content. The next lesson assembles this into the full field equations.</p>",
+        "mathExpressions": [
+          "G_{\\mu\\nu} = R_{\\mu\\nu} - \\tfrac{1}{2} g_{\\mu\\nu} R",
+          "\\nabla^\\mu G_{\\mu\\nu} = 0 \\quad \\text{(contracted Bianchi)}",
+          "G^\\mu{}_\\mu = -R \\quad \\text{(trace of Einstein tensor in 4D)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q09", "gr-q10", "gr-q11", "gr-q12", "gr-q13", "gr-q14", "gr-q15", "gr-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-03",
+    "topicId": "physics-gr-advanced",
+    "order": 3,
+    "title": "The Einstein Field Equations",
+    "description": "Geometry equals matter — derivation, stress-energy, and the cosmological constant",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "gr-03-c1",
+        "title": "Einstein's Equations: The Master Statement",
+        "contentHtml": "<p>The <strong>Einstein field equations</strong> are: <code>G_μν + Λ g_μν = 8πG T_μν</code> (with c = 1). Geometry on the left, matter and energy on the right, coupled by Newton's constant <code>G</code> and the optional cosmological constant <code>Λ</code>. John Wheeler summarized: <em>matter tells spacetime how to curve, and spacetime tells matter how to move</em>.</p><p>This is 10 coupled non-linear partial differential equations for the 10 components of the metric. They are <strong>generally covariant</strong> — they take the same form in any coordinate system. They reduce to Newton's law of gravity in the weak-field, slow-motion limit: <code>g_00 ≈ −(1 + 2Φ/c²)</code> recovers <code>∇²Φ = 4πG ρ</code>.</p><p>The non-linearity is essential: gravity itself carries energy, so gravitational fields source more gravity. This is why GR is exponentially harder than electromagnetism — Maxwell's equations are linear in the fields, but Einstein's are not. Closed-form solutions are rare and precious; most of the field's history is the story of finding the few exact solutions (Schwarzschild, Kerr, FRW) and then doing perturbation theory or numerical relativity around them.</p>",
+        "mathExpressions": [
+          "G_{\\mu\\nu} + \\Lambda g_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}",
+          "R_{\\mu\\nu} - \\tfrac{1}{2} g_{\\mu\\nu} R + \\Lambda g_{\\mu\\nu} = 8\\pi G T_{\\mu\\nu}",
+          "\\nabla^2 \\Phi = 4\\pi G \\rho \\quad \\text{(Newtonian limit)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-03-c2",
+        "title": "The Stress-Energy Tensor",
+        "contentHtml": "<p>The <strong>stress-energy tensor</strong> <code>T_μν</code> is the source on the right of Einstein's equations. <code>T_00</code> is energy density, <code>T_0i</code> is momentum density (and energy flux), <code>T_ij</code> is the stress (pressure on the diagonal, shear off-diagonal). Conservation is automatic: <code>∇^μ T_μν = 0</code>, the curved-space generalization of energy-momentum conservation.</p><p>Common forms. <strong>Perfect fluid</strong>: <code>T_μν = (ρ + p) u_μ u_ν + p g_μν</code>, parameterized by energy density ρ, pressure p, and 4-velocity u. <strong>Electromagnetic field</strong>: <code>T_μν = F_μλ F_ν^λ − ¼ g_μν F_αβ F^αβ</code>. <strong>Vacuum</strong>: <code>T_μν = 0</code> (and Schwarzschild and Kerr live here).</p><p>A subtle and important fact: pressure <em>itself gravitates</em> in GR. In the Newtonian limit only mass-energy density matters, but a relativistic fluid feels a gravitational source <code>ρ + 3p/c²</code>. This is why a sufficiently massive star with positive pressure <em>cannot</em> resist collapse — adding more pressure adds more gravitating source, accelerating the collapse rather than halting it. The Tolman-Oppenheimer-Volkoff limit on neutron star mass (~2-3 solar masses) is a direct consequence.</p>",
+        "mathExpressions": [
+          "T^{\\mu\\nu}_{\\text{fluid}} = (\\rho + p) u^\\mu u^\\nu + p\\, g^{\\mu\\nu}",
+          "\\nabla_\\mu T^{\\mu\\nu} = 0",
+          "T^{\\mu\\nu}_{\\text{EM}} = F^{\\mu\\lambda} F^\\nu{}_\\lambda - \\tfrac{1}{4} g^{\\mu\\nu} F_{\\alpha\\beta} F^{\\alpha\\beta}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-03-c3",
+        "title": "The Variational Derivation and the Cosmological Constant",
+        "contentHtml": "<p>Einstein's equations follow from extremizing the <strong>Einstein-Hilbert action</strong>: <code>S = (1/16πG) ∫ R √(−g) d⁴x + S_matter</code>. Varying with respect to the metric and setting <code>δS/δg^μν = 0</code> reproduces <code>G_μν = 8πG T_μν</code>, with <code>T_μν</code> defined as the matter action's metric variation. This is the cleanest derivation: GR is the unique generally-covariant action linear in second derivatives of the metric (Lovelock's theorem in 4D).</p><p>Adding a constant to the integrand — <code>R → R − 2Λ</code> — produces the <strong>cosmological constant</strong> term <code>Λ g_μν</code>. Einstein originally introduced Λ in 1917 to allow a static universe, then called it his \"greatest blunder\" after Hubble found the expansion in 1929. The 1998 supernova observations of accelerating cosmic expansion brought Λ roaring back as <strong>dark energy</strong> — the dominant component of today's universe at about 68% of the energy density.</p><p>Measured value: <code>Λ ≈ 1.1 × 10^−52 m^−2</code>, equivalently a vacuum energy density of about <code>10^−9 J/m³</code>. The quantum-field-theory \"natural\" estimate from zero-point fluctuations is roughly 120 orders of magnitude larger — the famous <strong>cosmological constant problem</strong>, arguably the worst quantitative discrepancy in physics.</p>",
+        "mathExpressions": [
+          "S_{\\text{EH}} = \\frac{1}{16\\pi G} \\int (R - 2\\Lambda) \\sqrt{-g}\\, d^4 x",
+          "T_{\\mu\\nu} = -\\frac{2}{\\sqrt{-g}} \\frac{\\delta(\\sqrt{-g}\\, \\mathcal{L}_{\\text{matter}})}{\\delta g^{\\mu\\nu}}",
+          "\\rho_\\Lambda = \\frac{\\Lambda c^2}{8\\pi G} \\approx 6 \\times 10^{-10}\\ \\text{J/m}^3"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q17", "gr-q18", "gr-q19", "gr-q20", "gr-q21", "gr-q22", "gr-q23", "gr-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-04",
+    "topicId": "physics-gr-advanced",
+    "order": 4,
+    "title": "The Schwarzschild Solution",
+    "description": "Mercury's perihelion, light deflection, and the first exact solution",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "gr-04-c1",
+        "title": "The Schwarzschild Metric",
+        "contentHtml": "<p>Karl Schwarzschild found the first exact solution to Einstein's equations in 1915, while serving on the Russian front during WWI. He died of an autoimmune disease six months later. The <strong>Schwarzschild metric</strong> describes the vacuum spacetime outside a spherically symmetric, non-rotating mass M:</p><p><code>ds² = −(1 − 2GM/rc²) c²dt² + (1 − 2GM/rc²)^−1 dr² + r²(dθ² + sin²θ dφ²)</code>.</p><p><strong>Birkhoff's theorem</strong> says it's the unique spherically symmetric vacuum solution — the same metric describes the exterior of any static, spherical mass, and even a pulsating spherical star (no monopole gravitational radiation). The quantity <code>r_s = 2GM/c²</code> is the <strong>Schwarzschild radius</strong>: 3 km for the Sun, 9 mm for Earth, ~10⁹ km for the supermassive black hole at the center of M87.</p><p>At <code>r = r_s</code>, <code>g_tt = 0</code> and <code>g_rr → ∞</code> in Schwarzschild coordinates. This isn't a real singularity — it's a coordinate artifact at the <strong>event horizon</strong>. The genuine singularity is at <code>r = 0</code>, where curvature invariants like <code>R_μνρσ R^μνρσ ~ M²/r⁶</code> blow up.</p>",
+        "mathExpressions": [
+          "ds^2 = -\\left(1 - \\frac{r_s}{r}\\right) c^2 dt^2 + \\left(1 - \\frac{r_s}{r}\\right)^{-1} dr^2 + r^2 d\\Omega^2",
+          "r_s = \\frac{2GM}{c^2}",
+          "R_{\\mu\\nu\\rho\\sigma} R^{\\mu\\nu\\rho\\sigma} = \\frac{48 G^2 M^2}{c^4 r^6}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-04-c2",
+        "title": "Geodesics and the Classical Tests",
+        "contentHtml": "<p>Geodesics in Schwarzschild reduce, after exploiting the conserved energy and angular momentum, to a 1D radial problem with an effective potential <code>V_eff(r) = −GM/r + L²/(2r²) − GML²/(c²r³)</code>. The first two terms are Newtonian; the third is a GR correction that becomes large at small r. This correction produces three of the classical tests of GR.</p><p><strong>Mercury's perihelion precession</strong>: Newtonian gravity predicts a closed elliptical orbit. The GR correction adds a 43 arcseconds-per-century precession of Mercury's perihelion, exactly accounting for the unexplained residual that had vexed Le Verrier since 1859. Einstein computed this in November 1915 and reported he was so excited he could not work for days. Confirmed perihelion shift: 42.98 ± 0.04 arcseconds per century.</p><p><strong>Light deflection</strong>: a photon grazing the Sun is bent by <code>Δφ = 4GM/(c²b) ≈ 1.75 arcseconds</code> at the solar limb — twice the Newtonian \"corpuscular\" prediction. Eddington's 1919 eclipse expedition to Príncipe measured this deflection and made Einstein world-famous overnight. <strong>Shapiro delay</strong>: radar echoes from Venus on the far side of the Sun arrive ~250 microseconds late due to the time-dilation factor near the Sun. Confirmed by the Cassini probe to 1 part in 10⁵.</p>",
+        "mathExpressions": [
+          "V_{\\text{eff}}(r) = -\\frac{GM}{r} + \\frac{L^2}{2r^2} - \\frac{GM L^2}{c^2 r^3}",
+          "\\Delta\\phi_{\\text{perihelion}} = \\frac{6\\pi GM}{c^2 a (1 - e^2)} \\approx 43''/\\text{century (Mercury)}",
+          "\\Delta\\phi_{\\text{light}} = \\frac{4GM}{c^2 b} \\approx 1.75''\\ \\text{(solar limb)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-04-c3",
+        "title": "Gravitational Time Dilation and Redshift",
+        "contentHtml": "<p>The <code>g_tt = −(1 − r_s/r)</code> factor means clocks at smaller r tick more slowly than clocks at infinity. The fractional rate difference is <code>Δf/f = −GM/(c²r)</code> for weak fields. A clock on Earth's surface runs about 7 × 10⁻¹⁰ slower than one in deep space — small, but measurable, and directly verified by the 1971 Hafele-Keating atomic-clock-on-airliners experiment and now by laboratory clocks separated by mere centimeters of altitude.</p><p>This is the <strong>gravitational redshift</strong>: photons climbing out of a gravity well lose energy. Pound and Rebka measured it in 1959 over 22.5 m of Harvard's Jefferson Lab tower, confirming the predicted <code>Δλ/λ ≈ gh/c² ≈ 2.5 × 10⁻¹⁵</code>.</p><p><strong>GPS satellites</strong> require both special and general relativistic corrections. Special relativity slows the satellite clocks by ~7 microseconds per day; gravitational effects (clocks higher in Earth's potential run faster) speed them up by ~46 microseconds per day. Net: +39 μs/day. Without correction, GPS positions would drift by ~10 km after a single day. Working GPS is the most-used everyday confirmation of GR.</p>",
+        "mathExpressions": [
+          "\\frac{d\\tau}{dt} = \\sqrt{1 - \\frac{r_s}{r}}",
+          "\\frac{\\Delta f}{f} = \\frac{\\Delta \\Phi}{c^2} \\approx \\frac{gh}{c^2}",
+          "\\Delta t_{\\text{GPS}} \\approx 38.6\\ \\mu\\text{s/day}\\ \\text{(GR + SR net)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q25", "gr-q26", "gr-q27", "gr-q28", "gr-q29", "gr-q30", "gr-q31", "gr-q32"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-05",
+    "topicId": "physics-gr-advanced",
+    "order": 5,
+    "title": "Black Holes: Horizons and Beyond",
+    "description": "Kruskal extension, Penrose diagrams, and the no-hair theorem",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "gr-05-c1",
+        "title": "The Event Horizon and the Kruskal Extension",
+        "contentHtml": "<p>The <strong>event horizon</strong> at <code>r = r_s</code> is a one-way membrane: future-directed timelike and null curves can cross inward but not outward. The Schwarzschild coordinates fail there because they're static, and there is no static observer at the horizon — to stay at fixed r requires infinite proper acceleration as <code>r → r_s</code>.</p><p><strong>Kruskal-Szekeres coordinates</strong> (U, V) cover the maximally extended manifold: the metric becomes <code>ds² = (32G³M³/r) e^{−r/2GM} (−dV² + dU²) + r² dΩ²</code>, manifestly regular at the horizon. A free-faller's worldline crosses smoothly. The full Kruskal manifold has four regions: our universe, the black hole interior (where r becomes timelike and r = 0 is in the future), a time-reversed white hole, and a parallel \"other universe\" connected only through a non-traversable wormhole (Einstein-Rosen bridge).</p><p>For an external observer, an infalling object appears to slow asymptotically, redshift to invisibility, and never quite cross the horizon — light leaving near r_s is exponentially redshifted. From the infaller's perspective, crossing is unremarkable; tidal forces become catastrophic only near r = 0 (or, for stellar black holes, well before — for solar-mass holes, tidal stress at the horizon is already 10⁹ g/cm).</p>",
+        "mathExpressions": [
+          "UV = \\left(\\frac{r}{2GM} - 1\\right) e^{r/2GM}",
+          "ds^2 = \\frac{32 G^3 M^3}{r} e^{-r/2GM}(-dV^2 + dU^2) + r^2 d\\Omega^2",
+          "t_{\\text{free-fall, } r_s \\to 0} = \\frac{4GM}{3c^3} r_s \\quad \\text{(finite proper time)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-05-c2",
+        "title": "Penrose Diagrams and Conformal Infinity",
+        "contentHtml": "<p>A <strong>Penrose diagram</strong> compactifies an entire spacetime onto a finite picture by applying a conformal transformation that preserves causal structure (light cones still travel at 45°). Endpoints of light rays land at <strong>conformal infinities</strong>: <code>𝓘⁺</code> (future null infinity), <code>𝓘⁻</code> (past null), <code>i⁰</code> (spatial infinity), <code>i⁺</code>/<code>i⁻</code> (timelike infinities).</p><p>The Schwarzschild Penrose diagram makes the global causal structure obvious: the singularity at r = 0 is a spacelike line in the future (not a place but a moment), the horizon is a 45° null line, and no causal curve from inside the horizon can reach 𝓘⁺. For a black hole formed by collapse, the diagram simplifies — the white-hole and parallel-universe regions are absent because those parts of Schwarzschild are physically replaced by collapsing matter.</p><p>Penrose diagrams are essential for visualizing global GR pathologies: closed timelike curves, naked singularities, traversable wormholes, the structure of cosmic horizons in de Sitter space. The diagrams were Roger Penrose's invention in the early 1960s, central to his 1965 singularity theorem (Nobel 2020) showing that gravitational collapse generically forms a singularity inside any trapped surface.</p>",
+        "mathExpressions": [
+          "\\tilde{g}_{\\mu\\nu} = \\Omega^2(x) g_{\\mu\\nu} \\quad \\text{(conformal rescaling preserves null geodesics)}",
+          "U = \\arctan(u),\\ V = \\arctan(v) \\quad \\text{(compactification)}",
+          "ds^2 = \\Omega^{-2}\\left(-dU dV + r^2 d\\Omega^2\\right)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-05-c3",
+        "title": "The No-Hair Theorem",
+        "contentHtml": "<p>The <strong>no-hair theorem</strong> states that a stationary, asymptotically flat black hole in Einstein-Maxwell theory is completely characterized by just three numbers: <strong>mass M, angular momentum J, and electric charge Q</strong>. Throw a star or a piano or a library of encyclopedias into a black hole and wait for it to settle — what remains is just M, J, Q. All other information about what fell in is invisible from outside (this is what motivates the information paradox covered in the final lesson).</p><p>Wheeler coined the slogan: \"black holes have no hair.\" The proofs (Israel for Schwarzschild, Carter-Robinson for Kerr, Mazur for Kerr-Newman) rely on uniqueness theorems in elliptic PDE theory. In 4D Einstein-Maxwell, the only stationary asymptotically flat black holes are the <strong>Kerr-Newman</strong> family, parameterized by (M, J, Q).</p><p>Astrophysical black holes have negligible Q (rapid neutralization by the surrounding plasma) but generically have large J. <strong>Sgr A*</strong>, the Milky Way's central black hole (~4.3 × 10⁶ solar masses), has been imaged by the Event Horizon Telescope (2022). <strong>M87*</strong> (~6.5 × 10⁹ solar masses) was imaged in 2019 — the first direct picture of a black hole, showing the bright photon ring at ~2.5 r_s from the spinning Kerr black hole's center.</p>",
+        "mathExpressions": [
+          "\\text{Black hole} \\equiv (M, J, Q) \\quad \\text{(no-hair theorem)}",
+          "0 \\leq \\frac{J^2}{M^2} + Q^2 \\leq M^2 \\quad \\text{(extremality bound, geometrized units)}",
+          "r_+ = M + \\sqrt{M^2 - a^2 - Q^2} \\quad \\text{(outer horizon, Kerr-Newman)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q33", "gr-q34", "gr-q35", "gr-q36", "gr-q37", "gr-q38", "gr-q39", "gr-q40"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-06",
+    "topicId": "physics-gr-advanced",
+    "order": 6,
+    "title": "Kerr Black Holes and Frame-Dragging",
+    "description": "Rotation, ergospheres, the Penrose process, and the ISCO",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "gr-06-c1",
+        "title": "The Kerr Solution",
+        "contentHtml": "<p>Roy Kerr found the rotating-black-hole solution in 1963, almost 50 years after Schwarzschild's static one — a dramatic indicator of how much harder rotation made the problem. In Boyer-Lindquist coordinates, the <strong>Kerr metric</strong> has off-diagonal <code>g_tφ</code> components that encode <strong>frame-dragging</strong>: the rotating mass literally drags spacetime around with it.</p><p>The geometry has two horizons (where <code>Δ = r² − 2Mr + a² = 0</code>): outer at <code>r_+ = M + √(M² − a²)</code> and inner Cauchy horizon at <code>r_− = M − √(M² − a²)</code>. The dimensionless spin parameter <code>a = J/(Mc)</code> satisfies <code>|a| ≤ M</code> (Kerr bound); equality gives an extremal black hole. The astrophysical record-holders push close: <strong>Cygnus X-1</strong> has measured spin <code>a/M ≈ 0.95</code>, and some quasar central black holes appear nearly maximal.</p><p>Frame-dragging is real: the <strong>Gravity Probe B</strong> mission (2004-2011) measured the Lense-Thirring precession of gyroscopes in Earth orbit at 37 milliarcseconds per year, agreeing with GR to ~20%. The geodetic precession (caused by Earth's mass, not its rotation) was measured to better than 1%.</p>",
+        "mathExpressions": [
+          "ds^2 = -\\left(1 - \\frac{2Mr}{\\Sigma}\\right) dt^2 - \\frac{4Mar\\sin^2\\theta}{\\Sigma} dt\\, d\\phi + \\frac{\\Sigma}{\\Delta} dr^2 + \\Sigma\\, d\\theta^2 + \\left(r^2 + a^2 + \\frac{2Ma^2 r \\sin^2\\theta}{\\Sigma}\\right) \\sin^2\\theta\\, d\\phi^2",
+          "\\Sigma = r^2 + a^2 \\cos^2\\theta, \\quad \\Delta = r^2 - 2Mr + a^2",
+          "\\Omega_{\\text{LT}} = \\frac{2GJ}{c^2 r^3} \\quad \\text{(Lense-Thirring frame-drag rate)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-06-c2",
+        "title": "The Ergosphere and the Penrose Process",
+        "contentHtml": "<p>Outside the outer horizon but inside the <strong>static limit</strong> at <code>r = M + √(M² − a²cos²θ)</code> lies the <strong>ergosphere</strong>. Inside, no observer can remain at fixed (r, θ, φ) — frame-dragging is so strong that staying still requires moving faster than light relative to the local geometry. You're forced to co-rotate with the black hole.</p><p><strong>Penrose process</strong> (1969): drop an object into the ergosphere; have it split into two pieces; one falls in along a negative-energy geodesic (allowed because the timelike Killing vector becomes spacelike inside the ergosphere); the other escapes to infinity carrying <em>more</em> energy than you sent in. The energy comes from the black hole's rotational kinetic energy. You can extract up to <code>1 − √(½ + ½√(1 − (a/M)²))</code> ≈ 29% of an extremal black hole's mass-energy.</p><p>The <strong>Blandford-Znajek mechanism</strong> is the Penrose process's electromagnetic cousin: magnetic field lines threading the ergosphere are twisted by frame-dragging, extracting black-hole rotational energy as a Poynting flux. This is the leading model for the relativistic jets emerging from Active Galactic Nuclei (M87, 3C 273, etc.) and likely the engine behind long gamma-ray bursts. A spinning black hole is, quite literally, a battery that the universe can drain.</p>",
+        "mathExpressions": [
+          "r_{\\text{ergo}}(\\theta) = M + \\sqrt{M^2 - a^2 \\cos^2\\theta}",
+          "E_{\\text{rot}} = M c^2 \\left(1 - \\sqrt{\\tfrac{1}{2} + \\tfrac{1}{2}\\sqrt{1 - (a/M)^2}}\\right)",
+          "\\eta_{\\text{Penrose, max}} \\approx 0.29 \\quad \\text{(extremal Kerr)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-06-c3",
+        "title": "ISCO and Accretion Efficiency",
+        "contentHtml": "<p>The <strong>innermost stable circular orbit (ISCO)</strong> sets the inner edge of an accretion disk. Inside the ISCO, no stable circular orbit exists — matter spirals in rapidly. For Schwarzschild, ISCO is at <code>r_ISCO = 6GM/c²</code>; for prograde orbits around extremal Kerr, it shrinks to <code>r_ISCO = GM/c²</code> (right at the horizon).</p><p>The binding energy at ISCO sets the maximum efficiency of converting accreted rest mass into radiation. Schwarzschild: ~5.7%. Extremal Kerr (prograde): ~42%. Compare to nuclear fusion at ~0.7%: <strong>black-hole accretion is by far the most efficient mass-to-energy converter known in nature</strong>. This is why quasars outshine entire galaxies despite being powered by something the size of the solar system.</p><p>Spin estimates from ISCO: for accreting black holes, the inner-disk thermal spectrum or relativistically broadened iron Kα line at 6.4 keV reveals the ISCO radius and hence the spin. Several stellar-mass black holes are measured to be near-extremal (Cyg X-1, GRS 1915+105). Supermassive black holes show a wide spread; M87* is rapidly spinning, while the Milky Way's Sgr A* has a more modest spin.</p>",
+        "mathExpressions": [
+          "r_{\\text{ISCO}}^{\\text{Schw}} = \\frac{6GM}{c^2}",
+          "r_{\\text{ISCO}}^{\\text{Kerr, prograde}} = \\frac{GM}{c^2}\\left[3 + Z_2 - \\sqrt{(3 - Z_1)(3 + Z_1 + 2Z_2)}\\right]",
+          "\\eta_{\\text{acc}} = 1 - E_{\\text{ISCO}}/m c^2 \\in [0.057,\\ 0.42]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q41", "gr-q42", "gr-q43", "gr-q44", "gr-q45", "gr-q46", "gr-q47", "gr-q48"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-07",
+    "topicId": "physics-gr-advanced",
+    "order": 7,
+    "title": "Gravitational Waves and LIGO",
+    "description": "Linearized GR, the quadrupole formula, and the discovery of GW150914",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "gr-07-c1",
+        "title": "Linearized Gravity and the TT Gauge",
+        "contentHtml": "<p>Far from any source, the metric is nearly Minkowski: <code>g_μν = η_μν + h_μν</code> with <code>|h| ≪ 1</code>. Keeping only first-order terms linearizes Einstein's equations into a tensor wave equation. Imposing the <strong>Lorenz gauge</strong> <code>∂^μ h̄_μν = 0</code> (where <code>h̄_μν = h_μν − ½ η_μν h</code>) gives the wave equation <code>□ h̄_μν = −16πG T_μν</code>.</p><p>In vacuum, residual gauge freedom lets you choose the <strong>transverse-traceless (TT) gauge</strong>: <code>h_0μ = 0</code>, <code>h^i_i = 0</code>, <code>∂^j h_ij = 0</code>. Only two physical degrees of freedom remain — the <strong>plus (+) and cross (×) polarizations</strong>. A wave traveling in the z-direction has <code>h_xx = −h_yy = h_+ cos(kz − ωt)</code> and <code>h_xy = h_yx = h_× cos(kz − ωt)</code>.</p><p>A ring of test particles in the path of a + polarized wave alternately stretches along x while squeezing along y, then vice versa. The × polarization rotates this pattern by 45°. Crucially, gravitational waves are <strong>quadrupolar</strong>, not dipolar (like electromagnetic radiation). The reason: mass-dipole radiation would require the center-of-mass to oscillate, which momentum conservation forbids in an isolated system.</p>",
+        "mathExpressions": [
+          "g_{\\mu\\nu} = \\eta_{\\mu\\nu} + h_{\\mu\\nu}, \\quad |h_{\\mu\\nu}| \\ll 1",
+          "\\Box \\bar{h}_{\\mu\\nu} = -\\frac{16\\pi G}{c^4} T_{\\mu\\nu}",
+          "h_{ij}^{TT} = \\begin{pmatrix} h_+ & h_\\times & 0 \\\\ h_\\times & -h_+ & 0 \\\\ 0 & 0 & 0 \\end{pmatrix} \\cos(kz - \\omega t)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-07-c2",
+        "title": "The Quadrupole Formula",
+        "contentHtml": "<p>The leading-order radiation from a non-relativistic source is given by Einstein's 1918 <strong>quadrupole formula</strong>: <code>h_ij^TT = (2G/c⁴r) Q̈_ij^TT</code>, where <code>Q_ij = ∫ ρ(x_i x_j − ⅓ δ_ij r²) d³x</code> is the trace-free mass quadrupole moment. The radiated power: <code>dE/dt = (G/5c⁵) ⟨Q⃛_ij Q⃛^ij⟩</code>.</p><p>For a binary system of masses m₁, m₂ in a circular orbit of separation a and frequency Ω, the strain at distance r is roughly <code>h ~ (G²/c⁴r) (m₁m₂/a)</code>. The luminosity scales as <code>L ~ G⁴ M⁵ / (c⁵ a⁵)</code> — extraordinarily small for everyday systems. The Earth-Sun system radiates about 200 watts. A GW detector needs strain sensitivity of <code>h ~ 10⁻²¹</code> to catch astrophysical sources, corresponding to length changes of <code>~10⁻¹⁸</code> m over a 4 km arm — about 1/1000 of a proton diameter.</p><p>The first indirect confirmation: the <strong>Hulse-Taylor binary pulsar PSR B1913+16</strong> (Nobel 1993). Its 7.75-hour orbit shrinks at exactly the rate the quadrupole formula predicts due to GW emission. Observed orbital decay matches GR to better than 0.2%, after 50 years of timing.</p>",
+        "mathExpressions": [
+          "h_{ij}^{TT}(t, r) = \\frac{2G}{c^4 r} \\ddot{Q}_{ij}^{TT}(t - r/c)",
+          "\\frac{dE}{dt} = -\\frac{G}{5 c^5} \\langle \\dddot{Q}_{ij} \\dddot{Q}^{ij} \\rangle",
+          "\\frac{dP}{dt}_{\\text{Hulse-Taylor}} = -2.40 \\times 10^{-12}\\ \\text{(matches GR to 0.2\\%)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-07-c3",
+        "title": "GW150914 and the New Astronomy",
+        "contentHtml": "<p>On <strong>14 September 2015</strong>, LIGO's twin 4-km Michelson interferometers at Hanford and Livingston detected a transient strain of peak amplitude <code>h ~ 10⁻²¹</code> sweeping from 35 Hz up to 250 Hz over 0.2 seconds. The waveform matched a black-hole inspiral and merger to high precision: two black holes of <strong>~36 and ~29 solar masses</strong> at <strong>~410 Mpc</strong> coalesced into a ~62 solar-mass remnant, radiating <strong>3 solar masses worth of energy</strong> as gravitational waves in less than a second. Peak luminosity: 3.6 × 10⁴⁹ W — momentarily, the source outshone all stars in the observable universe combined.</p><p>This was <strong>GW150914</strong>, the first direct detection of gravitational waves and the first direct observation of a binary black hole merger. The detection won the 2017 Nobel Prize. By 2024, LIGO/Virgo/KAGRA have catalogued over 200 mergers, including binary neutron stars (GW170817, with a kilonova electromagnetic counterpart launching multimessenger astronomy) and intermediate-mass black holes.</p><p>Future detectors will extend the spectrum: <strong>LISA</strong> (space-based, launching ~2035) will see massive-black-hole binaries and EMRIs in the mHz band; pulsar timing arrays (NANOGrav, EPTA) reported in 2023 evidence for the nanohertz stochastic background, plausibly from supermassive black hole binaries throughout cosmic history. Gravitational waves are now a working observational tool, not just a theoretical curiosity.</p>",
+        "mathExpressions": [
+          "h(t)_{\\text{GW150914}} \\sim 10^{-21}\\ \\text{(peak strain)}",
+          "M_{\\text{chirp}} = \\left[\\frac{c^3}{G}\\left(\\frac{5}{96} \\pi^{-8/3} f^{-11/3} \\dot{f}\\right)^{3/5}\\right] \\approx 30 M_\\odot",
+          "E_{\\text{rad, GW150914}} \\approx 3 M_\\odot c^2 \\approx 5.4 \\times 10^{47}\\ \\text{J}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q49", "gr-q50", "gr-q51", "gr-q52", "gr-q53", "gr-q54", "gr-q55", "gr-q56"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-08",
+    "topicId": "physics-gr-advanced",
+    "order": 8,
+    "title": "FRW Cosmology and the Friedmann Equations",
+    "description": "Scale factor, ΛCDM, and the accelerating universe",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "gr-08-c1",
+        "title": "FRW Geometry",
+        "contentHtml": "<p>The <strong>cosmological principle</strong> assumes the universe is, on the largest scales, homogeneous and isotropic. The most general such metric is the <strong>Friedmann-Robertson-Walker (FRW)</strong> form: <code>ds² = −c²dt² + a(t)²[dr²/(1 − kr²) + r²(dθ² + sin²θ dφ²)]</code>. The <strong>scale factor</strong> <code>a(t)</code> stretches all comoving distances; <code>k</code> = +1, 0, −1 for spatially closed, flat, or open universes.</p><p>Distances between comoving observers grow as <code>D(t) = a(t) D₀</code>. Photon wavelengths stretch likewise: <code>λ_observed/λ_emitted = a(t_obs)/a(t_em) = 1 + z</code>. Edwin Hubble's 1929 discovery that distant galaxies recede with velocity <code>v = H₀ d</code> directly measures <code>ȧ/a = H</code>. Current value: <code>H₀ ≈ 67-73 km/s/Mpc</code> (the persistent ~5σ tension between CMB-inferred and local distance-ladder values is one of the most active puzzles in cosmology).</p><p>Cosmological observations of the CMB (Planck 2018) constrain spatial curvature to be tiny: <code>|Ω_k| < 0.005</code>. The universe is, to remarkable precision, spatially flat. This flatness was a major motivation for <strong>inflation</strong>, which exponentially smooths any initial curvature.</p>",
+        "mathExpressions": [
+          "ds^2 = -c^2 dt^2 + a^2(t)\\left[\\frac{dr^2}{1 - kr^2} + r^2 d\\Omega^2\\right]",
+          "1 + z = \\frac{a(t_{\\text{obs}})}{a(t_{\\text{em}})}",
+          "v = H_0 d, \\quad H_0 \\approx 70\\ \\text{km/s/Mpc}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-08-c2",
+        "title": "The Friedmann Equations",
+        "contentHtml": "<p>Plugging FRW into Einstein's equations with a perfect-fluid stress-energy tensor yields the <strong>Friedmann equations</strong>: <code>H² = (8πG/3)ρ − kc²/a² + Λc²/3</code> and <code>ä/a = −(4πG/3)(ρ + 3p/c²) + Λc²/3</code>. The first relates expansion rate to total energy density; the second governs cosmic acceleration. Note that pressure appears in the acceleration equation with a factor of 3 — relativistic matter slows expansion more strongly than non-relativistic matter, per unit energy density.</p><p>Different components scale differently with the scale factor. Matter dilutes as <code>ρ_m ∝ a⁻³</code> (volume dilution). Radiation as <code>ρ_r ∝ a⁻⁴</code> (volume + redshift). Cosmological constant as <code>ρ_Λ ∝ a⁰</code> (constant density). So the universe transitions from radiation-dominated (first ~50,000 years) to matter-dominated to Λ-dominated (now). The transition redshifts: matter-radiation equality at <code>z_eq ≈ 3400</code>; matter-Λ equality at <code>z ≈ 0.3</code>.</p><p>The <strong>critical density</strong> <code>ρ_crit = 3H²/(8πG) ≈ 9 × 10⁻²⁷ kg/m³</code> — about 6 hydrogen atoms per cubic meter — is the density that would give exactly flat geometry with no Λ. The density parameters <code>Ω_i = ρ_i/ρ_crit</code> sum to 1 in a flat universe.</p>",
+        "mathExpressions": [
+          "H^2 = \\left(\\frac{\\dot{a}}{a}\\right)^2 = \\frac{8\\pi G}{3}\\rho - \\frac{kc^2}{a^2} + \\frac{\\Lambda c^2}{3}",
+          "\\frac{\\ddot{a}}{a} = -\\frac{4\\pi G}{3}\\left(\\rho + \\frac{3p}{c^2}\\right) + \\frac{\\Lambda c^2}{3}",
+          "\\rho_{\\text{crit}} = \\frac{3 H_0^2}{8\\pi G} \\approx 9.2 \\times 10^{-27}\\ \\text{kg/m}^3"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-08-c3",
+        "title": "ΛCDM and the Accelerating Universe",
+        "contentHtml": "<p>The standard cosmological model — <strong>ΛCDM</strong> — fits a remarkable range of data with just six parameters. Best-fit composition (Planck 2018): <strong>~5% baryonic matter, ~27% cold dark matter, ~68% dark energy</strong> (modeled as a cosmological constant). Age: <code>13.8 × 10⁹ years</code>. Hubble constant from CMB: <code>67.4 km/s/Mpc</code>; from local Cepheid + Type Ia supernovae distance ladder: <code>73 km/s/Mpc</code>. The <strong>Hubble tension</strong> between these two has refused to go away.</p><p>The <strong>1998 supernova discovery</strong> (Riess, Perlmutter, Schmidt — Nobel 2011): Type Ia supernovae at <code>z ~ 0.5</code> are dimmer than expected for any matter-only universe, indicating that <code>ä > 0</code> — the expansion is <em>accelerating</em>. The simplest explanation is a positive cosmological constant; \"dark energy\" is the catch-all term that allows for slightly more exotic possibilities (quintessence, modified gravity).</p><p>An accelerating universe with positive Λ has a <strong>de Sitter horizon</strong>: regions sufficiently far away are receding faster than light and can never communicate with us. The asymptotic future is exponentially expanding empty space. If Λ is truly constant, in ~10¹⁰ more years all galaxies outside the Local Group will redshift beyond observability, and observers in a far-future Local Group will see only their own galaxy. The cosmic horizon shrinks (in comoving terms) as Λ takes over.</p>",
+        "mathExpressions": [
+          "\\Omega_m + \\Omega_\\Lambda + \\Omega_r + \\Omega_k = 1",
+          "(\\Omega_m, \\Omega_\\Lambda, \\Omega_r) \\approx (0.31,\\ 0.69,\\ 9 \\times 10^{-5})",
+          "a(t) \\propto e^{H t}, \\quad H = \\sqrt{\\Lambda c^2 / 3} \\quad \\text{(de Sitter, }\\Lambda\\text{-dominated)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q57", "gr-q58", "gr-q59", "gr-q60", "gr-q61", "gr-q62", "gr-q63", "gr-q64"],
+    "puzzleId": null
+  },
+  {
+    "id": "gr-09",
+    "topicId": "physics-gr-advanced",
+    "order": 9,
+    "title": "Black Hole Thermodynamics and Hawking Radiation",
+    "description": "Area theorem, entropy, the information paradox, and where GR meets quantum",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "gr-09-c1",
+        "title": "The Four Laws of Black Hole Mechanics",
+        "contentHtml": "<p>Bardeen, Carter, and Hawking (1973) showed black holes obey four laws strikingly parallel to thermodynamics. <strong>Zeroth law</strong>: surface gravity <code>κ</code> is constant on the horizon (analog of constant temperature). <strong>First law</strong>: <code>dM = (κ/8π) dA + Ω_H dJ + Φ dQ</code> (energy conservation, with <code>κ</code> playing the role of temperature and area <code>A</code> playing the role of entropy). <strong>Second law</strong>: horizon area never decreases in any classical process — Hawking's <strong>area theorem</strong> (1971). <strong>Third law</strong>: it's impossible to reach <code>κ = 0</code> (the extremal limit) in finite operations.</p><p>The area theorem says: merge two black holes, and the final horizon area exceeds the sum of the initial areas. For GW150914 the inferred individual horizon areas summed to ~71,000 km²; the remnant's area was ~235,000 km². The merger increased horizon area by a factor of ~3, exactly as the area theorem demands.</p><p>At first this analogy looked like a coincidence. Bekenstein (1972) argued it had to be deeper: if the area weren't real entropy, you could violate the ordinary second law by tossing high-entropy systems past a horizon. He proposed <code>S_BH = (k_B c³ A)/(4Għ)</code> — black hole entropy proportional to area, in fundamental units.</p>",
+        "mathExpressions": [
+          "dM = \\frac{\\kappa}{8\\pi G} dA + \\Omega_H dJ + \\Phi dQ",
+          "\\frac{dA}{dt} \\geq 0 \\quad \\text{(area theorem)}",
+          "S_{\\text{BH}} = \\frac{k_B c^3 A}{4 G \\hbar} = \\frac{k_B A}{4 \\ell_P^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-09-c2",
+        "title": "Hawking Radiation",
+        "contentHtml": "<p>In 1974, Stephen Hawking applied quantum field theory in the curved background of a forming black hole and discovered something startling: black holes <em>radiate</em>. The horizon emits a thermal spectrum at the <strong>Hawking temperature</strong> <code>T_H = ħc³/(8πGMk_B)</code>. For a solar-mass black hole, <code>T_H ≈ 6 × 10⁻⁸ K</code> — colder than the CMB, so astrophysical black holes absorb more than they radiate.</p><p>The intuition (heuristic, not the actual derivation): vacuum fluctuations near the horizon split into particle-antiparticle pairs; one falls in (carrying negative energy), the other escapes (carrying positive energy). The black hole loses mass. Hawking's actual calculation tracks how positive-frequency modes at past null infinity become mixed positive/negative-frequency modes at future null infinity due to the geometry — a Bogoliubov transformation — yielding a thermal spectrum.</p><p>Hawking radiation makes black holes <strong>evaporate</strong>: <code>dM/dt ∝ −1/M²</code>, with lifetime <code>τ ~ M³</code>. A solar-mass black hole takes ~10⁶⁷ years to evaporate (vastly longer than the age of the universe). Primordial black holes of mass ~10¹² kg would be evaporating now in bright bursts; none have been observed, putting strict upper limits on their abundance. The temperature plus area-as-entropy completes the thermodynamic dictionary: <code>T_H = κ/(2π)</code>, <code>S = A/4</code> in geometrized units.</p>",
+        "mathExpressions": [
+          "T_H = \\frac{\\hbar c^3}{8\\pi G M k_B} \\approx \\frac{6 \\times 10^{-8}\\ \\text{K}}{M / M_\\odot}",
+          "\\frac{dM}{dt} \\propto -\\frac{1}{M^2}, \\quad \\tau_{\\text{evap}} \\sim \\frac{G^2 M^3}{\\hbar c^4}",
+          "\\tau_{\\text{evap}}(M_\\odot) \\sim 10^{67}\\ \\text{yr}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "gr-09-c3",
+        "title": "The Information Paradox",
+        "contentHtml": "<p>Hawking radiation is, by Hawking's original calculation, exactly thermal — depending only on M, J, Q, not on the detailed quantum state of what fell in. If a black hole forms from collapsing matter, evaporates entirely, and leaves only thermal radiation, then <strong>information about the initial quantum state has been destroyed</strong>. This violates unitarity, the foundational principle of quantum mechanics. This is the <strong>black hole information paradox</strong>.</p><p>For decades the choices seemed to be: (1) information really is lost — Hawking's original position; (2) information escapes subtly with the radiation — favored by string-theory arguments and AdS/CFT, where black-hole states are entangled with the boundary CFT; (3) information is locked in a remnant. Most theorists have moved toward (2): information must come out, and we need to identify how.</p><p>Recent progress, the <strong>Page curve</strong> (Don Page, 1993): if unitarity holds, the entanglement entropy of the radiation should rise, peak halfway through evaporation, then fall back to zero. In 2019-2020, calculations using the <strong>quantum extremal surface</strong> prescription (Penington; Almheiri et al.) reproduced the Page curve from semiclassical gravity by accounting for replica wormhole contributions. This is one of the most exciting developments in theoretical physics in decades — a hint that the path from GR to quantum gravity may run through entanglement geometry.</p>",
+        "mathExpressions": [
+          "S_{\\text{rad}}(t) \\xrightarrow{\\text{Hawking}} S_{\\text{thermal}} \\quad \\text{(information lost)}",
+          "S_{\\text{rad}}(t) \\xrightarrow{\\text{Page curve}} \\text{rise, peak, fall to 0}",
+          "S_{\\text{vN}} = \\min_X \\left[\\frac{\\text{Area}(X)}{4G\\hbar} + S_{\\text{bulk}}(\\Sigma_X)\\right] \\quad \\text{(QES formula)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["gr-q65", "gr-q66", "gr-q67", "gr-q68", "gr-q69", "gr-q70", "gr-q71", "gr-q72"],
+    "puzzleId": null
+  }
+]

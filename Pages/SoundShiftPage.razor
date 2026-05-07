@@ -1,0 +1,183 @@
+@page "/sound-shift"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Sound Shift Sim</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Sound Shift Sim" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Sound Shift Sim</h1>
+    </div>
+
+    <div class="card ss-intro">
+        <Icon Name="speech" Size="22" Stroke="var(--accent)" />
+        <p>Pick a sound law and a starting word. Watch each rule fire in order. Real diachronic linguistics in slow motion.</p>
+    </div>
+
+    <div class="card ss-controls">
+        <label class="ss-label">Sound law</label>
+        <div class="ss-laws">
+            @foreach (var law in laws)
+            {
+                var l = law;
+                <button class="ss-law @(selectedLaw.Name == l.Name ? "active" : "")" @onclick="() => selectedLaw = l">@l.Name</button>
+            }
+        </div>
+
+        <label class="ss-label" style="margin-top:12px">Starting word</label>
+        <input class="ss-input" @bind="input" @bind:event="oninput" placeholder="Type a word..." />
+
+        <div class="ss-presets">
+            @foreach (var p in selectedLaw.Presets)
+            {
+                var px = p;
+                <button class="ss-preset" @onclick='() => { input = px; }'>@px</button>
+            }
+        </div>
+    </div>
+
+    <div class="card ss-result">
+        <div class="ss-blurb">@((MarkupString)selectedLaw.Description)</div>
+
+        <div class="ss-steps">
+            @{ var trace = ApplySteps(input ?? "", selectedLaw); }
+            <div class="ss-step ss-step-start">
+                <span class="ss-tag">Input</span>
+                <strong>@(string.IsNullOrWhiteSpace(input) ? "—" : input)</strong>
+            </div>
+            @foreach (var s in trace)
+            {
+                <div class="ss-arrow">↓</div>
+                <div class="ss-step">
+                    <span class="ss-tag">@s.Rule</span>
+                    <strong>@s.Form</strong>
+                    <small>@s.Note</small>
+                </div>
+            }
+            @if (trace.Count == 0 && !string.IsNullOrWhiteSpace(input))
+            {
+                <div class="ss-arrow">↓</div>
+                <div class="ss-step ss-step-noop">
+                    <span class="ss-tag">No change</span>
+                    <small>This word doesn't trigger any rule in this law.</small>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool unlocked;
+    private string? input = "pater";
+    private SoundLaw selectedLaw = laws[0];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-sound-shift");
+            StateHasChanged();
+        }
+    }
+
+    private static List<TraceStep> ApplySteps(string word, SoundLaw law)
+    {
+        var trace = new List<TraceStep>();
+        var current = word.ToLowerInvariant();
+        foreach (var rule in law.Rules)
+        {
+            var next = rule.Apply(current);
+            if (next != current)
+            {
+                trace.Add(new TraceStep(rule.Name, next, rule.Note));
+                current = next;
+            }
+        }
+        return trace;
+    }
+
+    private record TraceStep(string Rule, string Form, string Note);
+    private record Rule(string Name, string Note, Func<string, string> Apply);
+    private record SoundLaw(string Name, string Description, List<Rule> Rules, List<string> Presets);
+
+    private static readonly List<SoundLaw> laws = new()
+    {
+        new("Grimm's Law",
+            "Proto-Indo-European voiceless stops shift to fricatives in Proto-Germanic. <strong>p > f, t > th, k > h</strong>. <strong>b > p, d > t, g > k</strong>. <strong>bh > b, dh > d, gh > g</strong>. Latin <em>pater</em> → English <em>father</em>.",
+            new()
+            {
+                new("p > f", "voiceless labial stop becomes labial fricative", s => s.Replace("p", "f")),
+                new("t > th", "voiceless alveolar stop becomes dental fricative", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<!t)t(?!h)", "th")),
+                new("k > h", "voiceless velar stop becomes glottal fricative", s => s.Replace("k", "h").Replace("c", "h")),
+                new("b > p", "voiced labial devoices", s => s.Replace("b", "p")),
+                new("d > t", "voiced alveolar devoices", s => s.Replace("d", "t")),
+                new("g > k", "voiced velar devoices", s => s.Replace("g", "k"))
+            },
+            new() { "pater", "tres", "duo", "genu", "frater", "decem" }),
+
+        new("Great Vowel Shift",
+            "English long vowels rotate upward (1400-1700). Long <strong>i</strong> diphthongizes to <em>ai</em>; long <strong>u</strong> to <em>au</em>; long <strong>e</strong> raises to <em>i</em>; long <strong>o</strong> raises to <em>u</em>; long <strong>a</strong> raises to <em>e</em>. Why English spelling looks insane.",
+            new()
+            {
+                new("ee/ie > i", "long e raised", s => s.Replace("ee", "i").Replace("ie", "i")),
+                new("oo > u", "long o raised", s => s.Replace("oo", "u")),
+                new("a (long) > e (long)", "in many positions a raised toward e", s => System.Text.RegularExpressions.Regex.Replace(s, "a([bcdfgklmnprstv])e", "e$1")),
+                new("i > ai", "long i diphthongized", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<![aeo])i([bcdfgklmnprstv])e", "ai$1")),
+                new("u > au", "long u diphthongized", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<![aeo])u([bcdfgklmnprstv])e", "au$1"))
+            },
+            new() { "tide", "moon", "stone", "house", "bite", "feet" }),
+
+        new("High German Shift",
+            "Second consonant shift (5th-9th c.) made German diverge from English. <strong>p > pf/f, t > z(ts)/s, k > ch</strong>. English <em>apple</em> = German <em>Apfel</em>; English <em>water</em> = German <em>Wasser</em>; English <em>make</em> = German <em>machen</em>.",
+            new()
+            {
+                new("p > pf (initial)", "initial p becomes affricate pf", s => s.Length > 0 && s[0] == 'p' ? "pf" + s.Substring(1) : s),
+                new("p > ff (medial)", "medial p doubles as ff", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<=[aeiou])p(?=[aeiou])", "ff")),
+                new("t > z (initial)", "initial t becomes affricate z (ts)", s => s.Length > 0 && s[0] == 't' ? "z" + s.Substring(1) : s),
+                new("t > ss (medial)", "medial t becomes ss", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<=[aeiou])t(?=[aeiou])", "ss")),
+                new("k > ch (medial)", "medial k becomes ch", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<=[aeiou])k", "ch"))
+            },
+            new() { "apple", "water", "make", "pepper", "tongue", "open" })
+    };
+}
+
+<style>
+    .ss-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .ss-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .ss-controls { padding: 14px; }
+    .ss-label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; }
+    .ss-laws { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ss-law { padding: 6px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; font-size: 0.8rem; cursor: pointer; color: var(--text-secondary); }
+    .ss-law.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .ss-input { width: 100%; padding: 10px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--text-primary); }
+    .ss-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .ss-preset { padding: 4px 10px; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 10px; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+
+    .ss-result { padding: 14px; }
+    .ss-blurb { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+
+    .ss-steps { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+    .ss-step { background: var(--bg-surface); border-radius: var(--radius-sm); padding: 10px 12px; }
+    .ss-step-start { background: rgba(74,95,224,0.08); }
+    .ss-step-noop { opacity: 0.7; }
+    .ss-tag { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
+    .ss-step strong { display: block; font-size: 1.1rem; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--text-primary); }
+    .ss-step small { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .ss-arrow { text-align: center; color: var(--text-muted); font-size: 0.95rem; }
+</style>

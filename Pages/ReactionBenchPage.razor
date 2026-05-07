@@ -1,0 +1,678 @@
+@page "/reaction-bench"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Reaction Bench</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Reaction Bench" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Reaction Bench</h1>
+</div>
+
+<div class="rb-intro card">
+    <div class="rb-intro-row">
+        <Icon Name="target" Size="18" Stroke="var(--accent)" />
+        <span>Pick 2 or 3 reagents from the palette, then run the reaction.</span>
+    </div>
+    <label class="rb-mystery">
+        <input type="checkbox" @bind="mysteryMode" />
+        <Icon Name="brain" Size="14" Stroke="var(--primary)" />
+        <span>Mystery Mode (guess before reveal)</span>
+    </label>
+</div>
+
+<div class="rb-section-title">Reagent Palette</div>
+<div class="reagent-grid">
+    @foreach (var r in reagents)
+    {
+        var reagent = r;
+        var isSelected = selected.Contains(reagent.Formula);
+        var disabled = !isSelected && selected.Count >= 3;
+        <button type="button"
+                class="reagent-chip @(isSelected ? "chip-active" : "") @(disabled ? "chip-disabled" : "")"
+                disabled="@disabled"
+                @onclick="() => ToggleReagent(reagent.Formula)">
+            <span class="reagent-formula">@((MarkupString)reagent.Display)</span>
+            <span class="reagent-name">@reagent.Name</span>
+        </button>
+    }
+</div>
+
+<div class="rb-tray card">
+    <div class="rb-tray-row">
+        <span class="rb-tray-label">Selected:</span>
+        @if (selected.Count == 0)
+        {
+            <span class="rb-tray-empty">none</span>
+        }
+        else
+        {
+            @foreach (var f in selected)
+            {
+                var formula = f;
+                var reagent = reagents.First(x => x.Formula == formula);
+                <span class="rb-tray-chip" @onclick="() => ToggleReagent(formula)">
+                    @((MarkupString)reagent.Display)
+                    <Icon Name="x-mark" Size="12" Stroke="var(--text-muted)" />
+                </span>
+            }
+        }
+    </div>
+    <div class="rb-tray-actions">
+        <button class="btn btn-accent" disabled="@(selected.Count < 2)" @onclick="RunReaction">
+            <Icon Name="zap" Size="16" /> React!
+        </button>
+        <button class="btn btn-ghost" @onclick="ClearAll" disabled="@(selected.Count == 0 && currentResult == null)">Clear</button>
+        <button class="btn btn-ghost" @onclick="RandomCombo">
+            <Icon Name="dice" Size="16" /> Random
+        </button>
+    </div>
+</div>
+
+@if (currentResult != null)
+{
+    var rxn = currentResult;
+    <div class="rb-result card">
+        <div class="rb-result-head">
+            <span class="rb-type-badge type-@rxn.Type.ToLower().Replace(" ", "-").Replace("/", "-")">@rxn.Type</span>
+            @if (mysteryMode && !revealed)
+            {
+                <button class="btn btn-accent btn-sm" @onclick="() => revealed = true">
+                    <Icon Name="lightbulb" Size="14" /> Reveal
+                </button>
+            }
+        </div>
+
+        <div class="rb-viz">
+            @switch (rxn.Effect)
+            {
+                case "gas":
+                    <svg viewBox="0 0 200 120" class="rb-svg">
+                        <rect x="40" y="40" width="120" height="70" rx="6" fill="#cfe5ff" opacity="0.45" />
+                        <rect x="40" y="40" width="120" height="6" fill="#9fc8ff" opacity="0.6" />
+                        @for (int i = 0; i < 8; i++)
+                        {
+                            var cx = 50 + (i * 14);
+                            var delay = (i * 0.25).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                            <circle cx="@cx" cy="100" r="4" fill="#ffffff" opacity="0.85" class="bubble" style="animation-delay: @(delay)s"></circle>
+                        }
+                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Gas evolved</text>
+                    </svg>
+                    break;
+                case "precipitate":
+                    <svg viewBox="0 0 200 120" class="rb-svg">
+                        <rect x="40" y="40" width="120" height="70" rx="6" fill="#e9efff" opacity="0.45" />
+                        <rect x="40" y="40" width="120" height="6" fill="#bfd0ff" opacity="0.6" />
+                        @for (int i = 0; i < 14; i++)
+                        {
+                            var cx = 48 + ((i * 9) % 110);
+                            var delay = ((i % 5) * 0.2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                            var color = rxn.ColorHex ?? "#f6f6f6";
+                            <circle cx="@cx" cy="50" r="3" fill="@color" class="precip" style="animation-delay: @(delay)s"></circle>
+                        }
+                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Precipitate forms</text>
+                    </svg>
+                    break;
+                case "flame":
+                    <svg viewBox="0 0 200 120" class="rb-svg">
+                        <ellipse cx="100" cy="100" rx="60" ry="8" fill="#222" opacity="0.4" />
+                        <path d="M70 100 Q80 50 100 30 Q120 50 130 100 Z" fill="#ff8a1f" class="flame" />
+                        <path d="M82 100 Q90 65 100 50 Q110 65 118 100 Z" fill="#ffd24d" class="flame-inner" />
+                        <text x="100" y="20" text-anchor="middle" font-size="11" fill="var(--text-muted)">Combustion</text>
+                    </svg>
+                    break;
+                case "color":
+                    <div class="rb-color-box" style="background: @(rxn.ColorHex ?? "#888");">
+                        <span>Color change</span>
+                    </div>
+                    break;
+                case "heat":
+                    <svg viewBox="0 0 200 120" class="rb-svg">
+                        <rect x="40" y="40" width="120" height="70" rx="6" fill="#ffd9c2" opacity="0.45" />
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            var x = 60 + i * 20;
+                            var delay = (i * 0.2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                            <path d="M@x 90 q-4 -8 0 -16 q4 -8 0 -16" stroke="#ff7847" stroke-width="2" fill="none" class="heat-wave" style="animation-delay: @(delay)s" />
+                        }
+                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Heat released</text>
+                    </svg>
+                    break;
+                case "rust":
+                    <svg viewBox="0 0 200 120" class="rb-svg">
+                        <rect x="40" y="50" width="120" height="40" rx="3" fill="#9aa3a8" />
+                        <rect x="40" y="50" width="120" height="40" rx="3" fill="#a0522d" opacity="0.0" class="rust-fade" />
+                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Slow oxidation</text>
+                    </svg>
+                    break;
+                case "split":
+                    <svg viewBox="0 0 200 120" class="rb-svg">
+                        <circle cx="100" cy="60" r="14" fill="#6aa8ff" class="split-core" />
+                        <circle cx="60" cy="60" r="8" fill="#6aa8ff" class="split-left" />
+                        <circle cx="140" cy="60" r="8" fill="#ffaa55" class="split-right" />
+                        <text x="100" y="100" text-anchor="middle" font-size="11" fill="var(--text-muted)">Decomposition</text>
+                    </svg>
+                    break;
+                case "none":
+                default:
+                    <div class="rb-none-box">No visible reaction</div>
+                    break;
+            }
+        </div>
+
+        @if (!mysteryMode || revealed)
+        {
+            <div class="rb-equation">@((MarkupString)rxn.Equation)</div>
+            <div class="rb-products">
+                <div class="rb-products-title">Products</div>
+                <div>@rxn.Products</div>
+            </div>
+            <div class="rb-explain">@rxn.Explanation</div>
+        }
+        else
+        {
+            <div class="rb-mystery-prompt">
+                <Icon Name="brain" Size="18" Stroke="var(--primary)" />
+                <span>What do you think happened? Click Reveal to check.</span>
+            </div>
+        }
+    </div>
+}
+else if (showNoMatch)
+{
+    <div class="rb-result card">
+        <div class="rb-no-match">
+            <strong>No known reaction.</strong>
+            <p>Try a classic acid + base, an active metal + acid, or a halide salt + silver nitrate.</p>
+        </div>
+    </div>
+}
+
+}
+
+@code {
+    private bool unlocked;
+    private HashSet<string> selected = new();
+    private bool mysteryMode;
+    private bool revealed;
+    private bool showNoMatch;
+    private Reaction? currentResult;
+    private Random rng = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-reaction-bench");
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleReagent(string formula)
+    {
+        if (selected.Contains(formula)) selected.Remove(formula);
+        else if (selected.Count < 3) selected.Add(formula);
+        currentResult = null;
+        showNoMatch = false;
+        revealed = false;
+    }
+
+    private void ClearAll()
+    {
+        selected.Clear();
+        currentResult = null;
+        showNoMatch = false;
+        revealed = false;
+    }
+
+    private void RandomCombo()
+    {
+        ClearAll();
+        var pick = reactions[rng.Next(reactions.Count)];
+        foreach (var r in pick.Reagents) selected.Add(r);
+    }
+
+    private void RunReaction()
+    {
+        revealed = false;
+        showNoMatch = false;
+        currentResult = null;
+
+        var match = reactions.FirstOrDefault(r =>
+            r.Reagents.Length == selected.Count &&
+            r.Reagents.All(x => selected.Contains(x)));
+
+        if (match != null) currentResult = match;
+        else showNoMatch = true;
+    }
+
+    private record Reagent(string Formula, string Display, string Name);
+
+    private record Reaction(
+        string[] Reagents,
+        string Equation,
+        string Products,
+        string Type,
+        string Explanation,
+        string Effect,
+        string? ColorHex = null);
+
+    private List<Reagent> reagents = new()
+    {
+        new("HCl", "HCl", "Hydrochloric acid"),
+        new("NaOH", "NaOH", "Sodium hydroxide"),
+        new("H2O", "H<sub>2</sub>O", "Water"),
+        new("NaCl", "NaCl", "Salt"),
+        new("CH4", "CH<sub>4</sub>", "Methane"),
+        new("O2", "O<sub>2</sub>", "Oxygen"),
+        new("H2", "H<sub>2</sub>", "Hydrogen"),
+        new("Na", "Na", "Sodium"),
+        new("K", "K", "Potassium"),
+        new("Mg", "Mg", "Magnesium"),
+        new("Cu", "Cu", "Copper"),
+        new("Fe", "Fe", "Iron"),
+        new("AgNO3", "AgNO<sub>3</sub>", "Silver nitrate"),
+        new("KI", "KI", "Potassium iodide"),
+        new("NH3", "NH<sub>3</sub>", "Ammonia"),
+        new("CO2", "CO<sub>2</sub>", "Carbon dioxide"),
+        new("EtOH", "C<sub>2</sub>H<sub>5</sub>OH", "Ethanol"),
+        new("Glu", "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", "Glucose"),
+        new("CH3COOH", "CH<sub>3</sub>COOH", "Vinegar"),
+        new("NaOCl", "NaOCl", "Bleach")
+    };
+
+    private List<Reaction> reactions = new()
+    {
+        // Acid-base neutralizations
+        new(new[] { "HCl", "NaOH" },
+            "HCl + NaOH &rarr; NaCl + H<sub>2</sub>O",
+            "Sodium chloride and water",
+            "Acid-base",
+            "A strong acid and strong base neutralize to form salt and water. Heat is released.",
+            "heat"),
+        new(new[] { "CH3COOH", "NaOH" },
+            "CH<sub>3</sub>COOH + NaOH &rarr; CH<sub>3</sub>COONa + H<sub>2</sub>O",
+            "Sodium acetate and water",
+            "Acid-base",
+            "Weak acid neutralized by strong base, producing a buffer salt and water.",
+            "heat"),
+        new(new[] { "HCl", "NH3" },
+            "HCl + NH<sub>3</sub> &rarr; NH<sub>4</sub>Cl",
+            "Ammonium chloride (white smoke)",
+            "Acid-base",
+            "Gaseous HCl meets gaseous ammonia and forms a fine white salt smoke.",
+            "precipitate",
+            "#ffffff"),
+        new(new[] { "CH3COOH", "NH3" },
+            "CH<sub>3</sub>COOH + NH<sub>3</sub> &rarr; CH<sub>3</sub>COONH<sub>4</sub>",
+            "Ammonium acetate",
+            "Acid-base",
+            "Vinegar reacts with ammonia to form a soluble salt with no gas.",
+            "none"),
+        new(new[] { "CH3COOH", "NaOCl" },
+            "CH<sub>3</sub>COOH + NaOCl &rarr; CH<sub>3</sub>COONa + HOCl",
+            "Sodium acetate and hypochlorous acid (toxic vapors!)",
+            "Acid-base",
+            "Mixing vinegar with bleach releases toxic chlorine vapors. Never do this in real life.",
+            "gas"),
+
+        // Combustion
+        new(new[] { "CH4", "O2" },
+            "CH<sub>4</sub> + 2 O<sub>2</sub> &rarr; CO<sub>2</sub> + 2 H<sub>2</sub>O",
+            "Carbon dioxide and water",
+            "Combustion",
+            "Methane burns cleanly with a blue flame, releasing energy.",
+            "flame"),
+        new(new[] { "EtOH", "O2" },
+            "C<sub>2</sub>H<sub>5</sub>OH + 3 O<sub>2</sub> &rarr; 2 CO<sub>2</sub> + 3 H<sub>2</sub>O",
+            "Carbon dioxide and water",
+            "Combustion",
+            "Ethanol combustion releases CO<sub>2</sub>, water, and energy as heat and light.",
+            "flame"),
+        new(new[] { "H2", "O2" },
+            "2 H<sub>2</sub> + O<sub>2</sub> &rarr; 2 H<sub>2</sub>O",
+            "Water vapor",
+            "Combustion",
+            "Hydrogen burns explosively in oxygen, producing pure water.",
+            "flame"),
+        new(new[] { "Glu", "O2" },
+            "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6 O<sub>2</sub> &rarr; 6 CO<sub>2</sub> + 6 H<sub>2</sub>O",
+            "Carbon dioxide and water",
+            "Combustion",
+            "The same equation describes burning sugar and cellular respiration.",
+            "flame"),
+
+        // Single replacement (active metal + acid)
+        new(new[] { "Mg", "HCl" },
+            "Mg + 2 HCl &rarr; MgCl<sub>2</sub> + H<sub>2</sub>",
+            "Magnesium chloride and hydrogen gas",
+            "Single replacement",
+            "An active metal displaces hydrogen from a strong acid. Bubbles of H<sub>2</sub> form.",
+            "gas"),
+        new(new[] { "Fe", "HCl" },
+            "Fe + 2 HCl &rarr; FeCl<sub>2</sub> + H<sub>2</sub>",
+            "Iron(II) chloride and hydrogen gas",
+            "Single replacement",
+            "Iron dissolves in dilute HCl, releasing hydrogen.",
+            "gas"),
+        new(new[] { "Mg", "O2" },
+            "2 Mg + O<sub>2</sub> &rarr; 2 MgO",
+            "Magnesium oxide",
+            "Combustion",
+            "Magnesium burns with a brilliant white flame.",
+            "flame"),
+        new(new[] { "Cu", "O2" },
+            "2 Cu + O<sub>2</sub> &rarr; 2 CuO",
+            "Copper(II) oxide",
+            "Redox",
+            "Heated copper turns black as a layer of copper oxide forms.",
+            "color",
+            "#1a1a1a"),
+
+        // Active metal + water
+        new(new[] { "Na", "H2O" },
+            "2 Na + 2 H<sub>2</sub>O &rarr; 2 NaOH + H<sub>2</sub>",
+            "Sodium hydroxide and hydrogen",
+            "Single replacement",
+            "Sodium fizzes and skates across water, releasing flammable hydrogen.",
+            "gas"),
+        new(new[] { "K", "H2O" },
+            "2 K + 2 H<sub>2</sub>O &rarr; 2 KOH + H<sub>2</sub>",
+            "Potassium hydroxide and hydrogen",
+            "Single replacement",
+            "Potassium reacts even more violently than sodium, often igniting the hydrogen with a lilac flame.",
+            "flame"),
+
+        // Precipitations / double replacement
+        new(new[] { "AgNO3", "KI" },
+            "AgNO<sub>3</sub> + KI &rarr; AgI&darr; + KNO<sub>3</sub>",
+            "Silver iodide (yellow precipitate) and potassium nitrate",
+            "Precipitation",
+            "Insoluble silver iodide drops out of solution as a bright yellow solid.",
+            "precipitate",
+            "#f2d24a"),
+        new(new[] { "AgNO3", "NaCl" },
+            "AgNO<sub>3</sub> + NaCl &rarr; AgCl&darr; + NaNO<sub>3</sub>",
+            "Silver chloride (white precipitate) and sodium nitrate",
+            "Precipitation",
+            "A classic test for chloride ions: a white curdy precipitate of AgCl appears.",
+            "precipitate",
+            "#f4f4f4"),
+        new(new[] { "AgNO3", "HCl" },
+            "AgNO<sub>3</sub> + HCl &rarr; AgCl&darr; + HNO<sub>3</sub>",
+            "Silver chloride and nitric acid",
+            "Precipitation",
+            "Acidic chloride solutions still throw a white silver chloride precipitate.",
+            "precipitate",
+            "#f4f4f4"),
+        new(new[] { "AgNO3", "NaOH" },
+            "2 AgNO<sub>3</sub> + 2 NaOH &rarr; Ag<sub>2</sub>O&darr; + 2 NaNO<sub>3</sub> + H<sub>2</sub>O",
+            "Silver(I) oxide and sodium nitrate",
+            "Precipitation",
+            "A brown-black precipitate of silver oxide forms with hydroxide ions.",
+            "precipitate",
+            "#3a2a22"),
+
+        // Carbonate / acid-like
+        new(new[] { "HCl", "NaOCl" },
+            "2 HCl + NaOCl &rarr; NaCl + Cl<sub>2</sub> + H<sub>2</sub>O",
+            "Sodium chloride, chlorine gas and water",
+            "Redox",
+            "Acid plus bleach releases dangerous chlorine gas. Demonstrates the chemistry behind cleaning warnings.",
+            "gas"),
+        new(new[] { "CH3COOH", "H2O" },
+            "CH<sub>3</sub>COOH + H<sub>2</sub>O &rlhar; CH<sub>3</sub>COO<sup>&minus;</sup> + H<sub>3</sub>O<sup>+</sup>",
+            "Acetate and hydronium (slightly)",
+            "Acid dissociation",
+            "Vinegar is a weak acid: only a small fraction of molecules ionize in water.",
+            "none"),
+        new(new[] { "NH3", "H2O" },
+            "NH<sub>3</sub> + H<sub>2</sub>O &rlhar; NH<sub>4</sub><sup>+</sup> + OH<sup>&minus;</sup>",
+            "Ammonium and hydroxide ions",
+            "Base dissociation",
+            "Ammonia accepts a proton from water to give a weakly basic solution.",
+            "none"),
+
+        // CO2 + water / + base
+        new(new[] { "CO2", "H2O" },
+            "CO<sub>2</sub> + H<sub>2</sub>O &rlhar; H<sub>2</sub>CO<sub>3</sub>",
+            "Carbonic acid",
+            "Acid formation",
+            "Dissolved CO<sub>2</sub> forms a weak acid - the chemistry of fizzy drinks and ocean acidification.",
+            "none"),
+        new(new[] { "CO2", "NaOH" },
+            "CO<sub>2</sub> + 2 NaOH &rarr; Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O",
+            "Sodium carbonate and water",
+            "Acid-base",
+            "Carbon dioxide is absorbed by sodium hydroxide solution - a classic CO<sub>2</sub> scrubber.",
+            "none"),
+
+        // Rusting / corrosion (3 reagents)
+        new(new[] { "Fe", "O2", "H2O" },
+            "4 Fe + 3 O<sub>2</sub> + 6 H<sub>2</sub>O &rarr; 4 Fe(OH)<sub>3</sub>",
+            "Iron(III) hydroxide (rust)",
+            "Corrosion",
+            "Iron rusts slowly in moist air. Both oxygen and water are required.",
+            "rust"),
+
+        // Decomposition / split
+        new(new[] { "H2O" },
+            "2 H<sub>2</sub>O &rarr; 2 H<sub>2</sub> + O<sub>2</sub>",
+            "Hydrogen and oxygen gas",
+            "Electrolysis",
+            "Passing electricity through water splits it into hydrogen and oxygen.",
+            "split"),
+
+        // Salt dissolution
+        new(new[] { "NaCl", "H2O" },
+            "NaCl(s) &rarr; Na<sup>+</sup>(aq) + Cl<sup>&minus;</sup>(aq)",
+            "Sodium and chloride ions in solution",
+            "Dissolution",
+            "Salt dissociates into hydrated ions in water - no chemical bonds are broken in the salt itself.",
+            "none"),
+
+        // Glucose + yeast-style fermentation analog (no enzymes listed but okay)
+        new(new[] { "Glu", "H2O" },
+            "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> &rarr; 2 C<sub>2</sub>H<sub>5</sub>OH + 2 CO<sub>2</sub>",
+            "Ethanol and carbon dioxide",
+            "Fermentation",
+            "Yeasts convert glucose dissolved in water into ethanol and CO<sub>2</sub> - the basis of brewing.",
+            "gas"),
+
+        // Cu + AgNO3 single replacement
+        new(new[] { "Cu", "AgNO3" },
+            "Cu + 2 AgNO<sub>3</sub> &rarr; Cu(NO<sub>3</sub>)<sub>2</sub> + 2 Ag",
+            "Copper(II) nitrate (blue) and silver metal",
+            "Single replacement",
+            "Copper displaces silver from solution, coating itself with silver crystals while the solution turns blue.",
+            "color",
+            "#2b6fd6"),
+
+        // Iron + copper(II) - represented Fe + AgNO3 alternative
+        new(new[] { "Fe", "AgNO3" },
+            "Fe + 2 AgNO<sub>3</sub> &rarr; Fe(NO<sub>3</sub>)<sub>2</sub> + 2 Ag",
+            "Iron(II) nitrate and silver metal",
+            "Single replacement",
+            "Iron is more reactive than silver and reduces silver ions to silver metal.",
+            "precipitate",
+            "#cccccc")
+    };
+}
+
+<style>
+    .rb-intro { padding: 12px 14px; margin-bottom: 14px; }
+    .rb-intro-row { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.9rem; }
+    .rb-mystery {
+        display: flex; align-items: center; gap: 6px; margin-top: 10px;
+        font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;
+    }
+    .rb-mystery input { accent-color: var(--primary); }
+
+    .rb-section-title {
+        font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.6px;
+        color: var(--text-muted); margin: 4px 2px 8px;
+    }
+
+    .reagent-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 8px; margin-bottom: 14px;
+    }
+    .reagent-chip {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 10px 6px; background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent; min-height: 60px;
+    }
+    .reagent-chip:active { transform: scale(0.96); }
+    .reagent-chip.chip-active { background: rgba(74,95,224,0.10); border-color: var(--primary); box-shadow: 0 0 0 2px rgba(74,95,224,0.18); }
+    .reagent-chip.chip-disabled { opacity: 0.45; cursor: not-allowed; }
+    .reagent-formula { font-weight: 700; color: var(--text-primary); font-size: 0.95rem; }
+    .reagent-name { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; text-align: center; }
+
+    .rb-tray { padding: 12px 14px; margin-bottom: 14px; }
+    .rb-tray-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .rb-tray-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .rb-tray-empty { color: var(--text-muted); font-style: italic; font-size: 0.85rem; }
+    .rb-tray-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 10px; background: var(--bg-surface); border: 1px solid var(--border);
+        border-radius: 999px; font-size: 0.85rem; color: var(--text-primary); cursor: pointer;
+    }
+    .rb-tray-chip:hover { border-color: var(--error); }
+    .rb-tray-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm { padding: 4px 10px !important; font-size: 0.75rem !important; }
+
+    .rb-result { padding: 14px; margin-bottom: 14px; animation: rbFade 0.3s ease; }
+    .rb-result-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .rb-type-badge {
+        font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
+        padding: 4px 10px; border-radius: 999px; background: rgba(74,95,224,0.10); color: var(--primary);
+    }
+    .rb-type-badge.type-combustion { background: rgba(255,140,40,0.12); color: #ff8c28; }
+    .rb-type-badge.type-precipitation { background: rgba(120,90,220,0.12); color: #785adc; }
+    .rb-type-badge.type-redox { background: rgba(220,80,120,0.12); color: #dc5078; }
+    .rb-type-badge.type-corrosion { background: rgba(160,82,45,0.15); color: #a0522d; }
+    .rb-type-badge.type-electrolysis { background: rgba(60,170,200,0.15); color: #3caac8; }
+
+    .rb-viz {
+        background: var(--bg-surface); border-radius: var(--radius-sm);
+        padding: 10px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center;
+        min-height: 130px;
+    }
+    .rb-svg { width: 100%; max-width: 280px; height: auto; }
+
+    .rb-color-box {
+        width: 100%; max-width: 280px; height: 110px; border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        animation: colorPulse 2.5s ease-in-out infinite;
+    }
+    .rb-none-box { color: var(--text-muted); font-style: italic; }
+
+    .rb-equation {
+        font-family: 'Cinzel', serif; font-size: 1.05rem; text-align: center;
+        padding: 10px; background: var(--bg-surface); border-radius: var(--radius-sm);
+        color: var(--text-primary); margin-bottom: 10px; line-height: 1.6;
+    }
+    .rb-products { margin-bottom: 8px; font-size: 0.9rem; color: var(--text-primary); }
+    .rb-products-title { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .rb-explain { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+
+    .rb-mystery-prompt {
+        display: flex; align-items: center; gap: 8px;
+        padding: 12px; background: rgba(74,95,224,0.08); border-radius: var(--radius-sm);
+        color: var(--text-secondary); font-size: 0.9rem;
+    }
+
+    .rb-no-match strong { color: var(--error); display: block; margin-bottom: 6px; }
+    .rb-no-match p { margin: 0; color: var(--text-secondary); font-size: 0.85rem; }
+
+    /* SVG animations */
+    .bubble {
+        animation: bubbleRise 1.6s ease-in infinite;
+        transform-origin: center;
+    }
+    @@keyframes bubbleRise {
+        0% { transform: translateY(0); opacity: 0; }
+        15% { opacity: 1; }
+        100% { transform: translateY(-55px); opacity: 0; }
+    }
+
+    .precip {
+        animation: precipFall 1.4s ease-in infinite;
+    }
+    @@keyframes precipFall {
+        0% { transform: translateY(0); opacity: 0; }
+        20% { opacity: 1; }
+        100% { transform: translateY(50px); opacity: 0.7; }
+    }
+
+    .flame, .flame-inner {
+        transform-origin: 100px 100px;
+        animation: flicker 0.45s ease-in-out infinite alternate;
+    }
+    .flame-inner { animation-duration: 0.3s; }
+    @@keyframes flicker {
+        from { transform: scale(1, 1); opacity: 0.95; }
+        to { transform: scale(1.05, 0.92); opacity: 1; }
+    }
+
+    .heat-wave {
+        animation: heatRise 1.8s ease-in-out infinite;
+    }
+    @@keyframes heatRise {
+        0% { opacity: 0; transform: translateY(10px); }
+        50% { opacity: 1; }
+        100% { opacity: 0; transform: translateY(-10px); }
+    }
+
+    .rust-fade { animation: rustGrow 3s ease-in-out infinite alternate; }
+    @@keyframes rustGrow {
+        from { opacity: 0; }
+        to { opacity: 0.85; }
+    }
+
+    .split-core { animation: splitPulse 2s ease-in-out infinite; transform-origin: 100px 60px; }
+    .split-left { animation: splitLeft 2s ease-in-out infinite; }
+    .split-right { animation: splitRight 2s ease-in-out infinite; }
+    @@keyframes splitPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(0.4); opacity: 0.4; }
+    }
+    @@keyframes splitLeft {
+        0% { transform: translateX(40px); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    @@keyframes splitRight {
+        0% { transform: translateX(-40px); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+
+    @@keyframes colorPulse {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
+    }
+
+    @@keyframes rbFade {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

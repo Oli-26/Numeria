@@ -1,0 +1,365 @@
+@page "/deep-time"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Deep Time Scroller</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Deep Time Scroller" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Deep Time Scroller</h1>
+</div>
+
+<p class="dt-intro">
+    <Icon Name="scroll" Size="14" /> Scroll down through 4.54 billion years of Earth's history. Time is visually compressed so the Cambrian doesn't drown out the Hadean.
+</p>
+
+<div class="dt-filter">
+    <button class="chip @(eonFilter == null ? "chip-active" : "")" @onclick="() => eonFilter = null">All</button>
+    <button class="chip @(eonFilter == "hadean" ? "chip-active" : "")" @onclick='() => eonFilter = "hadean"'>Hadean</button>
+    <button class="chip @(eonFilter == "archean" ? "chip-active" : "")" @onclick='() => eonFilter = "archean"'>Archean</button>
+    <button class="chip @(eonFilter == "proterozoic" ? "chip-active" : "")" @onclick='() => eonFilter = "proterozoic"'>Proterozoic</button>
+    <button class="chip @(eonFilter == "phanerozoic" ? "chip-active" : "")" @onclick='() => eonFilter = "phanerozoic"'>Phanerozoic</button>
+</div>
+
+<div class="dt-scroller">
+    <div class="dt-axis"></div>
+    @{
+        string? lastEon = null;
+    }
+    @foreach (var ev in GetFilteredEvents())
+    {
+        var color = EonColor(ev.Eon);
+        var eonLabel = EonLabel(ev.Eon);
+        var showHeader = ev.Eon != lastEon;
+        lastEon = ev.Eon;
+
+        if (showHeader)
+        {
+            <div class="dt-eon-header" style="border-left: 4px solid @color">
+                <span class="dt-eon-dot" style="background: @color"></span>
+                <strong>@eonLabel</strong>
+            </div>
+        }
+
+        <div class="dt-row" style="--band: @color; min-height: @(VisualSpacing(ev))px">
+            <div class="dt-band" style="background: @color"></div>
+            <div class="dt-marker" style="background: @color"></div>
+            <div class="dt-card card">
+                <div class="dt-card-head">
+                    <div class="dt-time">
+                        <Icon Name="clock" Size="14" />
+                        <span>@ev.TimeLabel</span>
+                    </div>
+                    <span class="dt-eon-tag" style="background: @color">@eonLabel</span>
+                </div>
+                <h3 class="dt-title">@ev.Title</h3>
+                <p class="dt-desc">@ev.Description</p>
+            </div>
+        </div>
+    }
+
+    <div class="dt-end">
+        <Icon Name="calendar" Size="18" />
+        <span>End of the timeline. The next entry hasn't happened yet.</span>
+    </div>
+</div>
+
+}
+
+@code {
+    private bool unlocked;
+    private string? eonFilter;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-deep-time");
+            StateHasChanged();
+        }
+    }
+
+    private IEnumerable<DeepEvent> GetFilteredEvents() =>
+        eonFilter == null ? events : events.Where(e => e.Eon == eonFilter);
+
+    // Visual spacing per row in pixels. We compress ancient time slightly and
+    // leave normal spacing for recent rows so the deep past doesn't dominate.
+    // Years-ago is mapped to a log-ish height bucket.
+    private int VisualSpacing(DeepEvent ev)
+    {
+        // ev.YearsAgo is in years. Use log10 scaling clamped into a band.
+        var years = Math.Max(1.0, ev.YearsAgo);
+        var l = Math.Log10(years); // ~0..9.66
+        // Recent rows (small l) get more vertical space, ancient rows are tighter.
+        // Map: l=0 (today) -> 130, l=9.66 (4.5 Gya) -> 70
+        var px = 130 - (l / 9.66) * 60;
+        return (int)Math.Round(px);
+    }
+
+    private static string EonColor(string eon) => eon switch
+    {
+        "hadean" => "#1a1a1a",
+        "archean" => "#4a4a4a",
+        "proterozoic" => "#7B3FA0",
+        "paleozoic" => "#2E8B57",
+        "mesozoic" => "#E67E22",
+        "cenozoic" => "#F1C40F",
+        "phanerozoic" => "#3498DB",
+        _ => "var(--border)"
+    };
+
+    private static string EonLabel(string eon) => eon switch
+    {
+        "hadean" => "Hadean",
+        "archean" => "Archean",
+        "proterozoic" => "Proterozoic",
+        "paleozoic" => "Paleozoic",
+        "mesozoic" => "Mesozoic",
+        "cenozoic" => "Cenozoic",
+        "phanerozoic" => "Phanerozoic",
+        _ => eon
+    };
+
+    private record DeepEvent(double YearsAgo, string TimeLabel, string Eon, string Title, string Description);
+
+    // Eon mapping note: Paleozoic, Mesozoic and Cenozoic are eras within the
+    // Phanerozoic eon. We tag each with the more specific era for color, and
+    // the filter "phanerozoic" matches any of these via PhanerozoicEras.
+    private static readonly HashSet<string> PhanerozoicEras = new() { "paleozoic", "mesozoic", "cenozoic", "phanerozoic" };
+
+    private IEnumerable<DeepEvent> events => allEvents.Where(e =>
+        eonFilter == null
+        || e.Eon == eonFilter
+        || (eonFilter == "phanerozoic" && PhanerozoicEras.Contains(e.Eon))
+    );
+
+    private static readonly List<DeepEvent> allEvents = new()
+    {
+        new(4_540_000_000, "4.54 Gya", "hadean", "Earth forms from the solar nebula",
+            "Dust and gas around the young Sun accrete into a molten proto-Earth. The planet is a hellish ocean of magma, bombarded by leftover planetesimals. No crust, no atmosphere we'd recognise."),
+        new(4_510_000_000, "4.51 Gya", "hadean", "Theia impact creates the Moon",
+            "A Mars-sized body called Theia smashes into the proto-Earth. The debris coalesces in orbit to form the Moon. The collision strips Earth's early atmosphere and resets the surface to molten rock."),
+        new(4_400_000_000, "4.4 Gya", "hadean", "Oldest known minerals (Jack Hills zircons)",
+            "Tiny zircon crystals from Western Australia are dated to this age, hinting that liquid water and a solid crust may have existed surprisingly early in Earth's history."),
+        new(4_280_000_000, "4.28 Gya", "hadean", "Possible earliest crust",
+            "Rocks from the Nuvvuagittuq belt in Quebec may date from this period. Earth begins to look more like a planet and less like a lava lamp, with proto-continents forming and reforming."),
+        new(4_100_000_000, "4.1 Gya", "hadean", "Late Heavy Bombardment intensifies",
+            "A spike in asteroid and comet impacts batters the inner solar system. The Moon's largest craters date from this time. Earth's surface is repeatedly sterilised and remade."),
+        new(3_800_000_000, "3.8 Gya", "archean", "Earliest possible life",
+            "Carbon isotope ratios in rocks from Greenland suggest biological activity. Whatever was alive was simple, single-celled, and probably anaerobic, living off chemistry rather than sunlight."),
+        new(3_500_000_000, "3.5 Gya", "archean", "Stromatolites and cyanobacteria",
+            "Layered microbial mats called stromatolites appear in the rock record. Cyanobacteria begin photosynthesis, slowly producing oxygen as a waste product. They will eventually transform the planet."),
+        new(3_200_000_000, "3.2 Gya", "archean", "Stable continental crust",
+            "Plate tectonics may begin in earnest. The first true continents (cratons) become stable enough to survive to the present day. Microbial life thrives in shallow seas."),
+        new(2_700_000_000, "2.7 Gya", "archean", "Oxygenic photosynthesis widespread",
+            "Cyanobacteria pump oxygen into the oceans. For hundreds of millions of years it is absorbed by dissolved iron, producing the famous banded iron formations. The atmosphere itself remains anoxic."),
+        new(2_400_000_000, "2.4 Gya", "proterozoic", "Great Oxygenation Event",
+            "Free oxygen finally accumulates in the atmosphere. To most existing life this is a catastrophic toxin, triggering possibly the largest mass extinction in history. The sky turns blue."),
+        new(2_300_000_000, "2.3 Gya", "proterozoic", "Huronian glaciation",
+            "With methane stripped from the atmosphere by oxygen, the greenhouse weakens and Earth freezes. Glaciers reach the tropics in one of the longest ice ages ever recorded."),
+        new(2_100_000_000, "2.1 Gya", "proterozoic", "Eukaryotes appear",
+            "Cells with nuclei and membrane-bound organelles emerge, probably via one cell engulfing another (endosymbiosis). Mitochondria are descended from these captured bacteria."),
+        new(1_500_000_000, "1.5 Gya", "proterozoic", "Multicellular experiments",
+            "Some eukaryotes start clumping together, with hints of cell specialisation. The fossil record from this time is sparse but suggestive."),
+        new(1_200_000_000, "1.2 Gya", "proterozoic", "Sexual reproduction",
+            "The red alga Bangiomorpha, preserved in Arctic Canada, is one of the oldest organisms with clear evidence of sexual reproduction. Genetic shuffling supercharges evolution."),
+        new(750_000_000, "750 Mya", "proterozoic", "Snowball Earth begins",
+            "A series of extreme glaciations may have left the entire planet ice-covered, oceans frozen to the equator. Life clings on around hydrothermal vents and beneath thin ice."),
+        new(635_000_000, "635 Mya", "proterozoic", "Ediacaran biota",
+            "As the planet thaws, strange soft-bodied multicellular organisms appear: fronds, discs, quilted creatures unlike anything alive today. The first complex animal communities."),
+        new(540_000_000, "540 Mya", "paleozoic", "Cambrian Explosion",
+            "Within a geological eyeblink, virtually every modern animal phylum appears in the fossil record. Eyes, shells, jaws, predation, complex food webs all arrive in a burst of evolutionary creativity."),
+        new(485_000_000, "485 Mya", "paleozoic", "First land plants",
+            "Mosses and liverworts begin colonising the bare continents. Without competing animals, primitive plants spread to wherever there is moisture and rock to grip."),
+        new(450_000_000, "450 Mya", "paleozoic", "End-Ordovician extinction",
+            "Massive glaciation drops sea levels and chills the oceans. Around 85% of marine species disappear, the second-largest extinction in Earth's history."),
+        new(420_000_000, "420 Mya", "paleozoic", "Vascular plants and arthropods on land",
+            "Plants evolve internal plumbing and lignin, growing taller. Arthropods follow them onto land. The continents finally turn green and start to crawl."),
+        new(375_000_000, "375 Mya", "paleozoic", "Late Devonian extinction; tetrapods on land",
+            "A long pulse of extinctions reshapes marine life. At the same time, lobe-finned fish like Tiktaalik are flopping into the shallows. Their descendants will become every land vertebrate."),
+        new(300_000_000, "300 Mya", "paleozoic", "Pangaea forms",
+            "All the major continents collide into a single supercontinent surrounded by one global ocean (Panthalassa). Vast coal swamps blanket the equator, locking up the carbon we now burn."),
+        new(252_000_000, "252 Mya", "paleozoic", "End-Permian extinction",
+            "The Great Dying. Huge volcanic eruptions in Siberia poison the air and oceans. Around 96% of marine species and 70% of land vertebrates vanish. Life takes 10 million years to recover."),
+        new(230_000_000, "230 Mya", "mesozoic", "First dinosaurs",
+            "In the recovering Triassic ecosystems, small bipedal archosaurs evolve into the first true dinosaurs. They will dominate the planet for the next 165 million years."),
+        new(201_000_000, "201 Mya", "mesozoic", "End-Triassic extinction",
+            "Another volcanic episode, this time as Pangaea begins to rift apart, wipes out around half of all species. The survivors include the dinosaurs, who now have the world to themselves."),
+        new(150_000_000, "150 Mya", "mesozoic", "Archaeopteryx",
+            "A feathered dinosaur the size of a raven, preserved in Jurassic limestone in Bavaria, shows that birds are essentially small flying dinosaurs. They will outlive the rest of the lineage."),
+        new(125_000_000, "125 Mya", "mesozoic", "Flowering plants diversify",
+            "Angiosperms had appeared earlier, but in the Cretaceous they explode in diversity. Co-evolution with insects produces flowers, fruits, and the green world we'd recognise."),
+        new(66_000_000, "66 Mya", "mesozoic", "K-Pg asteroid impact",
+            "A 10-kilometre asteroid slams into what is now the Yucatan. The blast, fires, and impact winter wipe out the non-avian dinosaurs and around 75% of species. Mammals inherit the wreckage."),
+        new(55_000_000, "55 Mya", "cenozoic", "PETM warming event",
+            "A massive release of carbon (perhaps from methane hydrates) spikes global temperatures by 5-8 degrees Celsius in a few thousand years. The ocean acidifies. A natural analogue for today's emissions."),
+        new(34_000_000, "34 Mya", "cenozoic", "Antarctic ice sheet forms",
+            "As Antarctica drifts over the south pole and ocean currents reorganise, it freezes over. Earth shifts from a hothouse to an icehouse climate that has persisted, with wobbles, ever since."),
+        new(23_000_000, "23 Mya", "cenozoic", "Grasslands spread; mammals diversify",
+            "Grasses, which had been minor players, expand into vast plains. Grazing mammals (horses, antelope, elephants) co-evolve with them. The savannahs that will shape human evolution begin to form."),
+        new(7_000_000, "7 Mya", "cenozoic", "Hominin and chimp lineages split",
+            "Somewhere in Africa, the last common ancestor of chimps and humans gives rise to two lineages. Sahelanthropus and other early hominins begin walking, sometimes, on two legs."),
+        new(3_300_000, "3.3 Mya", "cenozoic", "Oldest stone tools",
+            "At Lomekwi in Kenya, hominins are deliberately knapping stone into cutting edges, predating the genus Homo. Technology is older than us."),
+        new(300_000, "300 Kya", "cenozoic", "Anatomically modern humans",
+            "Fossils from Jebel Irhoud in Morocco show Homo sapiens as a recognisable species. We share the planet with Neanderthals, Denisovans, and other now-extinct human cousins."),
+        new(70_000, "70 Kya", "cenozoic", "Out of Africa",
+            "A small group of modern humans leaves Africa and, within tens of thousands of years, reaches every habitable continent. Behavioural modernity, art, and complex language are in full swing."),
+        new(12_000, "12 Kya", "cenozoic", "Agriculture begins",
+            "In the Fertile Crescent, the Yangtze valley, and several other places independently, people domesticate plants and animals. Sedentary villages, surplus food, and population growth follow."),
+        new(5_000, "5 Kya", "cenozoic", "First cities and writing",
+            "Uruk, Memphis, Mohenjo-daro, and other urban centres appear, supported by agriculture and irrigation. Writing emerges to track grain, taxes, and gods. History, in the literal sense, begins."),
+        new(2_000, "2 Kya", "cenozoic", "Classical empires at peak",
+            "Rome, Han China, the Maurya, and the Parthians rule huge populations connected by roads and trade. Most of humanity now lives in stratified, literate, agrarian states."),
+        new(200, "200 ya", "cenozoic", "Industrial Revolution",
+            "Coal-powered steam engines transform manufacturing and transport, starting in Britain. Atmospheric carbon dioxide begins its sharp rise. Human population starts the climb from one billion towards eight."),
+        new(70, "70 ya", "cenozoic", "Great Acceleration",
+            "Post-WWII, almost every measure of human activity (energy use, fertilizer, plastics, vehicles, dam-building, atmospheric CO2) hockey-sticks upward. Geologists propose this as the start of the Anthropocene."),
+        new(1, "Today", "cenozoic", "You, reading this",
+            "Roughly 8 billion humans share the planet with the descendants of every survivor of every event above. Everything in the timeline led to this moment. The next chapter is being written now.")
+    };
+}
+
+<style>
+    .dt-intro {
+        display: flex; align-items: center; gap: 8px; color: var(--text-secondary);
+        font-size: 0.88rem; line-height: 1.5; margin: 0 0 14px;
+        background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm);
+        border-left: 3px solid var(--primary);
+    }
+
+    .dt-filter {
+        display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;
+        position: sticky; top: 0; z-index: 5;
+        background: var(--bg-card); padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .dt-filter .chip-active { background: var(--primary) !important; color: white !important; }
+
+    .dt-scroller {
+        position: relative;
+        padding-left: 36px;
+        padding-bottom: 24px;
+    }
+
+    .dt-axis {
+        position: absolute;
+        left: 18px; top: 0; bottom: 24px;
+        width: 3px;
+        background: linear-gradient(
+            to bottom,
+            #1a1a1a 0%, #1a1a1a 12%,
+            #4a4a4a 12%, #4a4a4a 28%,
+            #7B3FA0 28%, #7B3FA0 60%,
+            #2E8B57 60%, #2E8B57 73%,
+            #E67E22 73%, #E67E22 86%,
+            #F1C40F 86%, #F1C40F 100%
+        );
+        border-radius: 2px;
+    }
+
+    .dt-eon-header {
+        margin: 18px 0 6px -36px;
+        padding: 6px 12px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.8rem; color: var(--text-primary);
+        text-transform: uppercase; letter-spacing: 1px;
+        position: sticky; top: 50px; z-index: 4;
+    }
+    .dt-eon-header strong { font-weight: 700; }
+    .dt-eon-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    .dt-row {
+        position: relative;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .dt-band {
+        position: absolute;
+        left: -24px; top: 0; bottom: 0;
+        width: 6px;
+        opacity: 0.35;
+        border-radius: 3px;
+    }
+
+    .dt-marker {
+        position: absolute;
+        left: -32px;
+        top: 18px;
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        border: 2px solid var(--bg-card);
+        box-shadow: 0 0 0 1px var(--border);
+        z-index: 2;
+    }
+
+    .dt-card {
+        flex: 1;
+        padding: 12px 14px;
+        margin-left: 4px;
+        border-left: 3px solid var(--band, var(--border));
+    }
+
+    .dt-card-head {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+    }
+
+    .dt-time {
+        display: flex; align-items: center; gap: 4px;
+        font-size: 0.78rem; color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+    }
+
+    .dt-eon-tag {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .dt-title {
+        margin: 0 0 4px;
+        font-size: 0.98rem;
+        color: var(--text-primary);
+        line-height: 1.3;
+    }
+
+    .dt-desc {
+        margin: 0;
+        font-size: 0.84rem;
+        color: var(--text-secondary);
+        line-height: 1.55;
+    }
+
+    .dt-end {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        margin-top: 18px; padding: 14px;
+        background: var(--bg-surface); border-radius: var(--radius-sm);
+        color: var(--text-muted); font-size: 0.85rem; font-style: italic;
+    }
+</style>

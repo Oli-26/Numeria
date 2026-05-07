@@ -1,0 +1,377 @@
+@page "/topic/{TopicId}/run/encounter/{Floor:int}/{Col:int}"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject IRunService Run
+@inject IGamificationService Gamification
+@inject IQuizEngine QuizEngine
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="page-header">
+    <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@encounterTitle</h1>
+</div>
+
+@if (run == null || encounterQuestions.Count == 0)
+{
+    <div class="loading">Loading encounter...</div>
+}
+else
+{
+    <div class="encounter-bar">
+        <div class="run-lives">
+            @for (int i = 0; i < run.MaxLives; i++)
+            {
+                var filled = i < run.Lives;
+                <span class="life @(filled ? "filled" : "lost")"><Icon Name="heart" Size="16" /></span>
+            }
+        </div>
+        <div class="encounter-progress">@(currentIdx + 1) / @encounterQuestions.Count</div>
+    </div>
+
+    @if (currentIdx < encounterQuestions.Count)
+    {
+        var q = encounterQuestions[currentIdx];
+        <div class="encounter-question @(damageFlash ? "shake" : "")" @key="currentIdx">
+            <p class="question-prompt">@q.Prompt</p>
+
+            @if (q.MathExpression != null)
+            {
+                <div class="math-display" id="run-math-@currentIdx"></div>
+            }
+
+            <div class="artifact-actions">
+                @if (CanUseFreeHint(q))
+                {
+                    <button class="btn btn-sm btn-outline" @onclick="UseFreeHint"><Icon Name="lightbulb" Size="14" /> Free Hint</button>
+                }
+                @if (CanUseDiagonal(q))
+                {
+                    <button class="btn btn-sm btn-outline" @onclick="UseDiagonal"><Icon Name="scissors" Size="14" /> Eliminate</button>
+                }
+                @if (CanUseFermat(q))
+                {
+                    <button class="btn btn-sm btn-outline" @onclick="UseFermat"><Icon Name="skip-forward" Size="14" /> Skip</button>
+                }
+            </div>
+
+            @if (hintShown)
+            {
+                <div class="hint-reveal">Answer: <strong>@q.CorrectAnswer</strong></div>
+            }
+
+            @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.VisualIdentify)
+            {
+                <div class="options-grid">
+                    @if (q.Options != null)
+                    {
+                        @foreach (var opt in q.Options)
+                        {
+                            var cls = "";
+                            var isEliminated = eliminatedOptions.Contains(opt);
+                            if (answered)
+                            {
+                                if (opt == q.CorrectAnswer) cls = "correct";
+                                else if (opt == selectedAnswer && !lastCorrect) cls = "incorrect";
+                            }
+                            <button class="option-btn @cls @(isEliminated ? "eliminated" : "")"
+                                    @onclick="() => SelectOption(opt)"
+                                    disabled="@(answered || isEliminated)">@opt</button>
+                        }
+                    }
+                </div>
+            }
+            else if (q.Type == QuestionType.TrueOrFalse)
+            {
+                <div class="options-grid">
+                    @foreach (var opt in new[] { "True", "False" })
+                    {
+                        var cls = "";
+                        if (answered)
+                        {
+                            if (opt == q.CorrectAnswer) cls = "correct";
+                            else if (opt == selectedAnswer && !lastCorrect) cls = "incorrect";
+                        }
+                        <button class="option-btn @cls" @onclick="() => SelectOption(opt)" disabled="@answered">@opt</button>
+                    }
+                </div>
+            }
+            else if (q.Type == QuestionType.FillIn)
+            {
+                <div class="fill-in-section">
+                    <input type="text" class="fill-input" @bind="fillAnswer" @bind:event="oninput"
+                           placeholder="Type your answer..." disabled="@answered"
+                           @onkeydown="HandleKey" />
+                    @if (!answered)
+                    {
+                        <button class="btn btn-primary" @onclick="SubmitFillIn" disabled="@string.IsNullOrWhiteSpace(fillAnswer)">Submit</button>
+                    }
+                </div>
+            }
+
+            @if (answered)
+            {
+                <div class="feedback @(lastCorrect ? "feedback-correct" : "feedback-incorrect")">
+                    <span class="feedback-icon">@if (lastCorrect) { <Icon Name="check" Size="14" /> } else { <Icon Name="x-mark" Size="14" /> }</span>
+                    <span>@(lastCorrect ? "Correct!" : "Wrong!")</span>
+                    @if (!lastCorrect && q.CorrectAnswer != null)
+                    {
+                        <span class="correct-answer">@q.CorrectAnswer</span>
+                    }
+                </div>
+                @if (q.Explanation != null)
+                {
+                    <div class="explanation">@q.Explanation</div>
+                }
+                <div style="display: flex; gap: 8px; margin-top: 10px">
+                    @if (CanUseNoetherRetry())
+                    {
+                        <button class="btn btn-outline" style="flex:1" @onclick="UseNoetherRetry"><Icon Name="rotate" Size="14" /> Retry (Noether)</button>
+                    }
+                    <button class="btn btn-primary" style="flex:2" @onclick="NextOrFinish">
+                        @(currentIdx < encounterQuestions.Count - 1 ? "Next" : "Finish")
+                    </button>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string TopicId { get; set; } = "";
+    [Parameter] public int Floor { get; set; }
+    [Parameter] public int Col { get; set; }
+
+    private Topic? topic;
+    private RunState? run;
+    private RunNodeType nodeType;
+    private List<Question> encounterQuestions = new();
+    private int currentIdx;
+
+    private bool answered;
+    private bool lastCorrect;
+    private string selectedAnswer = "";
+    private string fillAnswer = "";
+
+    private bool hintShown;
+    private bool hintFreeUsed;
+    private bool fermatSkipUsedThisEncounter;
+    private List<string> eliminatedOptions = new();
+    private bool damageFlash;
+    private int lastDamageTaken;
+
+    protected override async Task OnInitializedAsync()
+    {
+        topic = await Content.GetTopicAsync(TopicId);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            run = await Run.GetActiveRunAsync(TopicId);
+            if (run == null || run.Status != RunStatus.Active)
+            {
+                Nav.NavigateTo($"/topic/{TopicId}/run");
+                return;
+            }
+            if (Floor != run.CurrentFloor)
+            {
+                Nav.NavigateTo($"/topic/{TopicId}/run");
+                return;
+            }
+            await Run.EnterNodeAsync(run, Col);
+            nodeType = run.Map[Floor][Col].Type;
+            encounterQuestions = await Run.RollQuestionsForNodeAsync(run, nodeType);
+            ResetPerQuestionState();
+            StateHasChanged();
+            return;
+        }
+
+        if (currentIdx < encounterQuestions.Count)
+        {
+            var q = encounterQuestions[currentIdx];
+            if (q.MathExpression != null)
+                await JS.TryInvokeVoidAsync("renderMath", $"run-math-{currentIdx}", q.MathExpression, true);
+        }
+    }
+
+    private void ResetPerQuestionState()
+    {
+        answered = false;
+        lastCorrect = false;
+        selectedAnswer = "";
+        fillAnswer = "";
+        hintShown = false;
+        eliminatedOptions = new();
+    }
+
+    private string encounterTitle => nodeType switch {
+        RunNodeType.Boss => "⚔ Boss",
+        RunNodeType.Elite => "★ Elite",
+        _ => "Enemy"
+    };
+
+    private bool CanUseFreeHint(Question q) =>
+        run != null && !answered && !hintShown && !hintFreeUsed
+        && currentIdx == 0
+        && run.ArtifactIds.Contains("ramanujan-notebook")
+        && q.CorrectAnswer != null;
+
+    private bool CanUseDiagonal(Question q) =>
+        run != null && !answered && !run.DiagonalUsedThisFloor
+        && q.Type == QuestionType.MultipleChoice
+        && run.ArtifactIds.Contains("cantor-diagonal")
+        && q.Options != null && q.CorrectAnswer != null
+        && q.Options.Count(o => o != q.CorrectAnswer && !eliminatedOptions.Contains(o)) > 0;
+
+    private bool CanUseFermat(Question q) =>
+        run != null && !answered && !fermatSkipUsedThisEncounter
+        && run.ArtifactIds.Contains("fermat-margin");
+
+    private bool CanUseNoetherRetry() =>
+        run != null && answered && !lastCorrect && !run.RetryUsed
+        && run.ArtifactIds.Contains("noether-symmetry");
+
+    private void UseFreeHint()
+    {
+        hintFreeUsed = true;
+        hintShown = true;
+    }
+
+    private void UseDiagonal()
+    {
+        if (run == null) return;
+        var q = encounterQuestions[currentIdx];
+        if (q.Options == null || q.CorrectAnswer == null) return;
+        var rng = new Random();
+        var wrongs = q.Options.Where(o => o != q.CorrectAnswer && !eliminatedOptions.Contains(o)).ToList();
+        if (wrongs.Count == 0) return;
+        eliminatedOptions.Add(wrongs[rng.Next(wrongs.Count)]);
+        run.DiagonalUsedThisFloor = true;
+    }
+
+    private async Task UseFermat()
+    {
+        if (run == null) return;
+        fermatSkipUsedThisEncounter = true;
+        await NextOrFinish();
+    }
+
+    private async Task UseNoetherRetry()
+    {
+        if (run == null || run.RetryUsed) return;
+        run.RetryUsed = true;
+        run.TotalWrong = Math.Max(0, run.TotalWrong - 1);
+        run.Lives = Math.Min(run.MaxLives, run.Lives + lastDamageTaken);
+        if (run.Lives > 0 && run.Status == RunStatus.Lost) run.Status = RunStatus.Active;
+        lastDamageTaken = 0;
+        await Run.SaveRunAsync(run);
+        ResetPerQuestionState();
+    }
+
+    private async Task SelectOption(string opt)
+    {
+        if (answered) return;
+        var q = encounterQuestions[currentIdx];
+        selectedAnswer = opt;
+        lastCorrect = opt == q.CorrectAnswer;
+        await Resolve(lastCorrect);
+    }
+
+    private async Task SubmitFillIn()
+    {
+        if (answered || string.IsNullOrWhiteSpace(fillAnswer)) return;
+        var q = encounterQuestions[currentIdx];
+        selectedAnswer = fillAnswer.Trim();
+        var result = QuizEngine.ValidateAnswer(q, selectedAnswer);
+        lastCorrect = result.IsCorrect;
+        await Resolve(lastCorrect);
+    }
+
+    private async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SubmitFillIn();
+    }
+
+    private async Task Resolve(bool correct)
+    {
+        if (run == null) return;
+        answered = true;
+        if (correct)
+        {
+            run.TotalCorrect++;
+            await JS.TryInvokeVoidAsync("Sounds.playCorrect");
+        }
+        else
+        {
+            run.TotalWrong++;
+            damageFlash = true;
+            lastDamageTaken = await Run.ApplyDamageAsync(run, 1);
+            await JS.TryInvokeVoidAsync("Sounds.playWrong");
+            _ = Task.Delay(500).ContinueWith(_ => InvokeAsync(() => { damageFlash = false; StateHasChanged(); }));
+        }
+        await Run.SaveRunAsync(run);
+        StateHasChanged();
+    }
+
+    private async Task NextOrFinish()
+    {
+        if (run == null) return;
+
+        // If lives ran out, end the run immediately
+        if (run.Status == RunStatus.Lost)
+        {
+            Nav.NavigateTo($"/topic/{TopicId}/run");
+            return;
+        }
+
+        currentIdx++;
+        if (currentIdx >= encounterQuestions.Count)
+        {
+            // Encounter done
+            var isBoss = nodeType == RunNodeType.Boss;
+            await Run.CompleteEncounterAsync(run, isBoss);
+            Nav.NavigateTo($"/topic/{TopicId}/run");
+            return;
+        }
+
+        ResetPerQuestionState();
+        StateHasChanged();
+    }
+}
+
+<style>
+    .encounter-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 14px; background: var(--bg-card); border-radius: var(--radius-sm);
+        border: 1px solid var(--border); margin-bottom: 14px;
+    }
+    .run-lives { display: flex; gap: 4px; }
+    .life.filled { color: #e63946; }
+    .life.lost { color: var(--text-muted); opacity: 0.4; }
+    .encounter-progress { font-weight: 700; font-size: 0.9rem; color: var(--text-secondary); }
+
+    .encounter-question { max-width: 600px; margin: 0 auto; }
+    .encounter-question.shake { animation: hpShake 0.45s ease; }
+    @@keyframes hpShake {
+        0%,100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+    }
+
+    .artifact-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 12px; }
+
+    .option-btn.eliminated {
+        opacity: 0.3; text-decoration: line-through; cursor: not-allowed;
+    }
+
+    .fill-in-section { display: flex; gap: 10px; }
+    .fill-input {
+        flex: 1; padding: 12px 16px; border: 2px solid var(--border);
+        border-radius: var(--radius-sm); font-size: 1rem; font-family: var(--font-main);
+        background: var(--bg-card); color: var(--text-primary); outline: none;
+    }
+    .fill-input:focus { border-color: var(--primary); }
+</style>

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "para-01",
+    "topicId": "cs-paradigms",
+    "order": 1,
+    "title": "Imperative & Procedural Programming",
+    "description": "Assignments, mutation, control flow, and structured programming",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "para-01-c1",
+        "title": "What Imperative Means: Telling the Machine How",
+        "contentHtml": "<p><strong>Imperative programming</strong> is the original paradigm. Born with Fortran in 1957, it directly mirrors how a CPU works: a sequence of instructions that change <strong>state</strong> over time. You tell the machine <em>how</em> to compute the answer, step by step.</p><p>The core building blocks are simple: <strong>variables</strong> hold values, <strong>assignments</strong> change them, and <strong>control flow</strong> (if/else, loops, jumps) decides what runs next. The classic loop <code>for (i = 0; i &lt; n; i++) { sum += a[i]; }</code> is pure imperative thinking — initialize, test, mutate, repeat.</p><p>This style maps cleanly to assembly. A variable is a memory address. An assignment is a store. A loop is a conditional jump. That's why imperative code tends to be fast: there's almost no translation between what you wrote and what the CPU runs.</p>",
+        "mathExpressions": ["x \\leftarrow x + 1 \\quad \\text{(assignment: state changes over time)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-01-c2",
+        "title": "Procedural Programming: Functions as Subroutines",
+        "contentHtml": "<p><strong>Procedural programming</strong> is imperative programming organized into <strong>procedures</strong> — named, reusable blocks of code. C, Pascal, and early BASIC are canonical examples. A procedure takes inputs, possibly mutates state, and may return a value.</p><p>This was a revolution in the 1960s. Before procedures, programs were one giant flat block of GOTO statements. Procedures gave us <strong>abstraction</strong>: hide the details of <em>how</em> behind a name that says <em>what</em>. Call <code>sort(array)</code> without caring whether it uses quicksort, mergesort, or bubble sort.</p><p>Procedures also introduced the <strong>call stack</strong>: each call pushes a stack frame holding local variables and the return address. When the procedure finishes, the frame pops. This stack discipline, plus parameter passing, is what makes recursion possible — and what makes stack overflows possible.</p>",
+        "mathExpressions": ["\\text{procedure } f(x) \\to y \\quad \\text{abstracts state-changing computation behind a name}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-01-c3",
+        "title": "Structured Programming: The Death of GOTO",
+        "contentHtml": "<p>In 1968, Edsger Dijkstra published a one-page letter titled <em>Go To Statement Considered Harmful</em>. He argued that programs riddled with GOTOs were impossible to reason about. The control flow could jump anywhere from anywhere — a mess of spaghetti.</p><p><strong>Structured programming</strong> is the antidote. Build all programs from just three constructs: <strong>sequence</strong> (do A, then B), <strong>selection</strong> (if/else), and <strong>iteration</strong> (while/for). The <strong>Böhm-Jacopini theorem</strong> proved this is enough — any computable function can be written using only these three.</p><p>This is why modern imperative languages (C, Java, Python, Go) all share the same control structures. Even when languages differ wildly in syntax, they all converge on while-loops and if-statements because that's the structured-programming bedrock. GOTO still exists in C, but using it outside of error-handling escapes earns you angry code reviews.</p>",
+        "mathExpressions": ["\\text{Böhm-Jacopini: all computable functions} = \\{ \\text{sequence},\\; \\text{selection},\\; \\text{iteration} \\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["para-q01", "para-q02", "para-q03", "para-q04", "para-q05", "para-q06", "para-q07", "para-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "para-02",
+    "topicId": "cs-paradigms",
+    "order": 2,
+    "title": "Object-Oriented Programming",
+    "description": "Classes, encapsulation, inheritance, polymorphism, and message passing",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "para-02-c1",
+        "title": "Objects Bundle State and Behavior",
+        "contentHtml": "<p><strong>Object-oriented programming (OOP)</strong> emerged from Simula 67 and was crystallized by Smalltalk in the 1970s. The core idea is radical: instead of separating data from the procedures that operate on it, bundle them together into <strong>objects</strong>.</p><p>An object has <strong>fields</strong> (state) and <strong>methods</strong> (behavior). A <code>BankAccount</code> object owns its <code>balance</code> and exposes methods like <code>deposit()</code> and <code>withdraw()</code>. You don't poke at the balance directly — you send the object messages and let it manage its own state.</p><p>This is <strong>encapsulation</strong>: hiding internal data behind a public interface. The benefits are huge. You can change the implementation (maybe balances are now stored in a database) without breaking callers. You can enforce invariants (the balance can never go negative) inside the methods. The object becomes a small, autonomous module.</p>",
+        "mathExpressions": ["\\text{object} = (\\text{state},\\; \\text{methods}) \\quad \\text{access to state goes through methods}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-02-c2",
+        "title": "Inheritance and Polymorphism",
+        "contentHtml": "<p><strong>Inheritance</strong> lets you build new classes from existing ones. A <code>SavingsAccount</code> inherits from <code>BankAccount</code>, gaining all its fields and methods, and adds new behavior (interest calculation). The child class is a specialization of the parent.</p><p><strong>Polymorphism</strong> is the deeper magic. Different classes can implement the same method with different behavior, and code that operates on the parent type works automatically on any child. <code>account.withdraw(100)</code> does the right thing whether <code>account</code> is a checking, savings, or credit-card account. The right method is chosen at runtime by <strong>dynamic dispatch</strong>.</p><p>The dark side: deep inheritance hierarchies are notoriously fragile. A change to a base class ripples to every descendant. Modern OOP wisdom favors <strong>composition over inheritance</strong> — build behavior by combining objects, not by extending classes. Languages like Go drop classical inheritance entirely; languages like Rust use <strong>traits</strong> (interfaces) without inheritance trees.</p>",
+        "mathExpressions": ["\\text{Liskov Substitution: } S <: T \\implies \\text{any } T \\text{ can be replaced by } S \\text{ without breaking behavior}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-02-c3",
+        "title": "The Four Pillars and Their Critics",
+        "contentHtml": "<p>OOP is traditionally summarized by four pillars: <strong>encapsulation</strong>, <strong>abstraction</strong>, <strong>inheritance</strong>, <strong>polymorphism</strong>. Java, C#, C++, Python, Ruby — most mainstream languages embrace some flavor of all four.</p><p>But OOP has loud critics. Alan Kay, who coined the term, said his original vision was about <strong>messaging</strong> between independent objects, not the class-based, type-heavy systems we got. Functional programmers point out that mutable state hidden inside objects is exactly what makes concurrent code so hard to reason about. \"OOP is a hoax\" is a popular contrarian take.</p><p>The honest answer: OOP is a tool, not a religion. Encapsulation is genuinely useful for managing complexity in large systems. Polymorphism is a clean way to extend behavior. But deep class hierarchies, getter/setter ceremony, and design-pattern theater are all warning signs of OOP overuse. Modern code mixes paradigms: OOP for module structure, functional ideas for transformations, imperative for hot loops.</p>",
+        "mathExpressions": ["\\text{Pillars: } \\{\\text{encapsulation},\\, \\text{abstraction},\\, \\text{inheritance},\\, \\text{polymorphism}\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["para-q09", "para-q10", "para-q11", "para-q12", "para-q13", "para-q14", "para-q15", "para-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "para-03",
+    "topicId": "cs-paradigms",
+    "order": 3,
+    "title": "Functional Programming",
+    "description": "Pure functions, immutability, higher-order functions, and lazy evaluation",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "para-03-c1",
+        "title": "Pure Functions and Referential Transparency",
+        "contentHtml": "<p><strong>Functional programming (FP)</strong> takes a different stance: don't mutate, don't have side effects, treat computation as the evaluation of mathematical functions. A <strong>pure function</strong> is one that, given the same inputs, always returns the same output, and has no observable effect beyond its return value.</p><p>This property is called <strong>referential transparency</strong>: any expression can be replaced by its value without changing the program's meaning. <code>add(2, 3)</code> can always be replaced by <code>5</code>. Compare to imperative code: <code>readNextLine()</code> returns different things each call, depending on hidden state. Not referentially transparent.</p><p>Why care? Pure functions are <strong>trivially testable</strong> (no setup or mocking), <strong>parallelizable</strong> (no shared state to fight over), and <strong>composable</strong> (chain them without surprises). The cost: anything that interacts with the real world — I/O, time, randomness — is impure. Real FP languages have to confine impurity, often via <strong>monads</strong> (Haskell) or <strong>effect systems</strong>.</p>",
+        "mathExpressions": ["\\text{pure: } f(x) = f(x) \\text{ always, no side effects} \\implies \\text{referentially transparent}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-03-c2",
+        "title": "Immutability and Higher-Order Functions",
+        "contentHtml": "<p>FP banishes mutation. Instead of <code>list.push(x)</code>, you make a <strong>new</strong> list with x appended. Instead of <code>account.balance -= 100</code>, you produce a new account with the reduced balance. This sounds wasteful, but smart compilers and persistent data structures (with structural sharing) make it efficient.</p><p>The payoff is that bugs from mutation simply vanish. No more \"why did this list change behind my back?\" — values never change. This is why FP shines in concurrent programs: if no thread can mutate anything, there are no race conditions.</p><p><strong>Higher-order functions</strong> (HOFs) are functions that take or return other functions. <code>map</code>, <code>filter</code>, <code>reduce</code> are the classic trio. Instead of writing a loop to double every number, you write <code>numbers.map(x =&gt; x * 2)</code>. This style is so productive that even hardcore imperative languages (Java 8+, C#, JavaScript) have adopted HOFs. The functional ideas won, even where the paradigm didn't.</p>",
+        "mathExpressions": ["\\text{map}: (\\alpha \\to \\beta) \\to [\\alpha] \\to [\\beta] \\quad \\text{a function that takes a function}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-03-c3",
+        "title": "Lazy Evaluation and Lambda Calculus Roots",
+        "contentHtml": "<p>FP traces back to <strong>Alonzo Church's lambda calculus</strong> (1930s) — a model of computation built from just three things: variables, function abstraction (<code>λx. body</code>), and function application. Equivalent in power to Turing machines, but built on functions instead of mutable tape.</p><p>From this root grew <strong>Lisp</strong> (1958), <strong>ML</strong> (1973), <strong>Haskell</strong> (1990), <strong>Erlang</strong>, <strong>F#</strong>, <strong>Clojure</strong>, <strong>Scala</strong>, and <strong>Elm</strong>. Each emphasizes different aspects: Lisp the homoiconic syntax, ML the type system, Haskell purity and laziness, Erlang concurrency, Clojure persistent data structures.</p><p><strong>Lazy evaluation</strong> is one of FP's wilder tricks: don't compute a value until something actually needs it. Haskell uses lazy evaluation by default, which lets you write <code>take 10 (filter isPrime [1..])</code> — \"the first 10 primes from the infinite list of all integers\". The infinite list is never fully built; computation stops once 10 primes are found. Powerful, but laziness also makes performance hard to predict and memory leaks subtle.</p>",
+        "mathExpressions": ["\\lambda x.\\, x + 1 \\quad \\text{lambda abstraction: a function that adds 1 to its argument}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["para-q17", "para-q18", "para-q19", "para-q20", "para-q21", "para-q22", "para-q23", "para-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "para-04",
+    "topicId": "cs-paradigms",
+    "order": 4,
+    "title": "Declarative & Logic Programming",
+    "description": "SQL, Prolog, constraint solvers — describing what, not how",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "para-04-c1",
+        "title": "Declarative: Describe the What",
+        "contentHtml": "<p><strong>Declarative programming</strong> is the opposite of imperative. Instead of telling the machine <em>how</em> to compute, you describe <em>what</em> the answer looks like, and let the system figure out the steps.</p><p>The most successful declarative language by far is <strong>SQL</strong>. <code>SELECT name FROM users WHERE age &gt; 18</code> says nothing about how the query runs. The database engine plans an execution: maybe a table scan, maybe an index lookup, maybe a hash join. The same query may run completely differently as data grows or indexes change. You don't care — you only said what you wanted.</p><p>Other declarative families: <strong>HTML/CSS</strong> (describe page structure and style, browser does layout), <strong>regular expressions</strong>, <strong>build systems</strong> like Make, <strong>infrastructure-as-code</strong> like Terraform. The pattern is always: describe the desired state, let the engine reconcile it. Functional programming is sometimes considered a sub-family of declarative.</p>",
+        "mathExpressions": ["\\text{SELECT } x \\text{ WHERE } P(x) \\quad \\text{a relation, not a recipe}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-04-c2",
+        "title": "Logic Programming and Prolog",
+        "contentHtml": "<p><strong>Logic programming</strong> is the most extreme form of declarative. You write <strong>facts</strong> and <strong>rules</strong> in a logic language, then ask <strong>queries</strong>. The system uses inference to find answers.</p><p>The canonical language is <strong>Prolog</strong>. A program is a set of clauses: <code>parent(tom, bob).</code> (a fact) and <code>grandparent(X, Z) :- parent(X, Y), parent(Y, Z).</code> (a rule: X is a grandparent of Z if X is parent of some Y who is parent of Z). Ask <code>?- grandparent(tom, X).</code> and Prolog uses <strong>unification</strong> and <strong>backtracking</strong> to find all X that satisfy.</p><p>Logic programming is brilliant for problems with combinatorial structure: scheduling, parsing, configuration, theorem proving. It's painful when you need fine-grained control, performance tuning, or anything procedural. Prolog's niche is small but its ideas live on in <strong>Datalog</strong> (used in static analysis and databases), <strong>Answer Set Programming</strong>, and the constraint solvers buried inside compilers and SAT engines.</p>",
+        "mathExpressions": ["\\text{grandparent}(X, Z) \\;\\text{:-}\\; \\text{parent}(X, Y),\\, \\text{parent}(Y, Z)."],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-04-c3",
+        "title": "Constraint Programming and the Solver Era",
+        "contentHtml": "<p>Take logic programming further: instead of inferring proofs, <strong>constraint programming</strong> describes a problem as a set of variables and constraints, then asks a <strong>solver</strong> to find values that satisfy them all.</p><p>Modern <strong>SAT solvers</strong> (boolean satisfiability) and <strong>SMT solvers</strong> (satisfiability modulo theories, like Z3) can handle problems with millions of variables that would have been intractable in 1990. They power chip verification, software model checking, type inference, theorem proving, optimization, and more.</p><p>Languages like <strong>MiniZinc</strong> let you write <code>var 1..9: x; var 1..9: y; constraint x + y == 13; constraint x &lt; y; solve;</code> and the solver finds (4,9), (5,8), (6,7). The shift in mindset is total: programmers describe the problem, mathematicians' algorithms handle the search. As solvers improve, more code gets written this way — \"declare the answer, let the machine compute it\" is increasingly the high-leverage move.</p>",
+        "mathExpressions": ["\\text{find } x_1, \\ldots, x_n \\;\\text{ s.t. }\\; \\bigwedge_i C_i(x_1, \\ldots, x_n) \\;\\text{ holds}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["para-q25", "para-q26", "para-q27", "para-q28", "para-q29", "para-q30", "para-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "para-05",
+    "topicId": "cs-paradigms",
+    "order": 5,
+    "title": "Concurrency Models",
+    "description": "Threads, actors, CSP, async/await — paradigms for parallelism",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "para-05-c1",
+        "title": "Threads and Shared-Memory Concurrency",
+        "contentHtml": "<p>The default concurrency model in C, Java, C#, and most mainstream languages is <strong>threads with shared memory</strong>. Multiple threads of execution run inside one process, all reading and writing the same memory. Coordination uses <strong>locks</strong>, <strong>mutexes</strong>, and <strong>condition variables</strong>.</p><p>This model is powerful and fast — it maps directly to multi-core hardware — but it's notoriously bug-prone. <strong>Race conditions</strong>, <strong>deadlocks</strong>, <strong>livelocks</strong>, <strong>priority inversion</strong>, and the <strong>ABA problem</strong> are the classic landmines. \"Two threads, one variable\" is enough to introduce subtle bugs that only show up under load.</p><p>The fundamental issue is that humans are bad at reasoning about all possible interleavings of concurrent operations. With n threads doing m steps each, the number of possible execution orders explodes combinatorially. This is why entire research fields (memory models, formal verification of concurrent code) exist just to make shared-memory threads tractable.</p>",
+        "mathExpressions": ["n \\text{ threads},\\; m \\text{ steps each} \\implies \\text{up to } \\frac{(nm)!}{(m!)^n} \\text{ interleavings}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-05-c2",
+        "title": "Actors and Message Passing",
+        "contentHtml": "<p>The <strong>actor model</strong>, introduced by Carl Hewitt in 1973, takes a different approach: there is no shared memory at all. The world is a collection of <strong>actors</strong>, each owning private state, communicating only by sending <strong>asynchronous messages</strong> to one another.</p><p>An actor processes one message at a time from its <strong>mailbox</strong>. It can update its own state, send messages to other actors, or spawn new actors. Because no two actors share memory, race conditions on shared state are impossible by construction.</p><p><strong>Erlang</strong> made this model famous. Its actors (called processes) are cheap (millions per VM), isolated (one crashing doesn't bring others down), and supervised (parents can restart failed children). This is how Erlang systems hit \"nine nines\" of uptime in telecom switches. <strong>Akka</strong> brings actors to the JVM, and <strong>Elixir</strong> is essentially modern Erlang. Even Go's channels and Rust's <code>tokio</code> echo actor-style ideas.</p>",
+        "mathExpressions": ["\\text{actor: state} + \\text{mailbox} \\quad \\text{processes one message at a time, never shares memory}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "para-05-c3",
+        "title": "CSP, Channels, and Async/Await",
+        "contentHtml": "<p><strong>Communicating Sequential Processes (CSP)</strong>, formalized by Tony Hoare in 1978, is the actor model's twin. Independent processes communicate not via mailboxes but via <strong>synchronous channels</strong>. Send and receive block until both sides meet — \"don't communicate by sharing memory; share memory by communicating\".</p><p><strong>Go</strong> is built around CSP. Goroutines (lightweight threads) talk via channels. <code>ch &lt;- value</code> sends; <code>x := &lt;-ch</code> receives. The <code>select</code> statement multiplexes channels, like a giant non-deterministic switch. Rust's std channels and Clojure's core.async borrow heavily from CSP.</p><p>The newest mainstream model is <strong>async/await</strong> with <strong>cooperative scheduling</strong>. JavaScript, Python, C#, Rust, and Kotlin all have it. An <code>async</code> function returns a future; <code>await</code> suspends until the future resolves, freeing the runtime to do other work. No threads needed — one OS thread can juggle thousands of concurrent operations as long as each one yields. This is ideal for I/O-heavy workloads (web servers, network clients) but doesn't help with CPU-bound parallelism.</p>",
+        "mathExpressions": ["\\text{channel: } P_1 \\xrightarrow{\\text{send}} c \\xleftarrow{\\text{recv}} P_2 \\quad \\text{(synchronous rendezvous)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["para-q32", "para-q33", "para-q34", "para-q35", "para-q36", "para-q37"],
+    "puzzleId": null
+  }
+]

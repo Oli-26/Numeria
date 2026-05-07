@@ -1,0 +1,127 @@
+[
+  {
+    "id": "mastery-ai-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why does Adam often beat plain SGD for deep learning?",
+    "options": ["Adam is mathematically guaranteed to find global optima", "Adam adapts per-parameter learning rates and converges faster on noisy gradients", "Adam doesn't need a loss function", "Adam runs only on GPUs"],
+    "correctAnswer": "Adam adapts per-parameter learning rates and converges faster on noisy gradients",
+    "explanation": "Adam tracks first and second moments of gradients to scale per-parameter step sizes. This handles the wildly differing gradient magnitudes typical in deep networks better than vanilla SGD.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ai-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "The Chinchilla scaling work showed that for a fixed compute budget, models are typically over-parameterized and under-trained relative to optimal.",
+    "correctAnswer": "True",
+    "explanation": "Hoffmann et al. (2022) showed compute-optimal training requires scaling parameters and tokens together. Many earlier large models had too few training tokens for their parameter count.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ai-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What deep learning architectural innovation, introduced in ResNet, lets very deep networks train without gradients vanishing?",
+    "correctAnswer": "skip connections",
+    "acceptableAnswers": ["skip connections", "residual connections", "skip-connections", "residual", "residual block"],
+    "explanation": "Skip connections (residual connections) let information bypass layers. ResNets with 100+ layers became trainable thanks to this — earlier deep nets stalled around 20 layers.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ai-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each phenomenon to what it indicates:",
+    "pairs": [
+      {"left": "Train error low, val error high", "right": "Overfitting"},
+      {"left": "Train and val error both high", "right": "Underfitting"},
+      {"left": "Loss diverges to NaN", "right": "Learning rate too high or numerical instability"},
+      {"left": "Gradient norms exponentially increasing in deep RNN", "right": "Exploding gradients"}
+    ],
+    "correctAnswer": null,
+    "explanation": "Recognizing these patterns from training curves is one of the most useful applied ML skills.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-ai-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why might you choose XGBoost over a deep neural network for a tabular classification problem?",
+    "options": ["XGBoost is mathematically more powerful", "XGBoost typically trains faster, requires less tuning, and often matches or beats DL on tabular data", "XGBoost runs on quantum hardware", "XGBoost has more parameters"],
+    "correctAnswer": "XGBoost typically trains faster, requires less tuning, and often matches or beats DL on tabular data",
+    "explanation": "Gradient-boosted trees dominate tabular ML benchmarks. They handle mixed data types, missing values, and feature interactions out of the box. Deep learning's edge is on unstructured data.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ai-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this deployment plan:",
+    "steps": [
+      "I train a fraud detection model on 2020-2022 transaction data",
+      "Validation accuracy is 99%",
+      "I deploy it to production in 2026",
+      "It performs poorly on real transactions",
+      "The model was just buggy"
+    ],
+    "correctAnswer": "5",
+    "explanation": "Step 5 misdiagnoses the problem. The likely cause is DISTRIBUTION SHIFT: fraud patterns and transaction patterns change over time. A 2022 model is stale by 2026. The fix is monitoring for shift, periodic retraining, and using time-aware validation rather than blaming the model.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-ai-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Even with perfect training data, an LLM can produce hallucinations because the next-token-prediction objective doesn't guarantee factual accuracy.",
+    "correctAnswer": "True",
+    "explanation": "The training objective rewards plausible continuations, not true ones. The model generalizes to produce text that LOOKS like training data, including fabricated specifics. This is structural, not just a data quality problem.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ai-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "What is the strongest argument for using cross-validation rather than a single train/val split?",
+    "options": ["Cross-validation runs faster", "Cross-validation gives a more robust estimate of generalization, especially with limited data", "Cross-validation eliminates overfitting", "Cross-validation finds optimal hyperparameters automatically"],
+    "correctAnswer": "Cross-validation gives a more robust estimate of generalization, especially with limited data",
+    "explanation": "A single split's performance can vary widely depending on which examples ended up in val. K-fold CV averages over k splits, giving a tighter, less lucky estimate.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ai-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of one training iteration with backpropagation:",
+    "steps": [
+      "Forward pass: compute outputs from inputs",
+      "Compute the loss against targets",
+      "Backward pass: compute gradients via chain rule",
+      "Update each parameter using its gradient and the optimizer rule",
+      "Optionally apply regularization (weight decay, gradient clipping)"
+    ],
+    "correctAnswer": null,
+    "explanation": "This is the canonical training loop for any neural network. Forward, loss, backward, update — repeat for many iterations.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-ai-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What technique fine-tunes LLMs by directly optimizing for human-preferred responses without explicitly training a reward model?",
+    "correctAnswer": "DPO",
+    "acceptableAnswers": ["DPO", "Direct Preference Optimization", "direct preference optimization"],
+    "explanation": "DPO (Rafailov et al., 2023) cleverly transforms the RLHF objective into a supervised loss directly on preference pairs. Simpler than full RLHF; widely adopted in 2024+.",
+    "xpReward": 40
+  }
+]

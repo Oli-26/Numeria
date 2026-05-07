@@ -1,0 +1,148 @@
+[
+  {
+    "id": "mastery-side-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which statement best captures why side-channel attacks are uniquely dangerous compared to software vulnerabilities?",
+    "options": [
+      "They are always remote",
+      "They can defeat algorithmically correct, formally verified code by exploiting physical observables outside the abstract I/O interface",
+      "They only affect smart cards",
+      "They require zero-day exploits"
+    ],
+    "correctAnswer": "They can defeat algorithmically correct, formally verified code by exploiting physical observables outside the abstract I/O interface",
+    "explanation": "The whole point of a side channel is that it bypasses algorithmic correctness. The code can be perfect; the hardware still tells on itself.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-side-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "Branch predictors, caches, and frequency scaling can all reintroduce data-dependent timing into source code that is constant-time at the C level.",
+    "correctAnswer": "True",
+    "explanation": "Constant-time at the source is not the same as constant-time at the silicon. Microarchitectural state and DVFS routinely leak data even from carefully written constant-time C.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-side-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What 1996 paper, by what author, is generally credited as launching the modern field of side-channel cryptanalysis (one-word answer: the author's surname)?",
+    "correctAnswer": "Kocher",
+    "acceptableAnswers": ["Kocher", "kocher", "Paul Kocher"],
+    "explanation": "Paul Kocher's 1996 timing-attacks paper kicked off three decades of side-channel research, followed by his 1998 DPA paper.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-side-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each historic attack to the year it was first publicly disclosed:",
+    "pairs": [
+      {"left": "Van Eck phreaking (CRT EM)", "right": "1985"},
+      {"left": "Kocher timing attacks on RSA", "right": "1996"},
+      {"left": "RowHammer (Kim et al.)", "right": "2014"},
+      {"left": "Spectre and Meltdown", "right": "2018"}
+    ],
+    "correctAnswer": null,
+    "explanation": "The field's milestones span four decades. Each attack opened a new class that continues to matter today.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-side-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which defense most directly mitigates Differential Power Analysis on an AES smart card?",
+    "options": [
+      "Switching from AES-128 to AES-256",
+      "Masking intermediate state with random shares so power consumption decorrelates from the secret",
+      "Adding TLS to the host channel",
+      "Increasing the cipher round count"
+    ],
+    "correctAnswer": "Masking intermediate state with random shares so power consumption decorrelates from the secret",
+    "explanation": "Masking is the primary algorithmic countermeasure to DPA. Hiding (dual-rail logic, noise injection) and shielding complement it.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-side-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this co-tenancy argument:",
+    "steps": [
+      "My workload runs in its own VM in a public cloud",
+      "The hypervisor enforces strict memory isolation between tenants",
+      "I use AES-NI hardware instructions for all symmetric crypto",
+      "Therefore no co-resident attacker can extract any of my secrets through any side channel",
+      "I do not need to consider Spectre, Hertzbleed, or RowHammer in my threat model"
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong. AES-NI defeats cache-based key extraction for AES specifically, but Spectre crosses VM boundaries via branch predictors, RowHammer flips bits across tenants via DRAM disturbance, and Hertzbleed leaks via shared frequency-scaling state. Microarchitectural side channels are a whole separate set of risks that hypervisor memory isolation does not address.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-side-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "An air-gapped machine has been demonstrated to leak data via hard-drive LEDs, ultrasonic speakers, thermal modulation, and electromagnetic emanations.",
+    "correctAnswer": "True",
+    "explanation": "Mordechai Guri's group and others have published functioning covert channels for each of these. Air-gapping raises the cost of exfiltration but does not eliminate it.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-side-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why was Hertzbleed (2022) considered especially significant?",
+    "options": [
+      "It was the first cache attack",
+      "It showed that even instruction-level constant-time code can leak through dynamic frequency scaling",
+      "It broke AES-256",
+      "It required physical probes on the chip"
+    ],
+    "correctAnswer": "It showed that even instruction-level constant-time code can leak through dynamic frequency scaling",
+    "explanation": "Hertzbleed forced the field to grapple with frequency as a side channel and exposed that DVFS undermines what was thought to be the gold-standard defense — constant-time code.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-side-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps of a typical Differential Power Analysis attack on AES:",
+    "steps": [
+      "Collect many power traces while the device encrypts varied plaintexts",
+      "Choose a target intermediate value (e.g., S-box output of round 1, byte i)",
+      "For each candidate key byte (0-255), predict the intermediate value under that guess",
+      "Correlate predicted Hamming weights against measured power at the corresponding sample point",
+      "Identify the key byte whose predictions correlate most strongly — that is the recovered byte",
+      "Repeat for each byte to recover the full key"
+    ],
+    "correctAnswer": null,
+    "explanation": "DPA recovers one byte at a time using known plaintext, a power model, and statistical correlation. Each byte is independent, so 16 byte-by-byte attacks recover an AES-128 key.",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-side-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What general principle (3-word phrase) describes why side-channel security is a moving target rather than a one-time fix?",
+    "correctAnswer": "every optimization leaks",
+    "acceptableAnswers": [
+      "every optimization leaks",
+      "Every optimization leaks",
+      "any optimization leaks",
+      "all optimizations leak"
+    ],
+    "explanation": "Every layer of performance optimization the hardware adds — caches, branch predictors, speculation, frequency scaling, DRAM compaction — creates a new potential side channel. Defenses must keep pace with new optimizations.",
+    "xpReward": 40
+  }
+]

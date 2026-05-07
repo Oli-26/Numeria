@@ -1,0 +1,182 @@
+[
+  {
+    "id": "misc-cicada-01",
+    "topicId": "misc-cicada3301",
+    "order": 1,
+    "title": "The First Image",
+    "description": "January 2012, 4chan, an image post that turned into the most elaborate puzzle in internet history",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-cicada-01-c1",
+        "title": "The Recruitment Post",
+        "contentHtml": "<p>On 4 January 2012, an anonymous image was posted to 4chan's <em>/x/</em> board: white text on a plain black background.</p><p><em>'Hello. We are looking for highly intelligent individuals. To find them, we have devised a test. There is a message hidden in this image. Find it, and it will lead you on the road to finding us. We look forward to meeting the few that will make it all the way through. Good luck. 3301.'</em></p><p>Hundreds of people downloaded the image. By the next day a small group had decoded the first layer.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-01-c2",
+        "title": "Why It Mattered",
+        "contentHtml": "<p>What made Cicada 3301 different from countless other ARGs and treasure hunts: it was <strong>technically rigorous</strong>. The puzzle chain used real cryptography (RSA, OpenPGP, GnuPG), classical steganography, prime-number gematria, obscure literature, Mayan numerals, and references requiring knowledge of Chan Buddhism, Welsh poetry, William Blake, and 18th-century esotericism.</p><p>Every step was solvable but designed to filter for a particular kind of mind: comfortable with crypto, willing to do real-world legwork, persistent over weeks of deepening obscurity.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-01-c3",
+        "title": "The 3301 Signature",
+        "contentHtml": "<p>Every authentic Cicada message was signed with a PGP key whose fingerprint ended in <strong>7A35090F</strong>, with the public key showing 3301's signature. This let participants distinguish real puzzles from copycats.</p><p>The image was titled simply <em>3301</em>. The number 3301 is itself the product of two primes: 3301 is prime; the next-deeper layer involved many primes. Speculators have read kabbalistic significance into 3301 — but it has no canonical meaning announced by Cicada itself.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-cicada-q01", "misc-cicada-q02", "misc-cicada-q03", "misc-cicada-q04", "misc-cicada-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-cicada-02",
+    "topicId": "misc-cicada3301",
+    "order": 2,
+    "title": "The First Layer",
+    "description": "Steganography, a Caesar shift, and a Tiberius book code",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-cicada-02-c1",
+        "title": "OutGuess Steganography",
+        "contentHtml": "<p>The first image looked like ordinary noise. The trick: data was hidden inside the JPEG using <strong>OutGuess</strong>, a steganography tool that embeds bits in the discrete-cosine-transform coefficients of JPEG compression.</p><p>Running <code>outguess -r 3301.jpg out.txt</code> on the image yielded plaintext. Anyone who recognised the format extracted a chunk of text. Anyone who didn't never proceeded.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-02-c2",
+        "title": "The Caesar Shift",
+        "contentHtml": "<p>Inside that image's hidden text was a clue with a substitution cipher offset — a classical Caesar shift. Decoding pointed at an Imgur URL containing a duck image with the caption <em>'Out guess'</em> — confirming the steganographic step and adding a new clue.</p><p>The puzzle used elementary cryptography knowingly: it wasn't testing whether you could break ciphers (you can't break OTP), but whether you knew which standard tool to apply. Crypto literacy as a filter.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-02-c3",
+        "title": "The Book Code",
+        "contentHtml": "<p>The next layer pointed at <em>The Agrippa Book of the Dead</em> by William Gibson and at lines from <strong>Mabinogion</strong>, a Welsh medieval prose collection, in a specific edition. A book cipher selected single letters from specific lines and pages, producing a phone number in Texas (USA).</p><p>Calling the number played a recorded message: <em>'Very good. You have done well. There are three prime numbers associated with the original final.jpg image. 3301 is one of them. You will have to find the other two...'</em> Multiplying those primes generated a URL. The puzzle had moved off the internet and back onto it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-cicada-q06", "misc-cicada-q07", "misc-cicada-q08", "misc-cicada-q09", "misc-cicada-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-cicada-03",
+    "topicId": "misc-cicada3301",
+    "order": 3,
+    "title": "Onto the Streets",
+    "description": "Posters in 14 cities and the multinational dimension",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-cicada-03-c1",
+        "title": "Physical Drops",
+        "contentHtml": "<p>The next clue led solvers to a website with a countdown. When it expired, an image appeared listing 14 GPS coordinates around the world: Warsaw, Paris, Seoul, Sydney, Annapolis, Moscow, Okinawa, Granada, New Orleans, Seattle, Miami, Hawaii, Erie, and Columbus.</p><p>Local solvers who travelled to those coordinates found <strong>physical posters</strong> taped to lamp-posts and walls — each with a QR code linking to a new image and the next layer of the puzzle.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-03-c2",
+        "title": "Coordinated Worldwide",
+        "contentHtml": "<p>Whoever ran Cicada had agents (or contractors, or volunteer collaborators) physically present in 14 cities on multiple continents, simultaneously. Photographs of the posters were taken, uploaded, and confirmed by local solvers. The resources required were non-trivial.</p><p>This narrowed candidate explanations: a single hobbyist couldn't easily do it. A small distributed network could. A government or corporate recruiter could. The list of plausible authors begins to constrain.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-03-c3",
+        "title": "The Tor Hidden Service",
+        "contentHtml": "<p>The QR codes' URLs led to a Tor onion address. From that hidden service the puzzle narrowed: solvers had to submit answers; only correct ones progressed. Eventually, the leading group received an email from Cicada saying simply: <em>'You are the first.'</em></p><p>Then radio silence. Whoever those finalists were, they signed something and stopped talking publicly. No one who finished the 2012 puzzle has ever spoken on record about what was on the other side.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-cicada-q11", "misc-cicada-q12", "misc-cicada-q13", "misc-cicada-q14", "misc-cicada-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-cicada-04",
+    "topicId": "misc-cicada3301",
+    "order": 4,
+    "title": "Liber Primus",
+    "description": "The encrypted book, runes, and the puzzle that has not yet been fully solved",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-cicada-04-c1",
+        "title": "The 2013 and 2014 Puzzles",
+        "contentHtml": "<p>Cicada returned 5 January 2013 and 6 January 2014 with new puzzles in the same style. The 2014 chain led to <strong>Liber Primus</strong> ('First Book') — a 58-page document written in <em>Anglo-Saxon runes</em> with hand-drawn illustrations.</p><p>Most of Liber Primus is still encrypted. About 20 pages have been broken (revealing didactic philosophical content). The remaining ~38 pages remain unsolved as of 2026, despite over a decade of effort by a community that has thrown everything from automated cryptanalysis to GPU brute-force at it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-04-c2",
+        "title": "Prime Gematria",
+        "contentHtml": "<p>The runic alphabet maps to integers using the <strong>Anglo-Saxon Futhorc</strong>: each rune assigned a sequential number. The decrypted pages use a substitution chained with prime-number-indexed shifts: each rune's value modular-shifted by the next prime.</p><p>This combines steganographic (looks like art) with mathematical (prime indexing) structure. Solving the unsolved pages is suspected to require a specific key word or page ordering not yet identified — possibly an out-of-band cue from yet another puzzle layer.</p>",
+        "mathExpressions": ["c_i = (m_i + p_i) \\bmod 29"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-04-c3",
+        "title": "Decrypted Content",
+        "contentHtml": "<p>The pages that <em>have</em> been broken read like instructions for a kind of meditative discipline. They reference Welsh mythology, William Blake, the Voynich manuscript itself, Chan Buddhism, and the Tao Te Ching. They emphasize self-knowledge, breaking attachment to ego, and recognizing that 'consciousness is a transcendence'.</p><p>Critics call this purely aesthetic — high-quality cryptography wrapping vague mysticism. Defenders argue the philosophical content is the point: the puzzle filters for both technical skill and a willingness to engage with old esoteric traditions.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-cicada-q16", "misc-cicada-q17", "misc-cicada-q18", "misc-cicada-q19", "misc-cicada-q20"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-cicada-05",
+    "topicId": "misc-cicada3301",
+    "order": 5,
+    "title": "Who and Why",
+    "description": "Theories and what is actually known",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-cicada-05-c1",
+        "title": "Recruitment Theory",
+        "contentHtml": "<p>The most common theory: <strong>Cicada is recruitment</strong>. NSA, GCHQ, CIA, FBI, MI6, or a private firm needs people fluent in steganography, classical cryptography, OPSEC, OSINT, multilingual literacy, and the willingness to follow leads physically into the world. A standard job ad won't filter for that combination. A multi-year crypto puzzle does.</p><p>Counter-evidence: every major intelligence service has officially denied involvement. Cicada explicitly stated in a 2014 message that they were not affiliated with any government. Whether that's truthful is another question.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-05-c2",
+        "title": "Other Hypotheses",
+        "contentHtml": "<p><strong>Banking / cryptocurrency:</strong> early Bitcoin enthusiasts noted Cicada launched in 2012 alongside crypto-anarchist circles; a private firm building a decentralized intelligence collective fits the philosophical content of Liber Primus.</p><p><strong>Religious / philosophical society:</strong> Liber Primus reads as the founding text of a small esoteric order. The recruitment dimension would be filtering for adherents.</p><p><strong>Art project:</strong> a single highly-skilled creator with significant resources, doing it as elaborate puzzle-art. This is the simplest explanation but doesn't account for the multi-city physical presence.</p><p><strong>Hoax / troll:</strong> mostly ruled out by the cryptographic and operational rigor; trolls don't typically commit to a decade of consistent execution.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-cicada-05-c3",
+        "title": "What's Actually Confirmed",
+        "contentHtml": "<p>Confirmed: the puzzles existed, were technically rigorous, used PGP signatures verifiable to a single 3301 key, involved physical posters in at least 14 cities, and produced finalists who were contacted privately and stopped speaking. The 2012, 2013, and 2014 puzzles are documented; Liber Primus is publicly available.</p><p>Unconfirmed: who runs Cicada, whether they're a state/private/individual actor, what reaching the end actually entailed, and what the unsolved Liber Primus pages say. As of 2026 no Cicada puzzle has been launched since 2014, but the unsolved pages keep a small community working continuously.</p><p>The phenomenon is genuinely undetermined. Most internet mysteries collapse under examination. Cicada hasn't.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-cicada-q21", "misc-cicada-q22", "misc-cicada-q23", "misc-cicada-q24", "misc-cicada-q25"],
+    "puzzleId": null
+  }
+]

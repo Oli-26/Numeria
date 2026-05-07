@@ -1,0 +1,182 @@
+[
+  {
+    "id": "sys-01",
+    "topicId": "cs-systems",
+    "order": 1,
+    "title": "Caching and CDNs",
+    "description": "Why caching dominates web performance, and how CDNs work",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "sys-01-c1",
+        "title": "What Caching Is For",
+        "contentHtml": "<p>A <strong>cache</strong> stores recently used data closer to the consumer to avoid expensive recomputation or fetching. The pattern is universal: CPU L1/L2/L3 caches sit between the core and main memory; the OS page cache sits between programs and disk; web caches sit between browsers and origin servers.</p><p>Caches work because real workloads have <strong>locality</strong>. <em>Temporal locality</em>: recently accessed data is likely to be accessed again soon. <em>Spatial locality</em>: data near recent accesses is likely next. Caches exploit both.</p><p>Caching is the single most important performance technique in distributed systems. A successful cache turns expensive operations into cheap ones. The downside: caches add complexity, can serve stale data, and create whole new failure modes (cache stampedes, hot keys, invalidation bugs). \"There are only two hard things in computer science: cache invalidation and naming things\" — and one of those is caching.</p>",
+        "mathExpressions": ["\\text{effective cost} = h \\cdot \\text{cache cost} + (1-h) \\cdot \\text{origin cost} \\quad \\text{where } h \\text{ is hit rate}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-01-c2",
+        "title": "Cache Eviction and Replacement Policies",
+        "contentHtml": "<p>Caches have finite size. When full, you must evict to make room. The policy choosing what to evict can dramatically affect hit rate.</p><p><strong>LRU (Least Recently Used)</strong>: evict the item touched longest ago. The intuitive default, often near-optimal in practice. Implementations use a doubly linked list plus hash map for O(1) access and update.</p><p><strong>LFU (Least Frequently Used)</strong>: evict the item with fewest accesses. Better for workloads where some items are popular regardless of recency. <strong>FIFO</strong>: evict in insertion order — simple but generally worse than LRU. <strong>Clock</strong> and <strong>2Q</strong> approximate LRU more cheaply. <strong>ARC</strong> adapts between recency and frequency. <strong>TinyLFU</strong> beats classical algorithms on many real workloads.</p><p>The optimal policy in hindsight (<strong>Belady's algorithm</strong>) evicts the item that will be needed furthest in the future. Real caches can't see the future, but the gap between LRU and Belady is smaller than you'd guess.</p>",
+        "mathExpressions": ["\\text{hit rate} = \\frac{\\text{cache hits}}{\\text{cache hits} + \\text{cache misses}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-01-c3",
+        "title": "Content Delivery Networks",
+        "contentHtml": "<p>A <strong>Content Delivery Network (CDN)</strong> is a globally distributed cache for web content. Cloudflare, Akamai, Fastly, AWS CloudFront, Google Cloud CDN — each operates hundreds of <strong>edge points-of-presence</strong> around the world. When you request a static asset, the CDN serves it from the nearest edge.</p><p>The benefits: dramatically lower latency for users worldwide, reduced load on origin servers, DDoS absorption, automatic TLS termination. A site behind a CDN often serves over 90% of requests from cache, never touching the origin.</p><p>CDNs handle dynamic content too. <strong>Edge computing</strong> (Cloudflare Workers, AWS Lambda@Edge, Vercel Edge Functions) runs code at the edge — close to users — for personalization, A/B testing, authentication, and routing. Modern websites are increasingly architected as static-shells served by CDNs with minimal dynamic logic at the edge and heavy lifting in regional or origin services.</p>",
+        "mathExpressions": ["\\text{latency} \\propto \\text{distance} \\implies \\text{put data at the edge}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sys-q01", "sys-q02", "sys-q03", "sys-q04", "sys-q05", "sys-q06", "sys-q07", "sys-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "sys-02",
+    "topicId": "cs-systems",
+    "order": 2,
+    "title": "Message Queues and Async Architectures",
+    "description": "Decoupling producers and consumers with queues, topics, and streams",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "sys-02-c1",
+        "title": "Why Queues Matter",
+        "contentHtml": "<p>A <strong>message queue</strong> sits between producers (services that emit work) and consumers (services that process it). Producers add messages; consumers pull and process. The queue persists messages until consumed and absorbs bursts when producers outpace consumers.</p><p>The architectural benefit is <strong>decoupling</strong>. Without a queue, an upstream service must know about every downstream consumer and call them synchronously. Outages cascade. With a queue, producers don't know who consumes; consumers don't know who produces. Each can fail and recover independently. Adding new consumers requires no changes to producers.</p><p>Common implementations: <strong>RabbitMQ</strong> (classic AMQP broker, push-based), <strong>Apache Kafka</strong> (durable log-based, massive scale), <strong>AWS SQS / Azure Queue Storage / GCP Pub/Sub</strong> (managed services). NATS, Redis Streams, ActiveMQ, BullMQ each occupy specific niches. The right choice depends on throughput, ordering guarantees, and durability needs.</p>",
+        "mathExpressions": ["\\text{producer} \\to \\text{queue} \\to \\text{consumer} \\quad \\text{(both sides scale and fail independently)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-02-c2",
+        "title": "Delivery Guarantees: At-Most-Once, At-Least-Once, Exactly-Once",
+        "contentHtml": "<p>Distributed messaging is hard because networks fail. The three classical guarantees:</p><p><strong>At-most-once</strong>: messages may be lost, but never duplicated. The simplest to implement (just send and hope). Used when occasional loss is acceptable (metrics, telemetry).</p><p><strong>At-least-once</strong>: every message is delivered, but may be duplicated. Implemented by acknowledgments and retries — if the consumer doesn't ack, the producer resends. Standard in Kafka, RabbitMQ, SQS. Consumers must be <strong>idempotent</strong> (handle duplicate messages without bad effects).</p><p><strong>Exactly-once</strong>: every message arrives precisely once. Famously hard in distributed systems. True end-to-end exactly-once is impossible without coordination on the consumer side; what real systems offer is at-least-once with deduplication. Kafka has \"exactly-once semantics\" that work within Kafka's transactional system but break down at the boundaries of external services. The takeaway: design for at-least-once and make your consumer idempotent.</p>",
+        "mathExpressions": ["\\text{idempotent: } f(f(x)) = f(x) \\implies \\text{duplicate messages safe}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-02-c3",
+        "title": "Streams, Topics, and Event-Driven Architectures",
+        "contentHtml": "<p><strong>Streams</strong> generalize queues. Where a queue typically delivers each message to one consumer, a stream lets <em>many</em> consumers read independently, each tracking their own position. Kafka is the canonical example: <strong>topics</strong> partitioned across brokers, with consumers maintaining offsets in each partition.</p><p>This enables <strong>event-driven architectures</strong>. Services emit events (\"OrderCreated\", \"PaymentProcessed\", \"InventoryAdjusted\") to streams. Other services listen and react. The system becomes a series of independent reactions rather than a tightly-coupled call graph.</p><p>The benefits: extreme scalability, easy retroactive analysis (rerun the stream), straightforward auditability. The costs: eventual consistency, debugging across services becomes harder, schema evolution is genuinely tricky. Frameworks like <strong>Kafka Streams</strong>, <strong>Flink</strong>, and <strong>Beam</strong> provide stateful stream processing on top. Modern data pipelines often look like graphs of streams flowing through transformations rather than batch jobs.</p>",
+        "mathExpressions": ["\\text{stream}: \\text{producers} \\to \\text{topic} \\to \\{\\text{consumer group}_1, \\ldots, \\text{consumer group}_n\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sys-q09", "sys-q10", "sys-q11", "sys-q12", "sys-q13", "sys-q14", "sys-q15", "sys-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "sys-03",
+    "topicId": "cs-systems",
+    "order": 3,
+    "title": "Monoliths, Microservices, and Service Mesh",
+    "description": "Architectural styles, their tradeoffs, and when each one wins",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "sys-03-c1",
+        "title": "The Monolith: One Codebase to Rule Them All",
+        "contentHtml": "<p>A <strong>monolith</strong> is a single deployable application containing all the business logic. One codebase, one deploy, one database. Most successful companies started as monoliths — Amazon, Uber, Netflix, Twitter — and many smaller companies stay that way intentionally.</p><p>Monoliths are vastly easier to develop. Calls between modules are function calls (microseconds), not network calls (milliseconds). Refactoring across modules is one IDE operation. There's one deployment process, one observability stack, one consistent view of the data.</p><p>The downside arrives at scale. A multi-million-line monolith with hundreds of engineers becomes painful: any change risks breaking unrelated parts; CI builds take hours; deploys are scary; teams step on each other. The traditional solution has been to split into microservices — but as the industry learned in the 2010s and 2020s, splitting too early is often worse than staying monolithic.</p>",
+        "mathExpressions": ["\\text{monolith: 1 deploy, } N \\text{ modules, in-process calls}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-03-c2",
+        "title": "Microservices: Small Services, Big Trade-offs",
+        "contentHtml": "<p><strong>Microservices</strong> split the monolith into many small, independently deployable services. Each owns its own data, exposes a network API, and is developed by a small team. Netflix and Amazon famously moved to microservices to scale their organizations as much as their systems.</p><p>The benefits: teams can deploy independently, choose their own languages and frameworks, scale services in isolation. The costs are operational. Network calls fail in ways function calls don't. Distributed transactions are nearly impossible. Debugging a request that flows through 12 services across 4 teams is genuinely hard. <strong>Distributed monoliths</strong> (services that pretend to be independent but require coordinated deploys) are a frequent anti-pattern.</p><p>The honest answer is contextual: microservices are right when teams are too large and bottlenecked on a shared codebase, OR when scale demands service-level isolation, OR when different parts have genuinely different deployment/scaling needs. They are wrong when the team is small, requirements are still evolving, and operational maturity is low. Many companies regret splitting too early.</p>",
+        "mathExpressions": ["\\text{microservice cost} = N \\cdot \\text{operational overhead} + \\text{network failure modes}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-03-c3",
+        "title": "Service Mesh and the Operational Layer",
+        "contentHtml": "<p>As microservices proliferate, the operational complexity becomes the bottleneck. Each service needs observability, security, retries, timeouts, circuit breakers, load balancing, traffic routing. Implementing all of this in every service in every language is wasteful and inconsistent.</p><p>A <strong>service mesh</strong> (Istio, Linkerd, Consul Connect) moves these concerns into a network proxy (the <strong>sidecar</strong>) that runs alongside each service. The proxy handles all inter-service communication: encryption, observability, retries, rate limits, traffic shifting for canary deploys. Application code stays simple; ops live in the mesh configuration.</p><p>Service meshes work but add their own operational burden — debugging a request now means inspecting both your service and the mesh. Many teams have moved toward <strong>library-based</strong> alternatives (e.g., Connect-RPC, gRPC client libraries) or <strong>simpler service architectures</strong> entirely. The microservices/service-mesh debate is genuinely unsettled and shifts every couple of years.</p>",
+        "mathExpressions": ["\\text{service mesh: pull infra concerns out of code into network layer}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sys-q17", "sys-q18", "sys-q19", "sys-q20", "sys-q21", "sys-q22", "sys-q23", "sys-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "sys-04",
+    "topicId": "cs-systems",
+    "order": 4,
+    "title": "Consensus, CAP, and Distributed Coordination",
+    "description": "Paxos, Raft, leader election, and why agreeing is hard",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "sys-04-c1",
+        "title": "The Consensus Problem",
+        "contentHtml": "<p>A group of nodes needs to agree on a value despite arbitrary message loss, delays, and node crashes. Maybe they're agreeing on the leader of a cluster, the next entry in a replicated log, or the order of transactions. This is the <strong>consensus problem</strong>.</p><p>The <strong>FLP impossibility result</strong> (Fischer, Lynch, Paterson 1985) is humbling: in an asynchronous network with even one faulty process, no deterministic algorithm can guarantee consensus. In practice, real systems use timeouts to fall back to a safe state when consensus stalls — sacrificing liveness during failures rather than safety.</p><p>The two algorithms that anchor distributed consensus are <strong>Paxos</strong> (Lamport 1989, notoriously hard to understand) and <strong>Raft</strong> (Ongaro and Ousterhout 2014, designed for understandability). They solve the same problem with similar guarantees; Raft is what most modern systems implement because the protocol is dramatically easier to reason about and verify.</p>",
+        "mathExpressions": ["\\text{consensus: } n \\text{ nodes agree on } v \\text{ despite up to } f < n/2 \\text{ failures}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-04-c2",
+        "title": "Raft: Consensus You Can Reason About",
+        "contentHtml": "<p><strong>Raft</strong> structures consensus around three roles: leader, follower, candidate. At any time exactly one leader is elected by majority vote; the leader replicates log entries to followers; entries committed by a majority become permanent.</p><p>If the leader dies, a follower notices a missed heartbeat, becomes a candidate, and requests votes for a new term. The first to get a majority becomes the new leader. The protocol guarantees: at most one leader per term; committed entries never lost; logs eventually converge across all nodes.</p><p>Raft underlies many production systems: <strong>etcd</strong> (Kubernetes' coordination store), <strong>Consul</strong>, <strong>CockroachDB</strong>, <strong>TiKV</strong>, <strong>InfluxDB</strong>, <strong>NATS JetStream</strong>. The original paper's emphasis on understandability paid off: dozens of correct implementations exist across many languages, where Paxos was infamous for buggy implementations even at top tech companies.</p>",
+        "mathExpressions": ["\\text{Raft: leader election} + \\text{log replication} + \\text{safety invariants}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-04-c3",
+        "title": "CAP, PACELC, and the Reality of Trade-offs",
+        "contentHtml": "<p>Brewer's <strong>CAP theorem</strong> says a distributed data store can guarantee at most two of: Consistency, Availability, Partition tolerance. In practice partition tolerance is non-negotiable (networks fail), so the real choice during a partition is C vs A.</p><p><strong>CP systems</strong> like etcd and Zookeeper choose consistency: they refuse requests during partitions to maintain a single source of truth. <strong>AP systems</strong> like Cassandra and DynamoDB choose availability: they keep accepting reads and writes, reconciling later.</p><p>The richer framing is <strong>PACELC</strong>: under Partition, choose A or C; Else (no partition), choose Latency or Consistency. Most production systems are PA/EL — fast and available with eventual consistency — because partitions are rare but latency matters every request. Strong consistency systems pay coordination cost on every operation, not just during failures. The right choice depends on what your users need: a bank ledger and a social feed have very different requirements.</p>",
+        "mathExpressions": ["\\text{PACELC: under } P \\to (A | C), \\text{ else } (L | C)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sys-q25", "sys-q26", "sys-q27", "sys-q28", "sys-q29", "sys-q30", "sys-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "sys-05",
+    "topicId": "cs-systems",
+    "order": 5,
+    "title": "Observability, SRE, and Reliability",
+    "description": "Metrics, logs, traces, SLOs, and the practice of running systems",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "sys-05-c1",
+        "title": "The Three Pillars: Metrics, Logs, Traces",
+        "contentHtml": "<p>You can't fix what you can't see. <strong>Observability</strong> is the practice of building systems that reveal their internal state through external signals. The three classical pillars:</p><p><strong>Metrics</strong>: numerical time-series. Request rate, error rate, latency percentiles, CPU usage, queue depth. Cheap to collect, easy to alert on, terrible for debugging specific requests. Prometheus + Grafana dominates the open-source space; Datadog, New Relic, and others compete in the SaaS space.</p><p><strong>Logs</strong>: timestamped text records of what happened. Rich detail, valuable for debugging specific incidents, expensive at scale. Modern logs are <strong>structured</strong> (JSON with consistent fields), enabling fast querying. <strong>Traces</strong>: distributed call graphs showing one request's path through many services. Identify which service caused a slowdown across a complex graph. <strong>OpenTelemetry</strong> is unifying these three with a single standard for instrumentation.</p>",
+        "mathExpressions": ["\\text{observability} = \\text{metrics} + \\text{logs} + \\text{traces} + \\text{(emerging: profiles, events)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-05-c2",
+        "title": "SLOs, SLIs, and Error Budgets",
+        "contentHtml": "<p>The <strong>Site Reliability Engineering (SRE)</strong> framework, developed at Google, provides the vocabulary modern teams use to manage reliability. The three core concepts:</p><p><strong>SLI (Service Level Indicator)</strong>: a measurable signal of service health. \"Fraction of requests successfully completed under 200ms.\" <strong>SLO (Service Level Objective)</strong>: a target for an SLI. \"99.9% of requests succeed under 200ms over a 30-day window.\" <strong>SLA (Service Level Agreement)</strong>: a contractual promise to customers, usually with penalties for missing it. SLAs are weaker than SLOs.</p><p>An <strong>error budget</strong> is the difference between 100% and the SLO. If your SLO is 99.9%, you have a 0.1% error budget — about 43 minutes of downtime per month. Teams use the error budget to balance reliability against feature velocity: if you're well under budget, ship faster; if you're over, freeze and fix. This turns reliability into a measurable, negotiable resource rather than a constant existential demand.</p>",
+        "mathExpressions": ["\\text{error budget} = (1 - \\text{SLO}) \\cdot \\text{time window}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sys-05-c3",
+        "title": "Incidents, Post-Mortems, and Resilience",
+        "contentHtml": "<p>Distributed systems fail. The mature response isn't to prevent all failures — impossible — but to detect, contain, and learn from them. Modern incident response uses an <strong>incident commander</strong> coordinating action while engineers focus on diagnosis and mitigation. Tools like PagerDuty, Opsgenie, and Slack-integrated runbooks are standard.</p><p>After resolution, a <strong>blameless post-mortem</strong> documents what happened, why, and what changes will prevent recurrence. The \"blameless\" part is crucial: humans make mistakes; systems should be designed so individual mistakes can't cause major outages. Blaming individuals creates a culture of hiding problems, which makes systems less reliable.</p><p>The deeper goal is <strong>resilience</strong>: systems that gracefully degrade under stress rather than collapsing entirely. Techniques: <strong>circuit breakers</strong> (stop calling a failing dependency), <strong>backpressure</strong> (slow down upstream when downstream is overloaded), <strong>graceful degradation</strong> (return partial results rather than failing), <strong>chaos engineering</strong> (deliberately injecting failures to verify resilience). Netflix's Chaos Monkey is the canonical example. Real reliability comes from these design choices, not from heroic on-call response.</p>",
+        "mathExpressions": ["\\text{resilience} = \\text{tolerate failures} + \\text{degrade gracefully} + \\text{recover automatically}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sys-q32", "sys-q33", "sys-q34", "sys-q35", "sys-q36", "sys-q37"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,155 @@
+@page "/cipher-decoder"
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (!unlocked)
+{
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Cipher Decoder</h1>
+    </div>
+    <div class="card" style="text-align: center; padding: 40px 24px">
+        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
+        <h2 style="margin-top: 12px">Locked</h2>
+        <p style="color: var(--text-secondary)">Purchase "Cipher Decoder" from the Shop to unlock.</p>
+        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    </div>
+}
+else
+{
+    var p = puzzles[index];
+
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1>Cipher Decoder</h1>
+    </div>
+
+    <div class="card cd-intro">
+        <Icon Name="eye" Size="22" Stroke="var(--accent)" />
+        <p>Six puzzles, each layered. Crack the cipher, type the plaintext. The puzzles get harder; the rewards get weirder.</p>
+    </div>
+
+    <div class="card cd-puzzle">
+        <div class="cd-meta">
+            <span class="cd-tag">@p.Type</span>
+            <span class="cd-progress">@(index + 1) / @puzzles.Count</span>
+        </div>
+        <div class="cd-cipher">@p.Cipher</div>
+        <div class="cd-hint">@((MarkupString)p.Hint)</div>
+
+        <input class="cd-input @(feedback == "wrong" ? "cd-wrong" : "")" placeholder="Plaintext..."
+               @bind="answer" @bind:event="oninput" @onkeyup="OnKey"/>
+
+        <div class="cd-actions">
+            <button class="btn btn-primary" @onclick="Check">Submit</button>
+            <button class="btn btn-outline" @onclick="ShowReveal">Reveal</button>
+            @if (revealed)
+            {
+                <small class="cd-reveal">Answer: <strong>@p.Plaintext</strong></small>
+            }
+        </div>
+
+        @if (feedback == "right")
+        {
+            <div class="cd-correct">
+                <strong>Solved.</strong> @p.Lore
+            </div>
+        }
+        else if (feedback == "wrong")
+        {
+            <div class="cd-wrong-msg">Not quite. Look again.</div>
+        }
+    </div>
+
+    <div class="cd-nav">
+        <button class="btn btn-outline" disabled="@(index == 0)" @onclick="() => Move(-1)">Prev</button>
+        <button class="btn btn-outline" disabled="@(index == puzzles.Count - 1)" @onclick="() => Move(1)">Next</button>
+    </div>
+}
+
+@code {
+    private bool unlocked;
+    private int index;
+    private string answer = "";
+    private string? feedback;
+    private bool revealed;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            unlocked = profile.ShopPurchases.Contains("unlock-cipher-decoder");
+            StateHasChanged();
+        }
+    }
+
+    private void OnKey(KeyboardEventArgs e) { if (e.Key == "Enter") Check(); }
+
+    private void Check()
+    {
+        var p = puzzles[index];
+        if (answer.Trim().Equals(p.Plaintext, StringComparison.OrdinalIgnoreCase)) feedback = "right";
+        else feedback = "wrong";
+    }
+
+    private void ShowReveal() => revealed = true;
+
+    private void Move(int delta)
+    {
+        index = Math.Clamp(index + delta, 0, puzzles.Count - 1);
+        answer = ""; feedback = null; revealed = false;
+    }
+
+    private record Puzzle(string Type, string Cipher, string Hint, string Plaintext, string Lore);
+
+    private static readonly List<Puzzle> puzzles = new()
+    {
+        new("Caesar / ROT-3", "WKH UDYHQ NQRZV", "Each letter shifted forward by 3. Roll back. The most famous cipher in history.", "THE RAVEN KNOWS",
+            "Caesar used this in the 1st century BC. By the time of Suetonius it was already a punchline -- everyone knew the trick."),
+        new("Atbash", "GSV LYHVIEVI", "Reverse alphabet: A↔Z, B↔Y, etc. Hebrew scribes used it on YHWH in Jeremiah 25.",
+            "THE OBSERVER",
+            "Atbash appears in the Hebrew Bible itself -- the prophets used it to encode politically sensitive names."),
+        new("Vigenere (key: CICADA)", "VKGCFHV TKICKA", "Repeat the keyword <strong>CICADA</strong> under the ciphertext. Subtract each key letter from each cipher letter (A=0).",
+            "TIDESHE WALKED",
+            "Vigenere stayed unbreakable for ~300 years until Babbage and Kasiski independently cracked it in the 19th century."),
+        new("Pigpen", "[X1: ⌐][X2: ⌐][X3: ⌐]... use the symbol map mentally",
+            "Letters arranged in a 3x3 + X grid. Use the standard Freemason layout. (For this puzzle, the cipher decodes to a single common English word meaning 'concealed'.)",
+            "HIDDEN",
+            "Used by Freemasons in the 18th century to encrypt records. The grid layout is the same one Confederate POWs used in the US Civil War."),
+        new("Beaufort variant", "ZILYGAVL", "Like Vigenere reversed. Subtract ciphertext from key (key: TWILIGHT). Each letter resolves to one of the plaintext letters.",
+            "TWILIGHT",
+            "Beaufort was used in the British Royal Navy. Symmetric: same operation encrypts and decrypts."),
+        new("Layered (Atbash → Caesar+5)", "PXEN TYZ KXBVE",
+            "Two layers. First reverse the alphabet (Atbash), then shift each result back by 5. Patient work.",
+            "EYES ARE OPEN",
+            "Cicada 3301 used multi-layer ciphers to gate progress. The community that solved them dispersed without learning who set the puzzles or why.")
+    };
+}
+
+<style>
+    .cd-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .cd-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .cd-puzzle { padding: 16px; }
+    .cd-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .cd-tag { padding: 3px 10px; background: rgba(155,89,182,0.12); color: #9B59B6; border-radius: 10px; font-size: 0.75rem; font-weight: 700; }
+    .cd-progress { font-size: 0.75rem; color: var(--text-muted); }
+
+    .cd-cipher { font-family: 'Roboto Mono', monospace; font-size: 1.05rem; letter-spacing: 0.1em; padding: 14px; background: var(--bg-surface); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; color: var(--text-primary); margin-bottom: 10px; }
+    .cd-hint { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 12px; }
+
+    .cd-input { width: 100%; padding: 10px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Roboto Mono', monospace; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 8px; text-transform: uppercase; }
+    .cd-input.cd-wrong { border-color: var(--error); }
+
+    .cd-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .cd-reveal { color: var(--text-muted); font-size: 0.78rem; margin-left: 4px; }
+    .cd-reveal strong { color: var(--accent); font-family: 'Roboto Mono', monospace; }
+
+    .cd-correct { margin-top: 10px; padding: 10px 12px; background: rgba(76,175,80,0.1); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+    .cd-correct strong { color: var(--success); }
+    .cd-wrong-msg { margin-top: 10px; padding: 8px 12px; background: rgba(231,76,60,0.08); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--error); }
+
+    .cd-nav { display: flex; gap: 8px; margin-top: 10px; }
+    .cd-nav button { flex: 1; }
+</style>

@@ -1,0 +1,342 @@
+[
+  {
+    "id": "econ-econ-01",
+    "topicId": "econ-econometrics",
+    "order": 1,
+    "title": "OLS Regression",
+    "description": "The workhorse — fitting a line, the Gauss-Markov assumptions, what beta means",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "econ-econ-01-c1",
+        "title": "Fitting a Line",
+        "contentHtml": "<p>You have data on two variables — say, years of education X and hourly wage Y. The simplest model: wage is a linear function of education plus noise. Y = α + βX + ε.</p><p><strong>Ordinary Least Squares (OLS)</strong> picks α and β to minimize the sum of squared residuals — the squared vertical distances between the data points and the line. Squared, so positive and negative errors don't cancel; squared rather than absolute, so the algebra stays clean.</p><p>The estimates have closed-form solutions. The slope is the covariance of X and Y divided by the variance of X. β̂ tells you the average change in Y per unit increase in X within your sample.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-econometrics/ols-regression.png\" alt=\"Linear regression fit through scatter of data points\" loading=\"lazy\"><figcaption>OLS fits a line minimizing squared vertical distances to the data. Image: Wikimedia Commons / Public Domain.</figcaption></figure>",
+        "mathExpressions": [
+          "\\hat\\beta = \\frac{\\sum (x_i - \\bar x)(y_i - \\bar y)}{\\sum (x_i - \\bar x)^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-01-c2",
+        "title": "What Beta Means",
+        "contentHtml": "<p>Reading regression output: 'a one-year increase in education is associated with $2.50 more per hour, on average.'</p><p>Three words to take seriously. <em>Associated</em>: this is correlation, not necessarily causation. <em>On average</em>: individual variation is huge; β̂ is a population-level mean effect. <em>One-year increase</em>: holding everything else fixed, which only makes sense if you're controlling for everything else.</p><p>If you regress Y on multiple Xs (multivariate OLS), each coefficient is the partial effect of that X holding the others constant. Whether 'holding constant' is realistic is a separate question — that's the road to identification problems.</p>",
+        "mathExpressions": [
+          "Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\dots + \\varepsilon"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-01-c3",
+        "title": "The Gauss-Markov Assumptions",
+        "contentHtml": "<p>Under what conditions is OLS the best estimator?</p><p><strong>1. Linearity:</strong> the true relationship is linear in parameters (the X's themselves can be transformed).</p><p><strong>2. Random sampling:</strong> observations are i.i.d. draws from the population.</p><p><strong>3. No perfect multicollinearity:</strong> regressors aren't perfectly linearly related.</p><p><strong>4. Zero conditional mean:</strong> E[ε|X] = 0 — errors are uncorrelated with X. This is the big one.</p><p><strong>5. Homoscedasticity:</strong> Var(ε|X) is constant.</p><p>Under 1–5, OLS is BLUE — Best Linear Unbiased Estimator (lowest variance among unbiased linear estimators). Add a normality assumption for ε and you get exact small-sample inference.</p>",
+        "mathExpressions": [
+          "E[\\varepsilon | X] = 0"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-01-c4",
+        "title": "R² and Goodness of Fit",
+        "contentHtml": "<p><strong>R²</strong> is the share of variation in Y explained by the model. It runs from 0 (the model explains nothing — you might as well predict the mean) to 1 (perfect fit).</p><p>R² = 1 − SSR/SST, where SSR is the sum of squared residuals and SST is the total sum of squares.</p><p>Caveats: high R² doesn't mean the model is right (could be overfit), and low R² doesn't mean it's wrong (in macroeconomics R² of 0.05 with a strong identification can matter more than R² of 0.95 with everything-and-the-kitchen-sink). <strong>Adjusted R²</strong> penalizes adding regressors that don't really help. R² is a description; statistical significance and causal identification matter more.</p>",
+        "mathExpressions": [
+          "R^2 = 1 - \\frac{\\sum (y_i - \\hat y_i)^2}{\\sum (y_i - \\bar y)^2}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-01-c5",
+        "title": "When OLS Goes Wrong",
+        "contentHtml": "<p>OLS produces biased estimates when the zero-conditional-mean assumption fails. Three classic violations.</p><p><strong>Omitted variable bias:</strong> some variable Z affects Y and is correlated with X. Leave it out and X picks up the slack — β̂ is biased toward Z's effect. Returns to education estimates are biased upward if smarter people both stay in school longer and earn more for reasons other than schooling.</p><p><strong>Reverse causality:</strong> Y causes X, not the other way around. Police presence and crime — areas with more crime get more police, so a regression looks like police cause crime.</p><p><strong>Measurement error in X:</strong> if X is measured noisily, β̂ is attenuated toward zero.</p><p>The rest of econometrics is largely about cleaning up these problems — IV, panel methods, natural experiments, RDD. OLS without a credible identification story is just descriptive correlation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-econ-02",
+    "topicId": "econ-econometrics",
+    "order": 2,
+    "title": "Inference & Hypothesis Testing",
+    "description": "Standard errors, t-stats, p-values, robust and clustered SEs",
+    "xpReward": 110,
+    "concepts": [
+      {
+        "id": "econ-econ-02-c1",
+        "title": "Standard Errors",
+        "contentHtml": "<p>β̂ is an estimate. If you ran the regression on a different sample from the same population, you'd get a slightly different number. The <strong>standard error (SE)</strong> measures how much β̂ varies across hypothetical samples.</p><p>Smaller SE → more precise estimate. SE depends on three things: the variance of the error (more noise → bigger SE), the variance of X (more variation in X → smaller SE), and sample size (more data → smaller SE, falling like 1/√n).</p><p>The reported coefficient and its SE are the two numbers regression output is built around. Everything else (t-stats, p-values, confidence intervals) is derived from them.</p>",
+        "mathExpressions": [
+          "SE(\\hat\\beta) = \\frac{\\sigma}{\\sqrt{n} \\cdot \\sigma_X}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-02-c2",
+        "title": "T-Statistics & P-Values",
+        "contentHtml": "<p>The <strong>t-statistic</strong> is the coefficient divided by its standard error: t = β̂/SE. It measures how many standard errors β̂ sits away from zero.</p><p>Under the null hypothesis β = 0, t follows (approximately, for large n) a standard normal distribution. The <strong>p-value</strong> is the probability of seeing a t this extreme or more, if the null were true.</p><p>The conventional thresholds: |t| > 1.96 (p < 0.05) is 'statistically significant,' |t| > 2.58 (p < 0.01) is 'highly significant.' These cutoffs are arbitrary historical conventions, not laws of nature. A p-value of 0.049 is barely different from one of 0.051.</p><p>Statistical significance is about whether the effect is distinguishable from noise — not whether the effect is large or important. A microscopic effect can be significant with enough data; a large effect can fail significance with too little.</p>",
+        "mathExpressions": [
+          "t = \\frac{\\hat\\beta - 0}{SE(\\hat\\beta)}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-02-c3",
+        "title": "Confidence Intervals",
+        "contentHtml": "<p>A <strong>95% confidence interval</strong> for β: β̂ ± 1.96·SE. Loosely, 'we're 95% confident β lies in this range.'</p><p>Strictly, the interpretation is more awkward: if you ran the same study many times, 95% of the resulting CIs would contain the true β. Any individual CI either contains it or doesn't.</p><p>CIs convey more than p-values. They show <em>both</em> precision and effect size. A study reporting 'effect = 2.1, CI [2.0, 2.2]' is far more informative than 'effect = 2.1, p < 0.05' — the second could be hiding a wide CI like [0.05, 4.15].</p><p>Best practice in modern empirical economics: report point estimate and CI, not just p-value.</p>",
+        "mathExpressions": [
+          "\\hat\\beta \\pm 1.96 \\cdot SE(\\hat\\beta)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-02-c4",
+        "title": "Robust & Clustered Standard Errors",
+        "contentHtml": "<p>Default OLS standard errors assume homoscedasticity. When errors actually have non-constant variance (they usually do), the SEs are wrong.</p><p><strong>Robust (Huber-White) SEs:</strong> a correction that gives valid SEs under arbitrary heteroscedasticity. Easy to compute, no downside in large samples. Modern empirical work uses these by default.</p><p><strong>Clustered SEs:</strong> when observations are correlated within groups (students within schools, workers within firms, observations within country-years), errors aren't independent. The effective sample size is closer to the number of clusters than the number of observations. Failing to cluster can dramatically understate SEs.</p><p>The right level to cluster is a judgment call about where the correlation lives — usually the level at which treatment is assigned or the level of the policy you're analyzing. Get it wrong and your inference is wrong.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-02-c5",
+        "title": "Multiple Testing & P-Hacking",
+        "contentHtml": "<p>Run 20 regressions on noise, and on average one will be 'significant' at p < 0.05 — by chance. This is the <strong>multiple testing problem</strong>.</p><p>Real research often does run many specifications: different controls, different subsamples, different functional forms. Reporting only the significant ones (consciously or not) inflates the false-positive rate. This practice — sometimes called <strong>p-hacking</strong> or 'specification searching' — has been a major source of irreproducible results across social sciences.</p><p>Fixes include: pre-registering analyses before seeing data, reporting all specifications transparently, using Bonferroni or Benjamini-Hochberg corrections for multiple tests, and treating exploratory analyses as hypothesis-generating rather than hypothesis-confirming.</p><p>The 2010s replication crisis shifted norms in economics toward pre-analysis plans and registered reports, especially for RCTs and quasi-experimental work.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-econ-03",
+    "topicId": "econ-econometrics",
+    "order": 3,
+    "title": "Endogeneity & Instrumental Variables",
+    "description": "When OLS lies — omitted variables, simultaneity, and 2SLS as a fix",
+    "xpReward": 130,
+    "concepts": [
+      {
+        "id": "econ-econ-03-c1",
+        "title": "What Endogeneity Means",
+        "contentHtml": "<p><strong>Endogeneity</strong> is the umbrella term for any situation where a regressor X is correlated with the error term ε — violating the zero-conditional-mean assumption.</p><p>Three main sources:</p><p><strong>Omitted variables</strong>: a relevant variable Z is left out, and Z is correlated with X. The error absorbs Z, which is then correlated with X.</p><p><strong>Simultaneity / reverse causality</strong>: Y also affects X.</p><p><strong>Measurement error</strong> in X: makes the measured X correlated with the (compounded) error.</p><p>When endogeneity is present, OLS coefficients are biased — sometimes mildly, sometimes catastrophically. The whole field of causal inference exists to address this problem.</p>",
+        "mathExpressions": [
+          "\\text{Cov}(X, \\varepsilon) \\neq 0 \\;\\Rightarrow\\; \\text{OLS biased}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-03-c2",
+        "title": "The Idea of Instrumental Variables",
+        "contentHtml": "<p>An <strong>instrument</strong> Z is a variable that affects Y <em>only through</em> its effect on X.</p><p>Two requirements: <strong>relevance</strong>, Z is correlated with X (it shifts X around); and <strong>exclusion</strong>, Z is uncorrelated with the error ε (it doesn't affect Y directly or through other channels).</p><p>If you can find a Z that satisfies both, you can isolate the part of X's variation that's due to Z — which by exclusion is uncontaminated by the omitted variables — and use just that to identify β.</p><p>The classic example: Angrist's quarter-of-birth instrument for schooling. Compulsory schooling laws and birth quarter combined to push some students to stay in school slightly longer. Quarter of birth is plausibly exogenous, so its effect on wages, scaled by its effect on schooling, gives a clean estimate of returns to education.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-03-c3",
+        "title": "Two-Stage Least Squares",
+        "contentHtml": "<p><strong>Two-Stage Least Squares (2SLS)</strong> is the practical implementation of IV.</p><p><em>Stage 1:</em> regress X on the instruments and any exogenous controls. Get the predicted X̂.</p><p><em>Stage 2:</em> regress Y on X̂ (plus controls). The resulting coefficient is the IV estimate.</p><p>Intuition: X̂ uses only the variation in X that comes from the instruments. By exclusion, that variation is uncorrelated with ε, so the second-stage regression gives an unbiased estimate of the causal effect.</p><p>The price you pay: IV is generally less precise than OLS. The smaller the instrument's effect on X (its 'strength'), the larger the SE on β̂.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-03-c4",
+        "title": "Weak Instruments",
+        "contentHtml": "<p>If your instrument has only a weak effect on X, IV breaks down — sometimes spectacularly.</p><p>Two problems. The IV estimator becomes very imprecise (huge SEs). And worse, even small violations of the exclusion restriction get amplified into large biases — bias scales with 1/relevance.</p><p>The diagnostic: <strong>first-stage F-statistic</strong>. The Stock-Yogo rule of thumb: F > 10 is required for the IV estimate to be approximately unbiased. Many famous early IV studies have first-stage F's well below this — and their results have been revised downward.</p><p>This is one reason credibility-revolution economics is so demanding: not just any instrument works. The 2018 controversy over Acemoglu-Johnson-Robinson's settler mortality instrument is one well-known example of weak-instrument concerns.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-03-c5",
+        "title": "LATE: What IV Actually Estimates",
+        "contentHtml": "<p>Even when IV works perfectly, it doesn't necessarily estimate 'the' causal effect. It estimates a <strong>Local Average Treatment Effect (LATE)</strong>.</p><p>Imbens and Angrist (1994) showed that with heterogeneous treatment effects, IV picks up the average effect <em>among the compliers</em> — the people whose treatment status was actually moved by the instrument.</p><p>The compulsory-schooling-laws instrument identifies the return to schooling for kids who would have dropped out at 16 but were forced to stay until 17. That's not the same as the average return for all schooling decisions.</p><p>This isn't a flaw in IV — it's an honest reckoning with what the data can tell you. External validity (extrapolating LATE to other populations or policies) requires assumptions beyond what the instrument provides. Modern work emphasizes describing the complier population explicitly.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-econ-04",
+    "topicId": "econ-econometrics",
+    "order": 4,
+    "title": "Difference-in-Differences",
+    "description": "Treatment effects from natural experiments — parallel trends and event studies",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "econ-econ-04-c1",
+        "title": "The Basic Idea",
+        "contentHtml": "<p>Suppose New Jersey raises its minimum wage and Pennsylvania doesn't. You want to know the effect on employment.</p><p>Comparing NJ before and after isn't enough — other things changed too (the economy, weather, fads). Comparing NJ to PA after isn't enough either — they were never identical.</p><p><strong>Difference-in-differences (DiD)</strong>: take the change in NJ and subtract the change in PA. The first difference removes anything constant about NJ; the second removes anything that affected both states equally.</p><p>What's left is the effect of the treatment, under one big assumption: NJ would have evolved <em>like</em> PA absent the policy. This is the <strong>parallel trends</strong> assumption.</p><figure class=\"concept-figure\"><img src=\"/images/economics/econ-econometrics/diff-in-diff.png\" alt=\"Difference-in-differences treatment effect illustration\" loading=\"lazy\"><figcaption>Difference-in-differences: treatment effect = difference of differences. Image: Wikimedia Commons / CC BY-SA 4.0.</figcaption></figure>",
+        "mathExpressions": [
+          "DiD = (Y^{T}_{post} - Y^{T}_{pre}) - (Y^{C}_{post} - Y^{C}_{pre})"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-04-c2",
+        "title": "Card-Krueger and the Minimum Wage",
+        "contentHtml": "<p>Card and Krueger's 1994 study is the canonical DiD application. They surveyed fast-food employment in NJ and PA before and after NJ's minimum wage increase from $4.25 to $5.05 in 1992.</p><p>Standard economics predicted minimum wages would reduce employment. The DiD estimate found <em>no negative effect</em> — possibly even a small positive one.</p><p>The result was controversial then (and partly remains so), but it broke open the modern minimum wage literature. The textbook competitive model assumes monopsony-free labor markets — when employers have wage-setting power, modest minimum wage increases can raise employment, not lower it.</p><p>The methodological legacy may be larger than the substantive one. Card-Krueger demonstrated the value of credible quasi-experimental designs over assumption-heavy structural models, helping launch the credibility revolution.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-04-c3",
+        "title": "Parallel Trends Assumption",
+        "contentHtml": "<p>DiD only delivers a causal estimate if the parallel-trends assumption holds: in the absence of treatment, treated and control would have moved together.</p><p>You can't test this directly — it's about the counterfactual. But you can check whether they were moving in parallel <em>before</em> treatment as a placebo. <strong>Pre-trends</strong> tests plot treated and control over many pre-treatment periods and look for similar slopes.</p><p>If pre-trends diverge, parallel trends is suspect, and DiD coefficients pick up pre-existing differences rather than treatment effects.</p><p>Robustness checks: alternative control groups, placebo treatments at other times, triple differences (DDD), and event studies that visualize the dynamics.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-04-c4",
+        "title": "Event Studies",
+        "contentHtml": "<p>An <strong>event study</strong> generalizes DiD to many time periods, plotting treatment effects relative to the event time.</p><p>You estimate a coefficient for each lead and lag of treatment, normalizing one period to zero. Coefficients before treatment should be near zero (a check on parallel trends). Coefficients after treatment trace the dynamic effect — does it kick in immediately, build up, fade?</p><p>Event-study plots have become the default visualization in DiD-style empirical work. They make the parallel-trends assumption visible, show whether the effect is a permanent level shift or a transient bump, and convey the precision of estimates at each horizon — far more informative than a single DiD coefficient.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-04-c5",
+        "title": "Staggered Adoption Issues",
+        "contentHtml": "<p>What if different units get treated at different times — states adopting a policy in different years?</p><p>The standard 'two-way fixed effects' DiD regression breaks in subtle ways under heterogeneous, time-varying treatment effects. Already-treated units serve as controls for newly-treated ones, which is generally invalid.</p><p>The Goodman-Bacon decomposition (2021) showed how to see what the regression is actually estimating — a weighted average of many 2×2 DiDs, with sometimes-negative weights. In bad cases, you can get a negative estimated effect even when every unit's true effect is positive.</p><p>A wave of new estimators — Callaway-Sant'Anna, de Chaisemartin-D'Haultfœuille, Sun-Abraham, Borusyak-Jaravel-Spiess — fix the staggered-adoption problem by aggregating clean 2×2 comparisons. As of the 2020s, these are becoming standard, displacing naïve TWFE for staggered designs.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-econ-05",
+    "topicId": "econ-econometrics",
+    "order": 5,
+    "title": "Regression Discontinuity",
+    "description": "Causal effects at thresholds — sharp and fuzzy designs",
+    "xpReward": 150,
+    "concepts": [
+      {
+        "id": "econ-econ-05-c1",
+        "title": "The Discontinuity Idea",
+        "contentHtml": "<p>Many policies kick in at thresholds. Score 70+ on an exam → admitted. Income below $X → eligible for subsidy. Voted in by 50.01% → in office. The threshold-crossers and the threshold-missers are nearly identical, but their treatment status differs sharply.</p><p><strong>Regression Discontinuity (RD)</strong> exploits this. Compare outcomes <em>just above</em> versus <em>just below</em> the threshold. With a smooth running variable, observations near the cutoff are essentially randomized into treatment.</p><p>The effect: a discontinuous jump in the outcome variable at the threshold equals the local average treatment effect — for units near the cutoff.</p>",
+        "mathExpressions": [
+          "\\tau_{RD} = \\lim_{x \\downarrow c} E[Y|X=x] - \\lim_{x \\uparrow c} E[Y|X=x]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-05-c2",
+        "title": "Sharp vs Fuzzy RD",
+        "contentHtml": "<p><strong>Sharp RD:</strong> treatment is a deterministic function of the running variable. Score 70+ → guaranteed admission. The probability of treatment jumps from 0 to 1 at the cutoff.</p><p><strong>Fuzzy RD:</strong> the cutoff changes the <em>probability</em> of treatment, but doesn't determine it perfectly. Maybe 70+ scorers are admitted at 90%, while sub-70 scorers are admitted at 20% via appeals. The probability jumps but stays between 0 and 1.</p><p>For fuzzy RD, you scale the jump in outcomes by the jump in treatment probability — exactly like an IV estimator with the threshold-crossing as the instrument.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-05-c3",
+        "title": "The Identifying Assumption",
+        "contentHtml": "<p>RD requires that potential outcomes be <em>continuous</em> at the threshold. In other words, in the absence of treatment, the outcome wouldn't jump.</p><p>The threat: <strong>manipulation</strong>. If people can precisely control which side of the threshold they land on, sorting destroys the design. A grade-cutoff for honors is suspect because professors might bump students from 89 to 90.</p><p>The McCrary test: examine the density of the running variable at the cutoff. A spike on one side is evidence of manipulation. RD-friendly settings have running variables that are noisy or fixed — exam scores rounded by chance, geography, birthdays.</p><p>You also want to check that other covariates don't jump at the threshold — only the treatment and the outcome should.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-05-c4",
+        "title": "Bandwidth Selection",
+        "contentHtml": "<p>RD compares observations 'near' the threshold — but how near? The bandwidth is the analyst's choice, and it controls a bias-variance tradeoff.</p><p>Narrow bandwidth: fewer observations, higher variance, but less bias from non-linearities. Wide bandwidth: more data, lower variance, but you're trusting the polynomial to fit far from the cutoff.</p><p>Modern best practice (Imbens-Kalyanaraman, Calonico-Cattaneo-Titiunik): data-driven bandwidth selection, robust bias-corrected confidence intervals, and reporting results across multiple bandwidths to show robustness. Using a global high-order polynomial is now considered bad practice — it can produce wild fits that move the discontinuity estimate.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-05-c5",
+        "title": "Strengths and Limits",
+        "contentHtml": "<p>RD's appeal: under mild assumptions, it identifies a causal effect. It's been called the closest non-experimental design to a randomized trial, since the assignment near the threshold is essentially random.</p><p>Limitations matter though.</p><p><strong>External validity:</strong> the estimate is local to units near the cutoff. It doesn't tell you what would happen if you moved the cutoff or applied treatment to a very different population.</p><p><strong>Power:</strong> only observations near the cutoff identify the effect. Even with millions of total observations, the effective sample is small, so RD often produces wide confidence intervals.</p><p><strong>Mechanical thresholds:</strong> RD only applies where institutional rules create discontinuities. Many causal questions don't have one available.</p><p>Despite these, RD has become a standard tool in education, health, political economy, and program evaluation — anywhere thresholds shape policy.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  },
+  {
+    "id": "econ-econ-06",
+    "topicId": "econ-econometrics",
+    "order": 6,
+    "title": "Panel Data Methods",
+    "description": "Fixed effects, random effects, within and between variation",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "econ-econ-06-c1",
+        "title": "Panel Data Basics",
+        "contentHtml": "<p><strong>Panel data</strong> tracks the same units over time — countries by year, people by year, firms by quarter. As opposed to cross-sectional data (one period, many units) or pure time-series (one unit, many periods).</p><p>The advantage: you can separate <strong>between</strong> variation (differences across units at a given time) from <strong>within</strong> variation (changes for a given unit over time). This separation lets you control for stable individual characteristics that you can't observe.</p><p>Notation: Y_it for outcome of unit i in period t. The classic panel regression has both unit indices and time indices.</p>",
+        "mathExpressions": [
+          "Y_{it} = \\alpha + \\beta X_{it} + \\varepsilon_{it}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-06-c2",
+        "title": "Fixed Effects",
+        "contentHtml": "<p><strong>Fixed effects (FE)</strong> add a separate intercept for each unit (or each time period, or both). Y_it = α_i + λ_t + βX_it + ε_it.</p><p>The unit fixed effect α_i absorbs everything time-invariant about unit i — its geography, culture, baseline ability — observed or unobserved. The estimate of β then comes only from <strong>within-unit variation</strong>: how Y_it changes when X_it changes for a given i.</p><p>This dramatically reduces omitted variable bias from time-invariant confounders. It's why cross-country panel regressions add country FE — you no longer have to worry about culture or institutions confounding the comparison.</p><p>Cost: variables that don't change within units (race, sex, country of birth) are absorbed by the FE and can't be estimated. And the within-variation might be small or noisy.</p>",
+        "mathExpressions": [
+          "Y_{it} = \\alpha_i + \\lambda_t + \\beta X_{it} + \\varepsilon_{it}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-06-c3",
+        "title": "Random Effects",
+        "contentHtml": "<p><strong>Random effects (RE)</strong> treat the unit-level differences as random draws from a distribution rather than fixed parameters. The model still allows unit-specific intercepts, but pools information across units.</p><p>If RE assumptions hold (the unit effect is uncorrelated with X_it), RE is more efficient than FE — smaller standard errors. If those assumptions fail, RE is biased and FE is preferred.</p><p>The <strong>Hausman test</strong> compares FE and RE estimates. If they differ significantly, RE assumptions are rejected and you should use FE.</p><p>In practice, applied microeconomics has largely abandoned RE in favor of FE because exogeneity of the unit effect is rarely defensible. RE is more common in panel time-series macro.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-06-c4",
+        "title": "First Differences",
+        "contentHtml": "<p>An alternative to fixed effects: take <strong>first differences</strong>. ΔY_it = βΔX_it + Δε_it.</p><p>First-differencing also removes time-invariant unit effects. With T = 2 periods, FE and FD give numerically identical estimates. With T > 2, they differ — FD is more efficient under random walk errors, FE under iid errors.</p><p>FD is also useful in non-stationary settings: if Y_it has a unit root, levels regressions are spurious but differences are well-behaved. This is one bridge between cross-sectional micro and time-series macro.</p>",
+        "mathExpressions": [
+          "\\Delta Y_{it} = \\beta \\Delta X_{it} + \\Delta \\varepsilon_{it}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "econ-econ-06-c5",
+        "title": "Dynamic Panels & Limits",
+        "contentHtml": "<p>What if Y_it depends on its own lag? Y_it = ρY_{i,t-1} + βX_it + α_i + ε_it. This is a <strong>dynamic panel</strong>.</p><p>FE estimation here is biased — the lagged dependent variable is mechanically correlated with the demeaned error (Nickell bias). The bias shrinks as T grows but matters for short panels.</p><p>The Arellano-Bond and Blundell-Bond GMM estimators handle this by instrumenting the lagged dependent variable with deeper lags. They're standard in growth empirics and dynamic firm-level studies.</p><p>The broader lesson: panel data is powerful but not magic. FE solves time-invariant unobservables. It doesn't solve time-varying confounders, reverse causality, or measurement error. The credibility-revolution toolkit (DiD, IV, RD) is often layered on top of panel structure to address what FE alone can't.</p>",
+        "mathExpressions": [
+          "Y_{it} = \\rho Y_{i,t-1} + \\beta X_{it} + \\alpha_i + \\varepsilon_{it}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [],
+    "puzzleId": null
+  }
+]

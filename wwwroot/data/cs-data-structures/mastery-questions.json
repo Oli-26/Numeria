@@ -1,0 +1,127 @@
+[
+  {
+    "id": "mastery-ds-1",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why does a B-tree (with high branching factor) outperform a red-black tree for on-disk database indexes?",
+    "options": ["B-trees use less memory", "B-trees match disk page size, minimizing I/O round trips", "B-trees are simpler to implement", "B-trees don't need balance"],
+    "correctAnswer": "B-trees match disk page size, minimizing I/O round trips",
+    "explanation": "Each B-tree node holds many keys (typically hundreds), matching a disk page. The tree is shallow — 3-4 levels for billions of rows — so lookup needs only a handful of disk reads. Red-black trees have many more levels, and each node access could be a separate read.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ds-2",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "A skip list provides O(log n) operations on average using randomization, without needing the explicit rebalancing of red-black or AVL trees.",
+    "correctAnswer": "True",
+    "explanation": "Skip lists maintain a probabilistically balanced structure via random level promotion. Used by Redis sorted sets and LevelDB. Simpler to implement than self-balancing BSTs while achieving the same expected complexity.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ds-3",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What is the asymptotic running time of m union-find operations on n elements with path compression and union by rank?",
+    "correctAnswer": "O(m α(n))",
+    "acceptableAnswers": ["O(m α(n))", "O(m alpha(n))", "O(m * alpha(n))", "O(α(n))", "O(alpha(n))", "near-constant", "amortized constant"],
+    "explanation": "Tarjan proved this bound where α is the inverse Ackermann function — effectively constant for any practical input.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ds-4",
+    "lessonId": "mastery",
+    "type": "ConceptMatch",
+    "difficulty": 3,
+    "prompt": "Match each data structure to its time complexity for inserting one element:",
+    "pairs": [
+      {"left": "Hash table (average)", "right": "O(1)"},
+      {"left": "Balanced BST", "right": "O(log n)"},
+      {"left": "Binary heap", "right": "O(log n)"},
+      {"left": "Sorted dynamic array", "right": "O(n)"}
+    ],
+    "correctAnswer": null,
+    "explanation": "These are the canonical insert costs you should have memorized. Knowing them by heart accelerates picking the right structure.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-ds-5",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "When is open addressing typically preferred over chaining in a hash table?",
+    "options": ["When deletions are extremely common", "When memory is constrained and cache-friendly access matters", "When the hash function is bad", "When keys are very long"],
+    "correctAnswer": "When memory is constrained and cache-friendly access matters",
+    "explanation": "Open addressing avoids per-bucket pointers and stores entries directly in the table. This is more memory-efficient and cache-friendly. The trade-off: deletion is harder (you can't just leave a hole, or probing breaks).",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ds-6",
+    "lessonId": "mastery",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this approach to storing a phone book:",
+    "steps": [
+      "I want fast lookup of names in a phone book",
+      "I store entries in a sorted array",
+      "Lookup is O(log n) via binary search",
+      "Inserting a new contact is O(log n)",
+      "Therefore my data structure has logarithmic insert and lookup"
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong. Inserting into a sorted array requires shifting elements to maintain order — O(n), not O(log n). Binary search FINDS the insertion point in O(log n), but the actual insertion is O(n). For O(log n) insert + lookup, use a balanced BST or skip list; for O(1) average lookup, use a hash table.",
+    "xpReward": 50
+  },
+  {
+    "id": "mastery-ds-7",
+    "lessonId": "mastery",
+    "type": "TrueOrFalse",
+    "difficulty": 3,
+    "prompt": "An adjacency matrix is more space-efficient than an adjacency list for graphs where the number of edges E is close to V^2 (very dense graphs).",
+    "correctAnswer": "True",
+    "explanation": "For dense graphs, adjacency lists pay O(V + E) ≈ O(V^2) anyway, plus per-edge overhead for list nodes/pointers. An adjacency matrix is exactly V^2 bits or bytes — often smaller. For sparse graphs, lists win clearly.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ds-8",
+    "lessonId": "mastery",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why do many production systems pre-filter database queries with a Bloom filter?",
+    "options": ["Bloom filters always return correct answers", "Bloom filters can rule out non-existent keys without touching the database", "Bloom filters are required by the SQL standard", "Bloom filters replace the database"],
+    "correctAnswer": "Bloom filters can rule out non-existent keys without touching the database",
+    "explanation": "If the Bloom filter says 'definitely not present', the system can skip an expensive disk read. Only on 'maybe present' does it actually query the database. This is a huge optimization for systems where most lookups are misses.",
+    "xpReward": 40
+  },
+  {
+    "id": "mastery-ds-9",
+    "lessonId": "mastery",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Order the steps to build a max-heap from an unsorted array in O(n) time:",
+    "steps": [
+      "Treat the array as a complete binary tree (children at 2i+1, 2i+2)",
+      "Start at the last non-leaf node (index n/2 - 1)",
+      "Sift each non-leaf node down to its correct position",
+      "Iterate backward to the root, sifting each node",
+      "The result is a valid max-heap, built in O(n)"
+    ],
+    "correctAnswer": null,
+    "explanation": "The bottom-up heap construction is a classic example of analysis subtlety: doing log n work per node sounds like O(n log n), but most nodes are near the bottom with O(1) work. The total is O(n).",
+    "xpReward": 60
+  },
+  {
+    "id": "mastery-ds-10",
+    "lessonId": "mastery",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "What probabilistic data structure estimates the frequencies of items in a stream using sub-linear memory?",
+    "correctAnswer": "Count-Min Sketch",
+    "acceptableAnswers": ["Count-Min Sketch", "count-min sketch", "Count Min Sketch", "CM sketch"],
+    "explanation": "Count-Min Sketch hashes items into multiple counter rows; estimates use the minimum count across rows. Used in heavy-hitter detection and stream analytics.",
+    "xpReward": 40
+  }
+]

@@ -1,0 +1,222 @@
+@page "/domains"
+@inject IProgressService Progress
+@inject IContentRepository Content
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Domains</h1>
+</div>
+
+<p class="domains-intro">Pick what you're learning. Each domain has its own topics, explorations, and color.</p>
+
+@foreach (var group in GroupedDomains())
+{
+    <div class="domain-category">
+        <h2 class="domain-category-header">@group.Key</h2>
+        <div class="domain-grid stagger-in">
+            @foreach (var d in group.Value)
+            {
+                var hue = GetHue(d.Id);
+                <div class="domain-card card-clickable @(currentDomain == d.Id ? "active" : "")"
+                     style="--domain-hue: @hue; border-color: @(currentDomain == d.Id ? hue : "var(--border)")"
+                     @onclick="() => SetDomain(d.Id)">
+                    <div class="domain-card-bg"></div>
+                    <div class="domain-card-icon" style="color: @hue; background: @(hue)1F">
+                        <Icon Name="@d.Icon" Size="28" />
+                    </div>
+                    <div class="domain-card-text">
+                        <strong>@d.Name</strong>
+                        <small>@d.Description</small>
+                    </div>
+                    @if (currentDomain == d.Id)
+                    {
+                        <div class="domain-active-badge" style="background: @hue">
+                            <Icon Name="check" Size="14" Stroke="white" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string currentDomain = "math";
+    private List<Domain> domains = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var profile = await Progress.GetProfileAsync();
+            currentDomain = string.IsNullOrEmpty(profile.CurrentDomain) ? "math" : profile.CurrentDomain;
+            domains = await Content.GetDomainsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task SetDomain(string domainId)
+    {
+        if (currentDomain == domainId)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+        currentDomain = domainId;
+        var profile = await Progress.GetProfileAsync();
+        profile.CurrentDomain = domainId;
+        await Progress.SaveProfileAsync(profile);
+        await JS.TryInvokeVoidAsync("applyDomain", domainId);
+        var name = domains.FirstOrDefault(d => d.Id == domainId)?.Name ?? domainId;
+        await JS.TryInvokeVoidAsync("showToast", $"Switched to {name}", "");
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+        Nav.NavigateTo("/");
+    }
+
+    private static readonly string[] CategoryOrder = { "Science & Math", "Humanities", "Social Sciences", "Other" };
+
+    private static string Category(string id) => id switch
+    {
+        "math" or "physics" or "biology" or "chemistry" or "geology" or "materials" or "cs" => "Science & Math",
+        "philosophy" or "history" or "linguistics" or "literature" => "Humanities",
+        "economics" or "politics" or "media" => "Social Sciences",
+        _ => "Other"
+    };
+
+    private List<KeyValuePair<string, List<Domain>>> GroupedDomains()
+    {
+        var result = new List<KeyValuePair<string, List<Domain>>>();
+        foreach (var cat in CategoryOrder)
+        {
+            var items = domains.Where(d => Category(d.Id) == cat).ToList();
+            if (items.Count > 0) result.Add(new(cat, items));
+        }
+        return result;
+    }
+
+    private static string GetHue(string id) => id switch
+    {
+        "math" => "#5B6ABF",
+        "philosophy" => "#8E63B5",
+        "physics" => "#4A90D9",
+        "biology" => "#2ECC71",
+        "chemistry" => "#E91E63",
+        "geology" => "#8D6E63",
+        "materials" => "#607D8B",
+        "history" => "#C4813A",
+        "linguistics" => "#FF7043",
+        "cs" => "#26A69A",
+        "misc" => "#5E35B1",
+        "economics" => "#16A085",
+        "politics" => "#3949AB",
+        "media" => "#0277BD",
+        "literature" => "#8E2C40",
+        _ => "#5B6ABF"
+    };
+}
+
+<style>
+    .domains-intro {
+        color: var(--text-muted);
+        margin: 0 0 16px;
+        font-size: 0.95rem;
+    }
+
+    .domain-category {
+        margin-bottom: 24px;
+    }
+
+    .domain-category-header {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin: 0 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .domain-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    @@media (min-width: 600px) {
+        .domain-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .domain-card {
+        position: relative;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .domain-card:active { transform: scale(0.98); }
+
+    .domain-card.active {
+        box-shadow: 0 4px 18px color-mix(in srgb, var(--domain-hue) 22%, transparent);
+    }
+
+    .domain-card-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, color-mix(in srgb, var(--domain-hue) 14%, transparent), transparent 70%);
+        pointer-events: none;
+    }
+
+    .domain-card-icon {
+        position: relative;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .domain-card-text {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .domain-card-text strong {
+        display: block;
+        font-size: 1.05rem;
+        margin-bottom: 2px;
+    }
+
+    .domain-card-text small {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        line-height: 1.35;
+        display: block;
+    }
+
+    .domain-active-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+</style>

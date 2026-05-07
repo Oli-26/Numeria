@@ -1,0 +1,182 @@
+[
+  {
+    "id": "sec-01",
+    "topicId": "cs-security",
+    "order": 1,
+    "title": "Threat Models and the CIA Triad",
+    "description": "How to think about attackers, assets, and trust boundaries",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "sec-01-c1",
+        "title": "Confidentiality, Integrity, Availability",
+        "contentHtml": "<p>The classic mental model for security goals is the <strong>CIA triad</strong>: <strong>C</strong>onfidentiality, <strong>I</strong>ntegrity, <strong>A</strong>vailability. Every security control aims to preserve at least one. Every breach violates at least one.</p><p><strong>Confidentiality</strong>: only authorized parties can read sensitive data. Encryption, access control, and least privilege all serve confidentiality. <strong>Integrity</strong>: data and systems aren't tampered with. Cryptographic signatures, checksums, audit logs, and immutable infrastructure protect integrity. <strong>Availability</strong>: legitimate users can actually use the system. DDoS protection, redundancy, and rate limiting protect availability.</p><p>Real systems trade off among the three. Strong encryption protects confidentiality but can hurt availability if keys are lost. Aggressive rate limiting protects availability but may block legitimate users. The security architect's job is choosing the right trade-offs for the threat model — not maximizing every property.</p>",
+        "mathExpressions": ["\\text{security} \\supseteq \\{\\text{Confidentiality},\\, \\text{Integrity},\\, \\text{Availability}\\}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-01-c2",
+        "title": "Threat Modeling: Who Is Trying to Break You?",
+        "contentHtml": "<p>Defense without a threat model is theater. Before you can defend something, you need to ask: <strong>What are we protecting? Who would want to attack it? What would they try?</strong> The answers shape every concrete control.</p><p>The <strong>STRIDE</strong> framework (Microsoft) lists categories of threats: <strong>S</strong>poofing identity, <strong>T</strong>ampering with data, <strong>R</strong>epudiation, <strong>I</strong>nformation disclosure, <strong>D</strong>enial of service, <strong>E</strong>levation of privilege. Walking each through your system identifies where attackers could plausibly attack and what damage they could do.</p><p>Threat actors vary wildly: <em>script kiddies</em> running automated scanners; <em>opportunistic criminals</em> looking for ransomware targets; <em>insiders</em> with legitimate access; <em>competitors</em> doing industrial espionage; <em>state actors</em> with effectively unlimited resources. A bank's threat model differs sharply from a personal blog's. Match defenses to actual threats — over-defending against unlikely actors wastes resources, under-defending invites disaster.</p>",
+        "mathExpressions": ["\\text{risk} = \\text{threat} \\times \\text{vulnerability} \\times \\text{impact}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-01-c3",
+        "title": "Defense in Depth and Least Privilege",
+        "contentHtml": "<p>No single control catches every attack. <strong>Defense in depth</strong> layers controls so an attacker who bypasses one is still blocked by another. A web app might use: WAF in front of the load balancer, input validation in the application, parameterized queries against the database, encryption at rest, audit logging, and network segmentation. Each layer is imperfect; the combination is hard to defeat.</p><p><strong>Least privilege</strong>: every user, process, and service should have the minimum permissions needed to do its job. The database account for a read-only reporting service shouldn't have DELETE rights. The IAM role for a single Lambda function shouldn't have admin access to your entire AWS account. When (not if) a credential leaks, least privilege limits the blast radius.</p><p>The corollary is <strong>fail closed</strong>: if a security control breaks, the system should default to denying access, not permitting it. A common breach pattern is \"the auth service was unavailable, so we let everything through\" — exactly the wrong default. Failing closed costs availability sometimes; failing open costs everything when an attacker is exploiting it.</p>",
+        "mathExpressions": ["P(\\text{breach}) = \\prod_{i=1}^{n} P(\\text{layer}_i \\text{ fails}) \\quad \\text{(layers reduce probability multiplicatively)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sec-q01", "sec-q02", "sec-q03", "sec-q04", "sec-q05", "sec-q06", "sec-q07", "sec-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "sec-02",
+    "topicId": "cs-security",
+    "order": 2,
+    "title": "OWASP Top 10 and Web Vulnerabilities",
+    "description": "Injection, XSS, CSRF, broken access control, and friends",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "sec-02-c1",
+        "title": "Injection: When User Input Becomes Code",
+        "contentHtml": "<p><strong>Injection</strong> attacks happen when untrusted input gets interpreted as code instead of data. The classic case is <strong>SQL injection</strong>. Naive code concatenates user input into a SQL string: <code>\"SELECT * FROM users WHERE name = '\" + name + \"'\"</code>. If the user supplies <code>' OR 1=1 --</code>, the query becomes <code>SELECT * FROM users WHERE name = '' OR 1=1 --'</code>, returning every row.</p><p>The fix is <strong>parameterized queries</strong>: <code>SELECT * FROM users WHERE name = ?</code>, with the value passed separately. The database treats it as data, never as code. This single technique eliminates almost all SQL injection. Modern ORMs and query builders use parameterization by default. Inline string concatenation is the antipattern.</p><p>The pattern generalizes. <strong>Command injection</strong> (passing user input to shell commands), <strong>LDAP injection</strong>, <strong>NoSQL injection</strong>, <strong>template injection</strong>, even <strong>prompt injection</strong> in LLM apps — all variants of the same root cause: untrusted input crossing a parser boundary. The defense is always the same: separate code from data, validate strictly, escape carefully.</p>",
+        "mathExpressions": ["\\text{vulnerable: } \\text{query} = f(\\text{input}) \\quad \\text{vs} \\quad \\text{safe: } \\text{query}(\\text{params}) \\text{ with params separated}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-02-c2",
+        "title": "XSS, CSRF, and Browser Trust",
+        "contentHtml": "<p><strong>Cross-Site Scripting (XSS)</strong> happens when user input is reflected unescaped into HTML, letting an attacker inject JavaScript that runs in another user's browser. The injected script can steal cookies, read DOM content, make authenticated requests — anything the victim's session can do.</p><p>Defenses: <strong>output encoding</strong> (escape <code>&lt;</code>, <code>&gt;</code>, <code>&quot;</code>, <code>&apos;</code>, <code>&amp;</code> when inserting into HTML), <strong>Content Security Policy (CSP)</strong> headers that restrict what scripts can load, <strong>HttpOnly cookies</strong> so JavaScript can't read session tokens. Modern frameworks (React, Vue, Svelte) escape output by default — opting out is the dangerous move.</p><p><strong>Cross-Site Request Forgery (CSRF)</strong> is different: an attacker tricks a victim's browser into making a state-changing request to a site where the victim is logged in. The browser dutifully attaches the session cookie. The fix is <strong>CSRF tokens</strong> (a random value the server expects on state-changing requests, scoped to the user's session) and <strong>SameSite cookies</strong> (which the browser refuses to attach on cross-site navigation).</p>",
+        "mathExpressions": ["\\text{XSS attacker injects script} \\to \\text{runs in victim's browser with victim's permissions}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-02-c3",
+        "title": "Broken Access Control and IDOR",
+        "contentHtml": "<p>The OWASP Top 10's #1 risk for years running is <strong>Broken Access Control</strong>. The pattern is universal: an endpoint authenticates the user (\"are you logged in?\") but fails to <strong>authorize</strong> the action (\"are you allowed to do <em>this specific thing</em>?\").</p><p>The classic instance is <strong>IDOR (Insecure Direct Object Reference)</strong>. <code>GET /api/orders/12345</code> returns order 12345's details — but does the server check whether order 12345 actually belongs to the logged-in user? If not, anyone can iterate through IDs and read other people's orders. This bug is shockingly common in production APIs because authentication and authorization are mentally collapsed into \"are they logged in.\"</p><p>The defense is consistent <strong>authorization checks at every endpoint</strong>: every read, every write, every delete must verify both that the requester is authenticated <em>and</em> that they have the specific right to act on this specific resource. Role-based access control (RBAC) and attribute-based access control (ABAC) systematize this. Wherever your code handles a resource by ID, ask: \"who owns this, and is the requester allowed?\"</p>",
+        "mathExpressions": ["\\text{authenticated} \\neq \\text{authorized} \\quad \\text{auth\\&z must be checked separately for every action}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sec-q09", "sec-q10", "sec-q11", "sec-q12", "sec-q13", "sec-q14", "sec-q15", "sec-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "sec-03",
+    "topicId": "cs-security",
+    "order": 3,
+    "title": "Authentication and Passwords",
+    "description": "Hashing, MFA, sessions, tokens, and password storage done right",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "sec-03-c1",
+        "title": "Never Store Passwords in Plaintext",
+        "contentHtml": "<p>The first commandment: <strong>never store passwords as plaintext</strong>. When (not if) your database leaks, every password becomes the attacker's. Worse, since users reuse passwords, the leak compromises their accounts on other sites.</p><p>Storing a simple hash (MD5, SHA-1, even SHA-256) isn't enough. Attackers precompute <strong>rainbow tables</strong> mapping common passwords to their hashes. A leaked SHA-256 hash database is essentially still plaintext for any password under 8 characters.</p><p>The right approach uses a <strong>slow, salted password hash function</strong> designed for the job: <strong>bcrypt</strong>, <strong>scrypt</strong>, <strong>Argon2</strong>. Each password gets a unique random <strong>salt</strong> stored alongside the hash, defeating rainbow tables. The hashing function deliberately runs slowly (millions of internal operations) so brute-forcing is impractical. Tune the work factor so a hash takes ~100ms — fast enough for legitimate logins, slow enough to make billions of guesses ruinously expensive.</p>",
+        "mathExpressions": ["h = \\text{Argon2}(\\text{password}, \\text{salt}, \\text{cost}) \\quad \\text{salt unique per user, cost tuned for slowness}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-03-c2",
+        "title": "Multi-Factor Authentication",
+        "contentHtml": "<p>Passwords alone are insufficient. They're guessed, leaked, phished, reused. <strong>Multi-Factor Authentication (MFA)</strong> requires a second factor — something the user has or is — in addition to something they know.</p><p>Factors come from three categories: <em>something you know</em> (password, PIN), <em>something you have</em> (phone, hardware token), <em>something you are</em> (fingerprint, face). Real MFA uses at least two different categories. \"Password plus security question\" is technically two factors but both are 'know' — only marginally stronger.</p><p>Practical MFA options, weakest to strongest: <strong>SMS codes</strong> (vulnerable to SIM-swap attacks), <strong>TOTP apps</strong> (Google Authenticator, Authy — much better, no carrier in the loop), <strong>push notifications</strong> (good, but vulnerable to fatigue attacks where users click 'approve' to stop notifications), <strong>FIDO2/WebAuthn</strong> hardware keys (gold standard — phishing-resistant by design). Modern accounts increasingly default to passkeys, which use FIDO2 under the hood.</p>",
+        "mathExpressions": ["\\text{factors} = \\{\\text{know},\\, \\text{have},\\, \\text{are}\\} \\quad \\text{MFA: at least 2 different categories}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-03-c3",
+        "title": "Sessions, Tokens, and OAuth",
+        "contentHtml": "<p>After login, the server needs to track who the user is on subsequent requests. The classic mechanism is a <strong>session</strong>: the server generates a random session ID, stores user state on the server keyed by that ID, and sends the ID to the browser as a cookie. The cookie comes back with every request; the server looks up the session.</p><p><strong>JWT (JSON Web Tokens)</strong> take a different approach: pack the user info into a signed token and let the client carry it. The server verifies the signature on each request — no per-session storage. This scales horizontally without sticky sessions, but invalidating a JWT before its expiry is hard. Reasonable people disagree about JWT vs server sessions; both work, neither is universally better.</p><p><strong>OAuth 2.0 / OIDC</strong> handle the harder problem of letting one application authenticate users via another. \"Sign in with Google\" works because Google issues a token to the third-party app proving you logged in to Google. The protocol is genuinely complex; implementations frequently get it wrong. Use a battle-tested library; resist rolling your own. Improperly implemented OAuth is a common source of catastrophic auth bugs.</p>",
+        "mathExpressions": ["\\text{server session: ID} \\to \\text{server-side state} \\quad \\text{vs} \\quad \\text{JWT: signed claims carried by client}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sec-q17", "sec-q18", "sec-q19", "sec-q20", "sec-q21", "sec-q22", "sec-q23", "sec-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "sec-04",
+    "topicId": "cs-security",
+    "order": 4,
+    "title": "Cryptography Essentials",
+    "description": "Symmetric, asymmetric, hashing, and the don't-roll-your-own rule",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "sec-04-c1",
+        "title": "Symmetric vs Asymmetric Cryptography",
+        "contentHtml": "<p><strong>Symmetric crypto</strong> uses one shared key for both encryption and decryption. AES is the standard symmetric cipher. It's fast — modern CPUs encrypt at gigabytes per second using AES-NI hardware. The challenge is the chicken-and-egg problem: how do two parties agree on a shared key without already having a secure channel?</p><p><strong>Asymmetric crypto</strong> (public-key crypto) solves this. Each party has a <strong>keypair</strong>: a public key everyone can know, a private key kept secret. RSA, ECDSA, Ed25519 are common asymmetric schemes. You can encrypt with someone's public key (only they can decrypt), or sign with your private key (anyone can verify with your public key). The math underneath relies on hard problems: factoring large numbers (RSA), discrete logs on elliptic curves (ECDSA, Ed25519).</p><p>Asymmetric is slow — many orders of magnitude slower than symmetric for bulk data. So real systems combine them: use asymmetric to <em>establish</em> a session key, then use symmetric to encrypt the actual traffic. This is exactly what TLS does, and it's the dominant pattern in modern crypto.</p>",
+        "mathExpressions": ["\\text{symmetric: same key for E and D} \\quad \\text{asymmetric: separate (pk, sk), only sk can decrypt}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-04-c2",
+        "title": "Hash Functions and Their Many Jobs",
+        "contentHtml": "<p>A <strong>cryptographic hash function</strong> maps arbitrary input to a fixed-size output (e.g., 256 bits). Good hashes are <strong>deterministic</strong> (same input always gives same output), <strong>fast</strong>, <strong>preimage-resistant</strong> (given a hash, you can't find an input that produces it), and <strong>collision-resistant</strong> (you can't find two inputs that hash to the same output).</p><p>SHA-256 and SHA-3 are modern standards. MD5 and SHA-1 are broken — collisions can be generated cheaply, so they should not be used for security purposes (signatures, certs). They're still fine for non-security uses like deduplication.</p><p>Hash functions are the Swiss Army knife of crypto. They power digital signatures (sign the hash, not the data), Merkle trees (Git, Bitcoin), HMACs (message authentication), key derivation, deterministic randomness (HKDF), content addressing (IPFS). Whenever you hear \"verify integrity\" or \"unique fingerprint,\" a hash function is doing the work.</p>",
+        "mathExpressions": ["H: \\{0,1\\}^* \\to \\{0,1\\}^n \\quad \\text{deterministic, collision-resistant, preimage-resistant}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-04-c3",
+        "title": "Don't Roll Your Own",
+        "contentHtml": "<p>The most important rule in applied cryptography: <strong>don't implement your own crypto</strong>. The history of broken homemade crypto is endless — clever-looking schemes that fall to attacks the designers didn't anticipate. Real cryptographers spend decades probing schemes for weaknesses; assumed-safe schemes have been broken many years after standardization.</p><p>The right move is to use battle-tested, audited, high-level libraries: <strong>libsodium</strong> (NaCl), <strong>age</strong> for encryption, the platform's <strong>TLS</strong> implementation, your language's <strong>crypto/x</strong> standard library. These libraries pick safe defaults, prevent common misuses (nonce reuse, padding oracles, timing attacks), and have been reviewed by cryptographers.</p><p>The corollary: use <em>high-level</em> APIs, not raw primitives. <code>libsodium.crypto_secretbox_easy(message, key)</code> is hard to misuse. Manually composing AES-CBC + HMAC-SHA256, getting the order right, handling nonces correctly — every step is a footgun. Cryptography Done Right is mostly cryptography Not Implemented By You.</p>",
+        "mathExpressions": ["\\text{security} = \\text{algorithm} + \\text{implementation} + \\text{usage} \\quad \\text{any flaw breaks it all}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sec-q25", "sec-q26", "sec-q27", "sec-q28", "sec-q29", "sec-q30", "sec-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "sec-05",
+    "topicId": "cs-security",
+    "order": 5,
+    "title": "Network Attacks, Defense, and Ethics",
+    "description": "Phishing, MITM, DDoS, supply chain, and responsible disclosure",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "sec-05-c1",
+        "title": "Phishing, Social Engineering, and the Human Layer",
+        "contentHtml": "<p>The most successful attacks don't target software — they target <strong>people</strong>. <strong>Phishing</strong> emails impersonate trusted brands to trick users into entering credentials on attacker-controlled pages. <strong>Spear phishing</strong> targets specific individuals with personalized lures. <strong>Business Email Compromise (BEC)</strong> impersonates executives to authorize fake wire transfers. The dollar losses from BEC alone exceed those from most software vulnerabilities.</p><p>Technical defenses help: <strong>DMARC, DKIM, SPF</strong> detect spoofed sender domains; <strong>email gateways</strong> scan for malicious attachments and links; <strong>FIDO2 keys</strong> are phishing-resistant because they bind the auth challenge to the actual domain. But the strongest defense is <strong>training and culture</strong>: people who know what phishing looks like, who feel safe escalating suspicions, and whose workflows don't normalize unusual urgency.</p><p>Social engineering generalizes. Attackers call helpdesks pretending to be employees, drop USB sticks in parking lots, tailgate into buildings, befriend staff on LinkedIn. The lesson is humbling: technical controls are necessary, but a determined attacker will often skip them entirely and just <em>ask</em>.</p>",
+        "mathExpressions": ["\\text{breach probability} \\propto \\frac{\\text{social engineering effort}}{\\text{user awareness}}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-05-c2",
+        "title": "MITM, DDoS, and Supply Chain Attacks",
+        "contentHtml": "<p>A <strong>Man-in-the-Middle (MITM)</strong> attack inserts the attacker between two parties, reading or modifying traffic. Public Wi-Fi, malicious DNS, ARP spoofing, and BGP hijacking are common vectors. The defense is end-to-end encryption with mutual authentication — TLS done right makes most MITM attacks infeasible.</p><p>A <strong>Denial-of-Service (DoS)</strong> attack overwhelms a target so legitimate users can't reach it. <strong>Distributed DoS (DDoS)</strong> uses thousands of compromised devices (botnets) to amplify the assault. Cloud-based DDoS protection (Cloudflare, AWS Shield, Akamai) absorbs the volume by distributing it across globe-spanning infrastructure. Application-layer rate limiting handles the slower, more targeted variants.</p><p><strong>Supply chain attacks</strong> compromise the software you depend on rather than your software directly. SolarWinds (2020), event-stream npm package, malicious VS Code extensions — all examples. The defenses are imperfect: <strong>software bills of materials (SBOMs)</strong> to inventory dependencies, <strong>signed releases</strong>, <strong>reproducible builds</strong>, dependency pinning, and minimizing trusted dependencies. The hard truth is that modern software builds on hundreds of upstream packages, any of which could be a vector.</p>",
+        "mathExpressions": ["\\text{trust surface} = \\sum_{\\text{deps}} \\text{trust per dep} \\quad \\text{breach in any dep can compromise you}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "sec-05-c3",
+        "title": "Ethical Hacking and Responsible Disclosure",
+        "contentHtml": "<p>Security research is often <strong>dual-use</strong>: the same techniques that defenders need to understand are also the techniques attackers use. The norms that distinguish ethical security work from criminal hacking are clear: <em>only test systems you own or are explicitly authorized to test, do not damage or exfiltrate data, and disclose findings responsibly.</em></p><p><strong>Responsible disclosure</strong> means privately reporting vulnerabilities to the affected vendor, giving them reasonable time to fix the issue before any public disclosure. Most large vendors run <strong>bug bounty programs</strong> (HackerOne, Bugcrowd) that pay for verified findings under explicit rules of engagement. <strong>Coordinated disclosure</strong> sets a deadline — typically 90 days — after which the researcher may publish to incentivize timely fixes.</p><p>Legal authorization is non-negotiable. Even \"helpful\" testing on systems you don't own is illegal in most jurisdictions under laws like the US Computer Fraud and Abuse Act. <strong>Capture-the-Flag (CTF)</strong> competitions, deliberately vulnerable training environments (HackTheBox, OverTheWire, picoCTF), and your own lab are the right places to learn offensive techniques. The best defenders started by attacking — but always with permission.</p>",
+        "mathExpressions": ["\\text{ethical hacking} = \\text{authorization} + \\text{minimization} + \\text{responsible disclosure}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["sec-q32", "sec-q33", "sec-q34", "sec-q35", "sec-q36", "sec-q37"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "misc-ns-01",
+    "topicId": "misc-numberstations",
+    "order": 1,
+    "title": "Voices in the Static",
+    "description": "What number stations are and where to find them",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-ns-01-c1",
+        "title": "The Phenomenon",
+        "contentHtml": "<p><strong>Number stations</strong> are shortwave radio broadcasts that consist of a synthesized voice reading sequences of digits, letters, or phonetic groups, often preceded by a distinctive opening tune or buzz.</p><p>They have been transmitting since at least World War I. Most operate on regular schedules. Most never identify themselves. They are not licensed under any public broadcasting authority.</p><p>You can tune one in tonight with a basic shortwave receiver. They are still active.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-01-c2",
+        "title": "What They Sound Like",
+        "contentHtml": "<p>Famous examples: <strong>The Lincolnshire Poacher</strong> (UK MI6, 1976–2008) opened with bars of the English folk tune; <strong>UVB-76 / The Buzzer</strong> broadcasts a continuous monotone since 1973, occasionally interrupted by Russian voice messages; <strong>HM01</strong> (Cuba) uses a synthesized female voice reciting five-digit groups in Spanish.</p><p>The aesthetic is consistent across stations: minimal, repetitive, eerie. They sound like horror movies because they are functioning systems whose users do not want to be entertaining.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-01-c3",
+        "title": "The Conet Project",
+        "contentHtml": "<p>In 1997, the Irdial-Discs label released <em>The Conet Project</em>, a four-CD compilation of recorded number-station broadcasts. It became the canonical reference and exposed the phenomenon to a wider audience.</p><p>Wilco's 2001 album <em>Yankee Hotel Foxtrot</em> takes its title from a recording in the Conet collection. Subsequent legal questions (do governments own their broadcasts? are they public domain?) were never fully resolved.</p><p>Stations are passively monitored by hobbyist groups like ENIGMA and ENIGMA 2000, who catalogue schedules and changes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-ns-q01", "misc-ns-q02", "misc-ns-q03", "misc-ns-q04", "misc-ns-q05"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-ns-02",
+    "topicId": "misc-numberstations",
+    "order": 2,
+    "title": "Why Shortwave?",
+    "description": "The physics of skywave propagation and one-way communication",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-ns-02-c1",
+        "title": "Bouncing Off the Sky",
+        "contentHtml": "<p>Shortwave (3–30 MHz) radio waves <strong>refract off the ionosphere</strong> and return to Earth far beyond the horizon. A single broadcast can reach an entire continent or half the planet at the right frequency and time of day.</p><p>This is unique among radio bands. AM and FM are line-of-sight; satellite needs a satellite. Shortwave reaches anywhere with a receiver and an ionosphere — no infrastructure required at the receiving end.</p><p>For a deep-cover agent in a hostile country, this is critical: receiving a shortwave broadcast leaves no electronic trace.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-02-c2",
+        "title": "One-Way Communication",
+        "contentHtml": "<p>Number stations are <strong>one-way</strong>: the operator broadcasts; the agent only receives. This asymmetry is the security feature, not a limitation.</p><p>If the agent transmitted, direction-finding equipment could locate them. By being purely receptive, an agent is indistinguishable from any random shortwave hobbyist tuning around. A radio with no telltale spy hardware, hidden inside a normal household, is nearly invisible.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-02-c3",
+        "title": "Why Voice and Not Data?",
+        "contentHtml": "<p>Why broadcast spoken digits instead of encoded data? Robustness. A human ear can pick out spoken numbers from heavy noise that would defeat data modems. The agent only needs a basic receiver, paper, and a pencil — no special decoder hardware that could betray them on search.</p><p>The technology is deliberately mundane. A modern spy with a $30 shortwave radio and a notebook is operationally similar to a spy from 1955 with the same equipment.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-ns-q06", "misc-ns-q07", "misc-ns-q08", "misc-ns-q09", "misc-ns-q10"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-ns-03",
+    "topicId": "misc-numberstations",
+    "order": 3,
+    "title": "The One-Time Pad",
+    "description": "The mathematically unbreakable cipher behind number stations",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-ns-03-c1",
+        "title": "How It Works",
+        "contentHtml": "<p>A <strong>one-time pad (OTP)</strong> is a list of truly random numbers. The sender XORs (or modular-adds) the plaintext digits with pad digits to produce ciphertext. The receiver, holding an identical pad, subtracts to recover the message.</p><p>Number-station broadcasts <em>are</em> the ciphertext. The agent looks up the day's row in the pad and decodes by hand. The pad is then destroyed.</p><p>If the pad is truly random, used only once, kept secret, and is at least as long as the message, the cipher is <strong>information-theoretically unbreakable</strong>. Shannon proved this in 1949.</p>",
+        "mathExpressions": ["c_i = (m_i + k_i) \\bmod 10"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-03-c2",
+        "title": "Why Unbreakable",
+        "contentHtml": "<p>Given only the ciphertext, every possible plaintext of the same length is equally likely. There is literally no information in the ciphertext that distinguishes 'ATTACK AT DAWN' from 'STAND DOWN NOW' if the pad is unknown.</p><p>Brute-forcing all keys yields every possible message — not just the right one. The cryptanalyst gains nothing.</p><p>This is the only widely-deployed cipher with a mathematical proof of perfect secrecy. AES, RSA, and others rely on computational hardness assumptions; OTP doesn't.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-03-c3",
+        "title": "Why Nobody Else Uses It",
+        "contentHtml": "<p>OTP is the worst practical cipher despite being the strongest. The pad must be: as long as the message, truly random, securely distributed in advance, used exactly once, then destroyed.</p><p>For everyday traffic this is impossible. For low-bandwidth one-way agent communication — short bursts of digits, decades-long covert assignments — it's perfect. Spy traffic is exactly the niche where pad logistics work.</p><p>This is why number stations exist alongside modern cryptography rather than being replaced by it. The use case hasn't changed since WWI.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-ns-q11", "misc-ns-q12", "misc-ns-q13", "misc-ns-q14", "misc-ns-q15"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-ns-04",
+    "topicId": "misc-numberstations",
+    "order": 4,
+    "title": "Famous Stations",
+    "description": "The Buzzer, the Poacher, Cherry Ripe, HM01",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-ns-04-c1",
+        "title": "UVB-76 — The Buzzer",
+        "contentHtml": "<p><strong>UVB-76</strong> (Russian, 4625 kHz) has been broadcasting since 1973. Most of the time it transmits a single buzz, repeating roughly 25 times per minute, 24/7.</p><p>Occasionally — without pattern — the buzz cuts out and a Russian voice reads a brief coded message: 'UVB-76, UVB-76, 93 882 NAIMINA 74 14 35 74'. Then the buzzing resumes.</p><p>The station has changed names and locations several times (formerly The Buzzer, currently MDZhB), but the underlying buzz has run continuously for over 50 years. Its purpose has never been confirmed — possibly a 'dead-hand' channel kept open against blackout, possibly a test signal, possibly active operational use.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-04-c2",
+        "title": "The Lincolnshire Poacher & Cherry Ripe",
+        "contentHtml": "<p><strong>The Lincolnshire Poacher</strong> (1976–2008) opened with two bars of the English folk tune, then read groups of five digits in a synthesized female voice. Triangulation traced its source to an RAF base in Cyprus. It was operated by MI6 and went silent in 2008.</p><p>Its sister station <strong>Cherry Ripe</strong> used another English tune for an Asia-Pacific audience, broadcasting from Australia. It went silent around 2009. Nothing was ever officially confirmed — confirmation came from leaked technical details and triangulation.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-04-c3",
+        "title": "HM01 and Modern Stations",
+        "contentHtml": "<p><strong>HM01</strong> is a Cuban station first identified in 2009. It uses a synthesized Spanish female voice reading five-digit groups, sometimes interleaved with bursts of digital data.</p><p>HM01 is widely believed to be operated by Cuba's Dirección de Inteligencia for agent traffic. Its existence and use was confirmed indirectly by the 2009 arrest of Walter Kendall Myers, a US State Department official who confessed to receiving instructions via Cuban shortwave for 30 years.</p><p>The point: number stations are not Cold War nostalgia. They are still working, still active, still receiving funding, in 2026.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-ns-q16", "misc-ns-q17", "misc-ns-q18", "misc-ns-q19", "misc-ns-q20"],
+    "puzzleId": null
+  },
+  {
+    "id": "misc-ns-05",
+    "topicId": "misc-numberstations",
+    "order": 5,
+    "title": "Decoding the Mystery",
+    "description": "What we know, what we don't, and how researchers track stations",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "misc-ns-05-c1",
+        "title": "What's Confirmed",
+        "contentHtml": "<p>Government acknowledgement of number stations is rare but exists. The 1998 trial of the Cuban Five in Miami included evidence of HM01 broadcasts decoded into operational instructions. Both the FBI's evidence and the Russian Federation's 1998 lift of an information embargo on the Buzzer's source confirmed the technology's purpose.</p><p>Beyond that: triangulation gives source locations, schedule observation gives operational patterns, and occasional defectors and trial transcripts reveal confirmed use cases. The general fact of agent communication via shortwave is not seriously disputed.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-05-c2",
+        "title": "What's Unknown",
+        "contentHtml": "<p>Specific message content is essentially never recovered (OTP makes that impossible). The current operators of many active stations are inferred but not officially confirmed. Some stations broadcast purely as <strong>dummy traffic</strong> — random data designed to mask which broadcasts contain real messages.</p><p>This is itself a security feature: an enemy analyst cannot tell when an agent received instructions versus when nothing was sent. The 'always on' Buzzer may serve exactly this masking role.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "misc-ns-05-c3",
+        "title": "The ENIGMA Catalogue",
+        "contentHtml": "<p>The <strong>ENIGMA</strong> group (later ENIGMA 2000) is a hobbyist collective that has catalogued number stations since the 1990s. Each station gets an alphanumeric ID: <strong>S</strong> for Slavic-language, <strong>E</strong> for English, <strong>G</strong> for German, <strong>HM</strong> for Cuban hybrid mode, <strong>V</strong> for hybrid voice/morse.</p><p>Their newsletters track schedule changes, new stations appearing, old ones going dark, and unexplained anomalies. This volunteer monitoring is essentially the only public record of an otherwise undocumented system.</p><p>Browse the ENIGMA control list and you're looking at the open archive of half a century of covert state communications.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["misc-ns-q21", "misc-ns-q22", "misc-ns-q23", "misc-ns-q24", "misc-ns-q25"],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "ai-01",
+    "topicId": "cs-ai-ml",
+    "order": 1,
+    "title": "What Machine Learning Actually Is",
+    "description": "Supervised, unsupervised, reinforcement, and the bias-variance tradeoff",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "ai-01-c1",
+        "title": "Three Flavors of Learning",
+        "contentHtml": "<p><strong>Machine learning</strong> is the discipline of building algorithms that improve from data without explicit programming. The three primary paradigms cover most of the field.</p><p><strong>Supervised learning</strong>: data comes with labels. You have inputs x and corresponding outputs y. The goal is to learn a function f(x) ≈ y that generalizes to unseen inputs. Image classification (cat or dog?), spam detection, price prediction, machine translation — all supervised. The vast majority of useful ML in production is supervised.</p><p><strong>Unsupervised learning</strong>: only inputs, no labels. The goal is to find structure — clusters, dimensions, anomalies. K-means, PCA, t-SNE, UMAP, autoencoders. Used for exploration, compression, and as preprocessing for supervised tasks.</p><p><strong>Reinforcement learning</strong>: an agent acts in an environment and receives rewards. The goal is to learn a <strong>policy</strong> that maximizes long-term reward. Game-playing AI (AlphaGo, chess engines), robotics, dialogue systems. RL is powerful but data-hungry and tricky to train.</p>",
+        "mathExpressions": ["\\text{supervised: } (x_i, y_i) \\to f \\quad \\text{unsupervised: } x_i \\to \\text{structure} \\quad \\text{RL: } (s, a, r) \\to \\pi"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-01-c2",
+        "title": "Generalization, Overfitting, Underfitting",
+        "contentHtml": "<p>The whole point of ML is <strong>generalization</strong> — performing well on data not seen during training. A model that memorizes the training set perfectly but fails on new data is useless. The defining tension is between fitting the data and generalizing.</p><p><strong>Overfitting</strong>: the model learns noise in the training data and fails to generalize. Symptoms: training error low, validation error high, big gap between them. Common causes: too-flexible model, too little data, training too long. Cures: regularization (L1, L2, dropout), more data, simpler models, early stopping.</p><p><strong>Underfitting</strong>: the model is too simple to capture the true pattern. Both training and validation error stay high. Cures: bigger model, better features, train longer. The art is finding the sweet spot — flexible enough to capture the signal, simple enough not to chase noise.</p>",
+        "mathExpressions": ["\\text{train error} \\ll \\text{val error} \\implies \\text{overfit} \\quad \\text{both high} \\implies \\text{underfit}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-01-c3",
+        "title": "Train, Validation, Test: The Three Splits",
+        "contentHtml": "<p>Honest ML evaluation requires splitting your data into three sets. The <strong>training set</strong> is what the model learns from. The <strong>validation set</strong> is used to tune hyperparameters (model size, learning rate, regularization strength). The <strong>test set</strong> is held back until the very end and reports the final, honest performance.</p><p>The cardinal sin is <strong>data leakage</strong>: information from the test set sneaking into training. This makes the model look better than it is. Subtle leaks include: using test set statistics for normalization, choosing hyperparameters that worked best on the test set, time-series data where future leaks into past via shuffled splits.</p><p>Cross-validation generalizes the train/val split: divide training data into k folds, train on k-1, validate on the held-out fold, rotate. K-fold cross-validation gives more robust hyperparameter estimates at the cost of k times more compute. The test set always stays separate — touched once, at the end. Iterating on test set performance is how research papers come to overfit to widely-used benchmarks.</p>",
+        "mathExpressions": ["\\text{train (learn)} \\to \\text{val (tune)} \\to \\text{test (report once)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ai-q01", "ai-q02", "ai-q03", "ai-q04", "ai-q05", "ai-q06", "ai-q07", "ai-q08"],
+    "puzzleId": null
+  },
+  {
+    "id": "ai-02",
+    "topicId": "cs-ai-ml",
+    "order": 2,
+    "title": "Classical ML: Regression, Trees, and SVMs",
+    "description": "The pre-deep-learning toolkit, still going strong",
+    "xpReward": 120,
+    "concepts": [
+      {
+        "id": "ai-02-c1",
+        "title": "Linear and Logistic Regression",
+        "contentHtml": "<p><strong>Linear regression</strong> fits a line (or hyperplane) to data: <code>y = w₁x₁ + w₂x₂ + ... + b</code>. Find weights w and bias b that minimize squared error. Closed-form solution exists; iterative methods like gradient descent also work. Linear regression is shockingly competitive on tabular problems and serves as a baseline in nearly every applied ML project.</p><p><strong>Logistic regression</strong>, despite the name, is for classification. The output passes through a sigmoid function to produce a probability between 0 and 1: <code>P(y=1|x) = σ(wx + b)</code>. Train by maximizing log-likelihood (equivalent to minimizing cross-entropy). Output is a probability you can threshold to make decisions.</p><p>Both methods are <strong>linear in the parameters</strong>, which gives them strong properties: closed-form analysis, well-understood statistical guarantees, fast training, easy interpretation. They struggle when the relationship is non-linear (XOR is the classic counterexample). Polynomial features, kernels, or neural networks pick up where linear models leave off.</p>",
+        "mathExpressions": ["\\text{linear: } y = w^T x + b \\quad \\text{logistic: } P(y=1) = \\sigma(w^T x + b)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-02-c2",
+        "title": "Decision Trees and Forests",
+        "contentHtml": "<p>A <strong>decision tree</strong> learns to classify or regress by repeatedly splitting on feature values. \"Is age &gt; 30? If yes, is income &gt; 50k? If yes, predict class A.\" Trees are interpretable, handle mixed data types, require no scaling, and capture non-linear interactions automatically. Single trees overfit easily.</p><p><strong>Random forests</strong> train many trees on bootstrapped samples and random feature subsets, then vote. The diversity of trees averages out individual overfitting. RFs are robust, work out-of-the-box on tabular data, and require minimal tuning.</p><p><strong>Gradient-boosted trees</strong> (XGBoost, LightGBM, CatBoost) take a different ensemble approach: train trees sequentially, each correcting the errors of its predecessors. GBT models dominate Kaggle competitions and many tabular ML benchmarks. For tabular data, GBT often beats deep learning despite a tiny fraction of the compute.</p>",
+        "mathExpressions": ["\\text{forest: } \\hat{y} = \\frac{1}{n} \\sum_{i=1}^n T_i(x) \\quad \\text{(bagging trees averages overfitting)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-02-c3",
+        "title": "K-Means, KNN, and SVMs",
+        "contentHtml": "<p><strong>K-Nearest Neighbors (KNN)</strong> is almost embarrassingly simple. To classify a new point, find the k nearest training points and vote. No training, just memorization. Slow at inference time on big data; great as a baseline.</p><p><strong>K-means clustering</strong> is unsupervised. Pick k cluster centers; assign each point to its nearest center; move each center to the mean of its assigned points; repeat. Converges quickly to a local optimum. Sensitive to initialization (k-means++ helps) and assumes spherical clusters of similar size.</p><p><strong>Support Vector Machines (SVMs)</strong> find the hyperplane that maximally separates two classes. With the <strong>kernel trick</strong>, SVMs handle non-linear boundaries by implicitly mapping to high-dimensional spaces (RBF, polynomial kernels). SVMs were the dominant classifier of the 2000s before deep learning. Still effective on small/medium structured data with the right kernel.</p>",
+        "mathExpressions": ["\\text{SVM: } \\max_w \\text{margin} \\;\\;\\text{s.t.}\\;\\; y_i(w^T x_i + b) \\geq 1"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ai-q09", "ai-q10", "ai-q11", "ai-q12", "ai-q13", "ai-q14", "ai-q15", "ai-q16"],
+    "puzzleId": null
+  },
+  {
+    "id": "ai-03",
+    "topicId": "cs-ai-ml",
+    "order": 3,
+    "title": "Neural Networks and Backpropagation",
+    "description": "Layers of weighted sums, non-linearities, and gradient descent",
+    "xpReward": 140,
+    "concepts": [
+      {
+        "id": "ai-03-c1",
+        "title": "What a Neuron Is",
+        "contentHtml": "<p>A <strong>neuron</strong> in a neural network is a tiny function: take inputs, multiply each by a weight, sum them up, add a bias, run through a non-linear activation function. <code>output = σ(w·x + b)</code>. That's it. The biological inspiration is loose — neurons in the brain are far more complex.</p><p><strong>Activation functions</strong> are what give networks their power. Without non-linearity, a stack of linear neurons collapses to a single linear function. <strong>Sigmoid</strong> (smooth S-curve), <strong>tanh</strong> (sigmoid centered at 0), and <strong>ReLU</strong> (max(0, x)) are the classic choices. ReLU dominates modern networks because it's cheap, doesn't saturate for positive inputs, and trains faster.</p><p>A <strong>fully-connected layer</strong> is a vector of neurons, each receiving every input. Stack layers and you have a <strong>multilayer perceptron (MLP)</strong>. The Universal Approximation Theorem says even a single hidden layer can approximate any continuous function — given enough neurons. In practice depth (more layers) is usually more efficient than width (more neurons per layer).</p>",
+        "mathExpressions": ["a^{(l)} = \\sigma(W^{(l)} a^{(l-1)} + b^{(l)}) \\quad \\text{(forward pass through one layer)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-03-c2",
+        "title": "Backpropagation: How Networks Learn",
+        "contentHtml": "<p>To train a network, we need to adjust weights to reduce a <strong>loss</strong> (mean squared error, cross-entropy, etc.). The trick: compute how much each weight affects the loss, then nudge weights in the direction that reduces loss. This is <strong>gradient descent</strong>.</p><p>The hard part is computing gradients. <strong>Backpropagation</strong>, popularized by Rumelhart, Hinton, and Williams in 1986, applies the chain rule from calculus to compute all gradients in one backward pass through the network. Forward pass: compute the prediction. Backward pass: propagate the gradient of the loss back through each layer. Total cost is roughly twice the forward pass cost — efficient.</p><p>Modern frameworks (PyTorch, TensorFlow, JAX) implement <strong>automatic differentiation</strong>: you write the forward computation, and the framework automatically computes the backward pass. This is one reason deep learning exploded in the 2010s — researchers stopped writing backward passes by hand and started experimenting with architectures.</p>",
+        "mathExpressions": ["\\frac{\\partial L}{\\partial W^{(l)}} = \\delta^{(l)} (a^{(l-1)})^T \\quad \\text{(chain rule per layer)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-03-c3",
+        "title": "Optimizers, Learning Rates, and Regularization",
+        "contentHtml": "<p>Pure gradient descent steps in the direction of the gradient: <code>w ← w - η ∇L</code>, where η is the <strong>learning rate</strong>. Too high and training diverges; too low and it crawls. Learning rate is the most important hyperparameter to get right.</p><p><strong>Stochastic gradient descent (SGD)</strong> uses one example or a mini-batch per update — far cheaper than full-batch and surprisingly often produces better generalization. Modern optimizers add <strong>momentum</strong> (smooth out updates), <strong>Adam</strong> (adaptive per-parameter learning rates), <strong>AdamW</strong> (Adam with corrected weight decay). Adam and AdamW are the de facto defaults today.</p><p>To prevent overfitting, neural networks use <strong>regularization</strong>. <strong>L2 weight decay</strong> shrinks weights toward zero. <strong>Dropout</strong> randomly zeroes out activations during training, forcing the network to be redundant. <strong>Data augmentation</strong> creates synthetic training data (rotated images, perturbed text) to expose the model to more variety. Regularization is what makes a flexible neural network generalize rather than memorize.</p>",
+        "mathExpressions": ["w \\leftarrow w - \\eta \\nabla_w L \\quad \\text{(SGD update)} \\quad \\text{batch size} \\ll N \\text{ for stochastic version}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ai-q17", "ai-q18", "ai-q19", "ai-q20", "ai-q21", "ai-q22", "ai-q23", "ai-q24"],
+    "puzzleId": null
+  },
+  {
+    "id": "ai-04",
+    "topicId": "cs-ai-ml",
+    "order": 4,
+    "title": "Deep Learning: CNNs, RNNs, and Transformers",
+    "description": "Architectures that revolutionized vision, language, and beyond",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "ai-04-c1",
+        "title": "Convolutional Neural Networks for Images",
+        "contentHtml": "<p>A fully-connected layer treats every pixel as independent — totally throwing away the 2D structure of an image. <strong>Convolutional Neural Networks (CNNs)</strong> instead use small filters (e.g., 3×3 weight matrices) that slide across the image, applying the same weights at every position. This <strong>weight sharing</strong> drastically reduces parameters and bakes in translation invariance.</p><p>A typical CNN stacks: convolutional layers (extract local features), <strong>pooling</strong> layers (reduce resolution, increase receptive field), and ultimately fully-connected layers for classification. Early layers learn edges and textures; deeper layers compose them into objects and faces.</p><p>The 2012 <strong>AlexNet</strong> result on ImageNet (top-5 error halved compared to the runner-up) made CNNs and GPUs the standard for computer vision overnight. <strong>ResNets</strong> (skip connections), <strong>EfficientNets</strong>, and others kept improving the architecture. Modern vision transformers have started displacing CNNs even on image tasks, but CNNs remain the workhorse for many production vision systems.</p>",
+        "mathExpressions": ["(\\text{conv} \\ast \\text{image})(i, j) = \\sum_{m,n} K(m, n) \\cdot I(i+m, j+n)"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-04-c2",
+        "title": "RNNs, LSTMs, and the Sequence Problem",
+        "contentHtml": "<p>For sequences (text, audio, time series), feeding data one step at a time and maintaining a <strong>hidden state</strong> that carries information forward is natural. <strong>Recurrent Neural Networks (RNNs)</strong> implement this: at each step, the new hidden state is a function of the previous state and the new input.</p><p>Plain RNNs struggle with long sequences because gradients vanish or explode through many recurrent steps. <strong>LSTMs</strong> (Long Short-Term Memory, Hochreiter and Schmidhuber 1997) and <strong>GRUs</strong> use gating mechanisms to selectively remember and forget, mitigating the vanishing gradient. LSTMs powered most of the early-2010s NLP work — translation, sentiment, captioning.</p><p>RNNs have a structural problem: they're <strong>sequential</strong>. You can't process step t until you've finished step t-1. This makes them slow to train on long sequences and hard to parallelize on modern hardware. The transformer architecture, which we'll cover next, addressed this and largely replaced RNNs for NLP — though RNNs remain useful in some real-time and resource-constrained settings.</p>",
+        "mathExpressions": ["h_t = f(W_h h_{t-1} + W_x x_t + b) \\quad \\text{(RNN: hidden state evolves with input)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-04-c3",
+        "title": "The Transformer Revolution",
+        "contentHtml": "<p>The 2017 paper <em>Attention Is All You Need</em> introduced the <strong>transformer</strong>: an architecture built around <strong>self-attention</strong>. Each position in the sequence attends to every other position, weighted by a learned relevance score. No recurrence, fully parallelizable across positions.</p><p>The core operation is <strong>scaled dot-product attention</strong>. Compute query, key, and value vectors for each position. Each query takes a weighted sum of values, with weights from the dot products of queries and keys. <strong>Multi-head attention</strong> runs several attention operations in parallel, capturing different relationships.</p><p>Transformers turned out to scale extraordinarily well. <strong>BERT</strong> (encoder, 2018) revolutionized text understanding. <strong>GPT</strong> (decoder, OpenAI) showed that large generative transformers could write coherent text, code, and reasoning chains. By the early 2020s, transformers replaced RNNs in nearly all NLP, then expanded into vision (ViT), audio (Whisper), code (Codex), biology (AlphaFold). The transformer is the defining architecture of modern AI.</p>",
+        "mathExpressions": ["\\text{Attention}(Q, K, V) = \\text{softmax}\\!\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right) V"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ai-q25", "ai-q26", "ai-q27", "ai-q28", "ai-q29", "ai-q30", "ai-q31"],
+    "puzzleId": null
+  },
+  {
+    "id": "ai-05",
+    "topicId": "cs-ai-ml",
+    "order": 5,
+    "title": "LLMs, Alignment, and the Frontier",
+    "description": "Pre-training, fine-tuning, RLHF, and where AI is headed",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "ai-05-c1",
+        "title": "Pre-Training: Learning from the Internet",
+        "contentHtml": "<p>Large language models (<strong>LLMs</strong>) are transformers trained on vast amounts of text. The training objective is usually <strong>next-token prediction</strong>: given a sequence of tokens, predict the next token. Trained on hundreds of billions of tokens of internet text, books, and code, the model implicitly learns grammar, facts, reasoning patterns, and surprising amounts of world knowledge.</p><p>The scale matters dramatically. <strong>Scaling laws</strong> (Kaplan et al. 2020, Hoffmann et al. 2022 'Chinchilla') showed that loss decreases predictably with more parameters, more data, and more compute — and that the three need to scale together. Going from millions to billions of parameters didn't just make models slightly better; it produced qualitative jumps in capability (in-context learning, chain-of-thought reasoning).</p><p>Pre-training is dominated by compute. A frontier model trains for weeks on thousands of GPUs, costing tens to hundreds of millions of dollars. Only a handful of organizations have the resources to do this from scratch. Most production AI use builds on these pre-trained foundations rather than training from scratch.</p>",
+        "mathExpressions": ["L = -\\sum_{t} \\log P(\\text{token}_t \\mid \\text{token}_{<t}) \\quad \\text{(next-token prediction loss)}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-05-c2",
+        "title": "Fine-Tuning, RLHF, and Alignment",
+        "contentHtml": "<p>A raw pre-trained LLM is a brilliant token-completer but not a useful assistant. It will continue \"how do I bake bread?\" with another question rather than an answer because the internet contains lots of unanswered questions. <strong>Fine-tuning</strong> on curated examples teaches the model to follow instructions, format responses, and refuse harmful requests.</p><p><strong>Supervised fine-tuning (SFT)</strong> trains on (prompt, ideal-response) pairs written by humans. <strong>Reinforcement Learning from Human Feedback (RLHF)</strong> goes further: humans rank multiple model responses, a reward model is trained to predict those rankings, and the LLM is fine-tuned to maximize predicted reward. This is the secret sauce behind ChatGPT-style assistants — the model is shaped to produce helpful, honest, harmless outputs.</p><p>Newer techniques refine this: <strong>DPO</strong> (Direct Preference Optimization) skips the explicit reward model. <strong>Constitutional AI</strong> uses model-generated critiques. <strong>RLAIF</strong> (RL from AI feedback) replaces human raters with AI for some steps. The whole field of <strong>alignment</strong> is about making sure capable models actually do what humans want — a problem that gets harder as models get more capable.</p>",
+        "mathExpressions": ["\\text{LLM training: pre-train} \\to \\text{SFT} \\to \\text{RLHF / DPO}"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ai-05-c3",
+        "title": "Limitations, Hallucinations, and the Frontier",
+        "contentHtml": "<p>LLMs are remarkable but flawed. They <strong>hallucinate</strong>: confidently produce false information, fabricate citations, and invent code that looks reasonable but doesn't run. They <strong>fail at certain reasoning</strong>: arithmetic on long numbers, complex multi-step planning, anything that needs genuine working memory beyond context window. They <strong>reflect biases</strong> in their training data.</p><p>Mitigations: <strong>retrieval-augmented generation (RAG)</strong> pulls relevant documents at query time so the model cites real sources. <strong>Tool use</strong> lets the model call calculators, search engines, or code interpreters — turning weaknesses into strengths. <strong>Chain-of-thought</strong> prompting elicits step-by-step reasoning. <strong>Self-consistency</strong> samples multiple answers and picks the majority.</p><p>The frontier is moving rapidly. <strong>Multimodal</strong> models handle text, images, audio, and video together (GPT-4o, Gemini, Claude). <strong>Agentic</strong> systems chain LLM calls into autonomous workflows. <strong>Reasoning models</strong> trained on long chains of thought (o1, o3) make progress on math and coding olympiads. Each year sees both stunning new capabilities and renewed reminders of how much we still don't understand about why these systems work and where they fail.</p>",
+        "mathExpressions": ["\\text{capability} = f(\\text{scale, data quality, training methodology, alignment})"],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": ["ai-q32", "ai-q33", "ai-q34", "ai-q35", "ai-q36", "ai-q37"],
+    "puzzleId": null
+  }
+]
