@@ -25,7 +25,7 @@ public class RunService : IRunService
         _progress = progress;
     }
 
-    private string Key(string topicId) => $"numeria_run_{topicId}";
+    private string Key(string topicId) => $"nous_run_{topicId}";
 
     public async Task<RunState?> GetActiveRunAsync(string topicId)
     {
@@ -35,10 +35,13 @@ public class RunService : IRunService
         if (string.IsNullOrEmpty(json)) return null;
         try
         {
-            return JsonSerializer.Deserialize<RunState>(json, new JsonSerializerOptions
+            var run = JsonSerializer.Deserialize<RunState>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+            if (run != null)
+                run.SeenQuestionIds = run.SeenQuestionIds.Select(id => ProfileMigration.RemapForTopic(run.TopicId, id)).ToList();
+            return run;
         }
         catch (Exception ex) { await _js.LogErrorAsync("RunService.deserialize", ex); }
         return null;

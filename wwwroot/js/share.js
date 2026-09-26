@@ -21,18 +21,18 @@
         });
     }
 
-    window.PhineShare = {
+    window.NousShare = {
         // Returns 'shared' | 'copied' | 'cancelled' | 'unsupported'
         shareCanvas: async function (canvasId, title, text) {
             try {
                 var blob = await canvasToBlob(canvasId);
-                var file = new File([blob], 'phine-progress.png', { type: 'image/png' });
+                var file = new File([blob], 'nous-progress.png', { type: 'image/png' });
 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
-                            title: title || 'My Phine progress',
+                            title: title || 'My Nous progress',
                             text: text || ''
                         });
                         return 'shared';
@@ -55,7 +55,7 @@
 
                 return 'unsupported';
             } catch (e) {
-                console.warn('[PhineShare] failed:', e);
+                console.warn('[NousShare] failed:', e);
                 return 'unsupported';
             }
         }

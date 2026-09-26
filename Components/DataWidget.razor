@@ -1,0 +1,563 @@
+@using System.Text.Json
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Rendering
+
+<div class="dw-root">
+    @if (!string.IsNullOrEmpty(title))
+    {
+        <div class="dw-title">@title</div>
+    }
+
+    @switch (Type)
+    {
+        case "timeline":
+            RenderTimeline(__builder);
+            break;
+        case "slider-graph":
+            RenderSliderGraph(__builder);
+            break;
+        case "map-points":
+            RenderMap(__builder);
+            break;
+        case "flow-diagram":
+            RenderFlow(__builder);
+            break;
+        case "comparison-bars":
+            RenderBars(__builder);
+            break;
+        case "line-chart":
+            RenderLine(__builder);
+            break;
+        case "cycle-diagram":
+            RenderCycle(__builder);
+            break;
+        case "matrix-grid":
+            RenderMatrix(__builder);
+            break;
+        case "proportion-bar":
+            RenderProportion(__builder);
+            break;
+    }
+
+    @if (!string.IsNullOrEmpty(caption))
+    {
+        <div class="dw-caption">@caption</div>
+    }
+    @if (!string.IsNullOrEmpty(source))
+    {
+        <div class="dw-source">Source: @source</div>
+    }
+</div>
+
+@code {
+    public static readonly HashSet<string> Types = new()
+    {
+        "timeline", "slider-graph", "map-points", "flow-diagram", "comparison-bars",
+        "line-chart", "cycle-diagram", "matrix-grid", "proportion-bar"
+    };
+
+    [Parameter] public string Type { get; set; } = "";
+    [Parameter] public Dictionary<string, object>? Config { get; set; }
+
+    private const double W = 360;
+    private static readonly string[] Series = { "var(--dw-s1)", "var(--dw-s2)", "var(--dw-s3)", "var(--dw-s4)" };
+    private static readonly JsonSerializerOptions Opts = new() { PropertyNameCaseInsensitive = true };
+
+    private JsonElement cfg;
+    private string? title, caption, source;
+    private double sliderValue;
+    private bool showTable;
+    private string? hover;
+
+    protected override void OnParametersSet()
+    {
+        cfg = JsonSerializer.SerializeToElement(Config ?? new Dictionary<string, object>());
+        title = Str(cfg, "title");
+        caption = Str(cfg, "caption");
+        source = Str(cfg, "source");
+        if (Type == "slider-graph" && cfg.TryGetProperty("param", out var p))
+            sliderValue = Num(p, "value", Num(p, "min", 0));
+    }
+
+    private static string? Str(JsonElement e, string name) =>
+        e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    private static double Num(JsonElement e, string name, double fallback = 0) =>
+        e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : fallback;
+
+    private static IEnumerable<JsonElement> Arr(JsonElement e, string name) =>
+        e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Array
+            ? v.EnumerateArray() : Enumerable.Empty<JsonElement>();
+
+    private static string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static string Year(double y) => y < 0 ? $"{F(-y)} BCE" : y < 1000 ? $"{F(y)} CE" : F(y);
+
+    private static string FormatValue(double v, string? unit)
+    {
+        var s = Math.Abs(v) >= 1000 ? v.ToString("#,0.##", CultureInfo.InvariantCulture) : F(v);
+        return string.IsNullOrEmpty(unit) ? s : $"{s} {unit}";
+    }
+
+    private void TableToggle(RenderTreeBuilder __builder)
+    {
+        <button class="dw-table-toggle" @onclick="() => showTable = !showTable">@(showTable ? "Show chart" : "Show as table")</button>
+    }
+
+    // ── Timeline: events on a horizontal axis with optional era bands ─────────
+    private void RenderTimeline(RenderTreeBuilder __builder)
+    {
+        var events = Arr(cfg, "events").Select(e => (year: Num(e, "year"), label: Str(e, "label") ?? "", detail: Str(e, "detail"))).OrderBy(e => e.year).ToList();
+        var eras = Arr(cfg, "eras").Select(e => (from: Num(e, "from"), to: Num(e, "to"), label: Str(e, "label") ?? "")).ToList();
+        if (events.Count == 0) return;
+        var min = Math.Min(events.Min(e => e.year), eras.Count > 0 ? eras.Min(e => e.from) : double.MaxValue);
+        var max = Math.Max(events.Max(e => e.year), eras.Count > 0 ? eras.Max(e => e.to) : double.MinValue);
+        if (max <= min) max = min + 1;
+        double X(double y) => 16 + (y - min) / (max - min) * (W - 32);
+        var h = 60 + events.Count * 0;
+        <svg viewBox="0 0 @F(W) 70" class="dw-svg" role="img" aria-label="@title">
+            @for (int i = 0; i < eras.Count; i++)
+            {
+                var era = eras[i];
+                <rect x="@F(X(era.from))" y="8" width="@F(Math.Max(2, X(era.to) - X(era.from)))" height="14" rx="4"
+                      fill="@Series[i % Series.Length]" opacity="0.28"><title>@era.label (@Year(era.from) to @Year(era.to))</title></rect>
+                <g><text x="@F(X(era.from) + 4)" y="19" class="dw-small">@era.label</text></g>
+            }
+            <line x1="16" y1="42" x2="@F(W - 16)" y2="42" class="dw-axis" />
+            @for (int i = 0; i < events.Count; i++)
+            {
+                var ev = events[i];
+                var key = $"t{i}";
+                <g class="dw-hit" @onclick="() => hover = hover == key ? null : key">
+                    <circle cx="@F(X(ev.year))" cy="42" r="@(hover == key ? 7 : 5)" fill="var(--dw-s1)" stroke="var(--bg-card)" stroke-width="2" />
+                    <circle cx="@F(X(ev.year))" cy="42" r="14" fill="transparent"><title>@Year(ev.year): @ev.label</title></circle>
+                </g>
+            }
+            <text x="16" y="62" class="dw-small">@Year(min)</text>
+            <text x="@F(W - 16)" y="62" class="dw-small" text-anchor="end">@Year(max)</text>
+        </svg>
+        <ol class="dw-event-list">
+            @for (int i = 0; i < events.Count; i++)
+            {
+                var ev = events[i];
+                var key = $"t{i}";
+                <li class="@(hover == key ? "active" : "")" @onclick="() => hover = hover == key ? null : key">
+                    <strong>@Year(ev.year)</strong> @ev.label
+                    @if (hover == key && ev.detail != null) { <div class="dw-detail">@ev.detail</div> }
+                </li>
+            }
+        </ol>
+    }
+
+    // ── Slider graph: curves y = f(x, p) with one draggable parameter ─────────
+    private void RenderSliderGraph(RenderTreeBuilder __builder)
+    {
+        cfg.TryGetProperty("param", out var p);
+        var pname = Str(p, "name") ?? "p";
+        var curves = Arr(cfg, "curves").Select(c => (label: Str(c, "label") ?? "", expr: Str(c, "expr") ?? "")).ToList();
+        var xMin = Num(cfg, "xMin", 0); var xMax = Num(cfg, "xMax", 10);
+        const int n = 120;
+        var data = curves.Select(c => Enumerable.Range(0, n + 1).Select(i =>
+        {
+            var x = xMin + (xMax - xMin) * i / n;
+            return (x, y: ExprEval.Eval(c.expr, new Dictionary<string, double> { ["x"] = x, [pname] = sliderValue }));
+        }).Where(pt => double.IsFinite(pt.y)).ToList()).ToList();
+        var ys = data.SelectMany(d => d.Select(pt => pt.y)).ToList();
+        var yMin = cfg.TryGetProperty("yMin", out _) ? Num(cfg, "yMin") : (ys.Count > 0 ? Math.Min(0, ys.Min()) : 0);
+        var yMax = cfg.TryGetProperty("yMax", out _) ? Num(cfg, "yMax") : (ys.Count > 0 ? ys.Max() : 1);
+        if (yMax <= yMin) yMax = yMin + 1;
+        const double H = 200, L = 36, R = 10, T = 10, B = 28;
+        double X(double x) => L + (x - xMin) / (xMax - xMin) * (W - L - R);
+        double Y(double y) => T + (1 - (Math.Clamp(y, yMin, yMax) - yMin) / (yMax - yMin)) * (H - T - B);
+        <svg viewBox="0 0 @F(W) @F(H)" class="dw-svg" role="img" aria-label="@title">
+            <line x1="@F(L)" y1="@F(H - B)" x2="@F(W - R)" y2="@F(H - B)" class="dw-axis" />
+            <line x1="@F(L)" y1="@F(T)" x2="@F(L)" y2="@F(H - B)" class="dw-axis" />
+            <text x="@F(L)" y="@F(H - 8)" class="dw-small">@F(xMin)</text>
+            <text x="@F(W - R)" y="@F(H - 8)" class="dw-small" text-anchor="end">@F(xMax)</text>
+            <text x="@F((L + W - R) / 2)" y="@F(H - 8)" class="dw-small" text-anchor="middle">@Str(cfg, "xLabel")</text>
+            <text x="@F(L - 4)" y="@F(T + 8)" class="dw-small" text-anchor="end">@F(yMax)</text>
+            <text x="@F(L - 4)" y="@F(H - B)" class="dw-small" text-anchor="end">@F(yMin)</text>
+            <text x="@F(L + 4)" y="@F(T + 10)" class="dw-small">@Str(cfg, "yLabel")</text>
+            @for (int i = 0; i < data.Count; i++)
+            {
+                var pts = string.Join(" ", data[i].Select(pt => $"{F(X(pt.x))},{F(Y(pt.y))}"));
+                <polyline points="@pts" fill="none" stroke="@Series[i % Series.Length]" stroke-width="2" stroke-linejoin="round" />
+            }
+        </svg>
+        @if (curves.Count > 1)
+        {
+            <div class="dw-legend">
+                @for (int i = 0; i < curves.Count; i++)
+                {
+                    <span><i style="background: @Series[i % Series.Length]"></i>@curves[i].label</span>
+                }
+            </div>
+        }
+        <div class="dw-slider">
+            <label>@(Str(p, "label") ?? pname): <strong>@F(sliderValue)</strong></label>
+            <input type="range" min="@F(Num(p, "min", 0))" max="@F(Num(p, "max", 1))" step="@F(Num(p, "step", 0.1))"
+                   value="@F(sliderValue)" @oninput="e => sliderValue = double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : sliderValue" />
+        </div>
+    }
+
+    // ── Map points: equirectangular lat/lon frame with labelled points and routes ─
+    private void RenderMap(RenderTreeBuilder __builder)
+    {
+        var points = Arr(cfg, "points").Select(pt => (lat: Num(pt, "lat"), lon: Num(pt, "lon"), label: Str(pt, "label") ?? "", detail: Str(pt, "detail"))).ToList();
+        var routes = Arr(cfg, "routes").Select(r => (label: Str(r, "label") ?? "",
+            path: Arr(r, "path").Select(ll => ll.EnumerateArray().Select(v => v.GetDouble()).ToArray()).Where(a => a.Length == 2).ToList())).ToList();
+        cfg.TryGetProperty("bounds", out var b);
+        var allLat = points.Select(pt => pt.lat).Concat(routes.SelectMany(r => r.path.Select(a => a[0]))).ToList();
+        var allLon = points.Select(pt => pt.lon).Concat(routes.SelectMany(r => r.path.Select(a => a[1]))).ToList();
+        if (allLat.Count == 0) return;
+        var latMin = Num(b, "latMin", allLat.Min() - 8); var latMax = Num(b, "latMax", allLat.Max() + 8);
+        var lonMin = Num(b, "lonMin", allLon.Min() - 12); var lonMax = Num(b, "lonMax", allLon.Max() + 12);
+        var H = Math.Clamp(W * (latMax - latMin) / (lonMax - lonMin), 140, 300);
+        double X(double lon) => 8 + (lon - lonMin) / (lonMax - lonMin) * (W - 16);
+        double Y(double lat) => 8 + (latMax - lat) / (latMax - latMin) * (H - 16);
+        <svg viewBox="0 0 @F(W) @F(H)" class="dw-svg dw-map" role="img" aria-label="@title">
+            <rect x="0" y="0" width="@F(W)" height="@F(H)" rx="8" class="dw-map-bg" />
+            @for (var g = Math.Ceiling(lonMin / 15) * 15; g <= lonMax; g += 15)
+            {
+                <line x1="@F(X(g))" y1="0" x2="@F(X(g))" y2="@F(H)" class="dw-grid" />
+            }
+            @for (var g = Math.Ceiling(latMin / 15) * 15; g <= latMax; g += 15)
+            {
+                <line x1="0" y1="@F(Y(g))" x2="@F(W)" y2="@F(Y(g))" class="@(g == 0 ? "dw-axis" : "dw-grid")" />
+            }
+            @for (int i = 0; i < routes.Count; i++)
+            {
+                var pts = string.Join(" ", routes[i].path.Select(a => $"{F(X(a[1]))},{F(Y(a[0]))}"));
+                <polyline points="@pts" fill="none" stroke="@Series[(i + 1) % Series.Length]" stroke-width="2" stroke-dasharray="5 3"><title>@routes[i].label</title></polyline>
+            }
+            @for (int i = 0; i < points.Count; i++)
+            {
+                var pt = points[i];
+                var key = $"m{i}";
+                var anchor = X(pt.lon) > W * 0.7 ? "end" : "start";
+                var dx = anchor == "end" ? -7 : 7;
+                <g class="dw-hit" @onclick="() => hover = hover == key ? null : key">
+                    <circle cx="@F(X(pt.lon))" cy="@F(Y(pt.lat))" r="@(hover == key ? 6 : 4)" fill="var(--dw-s1)" stroke="var(--bg-card)" stroke-width="2" />
+                    <circle cx="@F(X(pt.lon))" cy="@F(Y(pt.lat))" r="12" fill="transparent"><title>@pt.label</title></circle>
+                    <text x="@F(X(pt.lon) + dx)" y="@F(Y(pt.lat) + 4)" class="dw-small dw-label" text-anchor="@anchor">@pt.label</text>
+                </g>
+            }
+        </svg>
+        @if (routes.Count > 0)
+        {
+            <div class="dw-legend">
+                @for (int i = 0; i < routes.Count; i++)
+                {
+                    <span><i class="dash" style="background: @Series[(i + 1) % Series.Length]"></i>@routes[i].label</span>
+                }
+            </div>
+        }
+        @if (hover != null && hover.StartsWith('m') && int.TryParse(hover[1..], out var hi) && hi < points.Count && points[hi].detail != null)
+        {
+            <div class="dw-detail"><strong>@points[hi].label:</strong> @points[hi].detail</div>
+        }
+    }
+
+    // ── Flow diagram: nodes laid out in ranks by longest path from sources ────
+    private void RenderFlow(RenderTreeBuilder __builder)
+    {
+        var nodes = Arr(cfg, "nodes").Select(nd => (id: Str(nd, "id") ?? "", label: Str(nd, "label") ?? "")).ToList();
+        var edges = Arr(cfg, "edges").Select(e => (from: Str(e, "from") ?? "", to: Str(e, "to") ?? "", label: Str(e, "label"))).ToList();
+        if (nodes.Count == 0) return;
+        var rank = nodes.ToDictionary(nd => nd.id, _ => 0);
+        for (int pass = 0; pass < nodes.Count; pass++)
+            foreach (var e in edges)
+                if (rank.ContainsKey(e.from) && rank.ContainsKey(e.to) && rank[e.to] < rank[e.from] + 1 && rank[e.from] + 1 < nodes.Count)
+                    rank[e.to] = rank[e.from] + 1;
+        var ranks = rank.Values.Max() + 1;
+        var byRank = nodes.GroupBy(nd => rank[nd.id]).ToDictionary(g => g.Key, g => g.ToList());
+        var maxPerRank = byRank.Values.Max(g => g.Count);
+        const double boxH = 34, gapY = 26;
+        var H = maxPerRank * (boxH + gapY) + 10;
+        var colW = (W - 10) / ranks;
+        var boxW = Math.Min(colW - 18, 130);
+        var pos = new Dictionary<string, (double x, double y)>();
+        foreach (var (r, list) in byRank)
+            for (int i = 0; i < list.Count; i++)
+            {
+                var offset = (H - list.Count * (boxH + gapY) + gapY) / 2;
+                pos[list[i].id] = (5 + r * colW + (colW - boxW) / 2, offset + i * (boxH + gapY));
+            }
+        <svg viewBox="0 0 @F(W) @F(H)" class="dw-svg" role="img" aria-label="@title">
+            <defs>
+                <marker id="dw-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" class="dw-arrowhead" />
+                </marker>
+            </defs>
+            @foreach (var e in edges.Where(e => pos.ContainsKey(e.from) && pos.ContainsKey(e.to)))
+            {
+                var a = pos[e.from]; var c = pos[e.to];
+                var forward = c.x > a.x;
+                var x1 = forward ? a.x + boxW : a.x + boxW / 2; var y1 = forward ? a.y + boxH / 2 : a.y + boxH;
+                var x2 = forward ? c.x : c.x + boxW / 2; var y2 = forward ? c.y + boxH / 2 : c.y;
+                <path d="M@F(x1),@F(y1) C@F((x1 + x2) / 2),@F(y1) @F((x1 + x2) / 2),@F(y2) @F(x2),@F(y2)" class="dw-edge" marker-end="url(#dw-arrow)" />
+                @if (e.label != null)
+                {
+                    <g><text x="@F((x1 + x2) / 2)" y="@F((y1 + y2) / 2 - 4)" class="dw-small" text-anchor="middle">@e.label</text></g>
+                }
+            }
+            @foreach (var nd in nodes)
+            {
+                var pp = pos[nd.id];
+                <rect x="@F(pp.x)" y="@F(pp.y)" width="@F(boxW)" height="@F(boxH)" rx="8" class="dw-node" />
+                <foreignObject x="@F(pp.x)" y="@F(pp.y)" width="@F(boxW)" height="@F(boxH)">
+                    <div class="dw-node-label">@nd.label</div>
+                </foreignObject>
+            }
+        </svg>
+    }
+
+    // ── Comparison bars: horizontal bars, one measure, one colour ─────────────
+    private void RenderBars(RenderTreeBuilder __builder)
+    {
+        var unit = Str(cfg, "unit");
+        var bars = Arr(cfg, "bars").Select(bar => (label: Str(bar, "label") ?? "", value: Num(bar, "value"), note: Str(bar, "note"))).ToList();
+        if (bars.Count == 0) return;
+        var max = Math.Max(Num(cfg, "maxValue", 0), bars.Max(bar => bar.value));
+        if (showTable)
+        {
+            <table class="dw-table"><tbody>
+                @foreach (var bar in bars) { <tr><td>@bar.label</td><td>@FormatValue(bar.value, unit)</td></tr> }
+            </tbody></table>
+        }
+        else
+        {
+            <div class="dw-bars">
+                @for (int i = 0; i < bars.Count; i++)
+                {
+                    var bar = bars[i];
+                    var key = $"b{i}";
+                    var pct = max > 0 ? Math.Max(0, bar.value) / max * 100 : 0;
+                    <div class="dw-bar-row" @onclick="() => hover = hover == key ? null : key" title="@bar.label: @FormatValue(bar.value, unit)">
+                        <span class="dw-bar-label">@bar.label</span>
+                        <span class="dw-bar-track"><span class="dw-bar-fill" style="width: @F(pct)%"></span></span>
+                        <span class="dw-bar-value">@FormatValue(bar.value, unit)</span>
+                    </div>
+                    @if (hover == key && bar.note != null) { <div class="dw-detail">@bar.note</div> }
+                }
+            </div>
+        }
+        TableToggle(__builder);
+    }
+
+    // ── Line chart: static series of (x, y) points ────────────────────────────
+    private void RenderLine(RenderTreeBuilder __builder)
+    {
+        var series = Arr(cfg, "series").Select(sr => (label: Str(sr, "label") ?? "",
+            pts: Arr(sr, "points").Select(pt => pt.EnumerateArray().Select(v => v.GetDouble()).ToArray()).Where(a => a.Length == 2).Select(a => (x: a[0], y: a[1])).ToList())).ToList();
+        var all = series.SelectMany(sr => sr.pts).ToList();
+        if (all.Count == 0) return;
+        var xMin = all.Min(pt => pt.x); var xMax = all.Max(pt => pt.x);
+        var yMin = Math.Min(0, all.Min(pt => pt.y)); var yMax = all.Max(pt => pt.y);
+        if (xMax <= xMin) xMax = xMin + 1; if (yMax <= yMin) yMax = yMin + 1;
+        const double H = 200, L = 40, R = 12, T = 10, B = 28;
+        double X(double x) => L + (x - xMin) / (xMax - xMin) * (W - L - R);
+        double Y(double y) => T + (1 - (y - yMin) / (yMax - yMin)) * (H - T - B);
+        if (showTable)
+        {
+            <table class="dw-table">
+                <thead><tr><th>@(Str(cfg, "xLabel") ?? "x")</th>@foreach (var sr in series) { <th>@sr.label</th> }</tr></thead>
+                <tbody>
+                    @foreach (var x in all.Select(pt => pt.x).Distinct().OrderBy(v => v))
+                    {
+                        <tr><td>@F(x)</td>@foreach (var sr in series) { <td>@(sr.pts.Where(pt => pt.x == x).Select(pt => F(pt.y)).FirstOrDefault() ?? "")</td> }</tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <svg viewBox="0 0 @F(W) @F(H)" class="dw-svg" role="img" aria-label="@title">
+                @for (int g = 1; g <= 3; g++)
+                {
+                    var gy = yMin + (yMax - yMin) * g / 4;
+                    <line x1="@F(L)" y1="@F(Y(gy))" x2="@F(W - R)" y2="@F(Y(gy))" class="dw-grid" />
+                    <g><text x="@F(L - 4)" y="@F(Y(gy) + 3)" class="dw-small" text-anchor="end">@F(gy)</text></g>
+                }
+                <line x1="@F(L)" y1="@F(H - B)" x2="@F(W - R)" y2="@F(H - B)" class="dw-axis" />
+                <text x="@F(L)" y="@F(H - 8)" class="dw-small">@F(xMin)</text>
+                <text x="@F(W - R)" y="@F(H - 8)" class="dw-small" text-anchor="end">@F(xMax)</text>
+                <text x="@F((L + W - R) / 2)" y="@F(H - 8)" class="dw-small" text-anchor="middle">@Str(cfg, "xLabel")</text>
+                <text x="@F(L + 4)" y="@F(T + 8)" class="dw-small">@Str(cfg, "yLabel")</text>
+                @for (int i = 0; i < series.Count; i++)
+                {
+                    var sr = series[i];
+                    <polyline points="@string.Join(" ", sr.pts.Select(pt => $"{F(X(pt.x))},{F(Y(pt.y))}"))" fill="none" stroke="@Series[i % Series.Length]" stroke-width="2" stroke-linejoin="round" />
+                    @foreach (var pt in sr.pts)
+                    {
+                        <circle cx="@F(X(pt.x))" cy="@F(Y(pt.y))" r="3" fill="@Series[i % Series.Length]"><title>@sr.label @F(pt.x): @F(pt.y)</title></circle>
+                    }
+                }
+            </svg>
+            @if (series.Count > 1)
+            {
+                <div class="dw-legend">
+                    @for (int i = 0; i < series.Count; i++)
+                    {
+                        <span><i style="background: @Series[i % Series.Length]"></i>@series[i].label</span>
+                    }
+                </div>
+            }
+        }
+        TableToggle(__builder);
+    }
+
+    // ── Cycle: steps around a circle, tap for detail ──────────────────────────
+    private void RenderCycle(RenderTreeBuilder __builder)
+    {
+        var steps = Arr(cfg, "steps").Select(st => (label: Str(st, "label") ?? "", detail: Str(st, "detail"))).ToList();
+        if (steps.Count == 0) return;
+        const double H = 250, rad = 88;
+        var cx = W / 2; var cy = H / 2;
+        <svg viewBox="0 0 @F(W) @F(H)" class="dw-svg" role="img" aria-label="@title">
+            <defs>
+                <marker id="dw-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 z" class="dw-arrowhead" />
+                </marker>
+            </defs>
+            @for (int i = 0; i < steps.Count; i++)
+            {
+                var a0 = -Math.PI / 2 + 2 * Math.PI * (i + 0.18) / steps.Count;
+                var a1 = -Math.PI / 2 + 2 * Math.PI * (i + 0.82) / steps.Count;
+                <path d="M@F(cx + rad * Math.Cos(a0)),@F(cy + rad * Math.Sin(a0)) A@F(rad),@F(rad) 0 0 1 @F(cx + rad * Math.Cos(a1)),@F(cy + rad * Math.Sin(a1))"
+                      class="dw-edge" marker-end="url(#dw-arrow-c)" />
+            }
+            @for (int i = 0; i < steps.Count; i++)
+            {
+                var a = -Math.PI / 2 + 2 * Math.PI * i / steps.Count;
+                var x = cx + rad * Math.Cos(a); var y = cy + rad * Math.Sin(a);
+                var key = $"c{i}";
+                <g class="dw-hit" @onclick="() => hover = hover == key ? null : key">
+                    <rect x="@F(x - 52)" y="@F(y - 15)" width="104" height="30" rx="15" class="dw-node @(hover == key ? "active" : "")" />
+                    <foreignObject x="@F(x - 52)" y="@F(y - 15)" width="104" height="30"><div class="dw-node-label">@steps[i].label</div></foreignObject>
+                </g>
+            }
+        </svg>
+        @if (hover != null && hover.StartsWith('c') && int.TryParse(hover[1..], out var ci) && ci < steps.Count && steps[ci].detail != null)
+        {
+            <div class="dw-detail"><strong>@steps[ci].label:</strong> @steps[ci].detail</div>
+        }
+        else
+        {
+            <div class="dw-hint">Tap a stage for detail</div>
+        }
+    }
+
+    // ── Matrix grid: labelled rows x columns (payoff matrices, 2x2 typologies) ─
+    private void RenderMatrix(RenderTreeBuilder __builder)
+    {
+        var rows = Arr(cfg, "rows").Select(r => r.GetString() ?? "").ToList();
+        var cols = Arr(cfg, "cols").Select(c => c.GetString() ?? "").ToList();
+        var cells = Arr(cfg, "cells").Select(r => r.EnumerateArray().Select(c => c.GetString() ?? "").ToList()).ToList();
+        cfg.TryGetProperty("highlight", out var hl);
+        var highlights = hl.ValueKind == JsonValueKind.Array
+            ? hl.EnumerateArray().Select(a => a.EnumerateArray().Select(v => v.GetInt32()).ToArray()).Where(a => a.Length == 2).Select(a => (a[0], a[1])).ToHashSet()
+            : new HashSet<(int, int)>();
+        <table class="dw-matrix">
+            <thead>
+                <tr>
+                    <th class="dw-corner">@Str(cfg, "rowLabel") \ @Str(cfg, "colLabel")</th>
+                    @foreach (var c in cols) { <th>@c</th> }
+                </tr>
+            </thead>
+            <tbody>
+                @for (int r = 0; r < rows.Count; r++)
+                {
+                    <tr>
+                        <th>@rows[r]</th>
+                        @for (int c = 0; c < cols.Count; c++)
+                        {
+                            var text = r < cells.Count && c < cells[r].Count ? cells[r][c] : "";
+                            <td class="@(highlights.Contains((r, c)) ? "dw-hl" : "")">@text</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    // ── Proportion bar: parts of a whole as one segmented bar ─────────────────
+    private void RenderProportion(RenderTreeBuilder __builder)
+    {
+        var unit = Str(cfg, "unit");
+        var segs = Arr(cfg, "segments").Select(sg => (label: Str(sg, "label") ?? "", value: Num(sg, "value"))).Where(sg => sg.value > 0).ToList();
+        var total = segs.Sum(sg => sg.value);
+        if (total <= 0) return;
+        <div class="dw-prop">
+            @for (int i = 0; i < segs.Count; i++)
+            {
+                var pct = segs[i].value / total * 100;
+                <span class="dw-prop-seg" style="width: @F(pct)%; background: @(i < Series.Length ? Series[i] : "var(--text-muted)")" title="@segs[i].label: @F(pct)%"></span>
+            }
+        </div>
+        <div class="dw-legend">
+            @for (int i = 0; i < segs.Count; i++)
+            {
+                <span><i style="background: @(i < Series.Length ? Series[i] : "var(--text-muted)")"></i>@segs[i].label: @FormatValue(segs[i].value, unit) (@F(segs[i].value / total * 100)%)</span>
+            }
+        </div>
+    }
+}
+
+<style>
+    .dw-root {
+        --dw-s1: #3987e5; --dw-s2: #d95926; --dw-s3: #199e70; --dw-s4: #c98500;
+        padding: 12px 14px; color: var(--text-secondary); font-size: 0.85rem;
+    }
+    .dw-title { font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .dw-caption { margin-top: 8px; line-height: 1.5; }
+    .dw-source { margin-top: 4px; font-size: 0.72rem; color: var(--text-muted); }
+    .dw-hint { margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+    .dw-svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .dw-svg text { fill: var(--text-muted); font-family: inherit; }
+    .dw-small { font-size: 10px; }
+    .dw-label { fill: var(--text-secondary) !important; font-weight: 600; }
+    .dw-axis { stroke: var(--text-muted); stroke-width: 1; }
+    .dw-grid { stroke: var(--border); stroke-width: 1; }
+    .dw-edge { stroke: var(--text-muted); stroke-width: 1.5; fill: none; }
+    .dw-arrowhead { fill: var(--text-muted); }
+    .dw-node { fill: var(--bg-surface); stroke: var(--border); stroke-width: 1.5; }
+    .dw-node.active { stroke: var(--dw-s1); stroke-width: 2; }
+    .dw-node-label {
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;
+        font-size: 10px; line-height: 1.15; color: var(--text-primary); padding: 2px 4px; box-sizing: border-box;
+    }
+    .dw-hit { cursor: pointer; }
+    .dw-map-bg { fill: var(--bg-surface); }
+    .dw-detail {
+        margin-top: 6px; padding: 8px 10px; background: var(--bg-surface); border-radius: 8px;
+        line-height: 1.45; color: var(--text-secondary);
+    }
+    .dw-event-list { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 4px; }
+    .dw-event-list li { cursor: pointer; padding: 4px 6px; border-radius: 6px; line-height: 1.4; }
+    .dw-event-list li.active { background: var(--bg-surface); }
+    .dw-event-list strong { color: var(--text-primary); margin-right: 4px; }
+    .dw-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: 0.78rem; }
+    .dw-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+    .dw-legend i.dash { height: 3px; width: 14px; vertical-align: 2px; }
+    .dw-slider { margin-top: 8px; }
+    .dw-slider input { width: 100%; accent-color: var(--primary); }
+    .dw-bars { display: flex; flex-direction: column; gap: 6px; }
+    .dw-bar-row { display: grid; grid-template-columns: minmax(70px, 34%) 1fr auto; align-items: center; gap: 8px; cursor: pointer; }
+    .dw-bar-label { color: var(--text-primary); font-size: 0.8rem; line-height: 1.2; }
+    .dw-bar-track { height: 12px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; }
+    .dw-bar-fill { display: block; height: 100%; background: var(--dw-s1); border-radius: 0 4px 4px 0; }
+    .dw-bar-value { font-variant-numeric: tabular-nums; font-size: 0.78rem; white-space: nowrap; }
+    .dw-table-toggle {
+        margin-top: 8px; background: none; border: none; padding: 0; color: var(--primary);
+        font-size: 0.75rem; cursor: pointer; font-family: inherit; text-decoration: underline;
+    }
+    .dw-table, .dw-matrix { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .dw-table td, .dw-table th, .dw-matrix td, .dw-matrix th { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
+    .dw-matrix th { color: var(--text-primary); background: var(--bg-surface); font-weight: 600; }
+    .dw-matrix td { text-align: center; }
+    .dw-matrix .dw-corner { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; }
+    .dw-matrix td.dw-hl { outline: 2px solid var(--dw-s1); outline-offset: -2px; font-weight: 700; color: var(--text-primary); }
+    .dw-prop { display: flex; height: 18px; border-radius: 4px; overflow: hidden; gap: 2px; }
+    .dw-prop-seg { display: block; height: 100%; }
+</style>

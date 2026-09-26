@@ -1,0 +1,187 @@
+# Fact-check: COMPUTER SCIENCE field
+
+- Topics covered (26, all prefixed cs-): paradigms, databases, networks, clean-code, security, side-channel, algorithms, data-structures, os, ai-ml, systems, lang-python, lang-js, lang-c, lang-cpp, lang-rust, lang-go, lang-csharp, compilers, cryptography, deep-learning, quantum-computing, networking-advanced, information-theory, theoretical-ml, geometric-dl
+- Concepts checked: 486 (162 lessons)
+- Questions checked: 1245
+- Items fixed: 138 log entries (about 190 edited strings across 44 files; some entries cover a lesson plus its matching question)
+- Items flagged (not edited): 27
+
+## Fixed
+
+- paradigms / para-q02: "was the first high-level imperative language" -> "first widely used high-level ..." (Plankalkul, Autocode, A-0 predate Fortran; prompt itself says widely-used)
+- databases / db-02-c1 math: sigma_{age>18}(pi_name(users)) -> pi_name(sigma_{age>18}(users)) (projecting first drops age, selection then undefined)
+- databases / db-01-c3 math: 1NF subset 2NF subset ... 5NF -> supset chain (every 2NF relation is 1NF, so higher forms are subsets)
+- databases / db-05-c3: "Figma, Apple Notes, Google Docs sync layers use CRDT-like algorithms" -> Google Docs uses operational transformation (OT), not CRDTs
+- networks / net-05-c1: "Asymmetric crypto (RSA, ECDSA, X25519) lets two parties agree on a secret" -> "(RSA, elliptic-curve Diffie-Hellman such as X25519)" (ECDSA is a signature scheme, not key agreement)
+- networks / net-q31: step 4 "Including authenticated, cookie-bearing responses" -> "I also want those requests to carry the user's cookies" (old step 4 was itself false, since wildcard ACAO never exposes credentialed responses, giving two errors)
+- networks / net-q12: "How many host addresses are available in a /24" -> "How many addresses are in a /24" (key 256 contradicted its own explanation and net-q16: 254 usable hosts)
+- clean-code / clean-q37: step 2 "Therefore every line is tested" -> "every line is executed by some test" (old wording already embodies the keyed step-3 error that coverage = testing, giving two answers)
+- security / sec-q24: step 3 "No two distinct passwords produce the same SHA-256" -> "No SHA-256 collision has ever been found" (collisions must exist by pigeonhole; was a second planted error)
+- security / sec-q29: "Which library, by Daniel J. Bernstein and others" -> "a portable fork of Daniel J. Bernstein's NaCl" (libsodium is by Frank Denis; NaCl is Bernstein/Lange/Schwabe)
+- security / sec-q17, sec-q24: "slow, memory-hard (bcrypt ...)" -> bcrypt slow, scrypt/Argon2 memory-hard (bcrypt is not memory-hard)
+- security / sec-03-c2: password + security question "is technically two factors" -> "looks like two factors ... not real MFA" (contradicted own definition and sec-q19)
+- security / sec-02-c2: SameSite "refuses to attach on cross-site navigation" -> "withholds on cross-site requests" (default SameSite=Lax does send cookies on top-level navigations)
+- side-channel / side-03-c3: 2015 "Stealing Keys from PCs Using a Radio" "several meters away ... $300 receiver ... works through walls" -> ~50 cm with consumer radio / cheap SDR; through-wall result was the separate 2016 ECDH attack (verified on project page)
+- side-channel / side-04-c1: Kuhn 2003 showed "LCDs, video cables, and even keyboards" -> keyboards were Vuagnoux & Pasini 2009
+- side-channel / side-05-c1 + side-q34: Meltdown "Intel-specific" -> mainly Intel (also some ARM Cortex-A75 and IBM POWER cores)
+- side-channel / side-05-c3: Hertzbleed fix was "eventually a redesign of SIKE" -> an implementation patch; SIKE then fell to Castryck-Decru mathematical attack
+- side-channel / side-q14: AES-NI "dedicated single-cycle instructions" -> "dedicated instructions" (AESENC latency is several cycles)
+- side-channel / side-q30: prompt "non-electromagnetic side-channel attack" -> "physical" (pairs include Van Eck EM phreaking)
+- algorithms / algo-03-c1: Bloch binary-search anecdote framed as "< vs <= boundary cases ... broken for nine years" -> the bug was integer overflow in (low+high)/2, reported by Bloch 2006
+- algorithms / algo-02-c2: "Timsort is what ... Java's Arrays.sort use" -> Arrays.sort for objects; primitives use dual-pivot quicksort
+- algorithms / algo-05-c2: greedy change-making "Pick the smallest available coin" -> "largest coin that fits" (the lesson's own 4+1+1 example is largest-first)
+- algorithms / algo-05-c3: "Christofides for TSP guarantees 1.5x" -> "metric TSP" (no constant-factor approximation exists for general TSP unless P=NP)
+- algorithms / algo-q23: "Both produce the same traversal order" -> "can produce ... (iterative must push neighbors in reverse)"
+- algorithms / algo-q31: step 3 "fact(5) ... get 120" -> stack overflow; step 4 rewritten (without a base case fact(5) cannot return 120; was a second planted error)
+- data-structures / ds-02-c2: listed Python's collections.deque as a circular-buffer deque -> replaced with Rust VecDeque (CPython deque is a doubly linked list of blocks)
+- data-structures / ds-03-c3: "Java's seeded hash" -> Java defends by treeifying long bins (String.hashCode is unseeded; alt-hashing removed in Java 8)
+- data-structures / ds-03-c3: "famous Java bug: hash codes for adjacent strings differing in one bit" -> early Java String.hashCode sampled only some chars of long strings; "cryptographic-quality hashing" -> keyed hashes like SipHash
+- os / os-01-c3 + os-q05: CFS presented as Linux's current default scheduler -> default 2007 until EEVDF replaced it in 6.6 (2023)
+- os / os-02-c1: "every process has a 256 TiB virtual address space" -> 48-bit x86-64 space is 256 TiB, user process gets lower 128 TiB
+- ai-ml / ai-04-c1: AlexNet "top-5 error halved compared to the runner-up" -> 15.3% vs 26.2% (a ~40% cut, not half)
+- ai-ml / ai-04-c1: convolution "bakes in translation invariance" -> equivariance (matches ai-q25 explanation)
+- ai-ml / ai-05-c1: LLMs "trained on hundreds of billions of tokens" -> trillions; frontier training "weeks on thousands of GPUs" -> weeks to months on tens of thousands (outdated scale)
+- systems / sys-q31: keyed step 6 ("If 3 nodes fail, cluster halts but stays correct") was actually true while step 5 ("exactly 3 nodes") was the real slip; rewrote step 5 to "at least 3" and step 6 to the false claim "also tolerates 3 simultaneous failures", explanation aligned
+- systems / sys-04-c2: Raft "At any time exactly one leader is elected" -> "At most one leader ... per term" (none during elections; stale leaders possible)
+- systems / sys-q27: FLP "no asynchronous consensus algorithm" -> "no deterministic ..." (randomized protocols circumvent FLP)
+- lang-go / go-q08: FindTheError had correctAnswer null and a snippet with no error (and "cannot range over an integer" has been legal since Go 1.22); rebuilt in place as a nil-map reasoning chain, key "4" (writing to a nil map panics)
+- lang-go / go-q31: explanation "Calling file.Close() (via defer) on nil panics" -> *os.File methods return ErrInvalid on nil receiver, so failure is silent (step 2 key unchanged)
+- lang-go / go-01-c2: methods on "type aliases for built-ins" -> on new defined types (Go forbids methods on aliases of built-ins; type MyInt int is a defined type)
+- lang-go / go-01-c3: "no linked lists ... in the standard library" -> container/list exists
+- lang-go / go-02-c3: "Channel direction (closed channel reads return zero values)" -> "Channel closing" (mislabelled concept; added send-on-closed panics)
+- lang-go / go-04-c2: defer cost "a small allocation per defer" -> open-coded since Go 1.14
+- lang-python / py-q08: key "3" (the `return items` line) -> "1" (the `def add(item, items=[])` line the explanation describes)
+- lang-python / py-q16: key step 4 (running the with block) -> step 5 (the false belief that __enter__ still runs); explanation now says TypeError on 3.11+ (AttributeError before) and __enter__ never runs
+- lang-python / py-01-c3: "+= on a tuple inside a list raises and mutates the list" -> "+= on a list inside a tuple" (reversed)
+- lang-python / py-04-c1: no-GIL build updated: experimental in 3.13, officially supported (still optional) in 3.14
+- lang-python / py-04-c3: "Subinterpreters (PEP 554, ongoing)" -> per-interpreter GIL since 3.12 (PEP 684), concurrent.interpreters in 3.14 (PEP 554 superseded)
+- lang-python / py-05-c1: "uv and rye" as parallel tools -> rye absorbed into uv
+- lang-js / js-01-c3: const "accidental reassignment is a compile error" -> runtime TypeError (JS has no compile step; linters catch it)
+- lang-c / c-02-c3: "defer in modern C25" -> proposed defer (ISO technical specification for a future standard); there is no C25 and defer is not in C23
+- lang-cpp / cpp-q16: explanation "use std::max which handles this" -> std::max(3, 5.0) fails identically; suggest max<double>(3, 5.0)
+- lang-cpp / cpp-05-c3: safety Profiles "proposed for C++26" -> "... but deferred to a later standard" (not in C++26)
+- lang-rust / rs-q24: key "3" (the closing "];") -> "4" (the v.clone() call the explanation describes)
+- lang-rust / rs-02-c3 + rs-q15: Polonius presented as shipped -> still in development (NLL is what shipped in 2018)
+- lang-rust / rs-05-c3: Mozilla "rewrote Firefox (Servo, Stylo)" -> Stylo and WebRender from Servo (Servo itself never shipped in Firefox)
+- lang-rust / rs-05-c3: Rust databases "(Materialize, ScyllaDB rewrite)" -> "(Materialize, TiKV)" (ScyllaDB is C++; no Rust rewrite)
+- lang-csharp / csharp-q03 + csharp-01-c1: ".NET 5 unified .NET Framework, .NET Core, Mono, and Xamarin" -> .NET 5 succeeded .NET Core; Mono/Xamarin folded in by .NET 6; .NET Framework continues separately
+- lang-csharp / csharp-02-c3: LINQ to XML / LINQ to JSON listed as expression-tree providers -> they are in-memory IEnumerable LINQ; OData/MongoDB use expression trees
+- lang-csharp / csharp-05-c1: ASP.NET Core "consistently tops TechEmpower, often beating Go and Rust" -> "ranks near the top ... sometimes beating" (Rust/C frameworks usually lead)
+- compilers / comp-02-c2: GHC listed among hand-written recursive-descent parsers -> removed; GHC uses the Happy LALR generator
+- compilers / comp-09-c2: "Crockford's classic dictum about hidden classes" -> generic V8 performance advice (misattribution; hidden classes are a V8 implementation detail postdating Crockford's advice)
+- compilers / comp-09-c3 + comp-q67: SBCL cited as precise-GC example -> .NET CoreCLR (SBCL scans the stack conservatively on x86/x86-64)
+- compilers / comp-09-c3: conservative GC "misses fewer leaks" -> needs no stack maps but can retain garbage via false pointers
+- compilers / comp-09-c3: Go listed among load-barrier moving concurrent GCs -> removed (Go's GC is non-moving with write barriers)
+- compilers / comp-09-c2 + comp-q66 + comp-q70: SpiderMonkey tiers "Baseline -> IonMonkey -> WarpMonkey" -> interpreter / Baseline / Ion with Warp front end (Warp is not a tier above Ion)
+- compilers / comp-06-c2: "Cooper, Harvey, Kennedy's O(N alpha(N)) dominator algorithm" -> near-linear bound is Lengauer-Tarjan; CHK is the simpler iterative algorithm
+- compilers / comp-06-c2 + comp-q46: loop detection "back edges in the dominator tree" -> CFG edges whose target dominates their source
+- compilers / comp-08-c2: "GCC and historic LLVM used [graph coloring]" and linear scan "historically the Java JIT" -> historic LLVM (pre-3.0) used linear scan
+- compilers / comp-01-c1: pre-C++11 ">>" in templates "required a special parser hack until C++11" -> programmers had to write "> >" until C++11 changed the rules (inverted)
+- compilers / comp-05-c3: soundness holes "early Scala's DOT calculus issues" -> Amin and Tate's 2016 Java/Scala generics holes (DOT is Scala 3's sound foundation)
+- compilers / comp-05-c2: bidirectional checking "used in Idris, Roc" -> Agda, Idris, Lean (Roc is HM-based)
+- compilers / comp-03-c2: "GHC's SYB" -> Haskell's SYB library; comp-07-c3 "GraphIte" -> Graphite
+- compilers / comp-q34: "named for its three discoverers" with answer "Hindley-Milner" -> "named for the researchers who discovered it"
+- cryptography / crypt-01-c3: "Forbes/Joux's 2006 forbidden attack" -> Joux (no Forbes); 2016 Böck et al. study described accurately (actual nonce repeats found, plus random-nonce servers at risk)
+- cryptography / crypt-01-c3: ChaCha20-Poly1305 default in "signal-protocol" -> OpenSSH (Signal messages use AES-CBC+HMAC); "Both AEADs are mandatory in TLS 1.3" -> AES-128-GCM mandatory, ChaCha20-Poly1305 recommended (RFC 8446 s9.1)
+- cryptography / crypt-04-c3: hash-based signatures "the oldest ... predating RSA" -> Lamport 1979, just after RSA (1977)
+- cryptography / crypt-04-c1: "2008 chosen-prefix Flame malware" -> 2008 rogue CA cert; Flame was 2012
+- cryptography / crypt-07-c1: ZK cave "Goldreich's" -> Quisquater and Guillou's "Ali Baba" cave (1989)
+- cryptography / crypt-08-c1: NIST PQC "2024 winners ... FN-DSA (Falcon)" -> 2024 standards were ML-KEM/ML-DSA/SLH-DSA; FN-DSA to follow as FIPS 206
+- cryptography / crypt-08-c1: quantum resource estimate updated (RSA-2048 from ~20M qubits in 2019 to <1M, Gidney 2025); hashes "halve collision resistance" -> Grover halves preimage resistance
+- cryptography / crypt-08-c2: KyberSlash cited as a Falcon timing attack -> it is an ML-KEM (Kyber) division timing leak; Kyber768 sizes "~1500 bytes" -> 1184 B pk / 1088 B ct
+- cryptography / crypt-08-c3: Classic McEliece "NIST advanced it as a fourth standard" -> NIST chose HQC as backup KEM (2025); McEliece left to ISO
+- cryptography / crypt-10-c1: Heartbleed "in roughly two-thirds of all HTTPS servers" -> ~17% (~500k) of TLS web servers; "Yahoo, GitHub, Stripe, Cloudflare ... all confirmed exploited" -> patched; confirmed exploits were CRA and Mumsnet; "Canadian Revenue Agency" -> Canada Revenue Agency; key-extraction proof was Cloudflare's challenge, not CRA; OpenSSL "one-person operation" -> one full-time developer
+- cryptography / crypt-10-c2: ROCA 1024-bit cost "~100 hours" -> ~97 CPU-days (paper)
+- cryptography / crypt-06-c3: "Apple pushing for 47 days from 2027" -> CA/B Forum 2025 ballot: 47 days by 2029; dropped Ed25519 cert recommendation (browsers don't accept Ed25519 certs)
+- cryptography / crypt-03-c3: "modern certificate authorities now default to Ed25519" -> removed; Web PKI certs use ECDSA/RSA
+- cryptography / crypt-03-c1 + crypt-q22: Smart's attack "linear time" -> polynomial time
+- cryptography / crypt-09-c3: CLKscrew listed as SGX attack -> ARM TrustZone (Plundervolt was SGX)
+- cryptography / crypt-09-c1: Lucky Thirteen "verify CBC-MAC" -> HMAC check on CBC-mode records
+- cryptography / crypt-05-c1: PBKDF2 used in "TLS PSK" -> removed (WPA2, LUKS1, password managers)
+- cryptography / crypt-q09: 65537 "fourth Fermat prime" -> F4, the largest known Fermat prime (it is the fifth: 3, 5, 17, 257, 65537)
+- cryptography / crypt-q40: "~65,000 users will share salts" -> collisions become likely around 65,000 users (birthday bound)
+- cryptography / crypt-q67: "Bernstein (2005) ... AES-256 in under a million queries" -> full AES key recovery from OpenSSL by timing (his target was AES-128 and needed far more samples)
+- deep-learning / dl-10-c1: LLaMA 2 70B KV cache at 4k "roughly 20GB" -> ~1.3 GB FP16 with GQA (10.7 GB without)
+- deep-learning / dl-10-c2: "running a 70B model on a consumer GPU is now routine" contradicted dl-q80 (35 GB INT4 > 24 GB) -> one or two consumer GPUs or CPU offload; AWQ "keeps salient 1% in higher precision" -> protects them by scaling
+- deep-learning / dl-03-c2: "Every modern LLM ... GPT-4, Gemini ... uses AdamW" -> LLMs with published recipes; PaLM used Adafactor (GPT-4/Gemini recipes unpublished)
+- deep-learning / dl-03-c3: warmup-cosine "used in BERT, GPT, T5, LLaMA, Chinchilla, PaLM" -> GPT-3, LLaMA, Chinchilla; BERT linear decay, T5/PaLM inverse-sqrt
+- deep-learning / dl-08-c1: GLaM "GPT-3 quality at 1/3 the inference compute" -> ~half inference FLOPs, 1/3 training energy; removed unsupported "Claude 3 Opus is an MoE" belief
+- deep-learning / dl-06-c3: sinusoidal encodings "learned to be added" -> fixed, not learned
+- deep-learning / dl-04-c2: SwiGLU 2/3 scaling "(so two matmuls instead of one)" -> compensates for the extra third matrix
+- deep-learning / dl-01-c1: reverse mode computes "Jacobian-vector products" -> vector-Jacobian products
+- deep-learning / dl-09-c2: DPO "No reward hacking" -> no separate reward model to hack, can still over-optimize
+- quantum-computing / qc-06-c2: "At p=1, QAOA on Max-Cut ... matches the Goemans-Williamson ratio in some regimes" -> p=1 guarantees ~0.692 on 3-regular graphs, well below GW's 0.878
+- quantum-computing / qc-09-c1: "Quantinuum (legacy)" listed among superconducting transmon users -> removed (Quantinuum/Honeywell has always been trapped-ion)
+- quantum-computing / qc-q56: FindTheError step 2 "encode 4 electrons in 4 qubits" (H2 has 2 electrons; second planted error) -> "4 spin-orbitals"
+- quantum-computing / qc-05-c1, qc-05-c3, qc-08-c3, qc-q40, qc-q64, qc-q80: RSA-2048 Shor cost "20M / 10^7-10^8 qubits" presented as current -> Gidney-Ekerå 2021 (2e7, 8 h) plus Gidney 2025 (<1M qubits, <1 week)
+- quantum-computing / qc-08-c2: Willow "first experiment to show logical error decreasing with distance" -> first exponential suppression (Google 2023 had shown a marginal d3->d5 gain); math label "(rotated)" on [[d^2+(d-1)^2,1,d]] -> planar (rotated is d^2)
+- quantum-computing / qc-06-c1: "water (IBM 2017)" -> IBM 2017 did LiH/BeH2; water VQE was IonQ 2020
+- quantum-computing / qc-02-c3: Micius teleportation "1200 km" -> up to 1,400 km (1,200 km was the entanglement-distribution result)
+- quantum-computing / qc-q77: PQC "finalists were announced 2022" -> finalists 2020, selections 2022
+- networking-advanced / net-05-c3: DNSSEC "Around 30-40% of TLDs are signed" -> about 90% of TLDs (second-level adoption is the low part)
+- networking-advanced / net-09-c2: "Multipath QUIC, RFC 9440" -> still an IETF draft (RFC 9440 is the Client-Cert HTTP header); MASQUE RFCs clarified (9298 UDP, 9484 IP)
+- networking-advanced / net-04-c3 + net-q29: "GUE (Generic UDP Encapsulation, RFC 8086)" -> GUE is a draft; RFC 8086 is GRE-in-UDP; prompt "What standard" -> "What encapsulation scheme"; accepted GRE-in-UDP/VXLAN
+- networking-advanced / net-q36: Kaminsky attack "Cache poisoning via birthday attack" -> "by racing forged replies" (option + key); explanation describes the random-subdomain race
+- networking-advanced / net-q72: step 4 "HTTP/3's first-byte latency is 1 RTT minimum" (itself false given 0-RTT; second error) -> "A brand-new HTTP/3 connection's first-byte latency is 1 RTT"
+- networking-advanced / net-05-c1: Dyn 2016 "single recursive provider" -> authoritative DNS provider
+- networking-advanced / net-04-c1: "IPv6 (RFC 8200) was finalized in 1998" -> RFC 2460 (1998), now RFC 8200 (2017); net-02-c3 SCTP "RFC 4960 ... from 2000" -> RFC 2960 (2000)
+- networking-advanced / net-09-c3 + net-q71: SRv6 "Iliad/Free Mobile in France" -> Iliad's Italian network
+- networking-advanced / net-01-c2: CUBIC RFC 8312 noted as updated by RFC 9438 (2023)
+- information-theory / info-05-c3: BCH "They also encode the message itself when low error correction levels are selected" (QR data is always Reed-Solomon) -> removed; "biggest deployment in QR codes" -> NAND flash plus QR format/version info
+- information-theory / info-04-c3 + info-q30: "Doubling SNR adds one bit per channel use" contradicted the lesson's own C = 1/2 log2(1+S/N) per use -> ~1 bit/s/Hz (half a bit per real use), at high SNR
+- information-theory / info-05-c1: perfect codes "achieve the maximum possible distance" -> meet the sphere-packing bound with equality
+- information-theory / info-07-c2: residual VQ "used in ... Stable Audio" -> Descript Audio Codec (Stable Audio uses a continuous VAE latent)
+- information-theory / info-10-c3: Census 2020 DP "for all published statistics" -> main statistics, with invariants held exact
+- information-theory / info-09-c3: "Tishby and Schwartz-Ziv" -> Shwartz-Ziv (spelling)
+- theoretical-ml / tml-03-c1 + tml-q21: NNGP attributed to "Lee, Xiao, Schoenholz, Bahri, Sohl-Dickstein, Pennington (2019)" (that is the linearized-dynamics paper) -> Neal 1996; Lee et al. and Matthews et al. 2018
+- theoretical-ml / tml-q56: step 2 "exponents alpha ~0.34 are stable across modalities" (a second false claim) -> "power-law fits describe many modalities well"; tml-07-c1 + tml-q49 "exponents remarkably stable across architectures/modalities" -> Chinchilla-specific values, form is stable
+- theoretical-ml / tml-02-c1 + tml-q09: Zhang et al. "standard ResNet ~92%" -> small Inception, ~86-89%
+- theoretical-ml / tml-06-c1: GD on matrix factorization "finds the minimum nuclear-norm solution" stated as fact -> Gunasekar 2017 conjecture, later refuted in general
+- theoretical-ml / tml-06-c2: linear scaling rule "He et al. 2017" -> Goyal et al. 2017
+- theoretical-ml / tml-q27: 2018 mean-field group "Mei-Misiakiewicz-Montanari" -> Mei-Montanari-Nguyen (MMM is the 2019 follow-up)
+- geometric-dl / gdl-06-c2, gdl-06-c3, gdl-q47: "early variants without [IPA] failed to train" / ablations showed non-equivariant models "train slower, generalize worse" -> AF2's "No IPA (direct projection)" ablation trained but lost accuracy; removed claim that AF3 "keeps the equivariant skeleton" (it relaxed it, contradicting gdl-07-c2)
+- geometric-dl / gdl-07-c2: AF3 paper said to state non-equivariance "works only because of massive scale; smaller models underperform" -> reframed as common interpretation (not in the paper)
+- geometric-dl / gdl-07-c3: "exact E(3) equivariance is non-negotiable ... no way for a non-equivariant network" -> most leading models are equivariant, but Orb (non-equivariant, augmentation) is competitive; MACE-MP-0 "matched or beat system-specific models for most compounds" -> qualitatively sound across wide range; "Allegro-OFF ... UMA (2024)" -> SevenNet, Orb, UMA (2025)
+- geometric-dl / gdl-07-c1 + gdl-q56: RFdiffusion "a frozen RoseTTAFold trunk fine-tuned" (self-contradictory; it was fine-tuned) -> pretrained RoseTTAFold fine-tuned
+- geometric-dl / gdl-02-c1 + gdl-q11: Maschke's theorem stated for compact groups -> Maschke is for finite groups, extended to compact via Haar averaging
+- geometric-dl / gdl-03-c3 + gdl-q23: NequIP beats "augmentation-trained invariant baselines" (invariant models need no augmentation) -> invariant baselines like SchNet
+- geometric-dl / gdl-q13: SE(3)-Transformer listed as built on e3nn -> replaced with Allegro (SE(3)-Transformer had its own implementation)
+
+## Flagged (not edited)
+
+- paradigms / para-q24: FindTheError keyed step 5, but step 4 ("real programs cannot be written purely") is the step the explanation actually refutes (monads let effectful programs stay pure); two defensible answers
+- paradigms / para-05-c2: Erlang "nine nines" uptime is Armstrong's AXD301 claim, widely disputed as a measured figure
+- networks / net-02-c1: "IPv6 adoption still under 50% globally as of the 2020s" is near the line (Google measurements hover ~45-50% in 2025-26); may need rewording soon
+- clean-code / clean-q16: keyed step 3, but step 1 ("one parameter is best") and step 6 ("satisfies single responsibility") are also defensible errors
+- clean-code / clean-05-c1 math: "cost of bug proportional to e^{kt}" presents the contested defect-cost-escalation curve (Boehm; weak underlying data) as a law
+- side-channel / side-04-c2: "read CPU activity from the whine of overhead-mounted drone motors picking up induced vibration" could not be matched to any known paper; likely fabricated, recommend deleting clause
+- side-channel / side-02-c2: Yarom-Falkner 2014 recovered ~97% of GnuPG RSA exponent bits from one decryption; "full key in minutes" slightly overstated
+- lang-go / go-q16: claims goroutine is "leaked" when the program exits; exiting reclaims everything, leak only matters in long-running code
+- lang-python / py-q24: keyed step 1 (creating the generator) but step 4 (reusing the exhausted generator) is equally defensible as "the error"
+- lang-js / js-04-c3: "Vite uses esbuild for dev and Rollup for production" is being superseded by Rolldown (default in Vite 8); verify current release before editing
+- lang-js / js-q24: keyed step 3 (the for loop) but the sequential cost comes from step 4's await inside it; either defensible
+- lang-rust / rs-q08: keyed step 2 (the move) while the compile error is reported at step 3; both defensible
+- lang-csharp / csharp-q08: keyed step 4 (passing by value) but the false claim is step 5 ("I assume this is fast"), and step 2 (struct = stack) is itself a misconception
+- lang-csharp / csharp-05-c3: "Many production .NET mobile apps use Blazor WebAssembly + Capacitor" is unsupported; niche pattern
+- compilers / comp-q40: explanation itself says steps 5 and 6 are both wrong (two defensible keys); also MLsub (Dolan 2017) shows principal types can survive subtyping
+- compilers / comp-q23: Roslyn uses red-green trees rather than flat ID-indexed arrays
+- compilers / comp-q70: Wasmtime also ships the Winch baseline compiler, so "single-tier" is dated
+- deep-learning / dl-q56: keyed step 5, but step 3 ("this is the best total-cost configuration") is the first false claim
+- quantum-computing / qc-06-c3 + qc-q44: barren-plateau gradient variance given as ~1/2^(2n); usual statement is O(2^-n) (exponential either way)
+- quantum-computing / qc-03-c3 + qc-q70: IBM Heron "2024, 133 qubits" mixes Heron r1 (133q, Dec 2023) and r2 (156q, 2024)
+- networking-advanced / net-02-c1: "By 2024 well over 30% of web traffic ... runs HTTP/3" looks high (Cloudflare Radar ~20-30% of requests)
+- networking-advanced: lesson/concept ids net-01..net-09 collide with cs-networks' net-01..net-05 (and question ids net-q01..); may break any global id lookup
+- information-theory / info-04-c3: Voyager 1 received power "about 10^-20 W" unverified (figures quoted range ~1e-16 to 1e-19 W)
+- information-theory / info-09-c1: "GPT-4-class models achieve perplexity on the order of 10" on English text is loose; per-token perplexities for frontier models on web text are typically lower
+- geometric-dl / gdl-03-c1 + gdl-03-c3: "G-CNNs match augmented CNNs with 4-8x fewer parameters" / "several-point gain with a fraction of the parameters" not traceable to Cohen-Welling 2016 (they held parameter count roughly fixed)
+- geometric-dl / gdl-01-c3: "translation augmentation barely helps" for CNNs overstated (pooling/stride aliasing; crop augmentation materially helps)
+- geometric-dl / gdl-q55: "strict-equivariance models outperform augmentation-based alternatives by orders of magnitude" is not established
+
+## Systemic notes
+
+- Weakest topics are the advanced/research ones, as in other fields: cryptography (20 fix entries), compilers (14), networking-advanced (9), deep-learning (9), quantum-computing (8), geometric-dl (7), against 1 to 3 for most introductory topics. Typical failures: misattributed papers and people (Goldreich's cave, Crockford's hidden-class advice, NNGP credited to the wrong paper, KyberSlash filed under Falcon, "Forbes/Joux"), wrong RFC numbers (RFC 9440 for Multipath QUIC, RFC 8086 for GUE), and "current state" claims that were stale or overstated (Linux CFS, NIST PQC 2024 "winners", 20M-qubit RSA-2048 estimate, Classic McEliece "standardized", Heartbleed "two-thirds of servers").
+- No fabricated prize or product was found, but a few invented-looking specifics were: an acoustic side channel "from drone motors" (flagged), "Allegro-OFF" (replaced), "C25 defer" (fixed), and claims that ablations showed non-equivariant AlphaFold variants "failed to train" (fixed; the actual AF2 ablation trained but lost accuracy).
+- FindTheError items are the biggest structural hotspot: 11 had a second planted false step or a mis-keyed index (py-q08 and rs-q24 keyed the wrong line of code; sys-q31 keyed a true step; algo-q31, sec-q24, net-q31, net-q72, qc-q56, tml-q56, clean-q37 each contained a second false step). go-q08 had a null key and a snippet with no error (rebuilt). Several more are flagged as having two defensible answers; worth a pass that forbids more than one false step per item.
+- Internal contradictions between a lesson and its own questions recurred (net-q12 vs net-q16 on /24 hosts; 70B-on-consumer-GPU lesson vs dl-q80; AF3 "keeps equivariance" vs the next lesson; info-04-c3 SNR vs its own formula). A cross-check of numbers between lesson text and questions would catch these cheaply.
+- Id collision: cs-networking-advanced reuses net-01..net-09 lesson/concept ids and net-q01.. question ids that cs-networks also uses. Not edited (schema change), but any global id lookup could mix them up.
+- cs-data-structures/mastery-questions.json already showed as modified before this pass; it was not touched here.

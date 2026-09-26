@@ -1,6 +1,6 @@
 [
   {
-    "id": "net-01",
+    "id": "neta-01",
     "topicId": "cs-networking-advanced",
     "order": 1,
     "title": "TCP Congestion Control: Reno to CUBIC",
@@ -8,7 +8,7 @@
     "xpReward": 100,
     "concepts": [
       {
-        "id": "net-01-c1",
+        "id": "neta-01-c1",
         "title": "AIMD and the Reno Family",
         "contentHtml": "<p><strong>TCP congestion control</strong> exists because the network has no built-in admission control — endpoints must voluntarily back off when the path is full. Van Jacobson's 1988 algorithm (now called <strong>TCP Tahoe/Reno</strong>, RFC 5681) introduced the cornerstone idea: <strong>AIMD</strong>, additive-increase / multiplicative-decrease. On each RTT without loss, grow the congestion window <code>cwnd</code> by one MSS. On a loss, halve it.</p><p>AIMD has a beautiful property: when many flows share a bottleneck, they converge to a fair allocation. Chiu and Jain proved this geometrically in 1989 — additive growth and multiplicative shrink are the only linear control law that's both stable and fair.</p><p><strong>NewReno</strong> (RFC 6582) refined Reno's fast-recovery to handle multiple losses in one window without collapsing to slow start. For most of the 1990s and 2000s, NewReno was the default on every Unix kernel. Its weakness: on long fat networks (high BDP), the per-RTT linear growth is glacial — recovering from one loss on a 100 ms, 10 Gbps link takes hours.</p>",
         "mathExpressions": ["\\text{AIMD: } cwnd \\leftarrow cwnd + \\frac{MSS^2}{cwnd} \\text{ per ACK}, \\quad cwnd \\leftarrow cwnd / 2 \\text{ on loss}"],
@@ -16,15 +16,15 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-01-c2",
+        "id": "neta-01-c2",
         "title": "CUBIC: Filling Long Fat Pipes",
-        "contentHtml": "<p>Linux's default since 2006 is <strong>CUBIC</strong> (RFC 8312). The motivation: NewReno's linear cwnd growth is far too cautious on modern high-BDP links. CUBIC replaces the linear function with a cubic one centered on the cwnd value at the last loss event, <code>W_max</code>.</p><p>The cubic curve has three regions: a concave climb back toward W_max (cautious near the previous loss point), a flat plateau at W_max (probing), and a convex region above W_max (aggressive search for new bandwidth). Crucially, growth depends on <strong>elapsed time</strong> since the last loss, not RTT — making CUBIC <strong>RTT-fair</strong>: a long-RTT flow doesn't get starved by short-RTT competitors sharing the bottleneck.</p><p>CUBIC dominates the public internet because it ramps quickly, recovers gracefully, and behaves reasonably alongside legacy Reno flows. Its weakness, like all loss-based controllers: it interprets buffer overflow as the only congestion signal, so it happily fills router buffers (causing <strong>bufferbloat</strong>) until packets drop.</p>",
+        "contentHtml": "<p>Linux's default since 2006 is <strong>CUBIC</strong> (RFC 8312, updated as RFC 9438 in 2023). The motivation: NewReno's linear cwnd growth is far too cautious on modern high-BDP links. CUBIC replaces the linear function with a cubic one centered on the cwnd value at the last loss event, <code>W_max</code>.</p><p>The cubic curve has three regions: a concave climb back toward W_max (cautious near the previous loss point), a flat plateau at W_max (probing), and a convex region above W_max (aggressive search for new bandwidth). Crucially, growth depends on <strong>elapsed time</strong> since the last loss, not RTT — making CUBIC <strong>RTT-fair</strong>: a long-RTT flow doesn't get starved by short-RTT competitors sharing the bottleneck.</p><p>CUBIC dominates the public internet because it ramps quickly, recovers gracefully, and behaves reasonably alongside legacy Reno flows. Its weakness, like all loss-based controllers: it interprets buffer overflow as the only congestion signal, so it happily fills router buffers (causing <strong>bufferbloat</strong>) until packets drop.</p>",
         "mathExpressions": ["W(t) = C(t - K)^3 + W_{max}, \\quad K = \\sqrt[3]{W_{max} \\cdot \\beta / C}"],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
-        "id": "net-01-c3",
+        "id": "neta-01-c3",
         "title": "BBR: Modeling the Bottleneck",
         "contentHtml": "<p>Google's <strong>BBR</strong> (Bottleneck Bandwidth and Round-trip propagation time, 2016) abandoned loss as a signal entirely. BBR continuously estimates two things: the <strong>bottleneck bandwidth</strong> (max delivery rate observed) and the <strong>minimum RTT</strong> (when the queue is empty). Their product is the <strong>bandwidth-delay product</strong>, the ideal in-flight bytes for full utilization without queue buildup.</p><p>BBR paces packets at the estimated bottleneck rate and keeps in-flight data near BDP — riding right at the knee of the throughput-vs-delay curve. It tolerates random loss (matters on wireless and lossy paths) and refuses to fill buffers. Google deployed it on YouTube and reported throughput improvements of 4-14% globally and dramatically lower latency.</p><p>BBRv1 had real fairness problems against CUBIC, sometimes starving competing flows. <strong>BBRv2</strong> (2019) and <strong>BBRv3</strong> (2023) added explicit response to loss and ECN signals, dramatically improving co-existence. The deeper lesson: there is no \"correct\" congestion controller — every choice trades throughput, fairness, latency, and deployability differently.</p>",
         "mathExpressions": ["BDP = \\text{BtlBw} \\times RTprop, \\quad \\text{in-flight} \\approx BDP"],
@@ -32,11 +32,11 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q01", "net-q02", "net-q03", "net-q04", "net-q05", "net-q06", "net-q07", "net-q08"],
+    "quizQuestionIds": ["neta-q01", "neta-q02", "neta-q03", "neta-q04", "neta-q05", "neta-q06", "neta-q07", "neta-q08"],
     "puzzleId": null
   },
   {
-    "id": "net-02",
+    "id": "neta-02",
     "topicId": "cs-networking-advanced",
     "order": 2,
     "title": "QUIC and HTTP/3",
@@ -44,7 +44,7 @@
     "xpReward": 110,
     "concepts": [
       {
-        "id": "net-02-c1",
+        "id": "neta-02-c1",
         "title": "Why Replace TCP at All",
         "contentHtml": "<p>TCP has three structural problems the modern web cares about. First, <strong>handshake latency</strong>: TCP plus TLS 1.2 needs three round trips before the first byte of data, brutal on mobile networks. Second, <strong>head-of-line blocking</strong>: a single lost packet on a multiplexed connection (HTTP/2) stalls every stream until retransmission completes. Third, <strong>kernel-bound evolution</strong>: TCP changes ship inside operating systems and take a decade to reach users.</p><p><strong>QUIC</strong> (RFC 9000, 2021) addresses all three. It runs over UDP — so it ships in user space, deployable as a library update. It integrates TLS 1.3 into the handshake, achieving <strong>1-RTT</strong> first contact and <strong>0-RTT</strong> for repeat connections. It multiplexes independent streams natively, so packet loss only stalls the affected stream.</p><p>QUIC is the transport for <strong>HTTP/3</strong> (RFC 9114). Originally a Google experiment (2012), it was standardized at the IETF after years of internet-scale deployment. By 2024, well over 30% of all web traffic from major CDNs and Google properties runs HTTP/3.</p>",
         "mathExpressions": [],
@@ -52,7 +52,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-02-c2",
+        "id": "neta-02-c2",
         "title": "Streams, Connection IDs, and 0-RTT",
         "contentHtml": "<p>A QUIC connection carries many independent <strong>streams</strong>, each with its own flow control. Lost packets only block the stream they belong to — fixing HTTP/2's HoL problem. Streams can be unidirectional or bidirectional, and either side can open them.</p><p>QUIC identifies connections with <strong>connection IDs</strong>, not the 4-tuple (src IP, src port, dst IP, dst port). This decouples connection identity from network path, enabling <strong>connection migration</strong>: switch from cellular to Wi-Fi mid-download without losing state. Critical for mobile.</p><p><strong>0-RTT</strong> resumption lets a returning client send data in the very first packet, using a pre-shared key from the previous session. The cost: replay attacks. A captured 0-RTT packet can be replayed to the server, so application-level idempotency or anti-replay caches are required. Cloudflare and Google both deploy 0-RTT widely but restrict it to safe HTTP methods (GET) and add server-side replay detection. The latency win is enormous on mobile — sub-100ms first byte instead of 300+ ms.</p>",
         "mathExpressions": [],
@@ -60,19 +60,19 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-02-c3",
+        "id": "neta-02-c3",
         "title": "Ossification and the UDP Escape",
-        "contentHtml": "<p>One of the deepest reasons QUIC runs over UDP is <strong>protocol ossification</strong>. Middleboxes — NATs, firewalls, load balancers, carrier-grade NAT — inspect TCP headers, strip unknown options, and reject packets that don't match expected patterns. SCTP (RFC 4960), a perfectly good multipath transport from 2000, was effectively dead-on-arrival because middleboxes silently dropped it.</p><p>By using UDP as a substrate and encrypting almost the entire packet (including most of the header), QUIC presents middleboxes with an opaque blob. They can't ossify what they can't see. Only the connection ID and a few bits remain visible — the protocol designers explicitly use <strong>greasing</strong> (random unused values) to keep middleboxes honest.</p><p>The cost: UDP processing is slower than TCP in many kernels, and CPU usage is higher. Modern QUIC stacks (msquic, quiche, ngtcp2, mvfst) lean heavily on <code>UDP GSO/GRO</code>, sendmmsg batching, and increasingly on kernel-bypass paths to close the gap. Linux kernel 5.x added significant UDP fast paths specifically because QUIC made UDP performance suddenly matter.</p>",
+        "contentHtml": "<p>One of the deepest reasons QUIC runs over UDP is <strong>protocol ossification</strong>. Middleboxes — NATs, firewalls, load balancers, carrier-grade NAT — inspect TCP headers, strip unknown options, and reject packets that don't match expected patterns. SCTP (RFC 2960, 2000; now RFC 9260), a perfectly good multipath transport, was effectively dead-on-arrival because middleboxes silently dropped it.</p><p>By using UDP as a substrate and encrypting almost the entire packet (including most of the header), QUIC presents middleboxes with an opaque blob. They can't ossify what they can't see. Only the connection ID and a few bits remain visible — the protocol designers explicitly use <strong>greasing</strong> (random unused values) to keep middleboxes honest.</p><p>The cost: UDP processing is slower than TCP in many kernels, and CPU usage is higher. Modern QUIC stacks (msquic, quiche, ngtcp2, mvfst) lean heavily on <code>UDP GSO/GRO</code>, sendmmsg batching, and increasingly on kernel-bypass paths to close the gap. Linux kernel 5.x added significant UDP fast paths specifically because QUIC made UDP performance suddenly matter.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q09", "net-q10", "net-q11", "net-q12", "net-q13", "net-q14", "net-q15", "net-q16"],
+    "quizQuestionIds": ["neta-q09", "neta-q10", "neta-q11", "neta-q12", "neta-q13", "neta-q14", "neta-q15", "neta-q16"],
     "puzzleId": null
   },
   {
-    "id": "net-03",
+    "id": "neta-03",
     "topicId": "cs-networking-advanced",
     "order": 3,
     "title": "BGP and Inter-Domain Routing",
@@ -80,7 +80,7 @@
     "xpReward": 120,
     "concepts": [
       {
-        "id": "net-03-c1",
+        "id": "neta-03-c1",
         "title": "BGP Basics: Path Vector Across ASes",
         "contentHtml": "<p>The internet isn't one network — it's a mesh of around 75,000 <strong>Autonomous Systems</strong> (AS), each independently administered. <strong>BGP-4</strong> (RFC 4271) is the protocol they use to exchange reachability. Unlike interior protocols (OSPF, IS-IS), BGP is a <strong>path-vector protocol</strong>: each route advertisement carries the full sequence of ASes it has traversed.</p><p>This serves two purposes. The AS path enables <strong>loop detection</strong> — an AS rejects any route that already contains its own number. It also encodes <strong>policy</strong>: shorter AS paths are preferred by default, but operators routinely override this with local preference, MED, and community tags reflecting commercial relationships (customer, peer, transit).</p><p>BGP doesn't optimize for shortest distance, latency, or bandwidth. It optimizes for <strong>contract</strong>. A packet from your laptop in Berlin to a server in Munich might traverse Frankfurt, London, and Amsterdam, because that's what the money flow dictates. BGP is essentially distributed business policy expressed as routing.</p>",
         "mathExpressions": [],
@@ -88,7 +88,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-03-c2",
+        "id": "neta-03-c2",
         "title": "Famous BGP Outages",
         "contentHtml": "<p>BGP's trust model is appallingly weak: any AS can announce any prefix, and neighbors mostly believe them. The history of internet outages is largely a history of BGP misconfigurations propagating globally in seconds.</p><p><strong>Pakistan vs YouTube, 2008</strong>: Pakistan Telecom, ordered to block YouTube domestically, originated a more-specific BGP announcement for YouTube's prefix. PCCW (their upstream) accepted and re-advertised it globally. Within minutes, most of the world's YouTube traffic was being black-holed in Pakistan. Restoration took two hours.</p><p><strong>Facebook, October 4 2021</strong>: A faulty configuration change withdrew the BGP advertisements for Facebook's authoritative DNS servers. Facebook, Instagram, WhatsApp, and Oculus disappeared from the internet for six hours. Engineers couldn't even badge into the buildings to fix it because access systems depended on the same DNS.</p><p>The fix is <strong>RPKI</strong> (Resource Public Key Infrastructure, RFC 6480) plus <strong>ROV</strong> (Route Origin Validation): cryptographic certificates assert which ASes are authorized to originate which prefixes. Adoption hit roughly 50% of routes by 2024 and continues climbing. Pakistan-vs-YouTube is now technically preventable — if everyone deploys RPKI.</p>",
         "mathExpressions": [],
@@ -96,7 +96,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-03-c3",
+        "id": "neta-03-c3",
         "title": "Route Reflectors and IBGP Scaling",
         "contentHtml": "<p>Inside a large AS, every BGP-speaking router must learn every external route. Naive <strong>IBGP</strong> (internal BGP) requires a <strong>full mesh</strong>: n(n-1)/2 sessions for n routers. A tier-1 ISP with hundreds of routers cannot maintain that many sessions reliably.</p><p>Two scaling solutions. <strong>Route reflectors</strong> (RFC 4456) designate certain routers as hubs that re-advertise IBGP routes — eliminating the full-mesh requirement. <strong>Confederations</strong> (RFC 5065) split the AS into sub-ASes that exchange via EBGP-like sessions internally. Most large networks use route reflectors; confederations are now rare.</p><p>Modern operational practice layers in <strong>BGP communities</strong> for traffic engineering, <strong>flowspec</strong> for DDoS mitigation (RFC 8955), and <strong>BMP</strong> (RFC 7854) for monitoring. Software like BIRD, FRRouting, GoBGP, and Juniper/Cisco RP processes all interoperate around the same wire format. The protocol from 1994 still carries the entire internet; the operational layers have evolved enormously.</p>",
         "mathExpressions": ["\\text{IBGP full-mesh sessions} = \\binom{n}{2} = \\frac{n(n-1)}{2}"],
@@ -104,11 +104,11 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q17", "net-q18", "net-q19", "net-q20", "net-q21", "net-q22", "net-q23", "net-q24"],
+    "quizQuestionIds": ["neta-q17", "neta-q18", "neta-q19", "neta-q20", "neta-q21", "neta-q22", "neta-q23", "neta-q24"],
     "puzzleId": null
   },
   {
-    "id": "net-04",
+    "id": "neta-04",
     "topicId": "cs-networking-advanced",
     "order": 4,
     "title": "IPv6, Anycast, and ECMP",
@@ -116,15 +116,15 @@
     "xpReward": 120,
     "concepts": [
       {
-        "id": "net-04-c1",
+        "id": "neta-04-c1",
         "title": "IPv6 in Practice",
-        "contentHtml": "<p><strong>IPv6</strong> (RFC 8200) was finalized in 1998 and finally exceeded 40% global adoption by 2024 (Google's measurement). The headline change is the address space: 128 bits instead of 32, ending the IPv4 exhaustion crisis that drove carrier-grade NAT and address brokerage. But the more interesting changes are operational.</p><p>The IPv6 header is fixed-size (40 bytes) with no checksum and no fragmentation by intermediate routers — pushing complexity to endpoints and simplifying the fast path. <strong>SLAAC</strong> (RFC 4862) lets hosts auto-configure addresses without DHCP. <strong>Neighbor Discovery</strong> (RFC 4861) replaces ARP. <strong>Privacy extensions</strong> (RFC 8981) randomize the host portion to prevent address-based tracking.</p><p>The deployment story is messy. Mobile carriers (T-Mobile, Jio) went IPv6-only with <strong>NAT64/DNS64</strong> for legacy IPv4 reachability. Enterprise networks lag dramatically. CDNs and hyperscalers run dual-stack. The internet won't be IPv6-only for decades, but the underlying assumption — that you can get an enormous number of globally routable addresses — has unlocked architectures (per-container IPs, per-pod IPs in Kubernetes) that were impossible under IPv4.</p>",
+        "contentHtml": "<p><strong>IPv6</strong> (first specified as RFC 2460 in 1998, now RFC 8200) and finally exceeded 40% global adoption by 2024 (Google's measurement). The headline change is the address space: 128 bits instead of 32, ending the IPv4 exhaustion crisis that drove carrier-grade NAT and address brokerage. But the more interesting changes are operational.</p><p>The IPv6 header is fixed-size (40 bytes) with no checksum and no fragmentation by intermediate routers — pushing complexity to endpoints and simplifying the fast path. <strong>SLAAC</strong> (RFC 4862) lets hosts auto-configure addresses without DHCP. <strong>Neighbor Discovery</strong> (RFC 4861) replaces ARP. <strong>Privacy extensions</strong> (RFC 8981) randomize the host portion to prevent address-based tracking.</p><p>The deployment story is messy. Mobile carriers (T-Mobile, Jio) went IPv6-only with <strong>NAT64/DNS64</strong> for legacy IPv4 reachability. Enterprise networks lag dramatically. CDNs and hyperscalers run dual-stack. The internet won't be IPv6-only for decades, but the underlying assumption — that you can get an enormous number of globally routable addresses — has unlocked architectures (per-container IPs, per-pod IPs in Kubernetes) that were impossible under IPv4.</p>",
         "mathExpressions": ["2^{128} \\approx 3.4 \\times 10^{38} \\quad \\text{(IPv6 address space)}"],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
-        "id": "net-04-c2",
+        "id": "neta-04-c2",
         "title": "Anycast: One IP, Many Servers",
         "contentHtml": "<p><strong>Anycast</strong> announces the same IP prefix from many physical locations simultaneously. BGP's path selection routes each user to the topologically nearest instance. From the user's perspective, there is one server at one address — but the packet might land in Frankfurt, Singapore, or São Paulo depending on where the user is.</p><p>Anycast is how every modern CDN works (Cloudflare, Fastly, Akamai), how the DNS root servers serve billions of queries (each root letter is hundreds of physical sites), and how DDoS mitigation absorbs traffic at the closest edge to the attacker.</p><p>The catch: anycast assumes <strong>stateless</strong> or short-state interactions. A long TCP connection assumes the server doesn't change mid-flow, but if BGP reconvergence shifts a user to a different anycast site, the connection breaks. UDP-based protocols (DNS, QUIC with connection migration) handle this gracefully; long-lived TCP needs careful per-flow consistent hashing or doesn't work at all. QUIC's connection-ID design specifically enables anycast servers to pass connections between sites.</p>",
         "mathExpressions": [],
@@ -132,19 +132,19 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-04-c3",
+        "id": "neta-04-c3",
         "title": "ECMP and Hash-Based Load Spreading",
-        "contentHtml": "<p><strong>Equal-Cost Multi-Path</strong> (ECMP, RFC 2992) lets a router send packets across multiple equally-good next hops. The choice is made by hashing fields of the packet (typically source IP, destination IP, source port, destination port — the <strong>5-tuple</strong>) so that all packets of one flow take the same path, preserving in-order delivery, while different flows spread across links.</p><p>ECMP is the foundation of datacenter scale-out networks. A leaf-spine topology with 32 spines and 5-tuple ECMP gives you 32-way path diversity automatically — no centralized load balancer required.</p><p>Two important wrinkles. ECMP can <strong>polarize</strong>: if multiple stages all hash the same fields the same way, traffic concentrates on a subset of paths. Modern hash functions (Toeplitz, with per-stage seeds) avoid this. And ECMP is invisible to most encapsulations: bare GRE traffic will pin to one path because routers can't see inside it. <strong>GUE</strong> (Generic UDP Encapsulation, RFC 8086) and similar UDP-based encaps fix this by varying the outer UDP source port per flow, restoring ECMP visibility.</p>",
+        "contentHtml": "<p><strong>Equal-Cost Multi-Path</strong> (ECMP, RFC 2992) lets a router send packets across multiple equally-good next hops. The choice is made by hashing fields of the packet (typically source IP, destination IP, source port, destination port — the <strong>5-tuple</strong>) so that all packets of one flow take the same path, preserving in-order delivery, while different flows spread across links.</p><p>ECMP is the foundation of datacenter scale-out networks. A leaf-spine topology with 32 spines and 5-tuple ECMP gives you 32-way path diversity automatically — no centralized load balancer required.</p><p>Two important wrinkles. ECMP can <strong>polarize</strong>: if multiple stages all hash the same fields the same way, traffic concentrates on a subset of paths. Modern hash functions (Toeplitz, with per-stage seeds) avoid this. And ECMP is invisible to most encapsulations: bare GRE traffic will pin to one path because routers can't see inside it. UDP-based encapsulations such as <strong>GUE</strong> (Generic UDP Encapsulation, an IETF draft), GRE-in-UDP (RFC 8086), and VXLAN fix this by varying the outer UDP source port per flow, restoring ECMP visibility.</p>",
         "mathExpressions": ["h(\\text{srcIP}, \\text{dstIP}, \\text{srcPort}, \\text{dstPort}, \\text{proto}) \\bmod N = \\text{path index}"],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q25", "net-q26", "net-q27", "net-q28", "net-q29", "net-q30", "net-q31", "net-q32"],
+    "quizQuestionIds": ["neta-q25", "neta-q26", "neta-q27", "neta-q28", "neta-q29", "neta-q30", "neta-q31", "neta-q32"],
     "puzzleId": null
   },
   {
-    "id": "net-05",
+    "id": "neta-05",
     "topicId": "cs-networking-advanced",
     "order": 5,
     "title": "DNS Deep: DoH, DoT, and DNSSEC",
@@ -152,15 +152,15 @@
     "xpReward": 130,
     "concepts": [
       {
-        "id": "net-05-c1",
+        "id": "neta-05-c1",
         "title": "DNS as Infrastructure",
-        "contentHtml": "<p><strong>DNS</strong> (RFC 1034/1035, 1987) is the internet's directory: a globally distributed, hierarchical key-value store mapping names to records. The hierarchy is rooted at thirteen logical root servers (each anycast to hundreds of instances), delegating to TLD servers (.com, .de, .io), which delegate to authoritative servers per zone.</p><p><strong>Recursive resolvers</strong> — operated by ISPs, by public services like 1.1.1.1 and 8.8.8.8, or locally — walk the hierarchy on behalf of clients and cache aggressively (TTL-bounded). A typical browser query never reaches a root server because cache hits at every layer absorb almost all load.</p><p>DNS is famously the proximate cause of half the internet's outages. It's a system designed in the 1980s with assumptions about trust, latency, and packet size that the modern internet routinely violates. The <strong>Facebook 2021</strong> outage was triggered by BGP but propagated as a DNS outage; <strong>Dyn 2016</strong> was a Mirai botnet DDoS that took down Twitter, Reddit, and Netflix because a single recursive provider went dark.</p>",
+        "contentHtml": "<p><strong>DNS</strong> (RFC 1034/1035, 1987) is the internet's directory: a globally distributed, hierarchical key-value store mapping names to records. The hierarchy is rooted at thirteen logical root servers (each anycast to hundreds of instances), delegating to TLD servers (.com, .de, .io), which delegate to authoritative servers per zone.</p><p><strong>Recursive resolvers</strong> — operated by ISPs, by public services like 1.1.1.1 and 8.8.8.8, or locally — walk the hierarchy on behalf of clients and cache aggressively (TTL-bounded). A typical browser query never reaches a root server because cache hits at every layer absorb almost all load.</p><p>DNS is famously the proximate cause of half the internet's outages. It's a system designed in the 1980s with assumptions about trust, latency, and packet size that the modern internet routinely violates. The <strong>Facebook 2021</strong> outage was triggered by BGP but propagated as a DNS outage; <strong>Dyn 2016</strong> was a Mirai botnet DDoS that took down Twitter, Reddit, and Netflix because a single authoritative DNS provider went dark.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
-        "id": "net-05-c2",
+        "id": "neta-05-c2",
         "title": "DoH, DoT, and the Privacy Push",
         "contentHtml": "<p>Classical DNS runs cleartext over UDP port 53, visible to anyone on the path: ISPs, Wi-Fi operators, governments. Encrypting it took two competing designs.</p><p><strong>DoT</strong> (DNS over TLS, RFC 7858) wraps DNS in TLS over TCP port 853. Network operators can still see <em>that</em> you're doing DNS (port 853) but not <em>what</em> you're querying. Easy to deploy in resolvers, easy to block.</p><p><strong>DoH</strong> (DNS over HTTPS, RFC 8484) encodes DNS queries as HTTPS requests on port 443. From the network's view, indistinguishable from any other web traffic. Mozilla and Cloudflare deployed it first; Chrome followed. Network operators hated it because it bypassed their visibility (and parental controls, and malware filters) entirely.</p><p>Both leak the destination via SNI in the subsequent TLS connection. <strong>ECH</strong> (Encrypted Client Hello) closes that gap. The trend is clear: DNS, like everything else, is becoming encrypted by default. The unresolved tension is between user privacy and operator visibility — a political question dressed as a protocol design.</p>",
         "mathExpressions": [],
@@ -168,19 +168,19 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-05-c3",
+        "id": "neta-05-c3",
         "title": "DNSSEC: Authenticity, Not Privacy",
-        "contentHtml": "<p><strong>DNSSEC</strong> (RFC 4033-4035) signs DNS records with public-key cryptography, building a chain of trust from the root zone down. Resolvers can verify that a response really came from the authoritative server and wasn't tampered with mid-flight — defending against cache poisoning attacks like Kaminsky's 2008 exploit.</p><p>DNSSEC explicitly does <em>not</em> provide confidentiality. The records are signed, not encrypted. Authority and privacy are orthogonal — DoH/DoT for the latter, DNSSEC for the former.</p><p>Adoption is partial and operationally painful. Key rollovers, NSEC3 zone-walking concerns, larger response sizes (sometimes triggering UDP fragmentation), and the all-or-nothing nature of signing chains make DNSSEC operationally heavy. Around 30-40% of TLDs are signed; far fewer second-level domains are. The 2018 KSK rollover for the root zone was a multi-year operational saga. Most modern infrastructure relies on TLS certificate validation rather than DNSSEC for authenticity, which has its own issues but is far more uniformly deployed.</p>",
+        "contentHtml": "<p><strong>DNSSEC</strong> (RFC 4033-4035) signs DNS records with public-key cryptography, building a chain of trust from the root zone down. Resolvers can verify that a response really came from the authoritative server and wasn't tampered with mid-flight — defending against cache poisoning attacks like Kaminsky's 2008 exploit.</p><p>DNSSEC explicitly does <em>not</em> provide confidentiality. The records are signed, not encrypted. Authority and privacy are orthogonal — DoH/DoT for the latter, DNSSEC for the former.</p><p>Adoption is partial and operationally painful. Key rollovers, NSEC3 zone-walking concerns, larger response sizes (sometimes triggering UDP fragmentation), and the all-or-nothing nature of signing chains make DNSSEC operationally heavy. About 90% of TLDs are signed, but far fewer second-level domains are (well under 10% of .com). The 2018 KSK rollover for the root zone was a multi-year operational saga. Most modern infrastructure relies on TLS certificate validation rather than DNSSEC for authenticity, which has its own issues but is far more uniformly deployed.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q33", "net-q34", "net-q35", "net-q36", "net-q37", "net-q38", "net-q39", "net-q40"],
+    "quizQuestionIds": ["neta-q33", "neta-q34", "neta-q35", "neta-q36", "neta-q37", "neta-q38", "neta-q39", "neta-q40"],
     "puzzleId": null
   },
   {
-    "id": "net-06",
+    "id": "neta-06",
     "topicId": "cs-networking-advanced",
     "order": 6,
     "title": "SDN, OpenFlow, and P4",
@@ -188,7 +188,7 @@
     "xpReward": 130,
     "concepts": [
       {
-        "id": "net-06-c1",
+        "id": "neta-06-c1",
         "title": "Why Split Control and Data?",
         "contentHtml": "<p>A traditional router or switch bundles two things: the <strong>data plane</strong> (forwarding packets, line-rate, in hardware) and the <strong>control plane</strong> (running BGP, OSPF, computing forwarding tables, in software on the same box). The control plane decides; the data plane executes.</p><p><strong>Software-Defined Networking (SDN)</strong> proposes splitting them: a centralized controller computes forwarding state and pushes it to dumb forwarders. The pitch is clean: write your routing logic once, in normal software, instead of fragmented across hundreds of devices each running vendor firmware.</p><p>The reality landed messier than the pitch. Pure centralized control has scaling and reliability limits — a controller failure shouldn't black-hole the network. Most production deployments run <strong>hybrid SDN</strong>: distributed control for fast failover, centralized control for global optimization (path engineering, congestion-aware routing). Google's <strong>B4</strong> (their inter-datacenter WAN) is the canonical example, achieving near-100% link utilization where traditional WANs run at 30-40%.</p>",
         "mathExpressions": [],
@@ -196,7 +196,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-06-c2",
+        "id": "neta-06-c2",
         "title": "OpenFlow: First Real Protocol",
         "contentHtml": "<p><strong>OpenFlow</strong> (2008, Stanford) was the first widely-deployed southbound SDN protocol. The model is simple: a switch holds a <strong>flow table</strong> mapping (match fields) to (actions). The controller writes entries; the switch matches packets and acts. Match fields can be anything from L2 MAC to L4 ports; actions include forward, drop, modify, send-to-controller.</p><p>OpenFlow proved the SDN concept and seeded the industry. Open vSwitch (OVS), now ubiquitous in cloud infrastructure (used by OpenStack, Kubernetes overlays via OVN), implements an OpenFlow-like pipeline efficiently in software with kernel datapath acceleration.</p><p>OpenFlow's limits became clear over time: a fixed match-action pipeline, vendor-extension chaos, and a one-flow-table-at-a-time model that didn't match how real ASIC pipelines work. By the late 2010s, the industry had moved past pure OpenFlow toward more flexible models — most notably P4.</p>",
         "mathExpressions": [],
@@ -204,7 +204,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-06-c3",
+        "id": "neta-06-c3",
         "title": "P4: Programmable Data Planes",
         "contentHtml": "<p><strong>P4</strong> (Programming Protocol-Independent Packet Processors, 2014) takes the next step: don't just configure the pipeline — <em>program</em> it. P4 is a domain-specific language for describing how a packet should be parsed, what tables it should hit, and what actions to take. The same P4 program compiles to a Tofino ASIC, an FPGA, an SDN agent, or a software switch (BMv2).</p><p>This unlocks new protocols without waiting for silicon vendors. <strong>In-band Network Telemetry (INT)</strong> embeds per-hop telemetry in packet headers — invented in P4, deployed in production at Alibaba and at hyperscaler scale. <strong>Custom load balancers</strong> can do consistent hashing in the switch. <strong>NetCache</strong> demonstrated in-network key-value caching at terabit speeds.</p><p>The Tofino chips that made P4 economically practical were end-of-lifed by Intel in 2023, a setback for the ecosystem. But P4 the language survives across software switches, smartNICs, and FPGA-based research. The deeper idea — that the data plane should be programmable, not fixed-function — is now mainstream. Every modern smartNIC (Nvidia BlueField, Intel IPU, AMD Pensando) is, fundamentally, programmable network silicon.</p>",
         "mathExpressions": [],
@@ -212,11 +212,11 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q41", "net-q42", "net-q43", "net-q44", "net-q45", "net-q46", "net-q47", "net-q48"],
+    "quizQuestionIds": ["neta-q41", "neta-q42", "neta-q43", "neta-q44", "neta-q45", "neta-q46", "neta-q47", "neta-q48"],
     "puzzleId": null
   },
   {
-    "id": "net-07",
+    "id": "neta-07",
     "topicId": "cs-networking-advanced",
     "order": 7,
     "title": "Datacenter Networks: Clos and DCTCP",
@@ -224,7 +224,7 @@
     "xpReward": 140,
     "concepts": [
       {
-        "id": "net-07-c1",
+        "id": "neta-07-c1",
         "title": "Clos and Leaf-Spine Topologies",
         "contentHtml": "<p>Classical enterprise networks were tree-shaped: cheap access switches at the edge, expensive aggregation switches in the middle, very expensive core switches at the top. This works at small scale but creates bottlenecks: any aggregation switch failure takes out a whole pod, and core upgrades are uniquely painful.</p><p><strong>Clos networks</strong> (Charles Clos, 1953, originally for telephone switches) generalize this into multiple stages of small uniform switches. Modern datacenters use a special case: the <strong>leaf-spine</strong> topology. Every leaf (top-of-rack) connects to every spine. Servers attach to leaves; spines forward only between leaves. ECMP across all spines provides massive bisection bandwidth.</p><p>The properties are remarkable: bandwidth scales horizontally by adding spines, fault tolerance is inherent (lose any spine, lose 1/N capacity, not connectivity), and all switches can be identical commodity hardware. Facebook's <strong>F16</strong> and Google's <strong>Jupiter</strong> are public examples — Jupiter scales to over 6 petabits/sec of bisection bandwidth on a single fabric.</p>",
         "mathExpressions": ["\\text{Clos bisection bandwidth} = N_{\\text{spine}} \\times \\text{link rate}"],
@@ -232,7 +232,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-07-c2",
+        "id": "neta-07-c2",
         "title": "ECN and DCTCP",
         "contentHtml": "<p>Standard TCP relies on packet loss as the only congestion signal. In a datacenter, this is catastrophic: round trips are microseconds, queues fill in milliseconds, and a single drop triggers a multiplicative back-off that destroys throughput.</p><p><strong>ECN</strong> (Explicit Congestion Notification, RFC 3168) lets routers <em>mark</em> packets when their queue starts filling, instead of dropping them. The receiver echoes the mark; the sender slows down before any loss occurs. ECN was specified in 2001 but adoption stalled for years because broken middleboxes mangled the bits.</p><p><strong>DCTCP</strong> (Data Center TCP, Microsoft Research 2010) goes further: instead of halving cwnd on a single ECN mark (like classical TCP-ECN), DCTCP <strong>tracks the fraction</strong> of marked packets and reduces proportionally. The result is much smoother, lower-latency control — typical queue depths under DCTCP are 90% smaller than under standard TCP.</p><p>DCTCP is widely deployed across hyperscaler datacenters (Microsoft Azure, others). It only works on networks where every endpoint runs DCTCP and every switch supports ECN — fine inside one datacenter, impossible on the public internet.</p>",
         "mathExpressions": ["cwnd \\leftarrow cwnd \\cdot (1 - \\alpha/2), \\quad \\alpha = \\text{EWMA fraction of marked packets}"],
@@ -240,7 +240,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-07-c3",
+        "id": "neta-07-c3",
         "title": "Incast and the Microburst Problem",
         "contentHtml": "<p>The signature pathology of datacenter networks is <strong>TCP incast</strong>: many servers respond simultaneously to a query (think MapReduce shuffle, parallel storage read), and their responses converge on one switch port. The buffer overflows in microseconds, packets drop, TCP timeouts fire (RTO = 200ms minimum on Linux historically), and goodput collapses by orders of magnitude.</p><p>Fixes layer up. <strong>Reduce minimum RTO</strong> to microseconds (Linux now supports this). <strong>Use DCTCP</strong> to keep queues short. <strong>Pacing</strong> (don't burst) at the sender. <strong>Larger switch buffers</strong> (mostly futile — incast scales faster than any reasonable buffer). <strong>Application-level flow control</strong> (limit fan-in to N concurrent responders).</p><p>The deeper lesson is that datacenter networks operate in a regime where classical TCP assumptions fail. Round trips are microseconds, not milliseconds. Bandwidth-delay products are tiny. Switch buffers are shallow. New transports — DCTCP, Homa, NDP, recent Falcon (Google) — keep being invented because the constraints inside a building fundamentally differ from those across a continent.</p>",
         "mathExpressions": [],
@@ -248,11 +248,11 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q49", "net-q50", "net-q51", "net-q52", "net-q53", "net-q54", "net-q55", "net-q56"],
+    "quizQuestionIds": ["neta-q49", "neta-q50", "neta-q51", "neta-q52", "neta-q53", "neta-q54", "neta-q55", "neta-q56"],
     "puzzleId": null
   },
   {
-    "id": "net-08",
+    "id": "neta-08",
     "topicId": "cs-networking-advanced",
     "order": 8,
     "title": "Kernel Bypass: DPDK, XDP, RDMA",
@@ -260,7 +260,7 @@
     "xpReward": 150,
     "concepts": [
       {
-        "id": "net-08-c1",
+        "id": "neta-08-c1",
         "title": "Why Bypass the Kernel",
         "contentHtml": "<p>The Linux network stack is a marvel of generality, but each packet pays for it: a hardware interrupt, a softirq scheduling, multiple memory copies, socket buffer management, and a system call boundary crossing. At 10 Gbps with 64-byte packets, the kernel must process roughly 14 million packets per second per port — leaving nanoseconds per packet for any actual work.</p><p>For high-performance applications — load balancers, telemetry, NFV, trading systems — the kernel is the bottleneck. <strong>Kernel bypass</strong> moves packet processing into user space, talking directly to NIC hardware via mapped memory rings and avoiding the syscall path entirely.</p><p>The trade-off: you give up the kernel's protocol stack, sockets API, and per-process isolation. You write (or use) a user-space TCP stack. CPU cores are typically pinned and burn 100% (poll mode, no interrupts). Useful when raw packet throughput dominates everything else; overkill for ordinary services.</p>",
         "mathExpressions": ["\\text{packets/sec at 10 Gbps, 64B} = \\frac{10 \\times 10^9}{8 \\times (64 + 20)} \\approx 14.88 \\text{ Mpps}"],
@@ -268,7 +268,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-08-c2",
+        "id": "neta-08-c2",
         "title": "DPDK and XDP",
         "contentHtml": "<p><strong>DPDK</strong> (Data Plane Development Kit, originally Intel, now Linux Foundation) is the dominant user-space framework. NICs are unbound from kernel drivers and accessed via UIO/VFIO with poll-mode drivers. DPDK applications routinely sustain line rate at 100 Gbps with single-digit microsecond latency. Deployed everywhere: Open vSwitch-DPDK, VPP, every modern software router.</p><p><strong>XDP</strong> (eXpress Data Path) takes a different approach: run small <strong>eBPF</strong> programs at the earliest possible point in the kernel — right after the driver hands the packet up, before SKB allocation. XDP can drop, redirect, or transmit packets at near-DPDK speeds while staying inside the kernel and inheriting all its security guarantees.</p><p>XDP powers Cloudflare's L4 DDoS mitigation (dropping millions of attack packets per second per box) and Facebook's Katran load balancer. <strong>Cilium</strong> uses XDP and tc-eBPF to replace kube-proxy in Kubernetes — implementing service load balancing, network policy, and observability without iptables. The eBPF revolution made high-performance packet processing accessible without the operational pain of full kernel bypass.</p>",
         "mathExpressions": [],
@@ -276,7 +276,7 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-08-c3",
+        "id": "neta-08-c3",
         "title": "RDMA and the Storage Network",
         "contentHtml": "<p><strong>RDMA</strong> (Remote Direct Memory Access) goes further: the NIC reads and writes remote memory directly, with zero CPU involvement on either side. Originally InfiniBand (Mellanox/Nvidia), now widely deployed over Ethernet as <strong>RoCEv2</strong>.</p><p>RDMA is the substrate for HPC interconnects, GPU-to-GPU communication (NCCL, NVLink between hosts), and modern storage (NVMe-over-Fabrics). Microsoft Azure runs storage on RDMA at multi-petabyte scale; Google's recent Falcon transport is RDMA-class semantics over their custom fabric.</p><p>RDMA has its own headaches. Lossless networks (PFC — Priority Flow Control) are required to keep go-back-N retransmissions from killing throughput, and PFC has notorious deadlock and head-of-line problems. Modern designs (DCQCN, HPCC) add ECN-style congestion control on top of RDMA to manage queue buildup. The story echoes TCP's: every transport eventually needs congestion control once it's deployed at scale, no matter how fast the hardware is.</p>",
         "mathExpressions": [],
@@ -284,11 +284,11 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q57", "net-q58", "net-q59", "net-q60", "net-q61", "net-q62", "net-q63", "net-q64"],
+    "quizQuestionIds": ["neta-q57", "neta-q58", "neta-q59", "neta-q60", "neta-q61", "neta-q62", "neta-q63", "neta-q64"],
     "puzzleId": null
   },
   {
-    "id": "net-09",
+    "id": "neta-09",
     "topicId": "cs-networking-advanced",
     "order": 9,
     "title": "TLS 1.3, ECH, and Modern Transport",
@@ -296,7 +296,7 @@
     "xpReward": 160,
     "concepts": [
       {
-        "id": "net-09-c1",
+        "id": "neta-09-c1",
         "title": "TLS 1.3 and ECH",
         "contentHtml": "<p><strong>TLS 1.3</strong> (RFC 8446, 2018) was a near-rewrite of TLS. The handshake is one round trip (down from two), almost everything is encrypted from the second flight, the cipher suite zoo collapsed to a small AEAD-only set (AES-GCM, ChaCha20-Poly1305), and dangerous old features (RSA key exchange, static DH, CBC modes, SHA-1, compression) were removed entirely. The result is faster, simpler, and harder to misconfigure.</p><p>One leak remained: the <strong>SNI</strong> (Server Name Indication) extension in the ClientHello, which tells the server which virtual host you want, is sent in cleartext. Network observers learn which website you're visiting even over TLS.</p><p><strong>ECH</strong> (Encrypted Client Hello) closes that gap by encrypting the inner ClientHello to a public key published in DNS (the HTTPS RR, RFC 9460). Cloudflare deployed it first; Mozilla and Chrome have shipped client support. ECH plus DoH plus QUIC together remove almost all per-connection metadata visible to passive observers — a privacy posture inconceivable a decade ago.</p>",
         "mathExpressions": [],
@@ -304,23 +304,23 @@
         "visualizationConfig": null
       },
       {
-        "id": "net-09-c2",
+        "id": "neta-09-c2",
         "title": "MPTCP and MASQUE",
-        "contentHtml": "<p><strong>MPTCP</strong> (Multipath TCP, RFC 8684) lets a single TCP connection use multiple network paths simultaneously — for example, both Wi-Fi and cellular on a phone. Subflows are real TCP connections, each with its own congestion control, but data is reassembled at the connection layer. Apple uses MPTCP for Siri and Apple Music; Korean carriers deployed it for hybrid Wi-Fi/LTE bonding.</p><p>MPTCP's deployment story is a cautionary tale about middlebox ossification — many carrier middleboxes mangle TCP options and break MPTCP signalling. The newer fallback paths and the QUIC-equivalent (Multipath QUIC, RFC 9440) avoid this by hiding everything inside encrypted packets.</p><p><strong>MASQUE</strong> (Multiplexed Application Substrate over QUIC Encryption, RFC 9298) tunnels arbitrary traffic — TCP, UDP, IP — inside HTTP/3 streams. It's the protocol behind Apple's iCloud Private Relay and the basis for Cloudflare's WARP and many \"split VPN\" architectures. Tunnel everything over HTTPS, and middleboxes have nothing to inspect or block.</p>",
+        "contentHtml": "<p><strong>MPTCP</strong> (Multipath TCP, RFC 8684) lets a single TCP connection use multiple network paths simultaneously — for example, both Wi-Fi and cellular on a phone. Subflows are real TCP connections, each with its own congestion control, but data is reassembled at the connection layer. Apple uses MPTCP for Siri and Apple Music; Korean carriers deployed it for hybrid Wi-Fi/LTE bonding.</p><p>MPTCP's deployment story is a cautionary tale about middlebox ossification — many carrier middleboxes mangle TCP options and break MPTCP signalling. The newer fallback paths and the QUIC-equivalent (Multipath QUIC, still being standardized at the IETF) avoid this by hiding everything inside encrypted packets.</p><p><strong>MASQUE</strong> (Multiplexed Application Substrate over QUIC Encryption; RFC 9298 for UDP, RFC 9484 for IP) tunnels arbitrary traffic (TCP, UDP, IP) inside HTTP/3 streams. It's the protocol behind Apple's iCloud Private Relay and the basis for Cloudflare's WARP and many \"split VPN\" architectures. Tunnel everything over HTTPS, and middleboxes have nothing to inspect or block.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
-        "id": "net-09-c3",
+        "id": "neta-09-c3",
         "title": "SR-MPLS, SRv6, and Service Programming",
-        "contentHtml": "<p><strong>Segment Routing</strong> (RFC 8402) replaces hop-by-hop signalling protocols (LDP, RSVP-TE) with source routing: the ingress router stamps an explicit list of \"segments\" — basically waypoints — into the packet, and intermediate routers just follow them. The forwarding plane becomes nearly stateless; the intelligence lives at the edge.</p><p>Two flavors. <strong>SR-MPLS</strong> reuses MPLS labels as segments — drop-in upgrade for existing MPLS networks. <strong>SRv6</strong> uses IPv6 addresses as segments via the Segment Routing Header (RFC 8754). SRv6 is more powerful: each segment can identify not just a node but a function (firewall, load balancer, encrypt-and-forward), turning the network into a programmable service mesh.</p><p>Real deployments: Iliad/Free Mobile in France runs SRv6 across their entire mobile core. SoftBank, China Mobile, and many tier-1s use SR-MPLS for traffic engineering at scale. Combined with intent-based controllers and telemetry, segment routing closes the loop on the SDN promise — programmable networks at carrier scale, without throwing away decades of operational investment in MPLS.</p>",
+        "contentHtml": "<p><strong>Segment Routing</strong> (RFC 8402) replaces hop-by-hop signalling protocols (LDP, RSVP-TE) with source routing: the ingress router stamps an explicit list of \"segments\" — basically waypoints — into the packet, and intermediate routers just follow them. The forwarding plane becomes nearly stateless; the intelligence lives at the edge.</p><p>Two flavors. <strong>SR-MPLS</strong> reuses MPLS labels as segments — drop-in upgrade for existing MPLS networks. <strong>SRv6</strong> uses IPv6 addresses as segments via the Segment Routing Header (RFC 8754). SRv6 is more powerful: each segment can identify not just a node but a function (firewall, load balancer, encrypt-and-forward), turning the network into a programmable service mesh.</p><p>Real deployments: Iliad's Italian mobile network runs SRv6 across its entire core. SoftBank, China Mobile, and many tier-1s use SR-MPLS for traffic engineering at scale. Combined with intent-based controllers and telemetry, segment routing closes the loop on the SDN promise — programmable networks at carrier scale, without throwing away decades of operational investment in MPLS.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["net-q65", "net-q66", "net-q67", "net-q68", "net-q69", "net-q70", "net-q71", "net-q72"],
+    "quizQuestionIds": ["neta-q65", "neta-q66", "neta-q67", "neta-q68", "neta-q69", "neta-q70", "neta-q71", "neta-q72"],
     "puzzleId": null
   }
 ]

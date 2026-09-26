@@ -37,10 +37,12 @@ public class SessionStateService : ISessionStateService
         {
             var json = await _js.InvokeAsync<string?>("localStorage.getItem", StorageKey);
             if (json == null) return null;
-            return JsonSerializer.Deserialize<SessionState>(json, new JsonSerializerOptions
+            var state = JsonSerializer.Deserialize<SessionState>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+            if (state != null) RemapIds(state);
+            return state;
         }
         catch
         {
@@ -51,6 +53,17 @@ public class SessionStateService : ISessionStateService
     public async Task ClearSessionStateAsync()
     {
         await _js.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+    }
+
+    public static void RemapIds(SessionState state)
+    {
+        if (state.ActiveLessonId != null)
+            state.ActiveLessonId = ProfileMigration.RemapForTopic(state.ActiveTopicId, state.ActiveLessonId);
+        if (state.QuizState is { } q)
+        {
+            if (q.LessonId != null) q.LessonId = ProfileMigration.RemapForTopic(q.TopicId, q.LessonId);
+            q.QuestionIds = q.QuestionIds.Select(id => ProfileMigration.RemapForTopic(q.TopicId, id)).ToList();
+        }
     }
 
     private async Task<SessionState> LoadOrCreate()

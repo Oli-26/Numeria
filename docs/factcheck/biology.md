@@ -1,0 +1,129 @@
+# Fact-check log: biology
+
+- Topics covered: 16 (bio-cell, bio-genetics, bio-evolution, bio-ecology, bio-anatomy, bio-neuroscience, bio-microbiology, bio-virology, bio-immunology, bio-botany, bio-developmental, bio-marine, bio-mol-genetics, bio-cancer, bio-synthetic, bio-aging-biology)
+- Concepts checked: 339
+- Questions checked: 670
+- Fixed: 87
+- Flagged (not edited): 20
+
+## Fixed
+
+- bio-cell / bio-cell-06-c2: "Each takes ~8 nm steps" -> "Each step (about 8 nm for kinesin)" (step size varies by motor; myosin V ~36 nm)
+- bio-cell / bio-cell-q19: "Cyanobacteria evolved photosynthesis ~2.4 billion years ago" -> "Oxygen from cyanobacterial photosynthesis began accumulating ~2.4 billion years ago" (2.4 Ga is the GOE; oxygenic photosynthesis evolved earlier)
+- bio-cell / bio-cell-q39: "irreversibly inhibited by cyanide" -> "Cyanide binds and inhibits cytochrome c oxidase" (cyanide inhibition is reversible; basis of antidotes)
+- bio-cell / bio-cell-01-c1: Cell Membrane concept carries a DNA double-helix figure (image/concept mismatch, not a text error)
+- bio-genetics / bio-gen-01-c1: "packs about 3 billion base pairs into 46 chromosomes" -> "about 6 billion base pairs (two copies of the 3-billion-base-pair genome)" (46 chromosomes = diploid ~6.4 Gb; also matches the 2 m figure)
+- bio-genetics / bio-gen-01-c3: "1 in a billion after proofreading" -> "after proofreading and mismatch repair" (proofreading alone ~1e-7)
+- bio-genetics / bio-gen-05-c3: "An international moratorium ... is currently in place" -> prohibited in many countries; scientists have called for a global moratorium (no binding international moratorium exists)
+- bio-genetics / bio-gen-q02: "3 billion base pairs spread across 46 chromosomes" -> "in one set of 23 chromosomes" (haploid vs diploid)
+- bio-genetics / bio-gen-q15: "Brown eyes completely mask blue in Bb individuals" -> "Purple flowers completely mask white in Pp pea plants" (eye colour is polygenic; single-gene brown/blue is a myth)
+- bio-genetics / bio-gen-q13: "X-linked recessive conditions are ~8x more common in males" -> "colour blindness affects about 8% of men but only about 0.5% of women" (ratio is not a fixed 8x)
+- bio-evolution / bio-evo-05-c1: "MRSA now kills hundreds of thousands yearly" -> "more than 100,000 deaths a year" (GRAM 2019 estimate ~100k attributable)
+- bio-evolution / bio-evo-05-c3: "a fly Hox gene transplanted into a mouse still functions" -> "a mouse Hox gene expressed in a fly can still function" (the classic experiments go vertebrate -> fly)
+- bio-evolution / bio-evo-q25: "Fly Hox gene grafted into mouse" -> "Mouse Hox gene expressed in a fly" (same)
+- bio-evolution / bio-evo-q13: "32 from donkey + 31 from horse" -> "32 from the horse + 31 from the donkey" (horse 2n=64, donkey 2n=62)
+- bio-evolution / bio-evo-q22: "Africans lack this Neanderthal DNA" -> "Sub-Saharan Africans carry much less of it" (back-migration left small Neanderthal share in Africans, Chen et al. 2020)
+- bio-ecology / bio-eco-02-c3: "Robert Paine's experiments in the 1960s showed that sea otters control sea urchin" -> "studies by James Estes and colleagues from the 1970s" (Paine's 1960s keystone work was on Pisaster sea stars; otter-urchin-kelp is Estes & Palmisano 1974)
+- bio-ecology / bio-eco-02-c3: Yellowstone "reducing deer grazing" -> "elk grazing" (the cascade involves elk)
+- bio-ecology / bio-eco-q09: "reduced deer overgrazing" -> "reduced elk overgrazing" (same)
+- bio-ecology / bio-eco-q24: "In 2017 it was tested for the first time" -> "In 2015" (ICARDA's first withdrawal was requested in 2015)
+- bio-ecology / bio-eco-05-c1: "About 25% of pharmaceuticals derive from rainforest plants" -> "Roughly a quarter of prescription drugs were originally derived from plants" (the rainforest-specific 25% is a popular myth; the ~25% figure is for plants generally)
+- bio-anatomy / bio-ana-02-c2: arteries "carry oxygenated blood away from heart" -> "carry blood away from heart" (pulmonary arteries carry deoxygenated blood; contradicts the lesson's own heart concept)
+- bio-anatomy / bio-ana-03-c1: "~300 million in each lung" -> "roughly 300 to 500 million across both lungs" (~480 million total, Ochs 2004)
+- bio-anatomy / bio-ana-q11: "~300 million per lung" -> same fix
+- bio-anatomy / bio-ana-03-c1: "~70 m², the size of a tennis court" -> "roughly a third of a tennis court" (a doubles court is ~260 m²)
+- bio-anatomy / bio-ana-03-c2: small intestine "~250 m² of absorptive surface" -> "roughly 30 m² (older textbooks claimed ~250 m²)" (Helander & Fandriks 2014)
+- bio-anatomy / bio-ana-q12: "~250 m²" -> "roughly 30 m²" (same)
+- bio-anatomy / bio-ana-05-c2: "Fatigue occurs when ATP cannot be regenerated ... lactic acid buildup" -> metabolites (Pi, H+) and glycogen depletion; lactic acid not the main culprit (lactic-acid fatigue myth)
+- bio-anatomy / bio-ana-07-c2: fertile days "~6 days centered on ovulation" -> "~6 days ending on the day of ovulation" (Wilcox et al. 1995)
+- bio-anatomy / bio-ana-q08: without haemoglobin "~3% as much oxygen" -> "about 2%" (dissolved O2 ~0.3 vs ~20 mL/dL)
+- bio-anatomy / bio-ana-q14: surfactant "typically from ~34 weeks" -> "in sufficient amounts only by ~34 weeks" (production begins ~24-28 weeks)
+- bio-anatomy / bio-ana-q18: "the memory response takes hours" -> "within days" (secondary antibody response takes days)
+- bio-neuroscience / bio-neuro-03-c1: "Midbrain: basal ganglia, thalamus, hypothalamus" (and midbrain listed under hindbrain) -> restructured: hindbrain = medulla, pons, cerebellum; midbrain = top of brainstem incl. substantia nigra; forebrain = cortex + basal ganglia, thalamus, hypothalamus (anatomical misclassification)
+- bio-neuroscience / bio-neuro-02-c2: "degeneration of cholinergic neurons causes Alzheimer's" -> "is a feature of Alzheimer's" (not the cause)
+- bio-neuroscience / bio-neuro-04-c1: "Hebb's rule (1949) encapsulated this: 'neurons that fire together, wire together'" -> "later summarised as" (slogan is Shatz 1992, not Hebb)
+- bio-neuroscience / bio-neuro-05-c2: glymphatic "described in 2013" -> "described in 2012 and linked to sleep in 2013" (Iliff 2012, Xie 2013; also contradicted bio-anatomy)
+- bio-neuroscience / bio-neuro-q22: prompt "described in 2013" -> "described in 2012"
+- bio-neuroscience / bio-neuro-05-c3: "disorders affect ~1 billion people" -> "together affect billions ... (neurological conditions alone over 3 billion)" (GBD 2021)
+- bio-neuroscience / bio-neuro-05-c3: Alzheimer's "affects ~50 million" -> "main cause of dementia, which affects ~55 million" (50-55M is all dementia)
+- bio-neuroscience / bio-neuro-q25: same conflation in explanation; also pair "caused by amyloid plaques" -> "marked by amyloid plaques" (causation not established)
+- bio-neuroscience / bio-neuro-08-c1: lecanemab "first disease-modifying therapy" -> "first anti-amyloid drug to win full FDA approval" (aducanumab got accelerated approval 2021)
+- bio-neuroscience / bio-neuro-q36: same
+- bio-neuroscience / bio-neuro-08-c3: DBS "treats ... treatment-resistant depression" -> "is being trialled for" (not approved for TRD); added essential tremor
+- bio-neuroscience / bio-neuro-q39 (T/F, answer True): "FDA-approved for ... OCD, and treatment-resistant depression" -> "(some via humanitarian exemptions) for Parkinson's, essential tremor, dystonia, and OCD" (statement was false as written)
+- bio-neuroscience / bio-neuro-q04: "the nerve agent tetrodotoxin" -> "the neurotoxin" ("nerve agent" denotes organophosphate weapons)
+- bio-neuroscience / bio-neuro-q18: "Systems memory consolidation theory (Jim Horne, Matthew Walker, others)" -> "(Buzsaki, Born, and others)"; "~40% worse memory consolidation" -> "markedly impairs both forming and consolidating memories" (Walker's 40% figure was for encoding; Horne is not a proponent)
+- bio-microbiology / bio-mic-01-c1: "~10^14 bacterial cells" -> "~4 x 10^13" (Sender et al. 2016; contradicted the topic's own bio-mic-03-c1)
+- bio-microbiology / bio-mic-01-c2: "Methanogens in cattle and termites produce most of the world's biological methane" -> "in wetlands, rice paddies, cattle and termites produce nearly all" (wetlands are the largest natural source)
+- bio-microbiology / bio-mic-q02: same in explanation
+- bio-microbiology / bio-mic-q19 (T/F, True): "~60 Gt C/yr, comparable to fossil fuel CO2 emissions" -> "several times the carbon in fossil fuel CO2 emissions" (fossil ~10 Gt C/yr)
+- bio-microbiology / bio-mic-05-c3: "Artemisinin is now produced industrially in engineered yeast" -> produced from 2013 but proved uneconomic (Sanofi halted production)
+- bio-microbiology / bio-mic-q22: explanation updated likewise
+- bio-virology / bio-vir-01-c1: size range "~20 nm to ~400 nm (mimivirus)" -> "to over 1 µm (giant viruses such as pithovirus)" (pithovirus ~1.5 µm; lesson itself mentions >1 Mb giant viruses)
+- bio-virology / bio-vir-03-c1: "Acyclovir targets herpes-encoded thymidine kinase" -> "is activated by herpes-encoded TK and then blocks the viral DNA polymerase" (TK is the activator, polymerase the target)
+- bio-immunology / bio-imm-04-c2 + bio-imm-q19: "~5:1 (lupus, RA, MS)" -> "~2:1 to ~9:1" / "2-3:1 (RA, MS) to about 9:1 (lupus)" (RA and MS are ~2-3:1)
+- bio-botany / bio-bot-01-c1 + q01: "~20,000 mosses" -> "~20,000 bryophytes" (mosses alone ~12,000-13,000)
+- bio-botany / bio-bot-04-c2: "75% of leading food crops depend on insect pollinators" -> "benefit at least partly from animal (mostly insect) pollination" (Klein et al. 2007 wording; "depend" overstates)
+- bio-botany / bio-bot-q17: prompt reworded the same way so the 75% key is correct
+- bio-botany / bio-bot-04-c3: seed-dormancy examples "(Pando aspens, ancient lotus seeds germinated after 2000 years)" -> lotus ~1,300 years, Judean date palm ~2,000 (Pando is a clonal colony, unrelated to seed dormancy; oldest dated lotus ~1,300 yr)
+- bio-botany / bio-bot-q19: "Lotus seeds germinated after ~2,000 years" -> "~1,300"; Svalbard "billions of seeds" -> "hundreds of millions" (~1.3M samples)
+- bio-botany / bio-bot-05-c3: "Kernza wheat" -> "Kernza, a perennial wheatgrass" (Thinopyrum intermedium, not wheat)
+- bio-botany / bio-bot-q21: tropical forests "~50 Gt C in vegetation" -> "~250 Gt C" (Saatchi et al. 2011: ~247 Gt C)
+- bio-botany / bio-bot-q24: "CRISPR-edited mushrooms, rice, and tomatoes have reached markets" -> "a high-GABA tomato in Japan" (CRISPR mushroom was deregulated but never marketed)
+- bio-developmental / bio-dev-04-c2: "Folate supplementation ... prevents many of these" (after listing spina bifida, microcephaly, lissencephaly) -> "prevents many neural tube defects" (folate does not prevent microcephaly or lissencephaly)
+- bio-marine / bio-mar-q01: answer "~99%" of ocean below 200 m -> "~95%" (top 200 m is ~5% of ocean volume at mean depth ~3.7 km)
+- bio-marine / bio-mar-q12: "Some 90% of deep-sea pelagic species are estimated to glow" -> "roughly three-quarters of open-ocean animals are bioluminescent" (Martini & Haddock 2017: ~76%)
+- bio-marine / bio-mar-q13: "NASA's planned Europa Clipper and Dragonfly missions" -> "Europa Clipper (launched 2024) and ESA's JUICE" (Clipper launched Oct 2024; Dragonfly goes to Titan's surface, not a vent/ocean mission)
+- bio-mol-genetics / mgen-06-c1: motif chance frequency "every 4^L / I bp" -> "every ~2^I bp (I in bits, at most 2L)"; the old formula gave ~52 kb, contradicting its own "once per million bp" example
+- bio-mol-genetics / mgen-q48 (FindTheError, key 4): step 1 used the same wrong formula (an earlier error than the keyed step) -> "once every 2^I bp"; step 2 now "(~17 bits)" so ~100 kb is consistent
+- bio-mol-genetics / mgen-q16 (FindTheError, key 4): step 2 "Therefore methylation is always associated with repression" was itself false and earlier than the keyed step -> "Promoter CpG-island methylation is associated with repression"
+- bio-mol-genetics / mgen-07-c3: "Escapees cluster in the pseudoautosomal regions and explain why Turner syndrome is viable" -> escapees include PAR genes; viability follows from XCI leaving one active X; escapee half-dosage drives the phenotype (most escapees lie outside the PARs; viability is not explained by escapees)
+- bio-mol-genetics / mgen-q55: explanation corrected the same way
+- bio-mol-genetics / mgen-q54: pair "Turner syndrome viability -> X-linked escapees" -> "Turner syndrome features -> Half-dosage of genes that escape X-inactivation"
+- bio-mol-genetics / mgen-08-c2: plant epialleles (Cnr, Lcyc) "hypomethylated" -> "hypermethylated" (both are silenced by hypermethylation)
+- bio-mol-genetics / mgen-q59: "hypomethylated epialleles" -> "methylated epialleles"
+- bio-cancer / canc-03-c1: "organism with ~10^14 cells" -> "~3 x 10^13 cells" (Sender 2016 / Bianconi 2013; matches bio-anatomy's 37 trillion)
+- bio-cancer / canc-08-c1: alkylating agents incl. temozolomide "covalently crosslink DNA" -> "attach alkyl groups to DNA; some, like cyclophosphamide, also crosslink it" (temozolomide is a monofunctional methylator)
+- bio-cancer / canc-04-c2: Gerlinger 2012 "sampled four regions of a single ccRCC" -> "multiple regions of individual ccRCCs" (patient 1 alone had 9 primary regions plus metastases)
+- bio-cancer / canc-q32 (FindTheError, key 3): step 1 "patient with a homogeneous tumor" was a false premise preceding the keyed step (explanation itself called it dubious) -> "A targeted therapy is given and the tumor initially responds"; explanation trimmed
+- bio-synthetic / synb-05-c1: "Pacific Biosciences founder Christopher Paddon" -> "Amyris scientist Christopher Paddon" (Paddon led the Amyris artemisinin project; PacBio was founded by Turner/Korlach/Baybayan)
+- bio-synthetic / synb-07-c2: "Church's group built rE.coli-57 ... with seven sense codons reassigned" -> "designed ... seven codons removed; built and tested in segments rather than completed as one strain" (rE.coli-57 was never completed; also TAG is a stop, not a sense codon)
+- bio-synthetic / synb-07-c2: "Syn61 grows at near-wild-type rates" -> "grows more slowly than wild type, and evolved derivatives approach wild-type rates" (Syn61 doubling time ~1.6x wild type; Syn61-ev5 is faster)
+- bio-synthetic / synb-08-c2: "recoded organisms like Church's rE.coli-57 with TAG->TAA reassignment and RF1 deletion" -> "Church's C321.deltaA" (the RF1-deleted TAG-free strain is C321.deltaA)
+- bio-synthetic / synb-q64: same substitution in the explanation (C321.deltaA or Syn61delta3)
+- bio-aging-biology / aging-02-c1: end-replication problem described as "a small unreplicated overhang at the lagging-strand 3' end" -> "the very end of the template strand is left uncopied because lagging-strand synthesis cannot start right at the 3' terminus" (the shortfall is the new strand's 5' end)
+- bio-aging-biology / aging-03-c3: "UBX0101 (a local navitoclax-class injection)" -> "a locally injected MDM2 inhibitor" (UBX0101 is an MDM2/p53 interaction inhibitor, not a BCL-2-family drug)
+- bio-aging-biology / aging-06-c2: "Marco Sebastiano, Vittorio Sebastiano and others" -> "Vittorio Sebastiano and others" ("Marco Sebastiano" is not a researcher in this field)
+- bio-aging-biology / aging-05-c1: "The clock works on Neanderthal and chimpanzee samples" -> "works on chimpanzee samples ... and related clocks have been built for many mammals" (no methylation arrays from Neanderthal DNA; Neanderthal methylation is inferred indirectly)
+
+## Flagged (not edited)
+
+- bio-evolution / bio-evo-q39: 'Earlier, smaller introgressions from Denisovans' - Denisovan introgression was not clearly earlier than Neanderthal; wording muddled
+- bio-ecology / bio-eco-02-c3, 06-c2, 07-c3, q09, q27: Yellowstone wolves "changed river courses" stated as fact; the strength of this trophic cascade is actively contested (Hobbs, Middleton et al.). q27 hedges; lessons do not.
+- bio-ecology / bio-eco-08-c3: monarch butterflies and oysters named as assisted-migration candidates; could not confirm (whitebark pine is well documented)
+- bio-ecology / bio-eco-05-c2: IUCN "44,000 of 157,000 assessed" is 2023 data; current figures are higher (~47-48k of ~170k). Still true as "over", left as is.
+- bio-anatomy / bio-ana-q25: "arthritis (inflammation of synovial membranes) is the most common cause of chronic pain in developed countries": osteoarthritis is not mainly synovial inflammation, and low back pain is usually ranked first
+- bio-anatomy / bio-ana-q07: capillary network "~100,000 km" is a popular figure of weak provenance (usually quoted for all vessels)
+- bio-neuroscience / bio-neuro-08-c2: "Psilocybin and MDMA are in late-stage trials": FDA declined MDMA-assisted therapy in Aug 2024; status may be outdated
+- bio-neuroscience / bio-neuro-05-c2, q22: sleep-enhanced glymphatic clearance stated as settled; a 2024 Nature study (Miao et al.) reported reduced clearance during sleep in mice; now contested
+- bio-neuroscience / bio-neuro-04-c3: adult human hippocampal neurogenesis described as a discovery (flagged as controversial in text; fine) but q20 states it as fact
+- bio-microbiology / bio-mic-01-c2: Archaea concept carries a Streptococcus pyogenes figure (image mismatch)
+- bio-developmental / bio-dev-01-c1: newborn "~10^13 cells" looks high (scaling adult ~3x10^13 by mass gives ~1-2x10^12); unsure of a canonical figure
+- bio-developmental / bio-dev-05-c2: "Engineered tracheas ... have been transplanted": true, but the best-known series (Macchiarini) was fraudulent with fatal outcomes; worth a caveat
+- bio-marine / bio-mar-05-c2, q22, q25: "~10 million tonnes of plastic enter the ocean each year" is the upper end of contested estimates (Jambeck 2015: 4.8-12.7 Mt; some later river-based estimates ~1 Mt)
+- bio-mol-genetics / mgen-03-c2: "BRD4 reads H4K16ac at super-enhancers": BRD4 canonically binds acetylated H4K5/K8/K12 (and H3K27ac context); H4K16ac pairing looks doubtful
+- bio-mol-genetics / mgen-05-c3: "first in vivo base-editing therapy (VERVE-101, 2023)": first patient dosed 2022; programme paused 2024 in favour of VERVE-102
+- bio-cancer / canc-06-c1, canc-q41: "Metastasis kills 90% of cancer patients" is a widely repeated but weakly sourced figure (Dillekas et al. 2019 estimate ~67%); answer key 90% left as is
+- bio-cancer / canc-10-c2, canc-q79: "cessation cuts risk by ~90% over 15 years" (and ~50% in 10 years): figures vary widely by age at quitting; ~90% is closer to "avoids ~90% of excess risk if quitting before ~40"
+- bio-synthetic / synb-09-c2: "Church's group estimated < 10^-12 per cell per generation" escape rate: could not verify the specific figure
+- bio-aging-biology / aging-06-c3: "The 2023 retraction request and ongoing scrutiny of certain Sinclair-lab papers": the public controversy peaked in 2024 (resignation over supplement claims); could not verify a 2023 retraction request
+- bio-aging-biology / aging-01-c3: FDA "aging as indication" discussion attributed partly to Bredesen; he is an Alzheimer's clinician, not a central figure in that regulatory debate
+
+## Systemic notes
+
+- Recurring pattern: surface-area and cell-count figures come from older textbooks (alveoli per lung, small-intestine 250 m2, 10^14 bacteria, 10^14 human cells). Several contradicted each other across topics in this field.
+- Popular-science figures with weak provenance recur in the human-body topics (capillary length, 90% of cancer deaths from metastasis, 40% memory loss from sleep deprivation, 25% of drugs from rainforest plants).
+- Attribution slips are the second commonest error type: Paine credited for the otter-urchin work, Hebb credited for 'fire together, wire together', a non-existent researcher (Marco Sebastiano), Paddon called a PacBio founder, RF1-deleted strain called rE.coli-57.
+- Clinical-status claims drift out of date fast: DBS indications, lecanemab framing, MDMA/psilocybin trial status, artemisinin commercialisation, CRISPR foods on the market. Worth a periodic pass on the therapy-status sentences.
+- FindTheError items in bio-mol-genetics and bio-cancer sometimes contained an earlier error than the keyed step (a wrong formula in step 1, a false premise in step 1, an over-general claim in step 2). Fixed in place so the keyed step is the first error.
+- bio-cell, bio-anatomy and bio-neuroscience were the weakest of the biology topics per concept; bio-immunology, bio-virology and bio-developmental were the cleanest.

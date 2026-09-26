@@ -106,7 +106,7 @@
             lessonTotal,
             topics = profile.TopicsCompleted.Count,
             topicCount,
-            quizzes = profile.QuizHistory.Count,
+            quizzes = profile.TotalQuizCount,
             accuracy = profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0,
             achievements = profile.AchievementsUnlocked.Count
         });
@@ -114,13 +114,13 @@
 
     private async Task ShareCard()
     {
-        // PhineShare.shareCanvas tries Web Share API (native sheet on Android),
+        // NousShare.shareCanvas tries Web Share API (native sheet on Android),
         // then clipboard image, then signals 'unsupported' so we can fall back
         // to text. Returns: 'shared' | 'copied' | 'cancelled' | 'unsupported'.
         try
         {
-            var result = await JS.InvokeAsync<string>("PhineShare.shareCanvas", "share-canvas",
-                "My Phine progress",
+            var result = await JS.InvokeAsync<string>("NousShare.shareCanvas", "share-canvas",
+                "My Nous progress",
                 profile == null ? "" : $"Level {level} • {profile.TotalXp} XP • {profile.CurrentStreak}-day streak");
             switch (result)
             {
@@ -149,11 +149,11 @@
     private async Task CopyText()
     {
         if (profile == null) return;
-        var text = $"Phine Stats | {profile.DisplayName}\n" +
+        var text = $"Nous Stats | {profile.DisplayName}\n" +
                    $"Level {level} | {profile.TotalXp} XP\n" +
                    $"{profile.LessonsCompleted.Count}/{lessonTotal} lessons | {profile.TopicsCompleted.Count}/{topicCount} topics\n" +
                    $"{profile.CurrentStreak}-day streak | {(profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0)}% accuracy\n" +
-                   $"phine.app";
+                   $"nous.app";
         try
         {
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);

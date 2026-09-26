@@ -460,6 +460,36 @@ window.MathCanvas = {
             }
         }
         c.interactive = null;
+    },
+
+    destroy: function (canvasId) {
+        this.dispose(canvasId);
+        delete this.canvases[canvasId];
+    },
+
+    // Managed window-level event listeners with DotNetObjectReference.
+    // Stores handler references for proper cleanup.
+    _windowListeners: {},
+
+    addWindowListener: function (eventName, methodName, dotNetRef) {
+        var key = eventName + ':' + methodName;
+        if (this._windowListeners[key]) {
+            window.removeEventListener(eventName, this._windowListeners[key]);
+        }
+        var handler = function (e) {
+            dotNetRef.invokeMethodAsync(methodName, e.detail);
+        };
+        window.addEventListener(eventName, handler);
+        this._windowListeners[key] = handler;
+    },
+
+    removeWindowListener: function (eventName, methodName) {
+        var key = eventName + ':' + methodName;
+        var handler = this._windowListeners[key];
+        if (handler) {
+            window.removeEventListener(eventName, handler);
+            delete this._windowListeners[key];
+        }
     }
 };
 

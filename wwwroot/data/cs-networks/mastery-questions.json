@@ -63,15 +63,9 @@
     "type": "FindTheError",
     "difficulty": 3,
     "prompt": "Find the error in this firewall reasoning:",
-    "steps": [
-      "I configure my firewall to allow only inbound 80 and 443",
-      "All inbound web traffic is now safe",
-      "Outbound traffic is fully allowed by default",
-      "Therefore my server cannot be compromised over the network",
-      "I do not need to patch web app vulnerabilities"
-    ],
+    "steps": ["I configure my firewall to allow only inbound TCP 80 and 443", "All other inbound ports are now blocked", "Outbound traffic is fully allowed by default", "Requests on 80 and 443 still reach my web application", "Therefore the firewall protects me from web app vulnerabilities, so I do not need to patch them"],
     "correctAnswer": "5",
-    "explanation": "Step 5 is wrong. Allowing 80/443 inbound means HTTP requests reach your application. Application-layer vulnerabilities (SQL injection, XSS, RCE) live ON those allowed ports. A firewall does not protect against vulnerabilities in the services it permits. Patching is essential.",
+    "explanation": "Step 5 is wrong. The firewall lets HTTP and HTTPS through to your application, and application-layer vulnerabilities (SQL injection, XSS, remote code execution) are exploited over exactly those allowed ports. A port filter does not protect a service it permits, so patching is essential.",
     "xpReward": 50
   },
   {

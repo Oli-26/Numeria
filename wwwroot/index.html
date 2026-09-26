@@ -7,10 +7,10 @@
     <meta name="theme-color" content="#0a0e2a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Phine" />
+    <meta name="apple-mobile-web-app-title" content="Nous" />
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <title>Phine</title>
+    <title>Nous</title>
     <base href="/" />
     <link rel="stylesheet" href="css/site.css" />
     <link id="theme-css" rel="stylesheet" href="css/themes/dark.css" />
@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet" />
-    <link rel="icon" type="image/svg+xml" href="phine-icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="nous-icon.svg" />
     <style>#blazor-error-ui { display: none !important; }</style>
     <script src="js/errorLog.js"></script>
 </head>
@@ -61,7 +61,7 @@
                 background:linear-gradient(135deg,#4a5fe0,#b48cff,#ff8ec6,#4a5fe0);
                 background-size:300% 300%;animation:borderGlow 3s ease infinite;opacity:0.7;filter:blur(2px);">
             </div>
-            <img src="phine-icon.svg" alt="" style="position:relative;width:100px;height:100px;border-radius:24px;
+            <img src="nous-icon.svg" alt="" style="position:relative;width:100px;height:100px;border-radius:24px;
                 box-shadow:0 12px 48px rgba(74,95,224,0.3);" />
         </div>
 
@@ -72,7 +72,7 @@
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
             background-clip:text;
             animation:splashName 0.6s ease 0.3s both,shimmer 2.5s linear 0.9s infinite;">
-            PHINE
+            NOUS
         </div>
 
         <!-- Tagline -->
@@ -146,6 +146,7 @@
     <script src="js/notifications.js"></script>
     <script src="js/share.js"></script>
     <script src="js/tts.js"></script>
+    <script src="js/notepadDrag.js"></script>
     <script>
         // Capacitor native polish — runs once if Capacitor is present.
         (function () {
@@ -178,25 +179,25 @@
                 }
             } catch (e) { }
 
-            // phine:// deep links — fired by long-press shortcuts and external
-            // intents. Translate phine://review -> /review, stash for cold-start
+            // nous:// deep links — fired by long-press shortcuts and external
+            // intents. Translate nous://review -> /review, stash for cold-start
             // consumption, dispatch event for warm taps.
-            function _handlePhineUrl(url) {
+            function _handleNousUrl(url) {
                 if (!url) return;
-                var m = /^phine:\/\/([^?#]*)/i.exec(url);
+                var m = /^nous:\/\/([^?#]*)/i.exec(url);
                 if (!m) return;
                 var route = '/' + (m[1] || '').replace(/^\/+/, '');
-                try { sessionStorage.setItem('phine_pending_deeplink', route); } catch (e) { }
-                try { window.dispatchEvent(new CustomEvent('phine:deeplink', { detail: route })); } catch (e) { }
+                try { sessionStorage.setItem('nous_pending_deeplink', route); } catch (e) { }
+                try { window.dispatchEvent(new CustomEvent('nous:deeplink', { detail: route })); } catch (e) { }
             }
             try {
                 var app2 = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
                 if (app2) {
                     if (app2.addListener) {
-                        app2.addListener('appUrlOpen', function (data) { _handlePhineUrl(data && data.url); });
+                        app2.addListener('appUrlOpen', function (data) { _handleNousUrl(data && data.url); });
                     }
                     if (app2.getLaunchUrl) {
-                        app2.getLaunchUrl().then(function (res) { if (res && res.url) _handlePhineUrl(res.url); }).catch(function () { });
+                        app2.getLaunchUrl().then(function (res) { if (res && res.url) _handleNousUrl(res.url); }).catch(function () { });
                     }
                 }
             } catch (e) { }
@@ -209,7 +210,7 @@
             if (themeId && themeId !== 'default') {
                 link.href = 'css/themes/' + themeId + '.css';
             } else {
-                link.href = '';
+                link.href = 'css/themes/dark.css';
             }
         }
 
@@ -272,7 +273,11 @@
         // Data import
         function importProfileData(json) {
             try {
-                JSON.parse(json); // validate
+                var data = JSON.parse(json);
+                // Must be a profile object, not an array/primitive, and carry
+                // fields every real export has (see UserProfile.cs).
+                if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+                if (typeof data.displayName !== 'string' || typeof data.totalXp !== 'number') return false;
                 localStorage.setItem('mathvoyager_profile', json);
                 return true;
             } catch(e) {
@@ -286,21 +291,22 @@
         async function downloadFile(filename, content) {
             var isNative = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
             if (isNative) {
-                var fs = window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
                 var share = window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
-                if (fs && share) {
-                    var written = await fs.writeFile({
-                        path: filename,
-                        data: content,
-                        directory: 'CACHE',
-                        encoding: 'utf8'
-                    });
+                if (share) {
                     try {
-                        await share.share({
-                            title: 'Phine backup',
-                            url: written.uri,
-                            dialogTitle: 'Save backup'
-                        });
+                        var file = new File([content], filename, { type: 'application/json' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                title: 'Nous backup',
+                                files: [file]
+                            });
+                        } else {
+                            await share.share({
+                                title: 'Nous backup',
+                                text: content,
+                                dialogTitle: 'Save backup'
+                            });
+                        }
                     } catch (e) {
                         // User cancelled share sheet — not an error.
                     }
@@ -383,7 +389,7 @@
             // App name
             ctx.fillStyle = opts.accent;
             ctx.font = 'bold 14px system-ui';
-            ctx.fillText('PHINE', 30, 36);
+            ctx.fillText('NOUS', 30, 36);
 
             // User name
             ctx.fillStyle = opts.textColor;
@@ -459,7 +465,7 @@
             ctx.font = '11px system-ui';
             ctx.fillText('Longest streak: ' + opts.longestStreak + ' days', 30, h - 20);
             ctx.textAlign = 'right';
-            ctx.fillText('phine.app', w - 30, h - 20);
+            ctx.fillText('nous.app', w - 30, h - 20);
             ctx.textAlign = 'left';
             ctx.globalAlpha = 1;
         }
@@ -468,10 +474,15 @@
             var c = document.getElementById(canvasId);
             if (!c) return;
             var blob = await new Promise(function(resolve) { c.toBlob(resolve, 'image/png'); });
-            if (blob && navigator.clipboard && navigator.clipboard.write) {
-                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-            } else {
-                throw new Error('Clipboard API not available');
+            if (!blob) return;
+            try {
+                if (typeof ClipboardItem !== 'undefined' && navigator.clipboard && navigator.clipboard.write) {
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                } else {
+                    await NousShare.shareCanvas(canvasId, 'Nous', '');
+                }
+            } catch (e) {
+                await NousShare.shareCanvas(canvasId, 'Nous', '');
             }
         }
     </script>

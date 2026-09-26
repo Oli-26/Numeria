@@ -49,9 +49,9 @@ public class LeaderboardService : ILeaderboardService
         }
     }
 
-    public async Task<List<LeaderboardEntry>> GetLeaderboardAsync(int count = 50)
+    public async Task<List<LeaderboardEntry>?> GetLeaderboardAsync(int count = 50)
     {
-        if (!IsConfigured) return GetDemoData();
+        if (!IsConfigured) return new List<LeaderboardEntry>();
 
         try
         {
@@ -61,7 +61,7 @@ public class LeaderboardService : ILeaderboardService
         }
         catch
         {
-            return GetDemoData();
+            return null;
         }
     }
 
@@ -119,18 +119,4 @@ public class LeaderboardService : ILeaderboardService
         }
     }
 
-    private static List<LeaderboardEntry> GetDemoData()
-    {
-        return new List<LeaderboardEntry>
-        {
-            new() { Name = "Euler_Fan", Score = 12500, Seconds = 15, Text = "7 topics" },
-            new() { Name = "GaussLover", Score = 9800, Seconds = 12, Text = "5 topics" },
-            new() { Name = "TopologyNerd", Score = 7200, Seconds = 10, Text = "4 topics" },
-            new() { Name = "PrimeSieve", Score = 5500, Seconds = 8, Text = "3 topics" },
-            new() { Name = "IntegralKing", Score = 4100, Seconds = 7, Text = "3 topics" },
-            new() { Name = "MatrixMaster", Score = 3200, Seconds = 6, Text = "2 topics" },
-            new() { Name = "ProofWriter", Score = 2400, Seconds = 5, Text = "2 topics" },
-            new() { Name = "NewLearner", Score = 800, Seconds = 3, Text = "1 topic" },
-        };
-    }
 }

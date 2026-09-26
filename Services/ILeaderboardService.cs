@@ -12,7 +12,9 @@ public class LeaderboardEntry
 public interface ILeaderboardService
 {
     Task<bool> SubmitScoreAsync(string name, int score, int level, string extra);
-    Task<List<LeaderboardEntry>> GetLeaderboardAsync(int count = 50);
+    // Null means the leaderboard could not be loaded (offline/error); an empty
+    // list means it loaded fine and there are no scores yet.
+    Task<List<LeaderboardEntry>?> GetLeaderboardAsync(int count = 50);
     Task<LeaderboardEntry?> GetPlayerScoreAsync(string name);
     bool IsConfigured { get; }
 }

@@ -18,7 +18,7 @@ else if (quizState == QuizState.Empty)
     <div class="card" style="text-align: center; padding: 32px 24px;">
         <h2>No Questions Available</h2>
         <p style="color: var(--text-muted); margin: 8px 0 16px;">There aren't enough questions for this quiz yet. Try another topic or complete more lessons.</p>
-        <button class="btn btn-primary" @onclick="() => OnComplete.InvokeAsync(0)">Go Back</button>
+        <button class="btn btn-primary" @onclick="FinishEmpty">Go Back</button>
     </div>
 }
 else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
@@ -34,7 +34,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
         </div>
 
         <div class="progress-bar-container" style="margin-bottom: 16px">
-            <div class="progress-bar-fill" style="width: @(((double)(currentIndex) / questions.Count * 100).ToString("F0"))%"></div>
+            <div class="progress-bar-fill" style="width: @(((double)(currentIndex + 1) / questions.Count * 100).ToString("F0"))%"></div>
         </div>
 
         @{
@@ -70,7 +70,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
 
         @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.VisualIdentify)
         {
-            <div class="options-grid">
+            <div class="options-grid stagger-options">
                 @if (q.Options != null)
                 {
                     @foreach (var option in q.Options)
@@ -98,6 +98,10 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
                             disabled="@string.IsNullOrWhiteSpace(fillInAnswer)">Submit</button>
                 }
             </div>
+            @if (NeedsSymbolHint(q))
+            {
+                <p class="symbol-hint">Tip: spell out symbols — e.g. <code>pi</code> for π, <code>sqrt</code> for √, <code>theta</code> for θ, <code>hbar</code> for ℏ, <code>alpha</code> for α.</p>
+            }
         }
         else if (q.Type == QuestionType.NumericInput)
         {
@@ -119,7 +123,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
                 <p class="ms-hint">Select all that apply:</p>
                 @if (q.Options != null)
                 {
-                    <div class="options-grid">
+                    <div class="options-grid stagger-options">
                         @foreach (var option in q.Options)
                         {
                             var isPicked = msSelected.Contains(option);
@@ -269,11 +273,13 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
                         <div class="match-options">
                             <p class="matching-label">Available answers:</p>
                             <div class="match-options-grid">
-                                @foreach (var right in shuffledRights)
+                                @for (var ri = 0; ri < shuffledRights.Count; ri++)
                                 {
-                                    var isUsed = userMatches.ContainsValue(right);
+                                    var chip = ri;
+                                    var right = shuffledRights[chip];
+                                    var isUsed = userMatchChips.ContainsValue(chip);
                                     <button class="match-option-btn @(isUsed ? "used" : "") @(selectedLeft != null && !isUsed ? "available" : "")"
-                                            @onclick="() => SelectRight(right)"
+                                            @onclick="() => SelectRight(chip)"
                                             disabled="@(answerSubmitted || selectedLeft == null || isUsed)">
                                         @right
                                     </button>
@@ -420,6 +426,9 @@ else if (quizState == QuizState.Complete)
     [Parameter] public string? TopicId { get; set; }
     [Parameter] public string? LessonId { get; set; }
     [Parameter] public EventCallback<int> OnComplete { get; set; }
+    // Raised with the per-question results just before OnComplete (empty list for an empty quiz).
+    [Parameter] public EventCallback<List<QuizResult>> OnResults { get; set; }
+    [Parameter] public double XpMultiplier { get; set; } = 1.0;
 
     private enum QuizState { Loading, InProgress, Complete, Empty }
     private QuizState quizState = QuizState.Loading;
@@ -438,6 +447,8 @@ else if (quizState == QuizState.Complete)
     // Matching state
     private string? selectedLeft;
     private Dictionary<string, string> userMatches = new();
+    // chip index per left item, so duplicate answer texts stay separate chips
+    private Dictionary<string, int> userMatchChips = new();
     private Dictionary<string, bool> matchResults = new();
     private List<string> shuffledRights = new();
 
@@ -457,6 +468,9 @@ else if (quizState == QuizState.Complete)
 
     // Ordering state
     private List<string> orderedSteps = new();
+
+    // Restoration guard — prevents re-deducting hints on restore
+    private bool _restoring;
 
     // MultipleSelect state
     private HashSet<string> msSelected = new();
@@ -525,7 +539,9 @@ else if (quizState == QuizState.Complete)
                         }
 
                         quizState = QuizState.InProgress;
+                        _restoring = true;
                         await InitQuestion();
+                        _restoring = false;
                         restored = true;
                     }
                 }
@@ -660,7 +676,15 @@ else if (quizState == QuizState.Complete)
         catAssignments.Clear();
         catSelectedItem = null;
         errorSelectedStep = -1;
+        userMatches.Clear();
+        userMatchChips.Clear();
+        matchResults.Clear();
+        selectedLeft = null;
+        shuffledRights.Clear();
+        orderedSteps.Clear();
+        eliminatedOptions.Clear();
         await JS.TryInvokeVoidAsync("Sounds.playClick");
+        StateHasChanged();
     }
 
     private async Task InitQuestion()
@@ -672,15 +696,17 @@ else if (quizState == QuizState.Complete)
         errorSelectedStep = -1;
         eliminatedOptions.Clear();
         userMatches.Clear();
+        userMatchChips.Clear();
         matchResults.Clear();
         msSelected.Clear();
         catAssignments.Clear();
         catSelectedItem = null;
         catItemsShuffled.Clear();
         shuffledRights.Clear();
+        orderedSteps.Clear();
 
         var q = questions[currentIndex];
-        if (showHintsByDefault && hintsAvailable > 0 && q.CorrectAnswer != null)
+        if (!_restoring && showHintsByDefault && hintsAvailable > 0 && q.CorrectAnswer != null)
         {
             hintShown = true;
             hintsAvailable--;
@@ -766,6 +792,24 @@ else if (quizState == QuizState.Complete)
         if (e.Key == "Enter") await SubmitFillIn();
     }
 
+    private static bool NeedsSymbolHint(Question q)
+    {
+        if (HasNonAscii(q.CorrectAnswer)) return true;
+        if (q.AcceptableAnswers != null)
+        {
+            foreach (var a in q.AcceptableAnswers)
+                if (HasNonAscii(a)) return true;
+        }
+        return false;
+    }
+
+    private static bool HasNonAscii(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return false;
+        foreach (var c in s) if (c > 127) return true;
+        return false;
+    }
+
     private async Task SubmitOrdering()
     {
         var q = questions[currentIndex];
@@ -836,10 +880,12 @@ else if (quizState == QuizState.Complete)
         else wrongCount++;
         await Progress.RecordQuestionAnsweredAsync(TopicId, result.IsCorrect);
 
-        // Feed into spaced repetition
-        if (TopicId != null)
+        // Feed into spaced repetition — every quiz answer, including mixed quizzes
+        // where TopicId is null but each question still knows its own topic.
+        var reviewTopicId = result.Question.TopicId ?? TopicId;
+        if (reviewTopicId != null)
         {
-            await ReviewService.AddToReviewAsync(result.Question.Id, TopicId, result.Question.LessonId, result.IsCorrect);
+            await ReviewService.AddToReviewAsync(result.Question.Id, reviewTopicId, result.Question.LessonId, result.IsCorrect, result.Question.ConceptId);
         }
 
         await SaveQuizState();
@@ -855,6 +901,8 @@ else if (quizState == QuizState.Complete)
 
     private async Task NextQuestion()
     {
+        if (!answerSubmitted) return;
+        answerSubmitted = false;
         currentIndex++;
         if (currentIndex >= questions.Count)
         {
@@ -879,6 +927,9 @@ else if (quizState == QuizState.Complete)
                 profile.XpBoostMultiplier = 1;
             await Progress.SaveProfileAsync(profile);
         }
+
+        if (XpMultiplier > 1.0)
+            totalXpEarned = (int)(totalXpEarned * XpMultiplier);
 
         quizEvent = await Gamification.AwardXpAsync(totalXpEarned);
 
@@ -916,7 +967,14 @@ else if (quizState == QuizState.Complete)
 
     private async Task Finish()
     {
+        await OnResults.InvokeAsync(results);
         await OnComplete.InvokeAsync(totalXpEarned);
+    }
+
+    private async Task FinishEmpty()
+    {
+        await OnResults.InvokeAsync(new List<QuizResult>());
+        await OnComplete.InvokeAsync(0);
     }
 
     private string GetOptionClass(string option)
@@ -950,14 +1008,17 @@ else if (quizState == QuizState.Complete)
             selectedLeft = left;
     }
 
-    private void SelectRight(string right)
+    private void SelectRight(int chip)
     {
         if (answerSubmitted || selectedLeft == null) return;
-        // If this right was already matched to something else, remove that match
-        var existingKey = userMatches.FirstOrDefault(kv => kv.Value == right).Key;
+        var existingKey = userMatchChips.FirstOrDefault(kv => kv.Value == chip).Key;
         if (existingKey != null)
+        {
             userMatches.Remove(existingKey);
-        userMatches[selectedLeft] = right;
+            userMatchChips.Remove(existingKey);
+        }
+        userMatches[selectedLeft] = shuffledRights[chip];
+        userMatchChips[selectedLeft] = chip;
         selectedLeft = null;
     }
 
@@ -965,6 +1026,7 @@ else if (quizState == QuizState.Complete)
     {
         if (answerSubmitted) return;
         userMatches.Remove(left);
+        userMatchChips.Remove(left);
     }
 }
 
@@ -1043,6 +1105,23 @@ else if (quizState == QuizState.Complete)
 
     .fill-input:focus {
         border-color: var(--primary);
+    }
+
+    .symbol-hint {
+        margin: 8px 0 0;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    .symbol-hint code {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 0.78rem;
+        color: var(--text-primary);
     }
 
     .ordering-section {

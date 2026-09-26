@@ -328,9 +328,9 @@
 
     <div class="card settings-item about-card">
         <div class="about-brand">
-            <img src="phine-icon.svg" alt="Phine" class="about-icon" />
+            <img src="nous-icon.svg" alt="Nous" class="about-icon" />
             <div>
-                <h3>Phine</h3>
+                <h3>Nous</h3>
                 <p>v1.0</p>
             </div>
         </div>
@@ -388,7 +388,7 @@
             catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.GetVoices", ex); }
             try
             {
-                var muted = await JS.InvokeAsync<string>("localStorage.getItem", "numeria-sound-muted");
+                var muted = await JS.InvokeAsync<string>("localStorage.getItem", "nous-sound-muted");
                 soundEnabled = muted != "true";
             }
             catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.readMuted", ex); }
@@ -441,7 +441,7 @@
     {
         try
         {
-            errorLog = await JS.InvokeAsync<List<ErrorLogEntry>>("PhineErrorLog.get") ?? new();
+            errorLog = await JS.InvokeAsync<List<ErrorLogEntry>>("NousErrorLog.get") ?? new();
         }
         catch
         {
@@ -451,7 +451,7 @@
 
     private async Task ClearErrorLog()
     {
-        await JS.TryInvokeVoidAsync("PhineErrorLog.clear");
+        await JS.TryInvokeVoidAsync("NousErrorLog.clear");
         errorLog = new();
     }
 
@@ -474,7 +474,7 @@
         soundEnabled = !soundEnabled;
         try
         {
-            await JS.InvokeVoidAsync("localStorage.setItem", "numeria-sound-muted", soundEnabled ? "false" : "true");
+            await JS.InvokeVoidAsync("localStorage.setItem", "nous-sound-muted", soundEnabled ? "false" : "true");
             await JS.InvokeVoidAsync("eval", $"window.Sounds._muted = {(soundEnabled ? "false" : "true")}");
             if (soundEnabled)
                 await JS.TryInvokeVoidAsync("Sounds.playClick");
@@ -509,13 +509,13 @@
     private async Task ExportStats()
     {
         var profile = await Progress.GetProfileAsync();
-        var text = $"Phine Stats\n" +
+        var text = $"Nous Stats\n" +
                    $"Name: {profile.DisplayName}\n" +
                    $"Total XP: {profile.TotalXp}\n" +
                    $"Level: {Gamification.GetLevel(profile.TotalXp)}\n" +
                    $"Streak: {profile.CurrentStreak} days\n" +
                    $"Lessons: {profile.LessonsCompleted.Count}\n" +
-                   $"Quizzes: {profile.QuizHistory.Count}\n" +
+                   $"Quizzes: {profile.TotalQuizCount}\n" +
                    $"Accuracy: {(profile.TotalQuestionsAnswered > 0 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0)}%\n" +
                    $"Achievements: {profile.AchievementsUnlocked.Count}";
         try
@@ -575,7 +575,7 @@
             var json = await JS.InvokeAsync<string?>("exportProfileData");
             if (json != null)
             {
-                var filename = $"phine-backup-{DateTime.Now:yyyy-MM-dd}.json";
+                var filename = $"nous-backup-{DateTime.Now:yyyy-MM-dd}.json";
                 await JS.InvokeVoidAsync("downloadFile", filename, json);
                 await JS.InvokeVoidAsync("showToast", "Backup ready — pick where to save", "");
             }

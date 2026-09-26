@@ -5,6 +5,7 @@
 @inject IProgressService Progress
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject IQuizEngine QuizEngine
 @using MathVoyager.Models
 
 @if (activeQuiz == null)
@@ -92,7 +93,7 @@ else
             </div>
 
             <div class="progress-bar-container" style="margin-bottom: 16px">
-                <div class="progress-bar-fill" style="width: @(((double)currentIndex / activeQuiz.Questions.Count * 100).ToString("F0"))%; background: @activeQuiz.Theme"></div>
+                <div class="progress-bar-fill" style="width: @(((double)(currentIndex + 1) / activeQuiz.Questions.Count * 100).ToString("F0"))%; background: @activeQuiz.Theme"></div>
             </div>
 
             @{
@@ -105,7 +106,7 @@ else
 
             @if (q.Type == QuestionType.MultipleChoice)
             {
-                <div class="options-grid">
+                <div class="options-grid stagger-options">
                     @if (q.Options != null)
                     {
                         @foreach (var option in q.Options)
@@ -300,8 +301,8 @@ else
 @code {
     [Parameter] public string? QuizId { get; set; }
 
-    private enum QuizState { InProgress, Complete }
-    private QuizState quizState = QuizState.InProgress;
+    private enum QuizState { Loading, InProgress, Complete }
+    private QuizState quizState = QuizState.Loading;
 
     private List<SynthesisQuiz>? quizzes;
     private SynthesisQuiz? activeQuiz;
@@ -456,10 +457,7 @@ else
 
     private bool IsAcceptableAnswer(Question q, string answer)
     {
-        var normalized = answer.Trim().ToLowerInvariant();
-        if (q.AcceptableAnswers != null && q.AcceptableAnswers.Any(a => a.Trim().ToLowerInvariant() == normalized))
-            return true;
-        return q.CorrectAnswer != null && q.CorrectAnswer.Trim().ToLowerInvariant() == normalized;
+        return QuizEngine.ValidateAnswer(q, answer).IsCorrect;
     }
 
     private async Task HandleFillInKeydown(KeyboardEventArgs e)

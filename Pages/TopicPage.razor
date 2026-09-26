@@ -174,6 +174,48 @@ else if (lessons != null && topic != null)
         </div>
     }
 
+    var sims = SimulatorCatalog.ForTopic(TopicId);
+    @if (sims.Count > 0)
+    {
+        <div class="resources-section">
+            <h3 class="resources-header">Try it</h3>
+            <p class="resources-subtitle">Hands-on simulators for this topic</p>
+            @foreach (var sim in sims)
+            {
+                <div class="card card-clickable resource-card" @onclick='() => Nav.NavigateTo(sim.Route)'>
+                    <div class="resource-title-row">
+                        <strong><Icon Name="@sim.Icon" Size="14" /> @sim.Name</strong>
+                        <Icon Name="chevron-right" Size="14" />
+                    </div>
+                    <small class="resource-note">@sim.Blurb</small>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Connections().Count > 0)
+    {
+        <div class="resources-section">
+            <h3 class="resources-header">How this connects</h3>
+            <p class="resources-subtitle">What this topic builds on, and where it leads</p>
+            @foreach (var (other, edge) in Connections())
+            {
+                var otherTopic = allTopics?.FirstOrDefault(t => t.Id == other);
+                if (otherTopic == null) continue;
+                <div class="card card-clickable resource-card" @onclick='() => Nav.NavigateTo($"/topic/{other}")'>
+                    <div class="resource-title-row">
+                        <strong style="color: @otherTopic.Color">@ConnectionLabel(edge) @otherTopic.Name</strong>
+                        <Icon Name="chevron-right" Size="14" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(edge.Why))
+                    {
+                        <small class="resource-note">@edge.Why</small>
+                    }
+                </div>
+            }
+        </div>
+    }
+
     @if (topicResources != null && topicResources.Any())
     {
         <div class="resources-section">
@@ -238,7 +280,7 @@ else
         public List<GraphEdge> Edges { get; set; } = new();
     }
     private class GraphNode { public string Id {get;set;}=""; public string Name {get;set;}=""; public string Domain {get;set;}=""; }
-    private class GraphEdge { public string From {get;set;}=""; public string To {get;set;}=""; public string Type {get;set;}=""; public double Strength {get;set;} }
+    private class GraphEdge { public string From {get;set;}=""; public string To {get;set;}=""; public string Type {get;set;}=""; public double Strength {get;set;} public string? Why {get;set;} }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -266,7 +308,8 @@ else
                         From = e.GetProperty("from").GetString() ?? "",
                         To = e.GetProperty("to").GetString() ?? "",
                         Type = e.TryGetProperty("type", out var et) ? (et.GetString() ?? "prereq") : "prereq",
-                        Strength = e.TryGetProperty("strength", out var es) ? es.GetDouble() : 0.0
+                        Strength = e.TryGetProperty("strength", out var es) ? es.GetDouble() : 0.0,
+                        Why = e.TryGetProperty("why", out var ew) ? ew.GetString() : null
                     });
                 }
             }
@@ -319,6 +362,17 @@ else
         "article" => 7,
         _ => 99
     };
+
+    private List<(string other, GraphEdge edge)> Connections() => graph == null ? new() : graph.Edges
+        .Where(e => e.From == TopicId || e.To == TopicId)
+        .OrderBy(e => e.Type == "prereq" && e.To == TopicId ? 0 : e.Type == "prereq" ? 1 : 2)
+        .ThenByDescending(e => e.Strength)
+        .Take(8)
+        .Select(e => (e.From == TopicId ? e.To : e.From, e))
+        .ToList();
+
+    private string ConnectionLabel(GraphEdge e) =>
+        e.Type != "prereq" ? "Related:" : e.To == TopicId ? "Builds on" : "Leads to";
 
     private List<string> AllPrereqs()
     {

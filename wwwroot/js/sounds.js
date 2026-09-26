@@ -229,11 +229,19 @@ window.Sounds = {
             osc.start(ctx.currentTime);
             osc.stop(ctx.currentTime + 0.04);
         } catch (e) { }
+    },
+
+    // Release the AudioContext to free system audio resources.
+    close() {
+        if (this.ctx) {
+            try { this.ctx.close(); } catch (e) { }
+            this.ctx = null;
+        }
     }
 };
 
 // Init mute state from localStorage
-try { Sounds._muted = localStorage.getItem('numeria-sound-muted') === 'true'; } catch(e) {}
+try { Sounds._muted = localStorage.getItem('nous-sound-muted') === 'true'; } catch(e) {}
 
 // ── Confetti system ──
 window.Confetti = {

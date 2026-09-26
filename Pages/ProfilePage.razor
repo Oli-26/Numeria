@@ -114,15 +114,15 @@
                 </div>
                 <div class="detail-row">
                     <span><Icon Name="pencil" Size="16" /> Quizzes Taken</span>
-                    <strong>@profile.QuizHistory.Count</strong>
+                    <strong>@profile.TotalQuizCount</strong>
                 </div>
                 <div class="detail-row">
                     <span><Icon Name="trophy" Size="16" /> Best Quiz Score</span>
-                    <strong>@(profile.QuizHistory.Count > 0 ? profile.QuizHistory.Max(q => q.Score) : 0)%</strong>
+                    <strong>@profile.BestQuizScore%</strong>
                 </div>
                 <div class="detail-row">
                     <span><Icon Name="trending-up" Size="16" /> Average Score</span>
-                    <strong>@(profile.QuizHistory.Count > 0 ? ((int)profile.QuizHistory.Average(q => q.Score)) : 0)%</strong>
+                    <strong>@profile.AverageQuizScore%</strong>
                 </div>
                 <div class="detail-row">
                     <span><Icon Name="clock" Size="16" /> Study Time</span>
@@ -130,7 +130,7 @@
                 </div>
                 <div class="detail-row">
                     <span><Icon Name="award" Size="16" /> Perfect Quizzes</span>
-                    <strong>@profile.QuizHistory.Count(q => q.Score == 100)</strong>
+                    <strong>@profile.PerfectQuizCount</strong>
                 </div>
                 <div class="detail-row">
                     <span><Icon Name="lightbulb" Size="16" /> Hints Used</span>
@@ -167,47 +167,87 @@
     @if (activeTab == "topics")
     {
         <div class="section stagger-in tab-content" @key='"topics"'>
-            @if (topics != null)
+            @if (topics != null && domains != null)
             {
-                @foreach (var topic in topics)
-                {
-                    var ts = profile.TopicStatistics.ContainsKey(topic.Id) ? profile.TopicStatistics[topic.Id] : null;
-                    var accuracy = ts != null && ts.QuestionsAnswered > 0 ? ts.CorrectAnswers * 100 / ts.QuestionsAnswered : 0;
-                    var progress = topicProgress.ContainsKey(topic.Id) ? topicProgress[topic.Id] : 0;
+                @* Filter chips *@
+                <div class="topics-filter">
+                    <button class="topic-filter-chip @(topicFilter == "all" ? "active" : "")" @onclick='() => topicFilter = "all"'>All <small>@topics.Count</small></button>
+                    <button class="topic-filter-chip @(topicFilter == "active" ? "active" : "")" @onclick='() => topicFilter = "active"'>Started <small>@topics.Count(t => topicProgress.GetValueOrDefault(t.Id, 0) > 0)</small></button>
+                    <button class="topic-filter-chip @(topicFilter == "mastered" ? "active" : "")" @onclick='() => topicFilter = "mastered"'>Mastered <small>@profile.TopicMastery.Count(kv => kv.Value > 0)</small></button>
+                </div>
 
-                    <div class="card topic-stat-card" style="border-color: @topic.Color">
-                        <div class="topic-stat-header">
-                            <div style="display:flex;align-items:center;gap:8px">
-                                <h3 style="color: @topic.Color; margin: 0">@topic.Name</h3>
-                                @if (profile.TopicMastery.GetValueOrDefault(topic.Id, 0) > 0)
-                                {
-                                    <span class="mastery-badge-sm" title="@GetMasteryName(profile.TopicMastery[topic.Id])" style="background: @GetMasteryColor(profile.TopicMastery[topic.Id])">
-                                        <Icon Name="@GetMasteryIcon(profile.TopicMastery[topic.Id])" Size="14" />
-                                    </span>
-                                }
+                @* Domain summary chart *@
+                <div class="card domain-summary-card">
+                    <h3 class="domain-summary-title">Domain Progress</h3>
+                    @foreach (var d in domains.OrderByDescending(d => DomainAvgProgress(d.Id)))
+                    {
+                        var domTopics = topics.Where(t => t.Domain == d.Id).ToList();
+                        if (domTopics.Count == 0) continue;
+                        var avg = DomainAvgProgress(d.Id);
+                        var mastered = domTopics.Count(t => profile.TopicMastery.GetValueOrDefault(t.Id, 0) > 0);
+                        var hue = DomainColor(d.Id);
+                        <div class="domain-row">
+                            <div class="domain-row-head">
+                                <span class="domain-row-name">@d.Name</span>
+                                <span class="domain-row-stats"><strong>@avg.ToString("F0")%</strong> · @mastered/@domTopics.Count</span>
                             </div>
-                            <span class="chip" style="color: @topic.Color; border: 1px solid @topic.Color; background: transparent">@progress.ToString("F0")%</span>
+                            <div class="domain-row-bar">
+                                <div class="domain-row-fill" style="width: @avg.ToString("F0")%; background: @hue"></div>
+                            </div>
                         </div>
-                        <div class="progress-bar-container" style="margin-top: 8px">
-                            <div class="progress-bar-fill animate-in" style="width: @progress.ToString("F0")%; background: @topic.Color"></div>
-                        </div>
-                        <div class="topic-stat-grid">
-                            <div class="topic-mini-stat">
-                                <span class="mini-val">@(ts?.QuestionsAnswered ?? 0)</span>
-                                <span class="mini-label">Questions</span>
-                            </div>
-                            <div class="topic-mini-stat">
-                                <span class="mini-val">@accuracy%</span>
-                                <span class="mini-label">Accuracy</span>
-                            </div>
-                            <div class="topic-mini-stat">
-                                <span class="mini-val">@(ts?.QuizzesTaken ?? 0)</span>
-                                <span class="mini-label">Quizzes</span>
-                            </div>
-                            <div class="topic-mini-stat">
-                                <span class="mini-val">@(ts?.BestScore ?? 0)%</span>
-                                <span class="mini-label">Best</span>
-                            </div>
+                    }
+                </div>
+
+                @* Filtered topic list, grouped by domain *@
+                @foreach (var d in domains)
+                {
+                    var domTopics = topics.Where(t => t.Domain == d.Id)
+                        .Where(t => FilterMatch(t, topicFilter))
+                        .OrderByDescending(t => topicProgress.GetValueOrDefault(t.Id, 0))
+                        .ToList();
+                    if (domTopics.Count == 0) continue;
+
+                    <div class="topic-domain-group">
+                        <div class="topic-domain-head" style="color: @DomainColor(d.Id)">@d.Name <small>@domTopics.Count</small></div>
+                        <div class="topic-rows">
+                            @foreach (var topic in domTopics)
+                            {
+                                var ts = profile.TopicStatistics.GetValueOrDefault(topic.Id);
+                                var accuracy = ts != null && ts.QuestionsAnswered > 0 ? ts.CorrectAnswers * 100 / ts.QuestionsAnswered : 0;
+                                var progress = topicProgress.GetValueOrDefault(topic.Id, 0);
+                                var mastery = profile.TopicMastery.GetValueOrDefault(topic.Id, 0);
+                                <a class="topic-row" href="@($"/topic/{topic.Id}")">
+                                    <span class="topic-row-stripe" style="background: @topic.Color"></span>
+                                    <div class="topic-row-body">
+                                        <div class="topic-row-line1">
+                                            <span class="topic-row-name">@topic.Name</span>
+                                            @if (mastery > 0)
+                                            {
+                                                <span class="topic-row-mastery" title="@GetMasteryName(mastery)" style="color: @GetMasteryColor(mastery)">
+                                                    <Icon Name="@GetMasteryIcon(mastery)" Size="13" />
+                                                </span>
+                                            }
+                                            <span class="topic-row-pct">@progress.ToString("F0")%</span>
+                                        </div>
+                                        <div class="topic-row-bar">
+                                            <div class="topic-row-fill" style="width: @progress.ToString("F0")%; background: @topic.Color"></div>
+                                        </div>
+                                        @if (ts != null && ts.QuestionsAnswered > 0)
+                                        {
+                                            <div class="topic-row-line2">
+                                                <span>@ts.QuestionsAnswered Q</span>
+                                                <span class="dot">·</span>
+                                                <span>@accuracy% acc</span>
+                                                @if (ts.BestScore > 0)
+                                                {
+                                                    <span class="dot">·</span>
+                                                    <span>best @ts.BestScore%</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </a>
+                            }
                         </div>
                     </div>
                 }
@@ -276,16 +316,17 @@
                 @foreach (var a in allAchievements.OrderByDescending(a => profile.AchievementsUnlocked.Contains(a.Id)))
                 {
                     var unlocked = profile.AchievementsUnlocked.Contains(a.Id);
-                    <div class="achievement-tile card @(unlocked ? "unlocked" : "locked")">
-                        <div class="achievement-icon">@if (unlocked) { <Icon Name="trophy" Size="24" /> } else { <Icon Name="lock" Size="24" /> }</div>
-                        <div class="achievement-info">
-                            <strong>@a.Name</strong>
-                            <small>@a.Description</small>
-                            @if (unlocked)
-                            {
-                                <span class="achievement-xp">+@a.XpReward XP</span>
-                            }
-                        </div>
+                    <div class="achievement-tile card @(unlocked ? "unlocked" : "locked")" title="@a.Description">
+                        <div class="achievement-icon">@if (unlocked) { <Icon Name="trophy" Size="22" /> } else { <Icon Name="lock" Size="20" /> }</div>
+                        <strong class="achievement-name">@a.Name</strong>
+                        @if (unlocked)
+                        {
+                            <span class="achievement-xp">+@a.XpReward XP</span>
+                        }
+                        else
+                        {
+                            <small class="achievement-desc">@a.Description</small>
+                        }
                     </div>
                 }
             </div>
@@ -318,6 +359,7 @@ else
     private UserProfile? profile;
     private List<Achievement> allAchievements = new();
     private List<Topic>? topics;
+    private List<Domain>? domains;
     private Dictionary<string, double> topicProgress = new();
     private int level;
     private int xpInLevel;
@@ -326,6 +368,7 @@ else
     private int overallAccuracy;
     private double achievementPct;
     private string activeTab = "overview";
+    private string topicFilter = "all";
     private List<(string date, string label)> last28Days = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -335,6 +378,7 @@ else
             profile = await Progress.GetProfileAsync();
             allAchievements = await AchievementRepo.GetAchievementsAsync();
             topics = await Content.GetTopicsAsync();
+            domains = await Content.GetDomainsAsync();
 
             foreach (var topic in topics)
                 topicProgress[topic.Id] = await Progress.GetTopicProgressAsync(topic.Id);
@@ -380,6 +424,45 @@ else
         activeTab = tab;
         await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
+
+    private double DomainAvgProgress(string domainId)
+    {
+        if (topics == null) return 0;
+        var dts = topics.Where(t => t.Domain == domainId).ToList();
+        if (dts.Count == 0) return 0;
+        return dts.Average(t => topicProgress.GetValueOrDefault(t.Id, 0));
+    }
+
+    private string DomainColor(string domainId) => domainId switch
+    {
+        "math" => "#4A5FE0",
+        "philosophy" => "#A78BFA",
+        "physics" => "#22B8CF",
+        "biology" => "#22C55E",
+        "chemistry" => "#F59E0B",
+        "geology" => "#A0522D",
+        "materials" => "#94A3B8",
+        "history" => "#B45309",
+        "linguistics" => "#EC4899",
+        "cs" => "#6366F1",
+        "economics" => "#10B981",
+        "literature" => "#D97706",
+        "politics" => "#EF4444",
+        "psychology" => "#F97316",
+        "anthropology" => "#84CC16",
+        "music" => "#F472B6",
+        "art" => "#FB7185",
+        "religion" => "#8B5CF6",
+        "media" => "#06B6D4",
+        _ => "var(--primary)"
+    };
+
+    private bool FilterMatch(Topic t, string filter) => filter switch
+    {
+        "active" => topicProgress.GetValueOrDefault(t.Id, 0) > 0,
+        "mastered" => profile!.TopicMastery.GetValueOrDefault(t.Id, 0) > 0,
+        _ => true
+    };
 
     private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
     private string GetMasteryIcon(int tier) => tier switch { 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
@@ -531,15 +614,58 @@ else
     .heatmap-legend small { color: var(--text-muted); font-size: 0.7rem; }
     .legend-cell { width: 14px; height: 14px; }
 
-    /* Topic stats */
-    .topic-stat-card { margin-bottom: 10px; padding: 14px; }
-    .topic-stat-card:hover { transform: none; }
-    .topic-stat-header { display: flex; justify-content: space-between; align-items: center; }
-    .topic-stat-card small { color: var(--text-muted); font-size: 0.8rem; }
-    .topic-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
-    .topic-mini-stat { text-align: center; }
-    .mini-val { display: block; font-weight: 700; font-size: 1.05rem; color: var(--primary); }
-    .mini-label { font-size: 0.7rem; color: var(--text-muted); }
+    /* Topics — filter chips */
+    .topics-filter { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .topic-filter-chip {
+        padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-secondary);
+        font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all 0.15s ease;
+    }
+    .topic-filter-chip small { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; }
+    .topic-filter-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .topic-filter-chip.active small { color: rgba(255,255,255,0.85); }
+
+    /* Topics — domain summary chart */
+    .domain-summary-card { padding: 14px 16px; margin-bottom: 16px; }
+    .domain-summary-card:hover { transform: none; }
+    .domain-summary-title { margin: 0 0 10px; font-size: 0.95rem; color: var(--text-secondary); }
+    .domain-row { margin-bottom: 8px; }
+    .domain-row:last-child { margin-bottom: 0; }
+    .domain-row-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
+    .domain-row-name { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    .domain-row-stats { font-size: 0.75rem; color: var(--text-muted); }
+    .domain-row-stats strong { color: var(--text-primary); font-weight: 700; }
+    .domain-row-bar { height: 6px; background: var(--bg-surface); border-radius: 3px; overflow: hidden; }
+    .domain-row-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+    /* Topics — domain-grouped list */
+    .topic-domain-group { margin-bottom: 14px; }
+    .topic-domain-head {
+        font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.5px; margin: 0 4px 6px; display: flex; align-items: baseline; gap: 6px;
+    }
+    .topic-domain-head small { color: var(--text-muted); font-weight: 500; font-size: 0.7rem; letter-spacing: 0; }
+    .topic-rows { display: flex; flex-direction: column; gap: 4px; }
+    .topic-row {
+        display: flex; align-items: stretch; gap: 10px; padding: 8px 10px;
+        background: var(--bg-card); border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        text-decoration: none; color: inherit;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .topic-row:hover { background: var(--bg-surface); border-color: var(--text-muted); }
+    .topic-row-stripe { width: 3px; border-radius: 2px; flex-shrink: 0; }
+    .topic-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .topic-row-line1 { display: flex; align-items: center; gap: 6px; }
+    .topic-row-name { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topic-row-mastery { display: inline-flex; align-items: center; }
+    .topic-row-pct { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; }
+    .topic-row-bar { height: 4px; background: var(--bg-surface); border-radius: 2px; overflow: hidden; }
+    .topic-row-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+    .topic-row-line2 { font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .topic-row-line2 .dot { opacity: 0.4; }
 
     /* History */
     .history-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 8px; }
@@ -571,17 +697,35 @@ else
     .achievement-ring-text strong { font-size: 1.4rem; color: var(--primary); }
     .achievement-ring-text small { font-size: 0.8rem; color: var(--text-muted); }
 
-    .achievements-grid { display: flex; flex-direction: column; gap: 8px; }
-    .achievement-tile { display: flex; align-items: center; gap: 12px; padding: 14px; }
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .achievement-tile {
+        display: flex; flex-direction: column; align-items: center; text-align: center;
+        gap: 4px; padding: 12px 8px; min-height: 100px;
+    }
     .achievement-tile:hover { transform: none; }
-    .achievement-tile.locked { opacity: 0.4; }
+    .achievement-tile.locked { opacity: 0.45; }
     .achievement-tile.unlocked { border-color: var(--accent); }
-    .achievement-icon { font-size: 1.5rem; flex-shrink: 0; }
-    .achievement-info { display: flex; flex-direction: column; }
-    .achievement-info small { color: var(--text-muted); font-size: 0.8rem; }
+    .achievement-icon { color: var(--accent); flex-shrink: 0; }
+    .achievement-tile.locked .achievement-icon { color: var(--text-muted); }
+    .achievement-name {
+        font-size: 0.78rem; line-height: 1.2;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .achievement-desc {
+        font-size: 0.65rem; color: var(--text-muted); line-height: 1.25;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
     .achievement-xp {
-        display: inline-block; margin-top: 4px; font-size: 0.75rem;
-        color: var(--accent); font-weight: 700;
+        font-size: 0.7rem; color: var(--accent); font-weight: 700;
+    }
+    @@media (max-width: 360px) {
+        .achievements-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     .mastery-badge-sm {

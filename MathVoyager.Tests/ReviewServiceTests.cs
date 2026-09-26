@@ -44,7 +44,24 @@ public class ReviewServiceTests
         await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: false);
 
         Assert.Single(stub.Profile.ReviewQueue);
-        Assert.Equal(3, stub.Profile.ReviewQueue[0].Interval); // first add wins
+    }
+
+    [Fact]
+    public async Task AddToReview_AlreadyTracked_UpdatesCardInstead()
+    {
+        var stub = new InMemoryProgress();
+        var svc = new ReviewService(stub);
+
+        // First answer: correct -> repetitions 1, interval 3, ease 2.5
+        await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: true);
+        // Second answer on the same question: wrong -> should reschedule via UpdateCardAsync,
+        // not be silently dropped.
+        await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: false);
+
+        var card = stub.Profile.ReviewQueue.Single();
+        Assert.Equal(0, card.Repetitions);
+        Assert.Equal(0.5, card.Interval);
+        Assert.Equal(2.3, card.EaseFactor, 3);
     }
 
     [Fact]
@@ -190,6 +207,103 @@ public class ReviewServiceTests
         Assert.Equal(2, await svc.GetDueCountAsync());
     }
 
+    [Fact]
+    public async Task ConceptCard_SecondQuestionOnSameConcept_UpdatesSameCard()
+    {
+        var stub = new InMemoryProgress();
+        var svc = new ReviewService(stub);
+
+        await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: false, conceptId: "c1");
+        await svc.AddToReviewAsync("q2", "alg", "lesson1", wasCorrect: false, conceptId: "c1");
+
+        var card = stub.Profile.ReviewQueue.Single();
+        Assert.Equal("c1", card.ConceptId);
+        Assert.Equal("q2", card.QuestionId);
+        Assert.Equal(2, card.Lapses);
+    }
+
+    [Fact]
+    public async Task LegacyCard_WithoutConcept_IsUpgradedWhenAnsweredAgain()
+    {
+        var stub = WithCard(repetitions: 0, interval: 0.5, ease: 2.5);
+        var svc = new ReviewService(stub);
+
+        await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: false, conceptId: "c9");
+
+        var card = stub.Profile.ReviewQueue.Single();
+        Assert.Equal("c9", card.ConceptId);
+    }
+
+    [Fact]
+    public async Task CorrectFirstTime_GraduatesAfterOneConfirmingReview()
+    {
+        var stub = new InMemoryProgress();
+        var svc = new ReviewService(stub);
+        await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: true, conceptId: "c1");
+
+        // Simulate the card falling due, then being recalled.
+        stub.Profile.ReviewQueue.Single().NextReview = DateTime.Now.ToString("yyyy-MM-dd");
+        await svc.UpdateCardAsync("q1", correct: true, conceptId: "c1");
+
+        Assert.Empty(stub.Profile.ReviewQueue);
+    }
+
+    [Fact]
+    public async Task CorrectAnswer_BeforeDue_DoesNotAdvanceSchedule()
+    {
+        var stub = new InMemoryProgress();
+        var svc = new ReviewService(stub);
+        await svc.AddToReviewAsync("q1", "alg", "lesson1", wasCorrect: true, conceptId: "c1");
+        await svc.AddToReviewAsync("q2", "alg", "lesson1", wasCorrect: true, conceptId: "c1");
+
+        var card = stub.Profile.ReviewQueue.Single();
+        Assert.Equal(1, card.Repetitions);
+        Assert.Equal(3, card.Interval);
+    }
+
+    [Fact]
+    public async Task LongInterval_RetiresCard()
+    {
+        var stub = WithCard(repetitions: 5, interval: 60, ease: 2.5);
+        var svc = new ReviewService(stub);
+
+        await svc.UpdateCardAsync("q1", correct: true);
+
+        Assert.Empty(stub.Profile.ReviewQueue);
+    }
+
+    [Fact]
+    public async Task Queue_IsCapped_DroppingMostMatureCards()
+    {
+        var stub = new InMemoryProgress();
+        for (int i = 0; i < ReviewService.MaxQueue; i++)
+            stub.Profile.ReviewQueue.Add(new ReviewCard { QuestionId = $"old{i}", Interval = i == 0 ? 90 : 1, NextReview = "2999-01-01" });
+        var svc = new ReviewService(stub);
+
+        await svc.AddToReviewAsync("new", "alg", "lesson1", wasCorrect: false);
+
+        Assert.Equal(ReviewService.MaxQueue, stub.Profile.ReviewQueue.Count);
+        Assert.DoesNotContain(stub.Profile.ReviewQueue, c => c.QuestionId == "old0");
+        Assert.Contains(stub.Profile.ReviewQueue, c => c.QuestionId == "new");
+    }
+
+    [Fact]
+    public void Interleave_AlternatesTopicsAndKeepsPriorityWithinTopic()
+    {
+        var cards = new List<ReviewCard>
+        {
+            new() { QuestionId = "a1", TopicId = "a" },
+            new() { QuestionId = "a2", TopicId = "a" },
+            new() { QuestionId = "a3", TopicId = "a" },
+            new() { QuestionId = "b1", TopicId = "b" },
+            new() { QuestionId = "c1", TopicId = "c" },
+        };
+
+        var order = ReviewService.Interleave(cards).Select(c => c.QuestionId).ToArray();
+
+        Assert.Equal(new[] { "a1", "b1", "c1", "a2", "a3" }, order);
+    }
+
     private static InMemoryProgress WithCard(int repetitions, double interval, double ease)
     {
         var stub = new InMemoryProgress();
@@ -201,7 +315,9 @@ public class ReviewServiceTests
             NextReview = DateTime.Now.ToString("yyyy-MM-dd"),
             Interval = interval,
             EaseFactor = ease,
-            Repetitions = repetitions
+            Repetitions = repetitions,
+            // A card that has been missed before, so it follows the full schedule instead of graduating.
+            Lapses = 1
         });
         return stub;
     }

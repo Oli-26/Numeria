@@ -1,0 +1,117 @@
+@inject IQuizEngine QuizEngine
+
+<div class="discovery-card">
+    <div class="discovery-label"><Icon Name="lightbulb" Size="14" /> Guess first</div>
+    <p class="discovery-prompt">@Question.Prompt</p>
+
+    @if (Question.Type == QuestionType.MultipleChoice && Question.Options != null)
+    {
+        <div class="discovery-options">
+            @foreach (var opt in Question.Options)
+            {
+                var o = opt;
+                <button class="discovery-option @OptionClass(o)" disabled="@(result != null)" @onclick="() => Submit(o)">@o</button>
+            }
+        </div>
+    }
+    else if (Question.Type == QuestionType.TrueOrFalse)
+    {
+        <div class="discovery-options two">
+            @foreach (var o in new[] { "True", "False" })
+            {
+                var v = o;
+                <button class="discovery-option @OptionClass(v)" disabled="@(result != null)" @onclick="() => Submit(v)">@v</button>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="discovery-input-row">
+            <input class="discovery-input" type="@(Question.Type == QuestionType.NumericInput ? "number" : "text")" step="any"
+                   @bind="typed" @bind:event="oninput" disabled="@(result != null)"
+                   @onkeydown='e => { if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(typed)) Submit(typed); }'
+                   placeholder="Your guess" aria-label="Your guess" />
+            @if (!string.IsNullOrEmpty(Question.Unit))
+            {
+                <span class="discovery-unit">@Question.Unit</span>
+            }
+            <button class="btn btn-primary btn-sm" disabled="@(result != null || string.IsNullOrWhiteSpace(typed))" @onclick="() => Submit(typed)">Guess</button>
+        </div>
+    }
+
+    @if (result != null)
+    {
+        <div class="discovery-reveal @(result.IsCorrect ? "right" : "")">
+            <strong>@(result.IsCorrect ? "Good instinct." : $"Not quite: {Question.CorrectAnswer}{(string.IsNullOrEmpty(Question.Unit) ? "" : " " + Question.Unit)}.")</strong>
+            @if (!string.IsNullOrEmpty(Question.Explanation))
+            {
+                <span> @Question.Explanation</span>
+            }
+        </div>
+        <button class="btn btn-accent" style="width: 100%; margin-top: 10px" @onclick="() => OnDone.InvokeAsync(result.IsCorrect)">Read on</button>
+    }
+    else
+    {
+        <button class="discovery-skip" @onclick="() => OnDone.InvokeAsync(false)">Skip the guess</button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Question Question { get; set; } = null!;
+    [Parameter] public EventCallback<bool> OnDone { get; set; }
+
+    private QuizResult? result;
+    private string picked = "";
+    private string typed = "";
+
+    protected override void OnParametersSet()
+    {
+        if (result != null && result.Question != Question)
+        {
+            result = null;
+            typed = picked = "";
+        }
+    }
+
+    private void Submit(string answer)
+    {
+        if (result != null) return;
+        picked = answer;
+        result = QuizEngine.ValidateAnswer(Question, answer);
+    }
+
+    private string OptionClass(string o)
+    {
+        if (result == null) return "";
+        if (string.Equals(o, Question.CorrectAnswer, StringComparison.OrdinalIgnoreCase)) return "correct";
+        return o == picked ? "incorrect" : "dim";
+    }
+}
+
+<style>
+    .discovery-card {
+        border: 1px dashed var(--accent); border-radius: 12px; padding: 14px; margin: 8px 0 12px;
+        background: rgba(196, 129, 58, 0.06);
+    }
+    .discovery-label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+    .discovery-prompt { margin: 8px 0 12px; font-weight: 600; color: var(--text-primary); line-height: 1.5; }
+    .discovery-options { display: flex; flex-direction: column; gap: 8px; }
+    .discovery-options.two { flex-direction: row; }
+    .discovery-options.two .discovery-option { flex: 1; }
+    .discovery-option {
+        text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.9rem; cursor: pointer;
+    }
+    .discovery-option.correct { border-color: var(--success); background: rgba(90, 158, 95, 0.12); }
+    .discovery-option.incorrect { border-color: var(--error, #d9534f); background: rgba(217, 83, 79, 0.1); }
+    .discovery-option.dim { opacity: 0.55; }
+    .discovery-input-row { display: flex; gap: 8px; align-items: center; }
+    .discovery-input {
+        flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.95rem;
+    }
+    .discovery-unit { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
+    .discovery-reveal { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--bg-surface); line-height: 1.55; color: var(--text-secondary); }
+    .discovery-reveal.right strong { color: var(--success); }
+    .discovery-skip { margin-top: 10px; background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline; font-family: inherit; }
+</style>

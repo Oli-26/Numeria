@@ -62,10 +62,13 @@ public class QuizEngine : IQuizEngine
                 if (seen.Add(q.Id)) pool.Add(q);
         }
 
-        // Tier 1: questions belonging to lessons the user finished
+        // Tier 1: questions belonging to lessons the user finished. Completing a lesson
+        // records answers under its topic, so the touched topics are enough; only scan
+        // every topic's file when there is no topic signal at all.
         if (lessonSet.Count > 0)
         {
-            foreach (var topic in topics)
+            var touched = topicSet.Union(engagedSet).ToHashSet();
+            foreach (var topic in touched.Count > 0 ? topics.Where(t => touched.Contains(t.Id)) : topics)
             {
                 var qs = await _contentRepo.GetQuestionsAsync(topic.Id);
                 Add(qs.Where(q => lessonSet.Contains(q.LessonId)));
@@ -142,14 +145,12 @@ public class QuizEngine : IQuizEngine
                 return true;
         }
 
-        // Numeric / fraction cross-compare: parse each side as either a plain
-        // number or a fraction/percentage, then compare doubles. Handles
-        // "16" vs "16.00", "1/6" vs "0.167", "1/4" vs "25%".
+        // Numeric / fraction cross-compare. Handles "16" vs "16.00", "1/6" vs "0.167", "1/4" vs "25%".
         if (TryParseAsValue(userAnswer, out double userVal))
         {
             foreach (var answer in acceptable)
             {
-                if (TryParseAsValue(answer, out double ansVal) && Math.Abs(userVal - ansVal) < 0.01)
+                if (TryParseAsValue(answer, out double ansVal) && Math.Abs(userVal - ansVal) <= FillInTolerance(answer, ansVal))
                     return true;
             }
         }
@@ -163,6 +164,11 @@ public class QuizEngine : IQuizEngine
 
         return false;
     }
+
+    // Integer answers (counts, years) stay near-exact; anything else gets 1% relative slack
+    // so small magnitudes are not swamped by an absolute tolerance.
+    private static double FillInTolerance(string answerLiteral, double value) =>
+        Regex.IsMatch(answerLiteral.Trim(), @"^-?\d+$") ? 0.01 : Math.Max(Math.Abs(value) * 0.01, 1e-9);
 
     private bool IsNumericCorrect(Question q, string userAnswer)
     {
@@ -236,8 +242,7 @@ public class QuizEngine : IQuizEngine
         s = Regex.Replace(s, @"\(([a-z]\^\d+)\)", "$1");
         s = Regex.Replace(s, @"\((\d+)\)", "$1");
 
-        // Normalize +C and + C
-        s = s.Replace("+c", "+C").Replace("+ c", "+C");
+        s = s.Replace("+c", "+C");
 
         return s;
     }
@@ -328,12 +333,6 @@ public class QuizEngine : IQuizEngine
             variants.Add(s.Replace("+c", " + C"));
             variants.Add(s.Replace("+c", " +C"));
             variants.Add(s.Replace("+c", "+ C"));
-        }
-        if (!s.Contains("+c") && !s.Contains("+C"))
-        {
-            // User might have forgotten +C -- don't auto-add, but check without it
-            variants.Add(s + "+c");
-            variants.Add(s + "+C");
         }
 
         // Tuple notation: (3, 2) <-> (3,2) <-> 3,2
@@ -426,7 +425,7 @@ public class QuizEngine : IQuizEngine
     public int CalculateQuizXp(List<QuizResult> results, int streak)
     {
         var baseXp = results.Sum(r => r.XpEarned);
-        var allCorrect = results.All(r => r.IsCorrect);
+        var allCorrect = results.Count > 0 && results.All(r => r.IsCorrect);
         var bonus = allCorrect ? 50 : 0;
         var multiplier = 1.0 + Math.Min(streak * 0.1, 1.0);
         return (int)Math.Floor((baseXp + bonus) * multiplier);

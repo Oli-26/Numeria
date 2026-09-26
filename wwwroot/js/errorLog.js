@@ -1,5 +1,5 @@
 (function () {
-    var KEY = 'numeria-error-log';
+    var KEY = 'nous-error-log';
     var MAX = 200;
 
     function read() {
@@ -29,7 +29,7 @@
         write(entries);
     }
 
-    window.PhineErrorLog = {
+    window.NousErrorLog = {
         get: function () { return read(); },
         clear: function () { write([]); },
         count: function () { return read().length; },

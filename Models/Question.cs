@@ -6,6 +6,11 @@ public class Question
 {
     public string Id { get; set; } = "";
     public string LessonId { get; set; } = "";
+    // Set by ContentRepository from the topic the question was loaded under;
+    // not part of the JSON on disk.
+    public string? TopicId { get; set; }
+    // Optional in JSON; otherwise inferred at load time from the lesson's concepts.
+    public string? ConceptId { get; set; }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public QuestionType Type { get; set; }

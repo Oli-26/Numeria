@@ -1,0 +1,388 @@
+[
+  {
+    "id": "econ-econometrics-q01",
+    "lessonId": "econ-econ-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Ordinary Least Squares (OLS) chooses the intercept and slope to minimize what?",
+    "options": ["The sum of squared residuals", "The sum of absolute residuals", "The largest single residual", "The number of data points off the line"],
+    "correctAnswer": "The sum of squared residuals",
+    "explanation": "OLS minimizes the sum of squared vertical distances between the data points and the fitted line. Squaring stops positive and negative errors from canceling and keeps the algebra clean, giving closed-form solutions.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q02",
+    "lessonId": "econ-econ-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In a simple regression of Y on X, what is the OLS slope estimate equal to?",
+    "options": ["The covariance of X and Y divided by the variance of X", "The variance of X divided by the covariance of X and Y", "The covariance of X and Y divided by the variance of Y", "The mean of Y divided by the mean of X"],
+    "correctAnswer": "The covariance of X and Y divided by the variance of X",
+    "explanation": "The OLS slope is Σ(x − x̄)(y − ȳ) / Σ(x − x̄)², which is the sample covariance of X and Y over the sample variance of X. Dividing by the variance of Y would give a different quantity, the slope of a regression of X on Y.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q03",
+    "lessonId": "econ-econ-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "More able people both stay in school longer and earn more for reasons other than schooling. If a regression of wages on schooling omits ability, the estimated return to education will tend to be:",
+    "options": ["Biased upward", "Biased downward", "Unbiased", "Exactly zero"],
+    "correctAnswer": "Biased upward",
+    "explanation": "Ability is positively related to both schooling and wages, so the schooling coefficient picks up part of ability's effect on earnings. This is omitted variable bias, and here it pushes the estimate above the true return.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q04",
+    "lessonId": "econ-econ-01",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Under the Gauss-Markov assumptions, OLS is BLUE: the Best Linear _________ Estimator.",
+    "correctAnswer": "Unbiased",
+    "acceptableAnswers": ["Unbiased", "unbiased"],
+    "explanation": "BLUE means OLS has the lowest variance among all linear unbiased estimators. That result needs linearity, random sampling, no perfect multicollinearity, zero conditional mean of the errors, and homoscedasticity.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q05",
+    "lessonId": "econ-econ-01",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Random measurement error in the regressor X tends to bias the OLS slope away from zero.",
+    "correctAnswer": "False",
+    "explanation": "Noisy measurement of X causes attenuation bias: the slope estimate is pulled toward zero, not away from it. This is one of the classic ways the zero-conditional-mean assumption fails.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q06",
+    "lessonId": "econ-econ-02",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "A regression coefficient is estimated at 3.0 with a standard error of 1.5. What is its t-statistic for testing whether the coefficient is zero?",
+    "options": ["2", "4.5", "0.5", "1.5"],
+    "correctAnswer": "2",
+    "explanation": "The t-statistic is the coefficient divided by its standard error: 3.0 / 1.5 = 2. Since |t| exceeds 1.96, the coefficient is statistically significant at the 5% level in a large sample.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q07",
+    "lessonId": "econ-econ-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Holding everything else equal, what happens to a coefficient's standard error if the sample size is quadrupled?",
+    "options": ["It roughly halves", "It falls to about a quarter", "It roughly doubles", "It stays the same"],
+    "correctAnswer": "It roughly halves",
+    "explanation": "Standard errors shrink in proportion to 1/√n. Multiplying n by 4 multiplies √n by 2, so the standard error falls to about half its previous size, not a quarter.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q08",
+    "lessonId": "econ-econ-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What is the strict interpretation of a 95% confidence interval?",
+    "options": ["If the study were repeated many times, 95% of the resulting intervals would contain the true value", "There is a 95% probability that the true value lies in this particular interval", "95% of the data points fall inside the interval", "The estimate has a 95% chance of being statistically significant"],
+    "correctAnswer": "If the study were repeated many times, 95% of the resulting intervals would contain the true value",
+    "explanation": "The 95% describes the procedure across repeated samples, not any single interval. A given interval either contains the true value or it does not, which is why the 'loose' reading is technically inaccurate.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q09",
+    "lessonId": "econ-econ-02",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each tool to the problem it addresses:",
+    "pairs": [
+      {
+        "left": "Robust (Huber-White) standard errors",
+        "right": "Errors with non-constant variance"
+      },
+      {
+        "left": "Clustered standard errors",
+        "right": "Errors correlated within groups"
+      },
+      {
+        "left": "Bonferroni correction",
+        "right": "Running many hypothesis tests at once"
+      },
+      {
+        "left": "Pre-registration",
+        "right": "Specification searching after seeing the data"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "Robust SEs fix inference under heteroscedasticity, while clustered SEs handle correlation within groups such as students in the same school. Bonferroni corrections and pre-registration both target false positives from multiple testing and p-hacking.",
+    "xpReward": 30
+  },
+  {
+    "id": "econ-econometrics-q10",
+    "lessonId": "econ-econ-02",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "If you run 20 regressions on pure noise, on average about one will appear significant at the 5% level by chance.",
+    "correctAnswer": "True",
+    "explanation": "A 5% significance level means a 1 in 20 chance of a false positive per test when the null is true, so 20 tests yield about one spurious 'finding' on average. This is the multiple testing problem.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q11",
+    "lessonId": "econ-econ-03",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In regression analysis, what does it mean for a regressor X to be endogenous?",
+    "options": ["X is correlated with the error term", "The error term has constant variance", "X is perfectly collinear with another regressor", "X has been measured without any error"],
+    "correctAnswer": "X is correlated with the error term",
+    "explanation": "Endogeneity means Cov(X, ε) ≠ 0, which breaks the zero-conditional-mean assumption and biases OLS. Its main sources are omitted variables, simultaneity or reverse causality, and measurement error in X.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q12",
+    "lessonId": "econ-econ-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What happens in the first stage of Two-Stage Least Squares (2SLS)?",
+    "options": ["X is regressed on the instruments and exogenous controls", "Y is regressed on the instruments alone", "Y is regressed on the predicted values of X", "The instrument is regressed on Y"],
+    "correctAnswer": "X is regressed on the instruments and exogenous controls",
+    "explanation": "The first stage produces predicted values of X that use only the variation coming from the instruments. The second stage then regresses Y on those predicted values, plus the controls.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q13",
+    "lessonId": "econ-econ-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What is the common rule of thumb for the first-stage F-statistic to rule out a weak instrument?",
+    "options": ["F greater than 10", "F greater than 1", "F greater than 1.96", "F less than 0.05"],
+    "correctAnswer": "F greater than 10",
+    "explanation": "A first-stage F above 10 is the standard rule of thumb for an instrument strong enough to trust. Weak instruments give very imprecise estimates and magnify any small violation of the exclusion restriction into large bias.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q14",
+    "lessonId": "econ-econ-03",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each instrumental variables term to its meaning:",
+    "pairs": [
+      {
+        "left": "Relevance",
+        "right": "The instrument is correlated with X"
+      },
+      {
+        "left": "Exclusion restriction",
+        "right": "The instrument affects Y only through X"
+      },
+      {
+        "left": "LATE",
+        "right": "The average effect among compliers"
+      },
+      {
+        "left": "Compliers",
+        "right": "Units whose treatment is changed by the instrument"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "A valid instrument needs both relevance and exclusion. Even then, with heterogeneous effects IV estimates a Local Average Treatment Effect for the compliers, which may differ from the average effect in the whole population.",
+    "xpReward": 30
+  },
+  {
+    "id": "econ-econometrics-q15",
+    "lessonId": "econ-econ-03",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Angrist and Krueger's classic instrument for years of schooling, combined with compulsory schooling laws, was quarter of _________.",
+    "correctAnswer": "birth",
+    "acceptableAnswers": ["birth"],
+    "explanation": "Because of school-entry and leaving-age rules, birth quarter nudged some students to stay in school slightly longer. Birth quarter is plausibly unrelated to ability, so its effect on wages, scaled by its effect on schooling, estimates the return to education.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q16",
+    "lessonId": "econ-econ-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A treated group's average outcome rises from 10 to 16, while a control group's rises from 8 to 11. What is the difference-in-differences estimate?",
+    "options": ["3", "6", "5", "8"],
+    "correctAnswer": "3",
+    "explanation": "The treated group changed by 16 − 10 = 6 and the control group by 11 − 8 = 3. The DiD estimate is 6 − 3 = 3; answering 6 ignores the change that would have happened anyway, as shown by the control group.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q17",
+    "lessonId": "econ-econ-04",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "What is the key identifying assumption of difference-in-differences?",
+    "options": ["Parallel trends", "Homoscedastic errors", "No perfect multicollinearity", "A strong first stage"],
+    "correctAnswer": "Parallel trends",
+    "explanation": "DiD assumes that, without treatment, the treated group would have followed the same trend as the control group. If that holds, the control group's change is a valid stand-in for the treated group's counterfactual change.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q18",
+    "lessonId": "econ-econ-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What did Card and Krueger's 1994 study of New Jersey's minimum wage increase find for fast-food employment?",
+    "options": ["No negative effect, possibly a small positive one", "A large fall in employment in New Jersey", "A large fall in employment in Pennsylvania", "Effects too imprecise to report"],
+    "correctAnswer": "No negative effect, possibly a small positive one",
+    "explanation": "Comparing New Jersey with neighboring Pennsylvania before and after the increase, they found no negative employment effect. The result challenged the standard competitive prediction and helped launch the credibility revolution in empirical economics.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q19",
+    "lessonId": "econ-econ-04",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "The parallel trends assumption can be tested directly using post-treatment data.",
+    "correctAnswer": "False",
+    "explanation": "Parallel trends is a claim about a counterfactual: what the treated group would have done without treatment, which is never observed. Researchers can only check supporting evidence, such as whether the groups moved in parallel before treatment.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q20",
+    "lessonId": "econ-econ-04",
+    "type": "MultipleSelect",
+    "difficulty": 3,
+    "prompt": "Which of these are used to check the credibility of a difference-in-differences design? (Select all that apply.)",
+    "options": ["Testing for pre-treatment trends", "Placebo treatments at other times", "Alternative control groups", "Event-study plots", "Fitting a global high-order polynomial", "Maximizing the regression R²"],
+    "acceptableAnswers": ["Testing for pre-treatment trends", "Placebo treatments at other times", "Alternative control groups", "Event-study plots"],
+    "correctAnswer": "Testing for pre-treatment trends | Placebo treatments at other times | Alternative control groups | Event-study plots",
+    "explanation": "Pre-trend tests, placebo timing, alternative controls and event studies all probe whether parallel trends is believable. A high R² says nothing about identification, and global high-order polynomials are a (discouraged) regression discontinuity practice, not a DiD check.",
+    "xpReward": 35
+  },
+  {
+    "id": "econ-econometrics-q21",
+    "lessonId": "econ-econ-05",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "What comparison does a regression discontinuity (RD) design make?",
+    "options": ["Units just above versus just below a threshold", "Treated versus control groups before and after a policy", "The same units observed over many periods", "Randomly assigned groups far from any cutoff"],
+    "correctAnswer": "Units just above versus just below a threshold",
+    "explanation": "RD exploits rules that assign treatment at a cutoff. Units just on either side are nearly identical except for treatment, so the jump in outcomes at the threshold estimates the treatment effect for units near the cutoff.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q22",
+    "lessonId": "econ-econ-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What does the McCrary test look for in an RD design?",
+    "options": ["A jump in the density of the running variable at the cutoff, suggesting manipulation", "A first-stage F-statistic above 10", "Heteroscedasticity in the regression errors", "Parallel trends before treatment"],
+    "correctAnswer": "A jump in the density of the running variable at the cutoff, suggesting manipulation",
+    "explanation": "If people can precisely sort to one side of the threshold, units will bunch there and the design is compromised. The McCrary test checks for such a spike in the running variable's density at the cutoff.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q23",
+    "lessonId": "econ-econ-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In RD, what is the trade-off from choosing a narrower bandwidth around the cutoff?",
+    "options": ["Less bias from non-linearity, but higher variance", "Both lower bias and lower variance", "More bias, but lower variance", "No change in bias or variance"],
+    "correctAnswer": "Less bias from non-linearity, but higher variance",
+    "explanation": "A narrow bandwidth uses only observations very close to the cutoff, reducing bias from mis-modeling the curve but leaving fewer data points and noisier estimates. A wide bandwidth has the opposite trade-off.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q24",
+    "lessonId": "econ-econ-05",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each regression discontinuity term to its meaning:",
+    "pairs": [
+      {
+        "left": "Sharp RD",
+        "right": "Treatment probability jumps from 0 to 1 at the cutoff"
+      },
+      {
+        "left": "Fuzzy RD",
+        "right": "Treatment probability jumps but stays between 0 and 1"
+      },
+      {
+        "left": "Running variable",
+        "right": "The score that determines which side of the cutoff a unit is on"
+      },
+      {
+        "left": "Bandwidth",
+        "right": "How far from the cutoff observations are included"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "In sharp RD the cutoff fully determines treatment, while in fuzzy RD it only changes the probability of treatment. The running variable, such as an exam score, assigns units relative to the cutoff, and the bandwidth sets which observations count as 'near'.",
+    "xpReward": 30
+  },
+  {
+    "id": "econ-econometrics-q25",
+    "lessonId": "econ-econ-05",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Fuzzy RD is estimated much like instrumental variables: the jump in outcomes at the cutoff is divided by the jump in the probability of treatment.",
+    "correctAnswer": "True",
+    "explanation": "Crossing the threshold acts as an instrument for treatment. Scaling the outcome jump by the treatment-probability jump gives the effect of treatment itself, just as an IV estimate scales the reduced form by the first stage.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q26",
+    "lessonId": "econ-econ-06",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In a panel regression, what do unit fixed effects absorb?",
+    "options": ["Everything time-invariant about each unit, observed or unobserved", "All time-varying confounders", "Any reverse causality from Y to X", "Measurement error in X"],
+    "correctAnswer": "Everything time-invariant about each unit, observed or unobserved",
+    "explanation": "A separate intercept for each unit soaks up all characteristics that do not change over time, such as geography or baseline ability. Fixed effects do not solve time-varying confounders, reverse causality or measurement error.",
+    "xpReward": 20
+  },
+  {
+    "id": "econ-econometrics-q27",
+    "lessonId": "econ-econ-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "In a panel of workers estimated with individual fixed effects, which variable's effect cannot be estimated?",
+    "options": ["Country of birth", "Hours worked this year", "Current job tenure", "Union membership that changes over time"],
+    "correctAnswer": "Country of birth",
+    "explanation": "Fixed effects use only within-unit variation, so any variable that never changes for a person is absorbed by that person's intercept. Country of birth is fixed for each worker, while the other variables change over time.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q28",
+    "lessonId": "econ-econ-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A Hausman test finds that the fixed effects and random effects estimates differ significantly. Which model should you prefer?",
+    "options": ["Fixed effects", "Random effects", "Pooled OLS with no unit effects", "Whichever gives the smaller standard errors"],
+    "correctAnswer": "Fixed effects",
+    "explanation": "A significant difference suggests the unit effects are correlated with the regressors, violating the random effects assumption and biasing RE. Fixed effects stay consistent in that case, even though RE would have smaller standard errors.",
+    "xpReward": 25
+  },
+  {
+    "id": "econ-econometrics-q29",
+    "lessonId": "econ-econ-06",
+    "type": "Categorize",
+    "difficulty": 2,
+    "prompt": "Sort each problem by whether unit fixed effects alone can remove it:",
+    "categories": ["Removed by unit fixed effects", "Not removed by unit fixed effects"],
+    "categoryItems": {
+      "A unit's unchanging geography": "Removed by unit fixed effects",
+      "A country's stable culture": "Removed by unit fixed effects",
+      "A person's baseline ability": "Removed by unit fixed effects",
+      "A time-varying confounder": "Not removed by unit fixed effects",
+      "Reverse causality": "Not removed by unit fixed effects",
+      "Measurement error in X": "Not removed by unit fixed effects"
+    },
+    "correctAnswer": null,
+    "explanation": "Unit fixed effects remove anything constant within a unit over time. They cannot fix confounders that change over time, reverse causality or measurement error, which is why DiD, IV and RD are often layered on top of panel data.",
+    "xpReward": 35
+  },
+  {
+    "id": "econ-econometrics-q30",
+    "lessonId": "econ-econ-06",
+    "type": "FillIn",
+    "difficulty": 3,
+    "prompt": "Using fixed effects with a lagged dependent variable in a panel with few time periods produces _________ bias.",
+    "correctAnswer": "Nickell",
+    "acceptableAnswers": ["Nickell", "nickell"],
+    "explanation": "The lagged outcome is mechanically correlated with the demeaned error, creating Nickell bias. It shrinks as the number of periods grows; Arellano-Bond and Blundell-Bond GMM estimators address it by instrumenting with deeper lags.",
+    "xpReward": 30
+  }
+]

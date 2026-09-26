@@ -39,6 +39,8 @@ Tier 5 = open-problem tours. More essay-shape than skill-shape; lessons can be 4
 | `philosophy-hard-problem-consciousness` | philosophy | Why is there *something it is like* to see red? Even a perfect brain map doesn't obviously explain it. |
 | `geo-ocean-worlds-biosignatures` | geology | Europa Clipper era. What chemical pattern would actually count as evidence? |
 
+Note (Sep 2026): `math-riemann-hypothesis`, `math-p-vs-np` and `physics-foundations-of-qm` now exist as short open-problem tours inside the Big Questions hub (`wwwroot/data/big-questions.json`), not as full topics with lessons and questions. Promoting them to topics is still open.
+
 ## Format reminder
 
 For each remaining topic, the agent prompt template that worked is:

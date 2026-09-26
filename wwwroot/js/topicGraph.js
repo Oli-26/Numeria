@@ -36,6 +36,9 @@
       this.simSteps = 0;
       this.maxSimSteps = 300;
 
+      // Layout mode: force | circular | grid | hierarchical | radial
+      this.layout = 'force';
+
       // Bind handlers
       this._onMouseDown = this._onMouseDown.bind(this);
       this._onMouseMove = this._onMouseMove.bind(this);
@@ -75,12 +78,190 @@
       }
     }
 
+    setLayout(mode) {
+      this.layout = mode || 'force';
+      this._applyLayout();
+    }
+
+    _applyLayout() {
+      var visible = this.nodes.filter(function (n) { return !n.hidden; });
+      if (visible.length === 0) return;
+
+      switch (this.layout) {
+        case 'circular': this._layoutCircular(visible); break;
+        case 'grid': this._layoutGrid(visible); break;
+        case 'hierarchical': this._layoutHierarchical(visible); break;
+        case 'radial': this._layoutRadial(visible); break;
+        case 'force':
+        default: this._layoutForce(visible); break;
+      }
+      this._fit();
+    }
+
+    _layoutForce(visible) {
+      // Reseed in domain clusters and let the simulation re-run.
+      var domainOrder = this._domainOrder(visible);
+      var cx = this.w / 2, cy = this.h / 2;
+      var clusterR = Math.min(this.w, this.h) * 0.32;
+      var counts = {}, idxMap = {};
+      for (var n of visible) counts[n.domain] = (counts[n.domain] || 0) + 1;
+      for (var n of visible) {
+        var di = domainOrder.indexOf(n.domain);
+        if (di < 0) di = 0;
+        var angle = (di / domainOrder.length) * Math.PI * 2;
+        var idx = idxMap[n.domain] = (idxMap[n.domain] || 0) + 1;
+        var count = counts[n.domain];
+        var spread = (Math.PI * 2) / domainOrder.length * 0.65;
+        var localAngle = angle + spread * ((idx - 1) / Math.max(count - 1, 1) - 0.5);
+        var r = clusterR * (0.85 + Math.random() * 0.3);
+        n.x = cx + Math.cos(localAngle) * r + (Math.random() - 0.5) * 30;
+        n.y = cy + Math.sin(localAngle) * r + (Math.random() - 0.5) * 30;
+        n.vx = 0; n.vy = 0;
+      }
+      this.simSteps = 0; // re-run simulation
+    }
+
+    _layoutCircular(visible) {
+      // Sort by domain so same-domain nodes are adjacent on the ring
+      visible.sort(function (a, b) { return a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name); });
+      var cx = this.w / 2, cy = this.h / 2;
+      var R = Math.min(this.w, this.h) * 0.42;
+      for (var i = 0; i < visible.length; i++) {
+        var t = (i / visible.length) * Math.PI * 2 - Math.PI / 2;
+        var n = visible[i];
+        n.x = cx + Math.cos(t) * R;
+        n.y = cy + Math.sin(t) * R;
+        n.vx = 0; n.vy = 0;
+      }
+      this.simSteps = this.maxSimSteps; // freeze
+    }
+
+    _layoutGrid(visible) {
+      // Group by domain, lay out each domain as a row
+      var groups = {};
+      for (var n of visible) (groups[n.domain] = groups[n.domain] || []).push(n);
+      var domainKeys = Object.keys(groups).sort();
+      var marginX = 60, marginY = 60;
+      var rowH = (this.h - marginY * 2) / Math.max(domainKeys.length, 1);
+      for (var r = 0; r < domainKeys.length; r++) {
+        var arr = groups[domainKeys[r]];
+        var colW = (this.w - marginX * 2) / Math.max(arr.length, 1);
+        for (var c = 0; c < arr.length; c++) {
+          var nd = arr[c];
+          nd.x = marginX + colW * (c + 0.5);
+          nd.y = marginY + rowH * (r + 0.5);
+          nd.vx = 0; nd.vy = 0;
+        }
+      }
+      this.simSteps = this.maxSimSteps;
+    }
+
+    _layoutHierarchical(visible) {
+      // BFS depth from prereq edges. Roots = nodes with no incoming prereq.
+      var idx = {};
+      for (var n of visible) idx[n.id] = n;
+      var incoming = {};
+      for (var e of this.edges) {
+        if (e.type !== 'prereq') continue;
+        if (!idx[e.from] || !idx[e.to]) continue;
+        incoming[e.to] = (incoming[e.to] || 0) + 1;
+      }
+      var depth = {};
+      var queue = [];
+      for (var n of visible) {
+        if (!incoming[n.id]) { depth[n.id] = 0; queue.push(n.id); }
+      }
+      // If no roots (cycles or no prereq edges), seed all at 0
+      if (queue.length === 0) for (var n of visible) { depth[n.id] = 0; queue.push(n.id); }
+      while (queue.length) {
+        var cur = queue.shift();
+        var d = depth[cur];
+        for (var e of this.edges) {
+          if (e.type !== 'prereq' || e.from !== cur) continue;
+          var nd = depth[e.to];
+          if (nd === undefined || nd < d + 1) {
+            depth[e.to] = d + 1;
+            queue.push(e.to);
+          }
+        }
+      }
+      // Layers
+      var maxDepth = 0;
+      for (var n of visible) {
+        if (depth[n.id] === undefined) depth[n.id] = 0;
+        if (depth[n.id] > maxDepth) maxDepth = depth[n.id];
+      }
+      var layers = [];
+      for (var i = 0; i <= maxDepth; i++) layers.push([]);
+      for (var n of visible) layers[depth[n.id]].push(n);
+      var marginX = 60, marginY = 60;
+      var layerH = (this.h - marginY * 2) / Math.max(maxDepth + 1, 1);
+      for (var l = 0; l < layers.length; l++) {
+        var arr = layers[l];
+        arr.sort(function (a, b) { return a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name); });
+        var colW = (this.w - marginX * 2) / Math.max(arr.length, 1);
+        for (var c = 0; c < arr.length; c++) {
+          arr[c].x = marginX + colW * (c + 0.5);
+          arr[c].y = marginY + layerH * (l + 0.5);
+          arr[c].vx = 0; arr[c].vy = 0;
+        }
+      }
+      this.simSteps = this.maxSimSteps;
+    }
+
+    _layoutRadial(visible) {
+      // Center hub per domain, nodes on concentric petals
+      var groups = {};
+      for (var n of visible) (groups[n.domain] = groups[n.domain] || []).push(n);
+      var domainKeys = Object.keys(groups).sort();
+      var cx = this.w / 2, cy = this.h / 2;
+      var hubR = Math.min(this.w, this.h) * 0.18;
+      var petalR = Math.min(this.w, this.h) * 0.16;
+      for (var di = 0; di < domainKeys.length; di++) {
+        var angle = (di / domainKeys.length) * Math.PI * 2 - Math.PI / 2;
+        var hubX = cx + Math.cos(angle) * hubR * 1.2;
+        var hubY = cy + Math.sin(angle) * hubR * 1.2;
+        var arr = groups[domainKeys[di]];
+        for (var i = 0; i < arr.length; i++) {
+          var t = (i / Math.max(arr.length, 1)) * Math.PI * 2;
+          var nd = arr[i];
+          nd.x = hubX + Math.cos(t) * petalR;
+          nd.y = hubY + Math.sin(t) * petalR;
+          nd.vx = 0; nd.vy = 0;
+        }
+      }
+      this.simSteps = this.maxSimSteps;
+    }
+
+    _domainOrder(visible) {
+      var seen = {};
+      var order = [];
+      for (var n of visible) if (!seen[n.domain]) { seen[n.domain] = true; order.push(n.domain); }
+      return order.length ? order : ['math','physics','chemistry','biology','geology','history','linguistics','philosophy'];
+    }
+
+    _fit() {
+      // Reset camera so the new layout is visible
+      this.camX = 0; this.camY = 0; this.scale = 1;
+    }
+
     destroy() {
-      this.running = false;
-      if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
-      this._detachEvents();
-      this.canvas = null;
-      this.ctx = null;
+        cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = 0;
+
+        var removeListeners = ['mousedown', 'mouseup', 'mousemove', 'mouseleave', 'touchstart', 'touchmove', 'touchend', 'wheel'];
+        for (var i = 0; i < removeListeners.length; i++) {
+            this.canvas && this.canvas.removeEventListener(removeListeners[i], this.eventProxy);
+        }
+        window.removeEventListener('resize', this.resizeProxy);
+        this.eventProxy = null;
+        this.resizeProxy = null;
+
+        this.canvas = null;
+        this.ctx = null;
+        this.nodes = null;
+        this.edges = null;
+        this.dotNetRef = null;
     }
 
     // ─── Graph loading ──────────────────────────────────────────────────────────
@@ -154,6 +335,7 @@
     // ─── Physics simulation ─────────────────────────────────────────────────────
 
     _simulate() {
+      if (this.layout !== 'force') return;
       if (this.simSteps >= this.maxSimSteps && !this.dragging) return;
       this.simSteps++;
 
@@ -541,6 +723,9 @@
     },
     filterDomain: function (domain) {
       if (_instance) _instance.filterDomain(domain);
+    },
+    setLayout: function (mode) {
+      if (_instance) _instance.setLayout(mode);
     },
     destroy: function () {
       if (_instance) { _instance.destroy(); _instance = null; }

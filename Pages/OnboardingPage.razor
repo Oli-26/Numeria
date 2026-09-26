@@ -9,7 +9,7 @@
     {
         <div class="ob-step ob-fade-in">
             <div class="ob-icon"><Icon Name="rocket" Size="40" /></div>
-            <h1>Welcome to Phine!</h1>
+            <h1>Welcome to Nous!</h1>
             <p class="ob-tagline">Your personal journey through the world of mathematics. Learn concepts, solve problems, and level up your skills.</p>
             <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep2">Get Started</button>
         </div>
@@ -28,30 +28,68 @@
     else if (step == 3)
     {
         <div class="ob-step ob-fade-in">
-            <div class="ob-icon"><Icon Name="book" Size="40" /></div>
-            <h1>Pick your first topic</h1>
-            <p class="ob-tagline">Choose something that interests you. You can explore all topics later!</p>
-            @if (topics != null)
+            <div class="ob-icon"><Icon Name="compass-rose" Size="40" /></div>
+            <h1>What do you want to learn?</h1>
+            <p class="ob-tagline">Pick a domain. You can switch and explore others any time.</p>
+            @if (domains != null)
             {
-                <div class="ob-topics">
-                    @foreach (var topic in topics)
-                    {
-                        var isSelected = selectedTopicId == topic.Id;
-                        <div class="ob-topic-card @(isSelected ? "selected" : "")"
-                             style="border-color: @(isSelected ? topic.Color : "transparent")"
-                             @onclick="() => SelectTopic(topic.Id)">
-                            <span class="ob-topic-icon" style="color: @topic.Color"><TopicIcon TopicId="@topic.Id" Size="32" /></span>
-                            <strong>@topic.Name</strong>
-                            <small>@topic.Difficulty</small>
-                        </div>
-                    }
+                <div class="ob-scroll">
+                    <div class="ob-domains">
+                        @foreach (var d in domains)
+                        {
+                            var hue = DomainHue(d.Id);
+                            var isSelected = selectedDomainId == d.Id;
+                            <div class="ob-domain-card @(isSelected ? "selected" : "")"
+                                 style="--domain-hue: @hue; border-color: @(isSelected ? hue : "transparent")"
+                                 @onclick="() => SelectDomain(d.Id)">
+                                <div class="ob-domain-icon" style="color: @hue; background: @(hue)1F">
+                                    <Icon Name="@d.Icon" Size="22" />
+                                </div>
+                                <div class="ob-domain-text">
+                                    <strong>@d.Name</strong>
+                                    <small>@d.Description</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
             <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep4"
-                    disabled="@(selectedTopicId == null)">Next</button>
+                    disabled="@(selectedDomainId == null)">Next</button>
         </div>
     }
     else if (step == 4)
+    {
+        <div class="ob-step ob-fade-in">
+            <div class="ob-icon"><Icon Name="book" Size="40" /></div>
+            <h1>Pick your first topic</h1>
+            <p class="ob-tagline">@(SelectedDomainName) — choose one to start. You can explore the rest later.</p>
+            @if (filteredTopics != null)
+            {
+                <div class="ob-scroll">
+                    <div class="ob-topics">
+                        @foreach (var topic in filteredTopics)
+                        {
+                            var isSelected = selectedTopicId == topic.Id;
+                            <div class="ob-topic-card @(isSelected ? "selected" : "")"
+                                 style="border-color: @(isSelected ? topic.Color : "transparent")"
+                                 @onclick="() => SelectTopic(topic.Id)">
+                                <span class="ob-topic-icon" style="color: @topic.Color"><TopicIcon TopicId="@topic.Id" Size="32" /></span>
+                                <strong>@topic.Name</strong>
+                                <small>@topic.Difficulty</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            <div class="ob-row">
+                <button class="btn btn-secondary ob-back" @onclick="BackToStep3">Back</button>
+                <button class="btn btn-primary btn-lg ob-btn ob-grow" @onclick="GoToStep5"
+                        disabled="@(selectedTopicId == null)">Next</button>
+            </div>
+        </div>
+    }
+    else if (step == 5)
     {
         <div class="ob-step ob-fade-in">
             <div class="ob-icon"><Icon Name="gift" Size="40" /></div>
@@ -62,7 +100,7 @@
     }
 
     <div class="ob-dots">
-        @for (int i = 1; i <= 4; i++)
+        @for (int i = 1; i <= 5; i++)
         {
             var dotStep = i;
             <span class="ob-dot @(dotStep == step ? "active" : dotStep < step ? "done" : "")"></span>
@@ -74,13 +112,21 @@
     private int step = 1;
     private string userName = "";
     private string? selectedTopicId;
+    private string? selectedDomainId;
     private List<Topic>? topics;
+    private List<Topic>? filteredTopics;
+    private List<Domain>? domains;
+
+    private string SelectedDomainName =>
+        domains?.FirstOrDefault(d => d.Id == selectedDomainId)?.Name ?? "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             topics = await Content.GetTopicsAsync();
+            domains = await Content.GetDomainsAsync();
+            domains = domains.OrderBy(d => DomainOrder(d.Id)).ThenBy(d => d.Name).ToList();
             StateHasChanged();
         }
     }
@@ -100,9 +146,30 @@
 
     private async Task GoToStep4()
     {
-        if (selectedTopicId == null) return;
+        if (selectedDomainId == null) return;
+        filteredTopics = topics?.Where(t => string.Equals(t.Domain, selectedDomainId, StringComparison.OrdinalIgnoreCase)).ToList();
+        selectedTopicId = null;
         await JS.TryInvokeVoidAsync("Sounds.playClick");
         step = 4;
+    }
+
+    private async Task GoToStep5()
+    {
+        if (selectedTopicId == null) return;
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+        step = 5;
+    }
+
+    private async Task BackToStep3()
+    {
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+        step = 3;
+    }
+
+    private async Task SelectDomain(string domainId)
+    {
+        selectedDomainId = domainId;
+        await JS.TryInvokeVoidAsync("applyDomain", domainId);
     }
 
     private void SelectTopic(string topicId)
@@ -123,16 +190,61 @@
         {
             profile.SuggestedTopicIds = new List<string> { selectedTopicId };
             var picked = topics?.FirstOrDefault(t => t.Id == selectedTopicId);
-            if (picked != null && !string.IsNullOrEmpty(picked.Domain))
+            var domain = !string.IsNullOrEmpty(picked?.Domain) ? picked.Domain : selectedDomainId;
+            if (!string.IsNullOrEmpty(domain))
             {
-                profile.CurrentDomain = picked.Domain;
-                await JS.TryInvokeVoidAsync("applyDomain", picked.Domain);
+                profile.CurrentDomain = domain;
+                await JS.TryInvokeVoidAsync("applyDomain", domain);
             }
+        }
+        else if (selectedDomainId != null)
+        {
+            profile.CurrentDomain = selectedDomainId;
+            await JS.TryInvokeVoidAsync("applyDomain", selectedDomainId);
         }
         await Progress.SaveProfileAsync(profile);
         await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
         Nav.NavigateTo("/");
     }
+
+    private static int DomainOrder(string id) => id switch
+    {
+        "math" => 0,
+        "physics" => 1,
+        "chemistry" => 2,
+        "biology" => 3,
+        "cs" => 4,
+        "geology" => 5,
+        "materials" => 6,
+        "economics" => 7,
+        "politics" => 8,
+        "media" => 9,
+        "history" => 10,
+        "philosophy" => 11,
+        "linguistics" => 12,
+        "literature" => 13,
+        _ => 99
+    };
+
+    private static string DomainHue(string id) => id switch
+    {
+        "math" => "#5B6ABF",
+        "philosophy" => "#8E63B5",
+        "physics" => "#4A90D9",
+        "biology" => "#2ECC71",
+        "chemistry" => "#E91E63",
+        "geology" => "#8D6E63",
+        "materials" => "#607D8B",
+        "history" => "#C4813A",
+        "linguistics" => "#FF7043",
+        "cs" => "#26A69A",
+        "misc" => "#5E35B1",
+        "economics" => "#16A085",
+        "politics" => "#3949AB",
+        "media" => "#0277BD",
+        "literature" => "#8E2C40",
+        _ => "#5B6ABF"
+    };
 }
 
 <style>
@@ -201,12 +313,87 @@
         margin-top: 8px;
     }
 
+    .ob-scroll {
+        width: 100%;
+        max-height: min(52vh, 460px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 4px 4px 12px;
+        margin: -4px -4px 0;
+        mask-image: linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%);
+    }
+
     .ob-topics {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
         width: 100%;
     }
+
+    .ob-domains {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .ob-domain-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background: var(--bg-card);
+        border: 2px solid transparent;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        text-align: left;
+    }
+
+    .ob-domain-card:hover { background: var(--bg-surface); }
+
+    .ob-domain-card.selected {
+        background: color-mix(in srgb, var(--domain-hue) 10%, var(--bg-card));
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--domain-hue) 30%, transparent);
+    }
+
+    .ob-domain-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .ob-domain-text { flex: 1; min-width: 0; }
+    .ob-domain-text strong { display: block; font-size: 0.95rem; color: var(--text-primary); }
+    .ob-domain-text small {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ob-row {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .ob-back {
+        flex: 0 0 auto;
+        margin-top: 8px;
+    }
+
+    .ob-grow { flex: 1; }
 
     .ob-topic-card {
         display: flex;

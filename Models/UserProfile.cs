@@ -2,6 +2,8 @@ namespace MathVoyager.Models;
 
 public class UserProfile
 {
+    // Stays 0 when absent from saved JSON so older profiles are recognised; see ProfileMigration.
+    public int SchemaVersion { get; set; }
     public string DisplayName { get; set; } = "Mathematician";
     public string SelectedAvatar { get; set; } = "default";
     public string SelectedTitle { get; set; } = "";
@@ -16,6 +18,20 @@ public class UserProfile
     public List<string> LessonsCompleted { get; set; } = new();
     public List<string> TopicsCompleted { get; set; } = new();
     public List<QuizRecord> QuizHistory { get; set; } = new();
+    // Aggregates of quiz records trimmed from QuizHistory to keep the profile small
+    public int ArchivedQuizCount { get; set; }
+    public int ArchivedPerfectQuizzes { get; set; }
+    public long ArchivedScoreSum { get; set; }
+    public int ArchivedBestScore { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int TotalQuizCount => QuizHistory.Count + ArchivedQuizCount;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int PerfectQuizCount => QuizHistory.Count(q => q.Score == 100) + ArchivedPerfectQuizzes;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int BestQuizScore => Math.Max(ArchivedBestScore, QuizHistory.Count > 0 ? QuizHistory.Max(q => q.Score) : 0);
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int AverageQuizScore => TotalQuizCount == 0 ? 0 : (int)((QuizHistory.Sum(q => (long)q.Score) + ArchivedScoreSum) / TotalQuizCount);
     public List<string> AchievementsUnlocked { get; set; } = new();
     public List<string> ShopPurchases { get; set; } = new() { "theme-dark" };
     public List<string> ConceptsViewed { get; set; } = new();
@@ -40,6 +56,15 @@ public class UserProfile
 
     // Spaced repetition
     public List<ReviewCard> ReviewQueue { get; set; } = new();
+
+    // Guided paths the learner has started; step completion is derived from LessonsCompleted
+    public List<string> PathsStarted { get; set; } = new();
+
+    // Explain-it-back notebook: conceptId -> the learner's own summary
+    public Dictionary<string, ConceptNote> ConceptNotes { get; set; } = new();
+
+    // "simple", "standard" or "deep"
+    public string ContentDepth { get; set; } = "standard";
 
     // Daily challenge
     public string? DailyChallengeDate { get; set; }
@@ -84,15 +109,27 @@ public class CompletionCard
     public string EarnedDate { get; set; } = "";
 }
 
+public class ConceptNote
+{
+    public string TopicId { get; set; } = "";
+    public string LessonId { get; set; } = "";
+    public string ConceptTitle { get; set; } = "";
+    public string Text { get; set; } = "";
+    public string Updated { get; set; } = "";
+}
+
 public class ReviewCard
 {
     public string QuestionId { get; set; } = "";
+    // Null on cards saved before concept-level review; those fall back to QuestionId.
+    public string? ConceptId { get; set; }
     public string TopicId { get; set; } = "";
     public string LessonId { get; set; } = "";
     public string NextReview { get; set; } = "";
     public double Interval { get; set; } = 1;
     public double EaseFactor { get; set; } = 2.5;
     public int Repetitions { get; set; }
+    public int Lapses { get; set; }
 }
 
 public class TopicStats

@@ -33,7 +33,7 @@ public static class JsInteropExtensions
     {
         try
         {
-            await js.InvokeVoidAsync("PhineErrorLog.add", source, ex.Message, ex.ToString());
+            await js.InvokeVoidAsync("NousErrorLog.add", source, ex.Message, ex.ToString());
         }
         catch { /* logger itself broken — give up */ }
     }
@@ -42,7 +42,7 @@ public static class JsInteropExtensions
     {
         try
         {
-            await js.InvokeVoidAsync("PhineErrorLog.add", $"js:{identifier}", ex.Message, ex.ToString());
+            await js.InvokeVoidAsync("NousErrorLog.add", $"js:{identifier}", ex.Message, ex.ToString());
         }
         catch { /* logger itself broken — give up */ }
     }

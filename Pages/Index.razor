@@ -6,6 +6,7 @@
 @inject IReviewService ReviewService
 @inject INotificationService NotificationSvc
 @inject NavigationManager Nav
+@inject IConnectionsService Connections
 
 <div class="dashboard">
     @if (savedSession != null && savedSession.ActiveTopicId != null && savedSession.ActiveLessonId != null)
@@ -33,7 +34,6 @@
 
     <div class="hero-row">
         <div class="welcome-section">
-            <h1>Phine</h1>
             @if (profile != null && profile.DisplayName != "Mathematician")
             {
                 <p class="welcome-greeting">Welcome back, @profile.DisplayName</p>
@@ -72,6 +72,15 @@
                 </div>
                 <div class="tool-chip card-clickable" @onclick='() => Nav.NavigateTo("/graph")'>
                     <Icon Name="graph" Size="16" /> Knowledge Graph
+                </div>
+                <div class="tool-chip card-clickable" @onclick='() => Nav.NavigateTo("/paths")'>
+                    <Icon Name="compass-rose" Size="16" /> Guided Paths
+                </div>
+                <div class="tool-chip card-clickable" @onclick='() => Nav.NavigateTo("/big-questions")'>
+                    <Icon Name="lightbulb" Size="16" /> Big Questions
+                </div>
+                <div class="tool-chip card-clickable" @onclick='() => Nav.NavigateTo("/notebook")'>
+                    <Icon Name="pencil" Size="16" /> Notebook
                 </div>
                 @if (profile != null && cookieViewed)
                 {
@@ -124,6 +133,66 @@
         }
         </div>
     </div>
+
+    @if (dailyPick != null)
+    {
+        <div class="card card-clickable daily-pick" @onclick='() => Nav.NavigateTo($"/topic/{dailyPick.Topic.Id}/lesson/{dailyPick.Lesson.Id}")'>
+            <div class="daily-pick-label"><Icon Name="sparkles" Size="14" /> Today's pick</div>
+            <p class="daily-pick-hook">@dailyPick.Hook</p>
+            <div class="daily-pick-meta">
+                <strong style="color: @dailyPick.Topic.Color">@dailyPick.Lesson.Title</strong>
+                <small>@dailyPick.Reason</small>
+            </div>
+        </div>
+    }
+
+    @if (continueTopics.Count > 0 || nextSteps.Count > 0 || nearby.Count > 0)
+    {
+        <div class="section next-steps">
+            @if (continueTopics.Count > 0)
+            {
+                <div class="next-group">
+                    <h3>Continue</h3>
+                    @foreach (var t in continueTopics)
+                    {
+                        var tt = t;
+                        <div class="next-item card-clickable" @onclick="() => NavigateToTopic(tt.Id)">
+                            <span class="next-dot" style="background: @tt.Color"></span>
+                            <div><strong>@tt.Name</strong><small>@DomainName(tt.Domain)</small></div>
+                        </div>
+                    }
+                </div>
+            }
+            @if (nextSteps.Count > 0)
+            {
+                <div class="next-group">
+                    <h3>Recommended next</h3>
+                    @foreach (var sug in nextSteps)
+                    {
+                        var sg = sug;
+                        <div class="next-item card-clickable" @onclick="() => NavigateToTopic(sg.Topic.Id)" title="@sg.Why">
+                            <span class="next-dot" style="background: @sg.Topic.Color"></span>
+                            <div><strong>@sg.Topic.Name</strong><small>@sg.Reason</small></div>
+                        </div>
+                    }
+                </div>
+            }
+            @if (nearby.Count > 0)
+            {
+                <div class="next-group">
+                    <h3>Nearby in other fields</h3>
+                    @foreach (var sug in nearby)
+                    {
+                        var sg = sug;
+                        <div class="next-item card-clickable" @onclick="() => NavigateToTopic(sg.Topic.Id)">
+                            <span class="next-dot" style="background: @sg.Topic.Color"></span>
+                            <div><strong>@sg.Topic.Name</strong><small>@(sg.Why ?? sg.Reason)</small></div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
 
     @if (topics != null && suggestedTopics.Count > 0)
     {
@@ -612,6 +681,32 @@
     private bool plotGeometryUnlocked;
     private string currentDomain = "math";
     private bool cookieViewed;
+    private DailyPick? dailyPick;
+    private List<Topic> continueTopics = new();
+    private List<TopicSuggestion> nextSteps = new();
+    private List<TopicSuggestion> nearby = new();
+    private List<Domain> allDomains = new();
+
+    private string DomainName(string id) => allDomains.FirstOrDefault(d => d.Id == id)?.Name ?? id;
+
+    // Recommendations span every field, not just the domain currently being browsed.
+    private async Task LoadRecommendationsAsync(UserProfile p)
+    {
+        try
+        {
+            var all = await Content.GetTopicsAsync();
+            allDomains = await Content.GetDomainsAsync();
+            var edges = (await Connections.GetGraphAsync()).Edges;
+            continueTopics = Recommender.Continue(all, p);
+            nextSteps = Recommender.NextSteps(all, edges, p, otherFields: false);
+            nearby = Recommender.NextSteps(all, edges, p, otherFields: true);
+            dailyPick = await Connections.GetDailyPickAsync(p, DateTime.Now);
+        }
+        catch
+        {
+            // Recommendations are a nicety; the dashboard works without them.
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -638,26 +733,26 @@
             playgroundUnlocked = profile.ShopPurchases.Contains("unlock-playground");
             compendiumUnlocked = profile.ShopPurchases.Contains("unlock-compendium");
             hofUnlocked = profile.ShopPurchases.Contains($"unlock-halloffame-{profile.CurrentDomain}");
-            particleSandboxUnlocked = profile.ShopPurchases.Contains("unlock-particle-sandbox");
-            cosmicScaleUnlocked = profile.ShopPurchases.Contains("unlock-cosmic-scale");
-            evolutionSimUnlocked = profile.ShopPurchases.Contains("unlock-evolution-sim");
-            cellTourUnlocked = profile.ShopPurchases.Contains("unlock-cell-tour");
-            reactionBenchUnlocked = profile.ShopPurchases.Contains("unlock-reaction-bench");
-            moleculeBuilderUnlocked = profile.ShopPurchases.Contains("unlock-molecule-builder");
-            deepTimeUnlocked = profile.ShopPurchases.Contains("unlock-deep-time");
-            rockIdUnlocked = profile.ShopPurchases.Contains("unlock-rock-id");
-            eraMapUnlocked = profile.ShopPurchases.Contains("unlock-era-map");
-            tradeRoutesUnlocked = profile.ShopPurchases.Contains("unlock-trade-routes");
-            etymologyUnlocked = profile.ShopPurchases.Contains("unlock-etymology");
-            trolleyLabUnlocked = profile.ShopPurchases.Contains("unlock-trolley-lab");
-            soundShiftUnlocked = profile.ShopPurchases.Contains("unlock-sound-shift");
-            phaseDiagramUnlocked = profile.ShopPurchases.Contains("unlock-phase-diagram");
-            algorithmRaceUnlocked = profile.ShopPurchases.Contains("unlock-algorithm-race");
-            cipherDecoderUnlocked = profile.ShopPurchases.Contains("unlock-cipher-decoder");
-            powerMapUnlocked = profile.ShopPurchases.Contains("unlock-power-map");
-            marketSimUnlocked = profile.ShopPurchases.Contains("unlock-market-sim");
-            frontPageUnlocked = profile.ShopPurchases.Contains("unlock-front-page");
-            plotGeometryUnlocked = profile.ShopPurchases.Contains("unlock-plot-geometry");
+            particleSandboxUnlocked = true;
+            cosmicScaleUnlocked = true;
+            evolutionSimUnlocked = true;
+            cellTourUnlocked = true;
+            reactionBenchUnlocked = true;
+            moleculeBuilderUnlocked = true;
+            deepTimeUnlocked = true;
+            rockIdUnlocked = true;
+            eraMapUnlocked = true;
+            tradeRoutesUnlocked = true;
+            etymologyUnlocked = true;
+            trolleyLabUnlocked = true;
+            soundShiftUnlocked = true;
+            phaseDiagramUnlocked = true;
+            algorithmRaceUnlocked = true;
+            cipherDecoderUnlocked = true;
+            powerMapUnlocked = true;
+            marketSimUnlocked = true;
+            frontPageUnlocked = true;
+            plotGeometryUnlocked = true;
             currentDomain = string.IsNullOrEmpty(profile.CurrentDomain) ? "math" : profile.CurrentDomain;
             cookieViewed = profile.ViewedCookieDates.Contains(DateTime.Now.ToString("yyyy-MM-dd"));
 
@@ -665,6 +760,8 @@
             {
                 topicProgress[topic.Id] = await Progress.GetTopicProgressAsync(topic.Id);
             }
+
+            await LoadRecommendationsAsync(profile);
 
             // Show suggestions for topics the user picked in onboarding but hasn't started
             if (profile.SuggestedTopicIds.Count > 0)
@@ -981,6 +1078,21 @@
 }
 
 <style>
+    .daily-pick { padding: 14px 16px; margin-bottom: 16px; border-left: 3px solid var(--accent); }
+    .daily-pick-label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+    .daily-pick-hook { margin: 6px 0 8px; color: var(--text-primary); font-weight: 600; line-height: 1.45; }
+    .daily-pick-meta { display: flex; flex-direction: column; gap: 2px; }
+    .daily-pick-meta small { color: var(--text-muted); }
+    .next-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .next-group h3 { font-size: 0.9rem; margin: 0 0 6px; color: var(--text-secondary); }
+    .next-item {
+        display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; margin-bottom: 6px;
+        border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer;
+    }
+    .next-item > div { display: flex; flex-direction: column; min-width: 0; }
+    .next-item strong { color: var(--text-primary); font-size: 0.9rem; }
+    .next-item small { color: var(--text-muted); font-size: 0.78rem; line-height: 1.35; }
+    .next-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
     .dashboard {
         padding-top: 8px;
     }

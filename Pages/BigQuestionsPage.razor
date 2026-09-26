@@ -1,0 +1,248 @@
+@page "/big-questions"
+@page "/big-questions/{QuestionId}"
+@inject IConnectionsService Connections
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back" @onclick='() => Nav.NavigateTo(QuestionId == null ? "/" : "/big-questions")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>@(current?.Question ?? "Big Questions")</h1>
+</div>
+
+@if (questions == null)
+{
+    <div class="skeleton skeleton-card" style="height: 120px"></div>
+}
+else if (QuestionId == null)
+{
+    <p class="bq-intro">The questions no single subject can answer. Each one gathers lessons, paths, simulators and reading from across the app.</p>
+    <div class="bq-grid stagger-in">
+        @foreach (var q in questions)
+        {
+            var qq = q;
+            <div class="card card-clickable bq-card" @onclick='() => Nav.NavigateTo($"/big-questions/{qq.Id}")'>
+                <div class="bq-card-icon"><Icon Name="@qq.Icon" Size="26" /></div>
+                <strong>@qq.Question</strong>
+                <p>@qq.Blurb</p>
+                @if (qq.Tours.Count > 0)
+                {
+                    <span class="bq-tag">Open problem tour</span>
+                }
+            </div>
+        }
+    </div>
+}
+else if (current == null)
+{
+    <div class="card" style="padding: 24px; text-align: center">
+        <p>That question does not exist.</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/big-questions")'>All big questions</button>
+    </div>
+}
+else
+{
+    <div class="card bq-hero">
+        <div class="bq-card-icon"><Icon Name="@current.Icon" Size="30" /></div>
+        <p>@current.Blurb</p>
+    </div>
+
+    @foreach (var tour in current.Tours)
+    {
+        <div class="bq-section">
+            <h2>@tour.Title</h2>
+            <p class="bq-status"><strong>Status:</strong> @tour.Status</p>
+            <div class="bq-tour">
+                @for (int i = 0; i < tour.Stops.Count; i++)
+                {
+                    var idx = i;
+                    var stop = tour.Stops[i];
+                    var open = openStop == idx;
+                    <div class="bq-stop @(open ? "open" : "")">
+                        <button class="bq-stop-head" @onclick="() => openStop = open ? -1 : idx" aria-expanded="@(open ? "true" : "false")">
+                            <span class="bq-stop-num">@(i + 1)</span>
+                            <span>@stop.Heading</span>
+                            <Icon Name="@(open ? "chevron-up" : "chevron-down")" Size="16" />
+                        </button>
+                        @if (open)
+                        {
+                            <div class="bq-stop-body concept-content">@((MarkupString)stop.Html)</div>
+                            @if (idx < tour.Stops.Count - 1)
+                            {
+                                <button class="btn btn-sm btn-outline" @onclick="() => openStop = idx + 1">Next stop</button>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (pathsFor.Count > 0)
+    {
+        <div class="bq-section">
+            <h2>Guided paths</h2>
+            @foreach (var p in pathsFor)
+            {
+                var pp = p;
+                <div class="card card-clickable bq-row" @onclick='() => Nav.NavigateTo($"/path/{pp.Id}")'>
+                    <Icon Name="@pp.Icon" Size="18" />
+                    <div><strong>@pp.Question</strong><small>@pp.Steps.Count lessons</small></div>
+                    <Icon Name="chevron-right" Size="16" />
+                </div>
+            }
+        </div>
+    }
+
+    @if (lessonRows.Count > 0)
+    {
+        <div class="bq-section">
+            <h2>Lessons that bear on it</h2>
+            @foreach (var (step, topic, lesson) in lessonRows)
+            {
+                var st = step;
+                var done = profile?.LessonsCompleted.Contains(st.LessonId) == true;
+                <div class="card card-clickable bq-row" @onclick='() => Nav.NavigateTo($"/topic/{st.TopicId}/lesson/{st.LessonId}")'>
+                    <span class="bq-dot" style="background: @(topic?.Color ?? "var(--border)")"></span>
+                    <div>
+                        <strong>@(lesson?.Title ?? st.LessonId)</strong>
+                        <small>@(topic?.Name)@(done ? " · done" : "")</small>
+                        @if (!string.IsNullOrEmpty(st.Note)) { <p>@st.Note</p> }
+                    </div>
+                    <Icon Name="chevron-right" Size="16" />
+                </div>
+            }
+        </div>
+    }
+
+    @if (current.SimulatorRoutes.Count > 0)
+    {
+        <div class="bq-section">
+            <h2>Try it</h2>
+            @foreach (var sim in current.SimulatorRoutes.Select(SimulatorCatalog.ByRoute).Where(s => s != null))
+            {
+                var sm = sim!;
+                <div class="card card-clickable bq-row" @onclick="() => Nav.NavigateTo(sm.Route)">
+                    <Icon Name="@sm.Icon" Size="18" />
+                    <div><strong>@sm.Name</strong><small>@sm.Blurb</small></div>
+                    <Icon Name="chevron-right" Size="16" />
+                </div>
+            }
+        </div>
+    }
+
+    @if (topicRows.Count > 0)
+    {
+        <div class="bq-section">
+            <h2>Go deeper</h2>
+            <div class="bq-chips">
+                @foreach (var t in topicRows)
+                {
+                    var tt = t;
+                    <button class="bq-chip" style="border-color: @tt.Color" @onclick='() => Nav.NavigateTo($"/topic/{tt.Id}")'>@tt.Name</button>
+                }
+            </div>
+        </div>
+    }
+
+    @if (reading.Count > 0)
+    {
+        <div class="bq-section">
+            <h2>Further reading</h2>
+            @foreach (var r in reading)
+            {
+                <div class="card bq-row bq-reading">
+                    <div>
+                        <strong>@r.Title</strong>
+                        <small>@r.Authors@(r.Year.HasValue ? $" · {r.Year}" : "")</small>
+                        @if (!string.IsNullOrEmpty(r.Note)) { <p>@r.Note</p> }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string? QuestionId { get; set; }
+
+    private List<BigQuestion>? questions;
+    private BigQuestion? current;
+    private UserProfile? profile;
+    private int openStop;
+    private List<LearningPath> pathsFor = new();
+    private List<(PathStep step, Topic? topic, Lesson? lesson)> lessonRows = new();
+    private List<Topic> topicRows = new();
+    private List<Resource> reading = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        profile = await Progress.GetProfileAsync();
+        questions = await Connections.GetBigQuestionsAsync();
+        current = QuestionId == null ? null : questions.FirstOrDefault(q => q.Id == QuestionId);
+        openStop = 0;
+        pathsFor.Clear(); lessonRows.Clear(); topicRows.Clear(); reading.Clear();
+        if (current == null) return;
+
+        var paths = await Connections.GetPathsAsync();
+        pathsFor = current.PathIds.Select(id => paths.FirstOrDefault(p => p.Id == id)).OfType<LearningPath>().ToList();
+
+        var topics = await Content.GetTopicsAsync();
+        foreach (var step in current.Lessons)
+        {
+            var lessons = await Content.GetLessonsAsync(step.TopicId);
+            lessonRows.Add((step, topics.FirstOrDefault(t => t.Id == step.TopicId), lessons.FirstOrDefault(l => l.Id == step.LessonId)));
+        }
+        topicRows = current.TopicIds.Select(id => topics.FirstOrDefault(t => t.Id == id)).OfType<Topic>().ToList();
+
+        // A few well-chosen books beat a long list: at most two per topic, books before papers.
+        var resources = await Connections.GetResourcesAsync();
+        reading = current.TopicIds
+            .SelectMany(id => resources.Where(r => r.TopicIds.Contains(id))
+                .OrderBy(r => r.Type is "book" ? 0 : r.Type is "textbook" ? 1 : 2)
+                .Take(2))
+            .DistinctBy(r => r.Id)
+            .Take(8)
+            .ToList();
+    }
+}
+
+<style>
+    .bq-intro { color: var(--text-secondary); margin: 0 0 12px; line-height: 1.55; }
+    .bq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .bq-card { padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .bq-card strong { color: var(--text-primary); font-size: 1.05rem; }
+    .bq-card p { margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
+    .bq-card-icon { color: var(--accent); }
+    .bq-tag { align-self: flex-start; font-size: 0.7rem; font-weight: 700; color: var(--primary); border: 1px solid var(--primary-light); border-radius: 999px; padding: 2px 8px; }
+    .bq-hero { padding: 18px; display: flex; gap: 14px; align-items: flex-start; margin-bottom: 8px; }
+    .bq-hero p { margin: 0; color: var(--text-secondary); line-height: 1.6; }
+    .bq-section { margin-top: 20px; }
+    .bq-section h2 { font-size: 1.05rem; margin: 0 0 8px; }
+    .bq-status { color: var(--text-secondary); font-size: 0.88rem; margin: 0 0 10px; line-height: 1.5; }
+    .bq-tour { display: flex; flex-direction: column; gap: 8px; }
+    .bq-stop { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); overflow: hidden; }
+    .bq-stop.open { border-color: var(--primary-light); }
+    .bq-stop-head {
+        width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px; background: none; border: none;
+        color: var(--text-primary); font-family: inherit; font-size: 0.95rem; font-weight: 600; text-align: left; cursor: pointer;
+    }
+    .bq-stop-head span:nth-child(2) { flex: 1; }
+    .bq-stop-num {
+        width: 24px; height: 24px; border-radius: 50%; background: var(--bg-surface); color: var(--text-muted);
+        display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;
+    }
+    .bq-stop-body { padding: 0 14px 4px; line-height: 1.7; color: var(--text-secondary); }
+    .bq-stop .btn { margin: 0 14px 12px; }
+    .bq-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px; margin-bottom: 8px; }
+    .bq-row > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .bq-row strong { color: var(--text-primary); }
+    .bq-row small { color: var(--text-muted); }
+    .bq-row p { margin: 4px 0 0; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.45; }
+    .bq-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .bq-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .bq-chip {
+        padding: 6px 12px; border-radius: 999px; border: 1.5px solid; background: var(--bg-card);
+        color: var(--text-primary); font-family: inherit; font-size: 0.85rem; cursor: pointer;
+    }
+</style>

@@ -61,7 +61,7 @@ else
 
             @if (q.Type == QuestionType.MultipleChoice || q.Type == QuestionType.VisualIdentify)
             {
-                <div class="options-grid">
+                <div class="options-grid stagger-options">
                     @if (q.Options != null)
                     {
                         @foreach (var opt in q.Options)
@@ -82,7 +82,7 @@ else
             }
             else if (q.Type == QuestionType.TrueOrFalse)
             {
-                <div class="options-grid">
+                <div class="options-grid stagger-options">
                     @foreach (var opt in new[] { "True", "False" })
                     {
                         var cls = "";
@@ -308,7 +308,12 @@ else
             damageFlash = true;
             lastDamageTaken = await Run.ApplyDamageAsync(run, 1);
             await JS.TryInvokeVoidAsync("Sounds.playWrong");
-            _ = Task.Delay(500).ContinueWith(_ => InvokeAsync(() => { damageFlash = false; StateHasChanged(); }));
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(500);
+                try { await InvokeAsync(() => { damageFlash = false; StateHasChanged(); }); }
+                catch { /* component may be disposed */ }
+            });
         }
         await Run.SaveRunAsync(run);
         StateHasChanged();

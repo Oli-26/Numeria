@@ -15,14 +15,11 @@ public class QuizEngineXpTests
         XpEarned = correct ? xp : 0
     };
 
-    // NOTE: empty results currently award the 50 perfect-bonus because
-    // List.All() on empty returns true. Likely a bug — flagged for review.
-    // Test pins current behavior so any future fix is intentional.
     [Fact]
-    public void EmptyResults_AwardsPerfectBonus_PossibleBug()
+    public void EmptyResults_AwardNoPerfectBonus()
     {
-        Assert.Equal(50, NewEngine().CalculateQuizXp(new(), 0));
-        Assert.Equal(75, NewEngine().CalculateQuizXp(new(), 5));
+        Assert.Equal(0, NewEngine().CalculateQuizXp(new(), 0));
+        Assert.Equal(0, NewEngine().CalculateQuizXp(new(), 5));
     }
 
     [Fact]

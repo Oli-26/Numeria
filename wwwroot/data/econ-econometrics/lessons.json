@@ -40,7 +40,7 @@
       {
         "id": "econ-econ-01-c4",
         "title": "R² and Goodness of Fit",
-        "contentHtml": "<p><strong>R²</strong> is the share of variation in Y explained by the model. It runs from 0 (the model explains nothing — you might as well predict the mean) to 1 (perfect fit).</p><p>R² = 1 − SSR/SST, where SSR is the sum of squared residuals and SST is the total sum of squares.</p><p>Caveats: high R² doesn't mean the model is right (could be overfit), and low R² doesn't mean it's wrong (in macroeconomics R² of 0.05 with a strong identification can matter more than R² of 0.95 with everything-and-the-kitchen-sink). <strong>Adjusted R²</strong> penalizes adding regressors that don't really help. R² is a description; statistical significance and causal identification matter more.</p>",
+        "contentHtml": "<p><strong>R²</strong> is the share of variation in Y explained by the model. It runs from 0 (the model explains nothing — you might as well predict the mean) to 1 (perfect fit).</p><p>R² = 1 − SSR/SST, where SSR is the sum of squared residuals and SST is the total sum of squares.</p><p>Caveats: high R² doesn't mean the model is right (could be overfit), and low R² doesn't mean it's wrong (in applied microeconomics R² of 0.05 with a strong identification can matter more than R² of 0.95 with everything-and-the-kitchen-sink). <strong>Adjusted R²</strong> penalizes adding regressors that don't really help. R² is a description; statistical significance and causal identification matter more.</p>",
         "mathExpressions": [
           "R^2 = 1 - \\frac{\\sum (y_i - \\hat y_i)^2}{\\sum (y_i - \\bar y)^2}"
         ],
@@ -56,7 +56,7 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": [],
+    "quizQuestionIds": ["econ-econometrics-q01", "econ-econometrics-q02", "econ-econometrics-q03", "econ-econometrics-q04", "econ-econometrics-q05"],
     "puzzleId": null
   },
   {
@@ -80,7 +80,7 @@
       {
         "id": "econ-econ-02-c2",
         "title": "T-Statistics & P-Values",
-        "contentHtml": "<p>The <strong>t-statistic</strong> is the coefficient divided by its standard error: t = β̂/SE. It measures how many standard errors β̂ sits away from zero.</p><p>Under the null hypothesis β = 0, t follows (approximately, for large n) a standard normal distribution. The <strong>p-value</strong> is the probability of seeing a t this extreme or more, if the null were true.</p><p>The conventional thresholds: |t| > 1.96 (p < 0.05) is 'statistically significant,' |t| > 2.58 (p < 0.01) is 'highly significant.' These cutoffs are arbitrary historical conventions, not laws of nature. A p-value of 0.049 is barely different from one of 0.051.</p><p>Statistical significance is about whether the effect is distinguishable from noise — not whether the effect is large or important. A microscopic effect can be significant with enough data; a large effect can fail significance with too little.</p>",
+        "contentHtml": "<p>The <strong>t-statistic</strong> is the coefficient divided by its standard error: t = β̂/SE. It measures how many standard errors β̂ sits away from zero.</p><p>Under the null hypothesis β = 0, t follows (approximately, for large n) a standard normal distribution. The <strong>p-value</strong> is the probability of seeing a t this extreme or more, if the null were true.</p><p>The conventional thresholds: |t| > 1.96 (p &lt; 0.05) is 'statistically significant,' |t| > 2.58 (p &lt; 0.01) is 'highly significant.' These cutoffs are arbitrary historical conventions, not laws of nature. A p-value of 0.049 is barely different from one of 0.051.</p><p>Statistical significance is about whether the effect is distinguishable from noise — not whether the effect is large or important. A microscopic effect can be significant with enough data; a large effect can fail significance with too little.</p>",
         "mathExpressions": [
           "t = \\frac{\\hat\\beta - 0}{SE(\\hat\\beta)}"
         ],
@@ -90,7 +90,7 @@
       {
         "id": "econ-econ-02-c3",
         "title": "Confidence Intervals",
-        "contentHtml": "<p>A <strong>95% confidence interval</strong> for β: β̂ ± 1.96·SE. Loosely, 'we're 95% confident β lies in this range.'</p><p>Strictly, the interpretation is more awkward: if you ran the same study many times, 95% of the resulting CIs would contain the true β. Any individual CI either contains it or doesn't.</p><p>CIs convey more than p-values. They show <em>both</em> precision and effect size. A study reporting 'effect = 2.1, CI [2.0, 2.2]' is far more informative than 'effect = 2.1, p < 0.05' — the second could be hiding a wide CI like [0.05, 4.15].</p><p>Best practice in modern empirical economics: report point estimate and CI, not just p-value.</p>",
+        "contentHtml": "<p>A <strong>95% confidence interval</strong> for β: β̂ ± 1.96·SE. Loosely, 'we're 95% confident β lies in this range.'</p><p>Strictly, the interpretation is more awkward: if you ran the same study many times, 95% of the resulting CIs would contain the true β. Any individual CI either contains it or doesn't.</p><p>CIs convey more than p-values. They show <em>both</em> precision and effect size. A study reporting 'effect = 2.1, CI [2.0, 2.2]' is far more informative than 'effect = 2.1, p &lt; 0.05' — the second could be hiding a wide CI like [0.05, 4.15].</p><p>Best practice in modern empirical economics: report point estimate and CI, not just p-value.</p>",
         "mathExpressions": [
           "\\hat\\beta \\pm 1.96 \\cdot SE(\\hat\\beta)"
         ],
@@ -108,13 +108,13 @@
       {
         "id": "econ-econ-02-c5",
         "title": "Multiple Testing & P-Hacking",
-        "contentHtml": "<p>Run 20 regressions on noise, and on average one will be 'significant' at p < 0.05 — by chance. This is the <strong>multiple testing problem</strong>.</p><p>Real research often does run many specifications: different controls, different subsamples, different functional forms. Reporting only the significant ones (consciously or not) inflates the false-positive rate. This practice — sometimes called <strong>p-hacking</strong> or 'specification searching' — has been a major source of irreproducible results across social sciences.</p><p>Fixes include: pre-registering analyses before seeing data, reporting all specifications transparently, using Bonferroni or Benjamini-Hochberg corrections for multiple tests, and treating exploratory analyses as hypothesis-generating rather than hypothesis-confirming.</p><p>The 2010s replication crisis shifted norms in economics toward pre-analysis plans and registered reports, especially for RCTs and quasi-experimental work.</p>",
+        "contentHtml": "<p>Run 20 regressions on noise, and on average one will be 'significant' at p &lt; 0.05 — by chance. This is the <strong>multiple testing problem</strong>.</p><p>Real research often does run many specifications: different controls, different subsamples, different functional forms. Reporting only the significant ones (consciously or not) inflates the false-positive rate. This practice — sometimes called <strong>p-hacking</strong> or 'specification searching' — has been a major source of irreproducible results across social sciences.</p><p>Fixes include: pre-registering analyses before seeing data, reporting all specifications transparently, using Bonferroni or Benjamini-Hochberg corrections for multiple tests, and treating exploratory analyses as hypothesis-generating rather than hypothesis-confirming.</p><p>The 2010s replication crisis shifted norms in economics toward pre-analysis plans and registered reports, especially for RCTs and quasi-experimental work.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": [],
+    "quizQuestionIds": ["econ-econometrics-q06", "econ-econometrics-q07", "econ-econometrics-q08", "econ-econometrics-q09", "econ-econometrics-q10"],
     "puzzleId": null
   },
   {
@@ -138,7 +138,7 @@
       {
         "id": "econ-econ-03-c2",
         "title": "The Idea of Instrumental Variables",
-        "contentHtml": "<p>An <strong>instrument</strong> Z is a variable that affects Y <em>only through</em> its effect on X.</p><p>Two requirements: <strong>relevance</strong>, Z is correlated with X (it shifts X around); and <strong>exclusion</strong>, Z is uncorrelated with the error ε (it doesn't affect Y directly or through other channels).</p><p>If you can find a Z that satisfies both, you can isolate the part of X's variation that's due to Z — which by exclusion is uncontaminated by the omitted variables — and use just that to identify β.</p><p>The classic example: Angrist's quarter-of-birth instrument for schooling. Compulsory schooling laws and birth quarter combined to push some students to stay in school slightly longer. Quarter of birth is plausibly exogenous, so its effect on wages, scaled by its effect on schooling, gives a clean estimate of returns to education.</p>",
+        "contentHtml": "<p>An <strong>instrument</strong> Z is a variable that affects Y <em>only through</em> its effect on X.</p><p>Two requirements: <strong>relevance</strong>, Z is correlated with X (it shifts X around); and <strong>exclusion</strong>, Z is uncorrelated with the error ε (it doesn't affect Y directly or through other channels).</p><p>If you can find a Z that satisfies both, you can isolate the part of X's variation that's due to Z — which by exclusion is uncontaminated by the omitted variables — and use just that to identify β.</p><p>The classic example: Angrist and Krueger's (1991) quarter-of-birth instrument for schooling. Compulsory schooling laws and birth quarter combined to push some students to stay in school slightly longer. Quarter of birth is plausibly exogenous, so its effect on wages, scaled by its effect on schooling, gives a clean estimate of returns to education.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
@@ -146,7 +146,7 @@
       {
         "id": "econ-econ-03-c3",
         "title": "Two-Stage Least Squares",
-        "contentHtml": "<p><strong>Two-Stage Least Squares (2SLS)</strong> is the practical implementation of IV.</p><p><em>Stage 1:</em> regress X on the instruments and any exogenous controls. Get the predicted X̂.</p><p><em>Stage 2:</em> regress Y on X̂ (plus controls). The resulting coefficient is the IV estimate.</p><p>Intuition: X̂ uses only the variation in X that comes from the instruments. By exclusion, that variation is uncorrelated with ε, so the second-stage regression gives an unbiased estimate of the causal effect.</p><p>The price you pay: IV is generally less precise than OLS. The smaller the instrument's effect on X (its 'strength'), the larger the SE on β̂.</p>",
+        "contentHtml": "<p><strong>Two-Stage Least Squares (2SLS)</strong> is the practical implementation of IV.</p><p><em>Stage 1:</em> regress X on the instruments and any exogenous controls. Get the predicted X̂.</p><p><em>Stage 2:</em> regress Y on X̂ (plus controls). The resulting coefficient is the IV estimate.</p><p>Intuition: X̂ uses only the variation in X that comes from the instruments. By exclusion, that variation is uncorrelated with ε, so the second-stage regression gives a consistent estimate of the causal effect (consistent, not unbiased: 2SLS is biased in finite samples, badly so with weak instruments).</p><p>The price you pay: IV is generally less precise than OLS. The smaller the instrument's effect on X (its 'strength'), the larger the SE on β̂.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
@@ -154,7 +154,7 @@
       {
         "id": "econ-econ-03-c4",
         "title": "Weak Instruments",
-        "contentHtml": "<p>If your instrument has only a weak effect on X, IV breaks down — sometimes spectacularly.</p><p>Two problems. The IV estimator becomes very imprecise (huge SEs). And worse, even small violations of the exclusion restriction get amplified into large biases — bias scales with 1/relevance.</p><p>The diagnostic: <strong>first-stage F-statistic</strong>. The Stock-Yogo rule of thumb: F > 10 is required for the IV estimate to be approximately unbiased. Many famous early IV studies have first-stage F's well below this — and their results have been revised downward.</p><p>This is one reason credibility-revolution economics is so demanding: not just any instrument works. The 2018 controversy over Acemoglu-Johnson-Robinson's settler mortality instrument is one well-known example of weak-instrument concerns.</p>",
+        "contentHtml": "<p>If your instrument has only a weak effect on X, IV breaks down — sometimes spectacularly.</p><p>Two problems. The IV estimator becomes very imprecise (huge SEs). And worse, even small violations of the exclusion restriction get amplified into large biases — bias scales with 1/relevance.</p><p>The diagnostic: <strong>first-stage F-statistic</strong>. The Staiger-Stock (1997) rule of thumb, later formalized with Stock-Yogo (2005) critical values: F > 10 is required for the IV estimate to be approximately unbiased. Many famous early IV studies have first-stage F's well below this — and their results have been revised downward.</p><p>This is one reason credibility-revolution economics is so demanding: not just any instrument works. Albouy's (2012) critique of Acemoglu-Johnson-Robinson's settler mortality instrument is one well-known example of weak-instrument concerns.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
@@ -168,7 +168,7 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": [],
+    "quizQuestionIds": ["econ-econometrics-q11", "econ-econometrics-q12", "econ-econometrics-q13", "econ-econometrics-q14", "econ-econometrics-q15"],
     "puzzleId": null
   },
   {
@@ -216,13 +216,13 @@
       {
         "id": "econ-econ-04-c5",
         "title": "Staggered Adoption Issues",
-        "contentHtml": "<p>What if different units get treated at different times — states adopting a policy in different years?</p><p>The standard 'two-way fixed effects' DiD regression breaks in subtle ways under heterogeneous, time-varying treatment effects. Already-treated units serve as controls for newly-treated ones, which is generally invalid.</p><p>The Goodman-Bacon decomposition (2021) showed how to see what the regression is actually estimating — a weighted average of many 2×2 DiDs, with sometimes-negative weights. In bad cases, you can get a negative estimated effect even when every unit's true effect is positive.</p><p>A wave of new estimators — Callaway-Sant'Anna, de Chaisemartin-D'Haultfœuille, Sun-Abraham, Borusyak-Jaravel-Spiess — fix the staggered-adoption problem by aggregating clean 2×2 comparisons. As of the 2020s, these are becoming standard, displacing naïve TWFE for staggered designs.</p>",
+        "contentHtml": "<p>What if different units get treated at different times — states adopting a policy in different years?</p><p>The standard 'two-way fixed effects' DiD regression breaks in subtle ways under heterogeneous, time-varying treatment effects. Already-treated units serve as controls for newly-treated ones, which is generally invalid.</p><p>The Goodman-Bacon decomposition (2021) showed how to see what the regression is actually estimating — a weighted average of many 2×2 DiDs, including 'forbidden comparisons' that use already-treated units as controls. De Chaisemartin and D'Haultfoeuille (2020) showed the implied weights on individual treatment effects can even be negative. In bad cases, you can get a negative estimated effect even when every unit's true effect is positive.</p><p>A wave of new estimators — Callaway-Sant'Anna, de Chaisemartin-D'Haultfœuille, Sun-Abraham, Borusyak-Jaravel-Spiess — fix the staggered-adoption problem by aggregating clean 2×2 comparisons. As of the 2020s, these are becoming standard, displacing naïve TWFE for staggered designs.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": [],
+    "quizQuestionIds": ["econ-econometrics-q16", "econ-econometrics-q17", "econ-econometrics-q18", "econ-econometrics-q19", "econ-econometrics-q20"],
     "puzzleId": null
   },
   {
@@ -276,7 +276,7 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": [],
+    "quizQuestionIds": ["econ-econometrics-q21", "econ-econometrics-q22", "econ-econometrics-q23", "econ-econometrics-q24", "econ-econometrics-q25"],
     "puzzleId": null
   },
   {
@@ -336,7 +336,7 @@
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": [],
+    "quizQuestionIds": ["econ-econometrics-q26", "econ-econometrics-q27", "econ-econometrics-q28", "econ-econometrics-q29", "econ-econometrics-q30"],
     "puzzleId": null
   }
 ]

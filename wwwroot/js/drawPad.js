@@ -82,13 +82,16 @@ window.DrawPad = (function () {
             redraw();
         }
 
+        var _touchPreventStart = function (e) { e.preventDefault(); };
+        var _touchPreventMove = function (e) { e.preventDefault(); };
+
         canvas.addEventListener('pointerdown', start);
         canvas.addEventListener('pointermove', move);
         canvas.addEventListener('pointerup', end);
         canvas.addEventListener('pointercancel', end);
         canvas.addEventListener('pointerleave', end);
-        canvas.addEventListener('touchstart', function (e) { e.preventDefault(); }, { passive: false });
-        canvas.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+        canvas.addEventListener('touchstart', _touchPreventStart, { passive: false });
+        canvas.addEventListener('touchmove', _touchPreventMove, { passive: false });
 
         pad._cleanup = function () {
             canvas.removeEventListener('pointerdown', start);
@@ -96,6 +99,8 @@ window.DrawPad = (function () {
             canvas.removeEventListener('pointerup', end);
             canvas.removeEventListener('pointercancel', end);
             canvas.removeEventListener('pointerleave', end);
+            canvas.removeEventListener('touchstart', _touchPreventStart);
+            canvas.removeEventListener('touchmove', _touchPreventMove);
             window.removeEventListener('resize', onResize);
         };
 

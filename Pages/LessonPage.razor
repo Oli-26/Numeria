@@ -6,6 +6,7 @@
 @inject ITtsService Tts
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@inject IConnectionsService Connections
 @implements IDisposable
 
 <div class="page-header">
@@ -34,14 +35,32 @@
                         @onclick="StartQuiz"><Icon Name="zap" Size="16" /></button>
             </div>
 
+            @if (HasDepthLayers)
+            {
+                <div class="depth-toggle" role="group" aria-label="Reading depth">
+                    @foreach (var (key, label) in new[] { ("simple", "Simpler"), ("standard", "Standard"), ("deep", "Deeper") })
+                    {
+                        var k = key;
+                        <button class="depth-btn @(depth == k ? "active" : "")" @onclick="() => SetDepth(k)">@label</button>
+                    }
+                </div>
+            }
+
             @if (currentConceptIndex < lesson.Concepts.Count)
             {
                 var concept = lesson.Concepts[currentConceptIndex];
-                <div class="concept-card card anim-slide">
+                var awaitingGuess = concept.Discovery != null && !guessed.Contains(concept.Id);
+                <div class="concept-card card anim-slide" @key="concept.Id">
                     <h2>@concept.Title</h2>
 
+                    @if (awaitingGuess)
+                    {
+                        <DiscoveryCard Question="concept.Discovery!" OnDone="() => guessed.Add(concept.Id)" />
+                    }
+                    else
+                    {
                     <div class="concept-content">
-                        @((MarkupString)concept.ContentHtml)
+                        @((MarkupString)ContentFor(concept))
                     </div>
 
                     @if (concept.MathExpressions.Count > 0)
@@ -55,7 +74,51 @@
                     @if (concept.VisualizationType != null)
                     {
                         <CanvasVisualization CanvasId="@($"viz-{concept.Id}")"
-                                             VisualizationType="@concept.VisualizationType" />
+                                             VisualizationType="@concept.VisualizationType"
+                                             Config="@concept.VisualizationConfig" />
+                    }
+
+                    @if (simulators.TryGetValue(concept.Id, out var sim))
+                    {
+                        <div class="try-it-card card-clickable" @onclick="() => OpenSimulator(sim)">
+                            <div class="try-it-icon"><Icon Name="@sim.Icon" Size="22" /></div>
+                            <div class="try-it-text">
+                                <small>Try it</small>
+                                <strong>@sim.Name</strong>
+                                <span>@sim.Blurb</span>
+                            </div>
+                            <Icon Name="chevron-right" Size="18" />
+                        </div>
+                    }
+
+                    <div class="explain-back">
+                        @if (explainOpenFor != concept.Id)
+                        {
+                            <button class="explain-toggle" @onclick="() => OpenExplain(concept)">
+                                <Icon Name="pencil" Size="14" /> @(profile?.ConceptNotes.ContainsKey(concept.Id) == true ? "Your note on this" : "Explain it back in your own words")
+                            </button>
+                        }
+                        else
+                        {
+                            <textarea class="explain-input" rows="3" @bind="noteDraft" @bind:event="oninput"
+                                      placeholder="In a sentence or two, what is the key idea here?" aria-label="Your explanation"></textarea>
+                            <div class="explain-actions">
+                                <button class="btn btn-sm btn-primary" disabled="@string.IsNullOrWhiteSpace(noteDraft)" @onclick="() => SaveNote(concept)">Save to notebook</button>
+                                <button class="btn btn-sm btn-outline" @onclick="() => explainOpenFor = null">Close</button>
+                            </div>
+                            @if (noteSaved && !string.IsNullOrEmpty(concept.ModelSummary))
+                            {
+                                <div class="explain-model">
+                                    <small>Compare with a model answer</small>
+                                    <p>@concept.ModelSummary</p>
+                                </div>
+                            }
+                            else if (noteSaved)
+                            {
+                                <small class="explain-saved">Saved. Find it in your notebook.</small>
+                            }
+                        }
+                    </div>
                     }
 
                     <!-- TTS control bar (only when TTS is enabled and supported) -->
@@ -144,9 +207,84 @@
             }
         </div>
     }
+    else if (outcome == LessonOutcome.Passed)
+    {
+        <div class="card post-quiz anim-slide">
+            <div class="post-quiz-head">
+                <Icon Name="checkmark-circle" Size="28" />
+                <div>
+                    <h2>Lesson complete</h2>
+                    <small>@lastCorrect / @lastTotal correct</small>
+                </div>
+            </div>
+
+            @if (echoes.Count > 0)
+            {
+                <div class="echoes">
+                    <h3>Echoes</h3>
+                    <p class="echoes-sub">Where this idea turns up in other fields</p>
+                    @foreach (var echo in echoes)
+                    {
+                        var ec = echo;
+                        <div class="echo-card card-clickable" @onclick="() => OpenEcho(ec)">
+                            <div>
+                                <strong>@(ec.SynthesisTitle ?? ec.TopicName)</strong>
+                                <small class="echo-domain">@(ec.SynthesisQuizId != null ? $"Synthesis quiz with {ec.TopicName}" : ec.Domain)</small>
+                                <p>@ec.Why</p>
+                            </div>
+                            <Icon Name="chevron-right" Size="16" />
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="post-quiz-actions">
+                @if (pathForLesson != null)
+                {
+                    <button class="btn btn-accent" @onclick='() => Nav.NavigateTo($"/path/{pathForLesson.Id}")'>
+                        Continue path: @pathForLesson.Question
+                    </button>
+                }
+                @if (nextLesson != null)
+                {
+                    <button class="btn btn-primary" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/lesson/{nextLesson.Id}", forceLoad: false)'>
+                        Next lesson: @nextLesson.Title
+                    </button>
+                }
+                <button class="btn btn-outline" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Back to topic</button>
+            </div>
+        </div>
+    }
+    else if (outcome == LessonOutcome.NotYet)
+    {
+        <div class="card post-quiz anim-slide">
+            <div class="post-quiz-head">
+                <Icon Name="rotate" Size="28" />
+                <div>
+                    <h2>Almost there</h2>
+                    <small>@lastCorrect / @lastTotal correct. You need @PassMark(lastTotal) to complete this lesson.</small>
+                </div>
+            </div>
+            @if (missedConcepts.Count > 0)
+            {
+                <p class="echoes-sub">Worth another look before you retry:</p>
+                @foreach (var idx in missedConcepts)
+                {
+                    var i = idx;
+                    <button class="missed-concept" @onclick="() => RevisitConcept(i)">
+                        <Icon Name="book" Size="14" /> @lesson.Concepts[i].Title
+                    </button>
+                }
+            }
+            <div class="post-quiz-actions">
+                <button class="btn btn-primary" @onclick="RetryQuiz">Retry quiz</button>
+                <button class="btn btn-outline" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}")'>Back to topic</button>
+            </div>
+        </div>
+    }
     else
     {
-        <QuizComponent TopicId="@TopicId" LessonId="@LessonId" OnComplete="OnQuizComplete" />
+        <QuizComponent @key="quizAttempt" TopicId="@TopicId" LessonId="@LessonId" OnResults="OnQuizResults" OnComplete="OnQuizComplete" />
     }
 }
 else
@@ -163,6 +301,34 @@ else
     private int currentConceptIndex;
     private bool showQuiz;
 
+    private enum LessonOutcome { None, Passed, NotYet }
+    private LessonOutcome outcome;
+    private List<QuizResult>? lastResults;
+    private int lastCorrect, lastTotal, quizAttempt;
+    private List<int> missedConcepts = new();
+    private List<Echo> echoes = new();
+    private Lesson? nextLesson;
+    private LearningPath? pathForLesson;
+
+    private Dictionary<string, SimulatorInfo> simulators = new();
+    private readonly HashSet<string> guessed = new();
+    private string depth = "standard";
+    private string? explainOpenFor;
+    private string noteDraft = "";
+    private bool noteSaved;
+
+    // Three of five, rounded up for other quiz lengths.
+    private static int PassMark(int total) => (int)Math.Ceiling(total * 0.6);
+
+    private bool HasDepthLayers => lesson?.Concepts.Any(c => c.ContentHtmlSimple != null || c.ContentHtmlDeep != null) == true;
+
+    private string ContentFor(Concept c) => depth switch
+    {
+        "simple" => c.ContentHtmlSimple ?? c.ContentHtml,
+        "deep" => c.ContentHtmlDeep ?? c.ContentHtml,
+        _ => c.ContentHtml
+    };
+
     // ── TTS state ────────────────────────────────────────────────────────────
     private bool ttsEnabled;
     private bool ttsSupported;
@@ -175,12 +341,40 @@ else
     private CancellationTokenSource? _ttsCts;
     private System.Timers.Timer? _ttsStateTimer;
 
+    private string? loadedKey;
+
+    // "Next lesson" navigates to this same page with new parameters, so the component is reused.
+    protected override void OnParametersSet()
+    {
+        if (loadedKey != null && loadedKey != TopicId + "/" + LessonId)
+        {
+            lesson = null;
+            outcome = LessonOutcome.None;
+            showQuiz = false;
+            currentConceptIndex = 0;
+            lastResults = null;
+            guessed.Clear();
+            simulators.Clear();
+            explainOpenFor = null;
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (loadedKey != TopicId + "/" + LessonId)
         {
+            var isFirstLoad = loadedKey == null;
+            loadedKey = TopicId + "/" + LessonId;
             lesson = await Content.GetLessonAsync(TopicId, LessonId);
             profile = await Progress.GetProfileAsync();
+            depth = profile.ContentDepth is "simple" or "deep" ? profile.ContentDepth : "standard";
+            if (lesson != null)
+            {
+                simulators = SimulatorCatalog.PlaceInLesson(lesson, TopicId);
+                // Guess-first only on a first read; revisits go straight to the text.
+                foreach (var c in lesson.Concepts.Where(c => c.Discovery != null && profile.ConceptsViewed.Contains(c.Id)))
+                    guessed.Add(c.Id);
+            }
 
             // Load TTS prefs from profile
             ttsEnabled = profile.TtsEnabled;
@@ -200,7 +394,7 @@ else
             }
 
             // Poll TTS speaking state every 500 ms so the UI stays in sync
-            if (ttsEnabled && ttsSupported)
+            if (isFirstLoad && ttsEnabled && ttsSupported)
             {
                 _ttsStateTimer = new System.Timers.Timer(500);
                 _ttsStateTimer.Elapsed += async (_, _) => await RefreshTtsStateAsync();
@@ -389,9 +583,38 @@ else
         Nav.NavigateTo($"/topic/{TopicId}");
     }
 
+    private void OnQuizResults(List<QuizResult> results) => lastResults = results;
+
     private async Task OnQuizComplete(int xpEarned)
     {
         if (lesson == null) return;
+
+        // An empty quiz (no questions authored yet) must not complete the lesson.
+        if (lastResults == null || lastResults.Count == 0)
+        {
+            showQuiz = false;
+            currentConceptIndex = 0;
+            await SessionState.ClearSessionStateAsync();
+            Nav.NavigateTo($"/topic/{TopicId}");
+            return;
+        }
+
+        lastTotal = lastResults.Count;
+        lastCorrect = lastResults.Count(r => r.IsCorrect);
+        if (lastCorrect < PassMark(lastTotal))
+        {
+            missedConcepts = lastResults
+                .Where(r => !r.IsCorrect)
+                .Select(r => lesson.Concepts.FindIndex(c => c.Id == r.Question.ConceptId))
+                .Where(i => i >= 0)
+                .Distinct()
+                .OrderBy(i => i)
+                .ToList();
+            outcome = LessonOutcome.NotYet;
+            await SessionState.ClearSessionStateAsync();
+            return;
+        }
+
         await Progress.MarkLessonCompletedAsync(lesson.Id);
 
         var topics = await Content.GetTopicsAsync();
@@ -422,7 +645,67 @@ else
         }
 
         await SessionState.ClearSessionStateAsync();
-        Nav.NavigateTo($"/topic/{TopicId}");
+
+        var all = await Content.GetLessonsAsync(TopicId);
+        nextLesson = all.OrderBy(l => l.Order).FirstOrDefault(l => l.Order > lesson.Order && l.Concepts.Count > 0);
+        var p = await Progress.GetProfileAsync();
+        var paths = await Connections.GetPathsAsync();
+        pathForLesson = paths.FirstOrDefault(pa => p.PathsStarted.Contains(pa.Id) && pa.Steps.Any(st => st.LessonId == lesson.Id && st.TopicId == TopicId));
+        echoes = await Connections.GetEchoesAsync(TopicId);
+        outcome = LessonOutcome.Passed;
+    }
+
+    private void RevisitConcept(int index)
+    {
+        outcome = LessonOutcome.None;
+        showQuiz = false;
+        currentConceptIndex = index;
+        _ = SaveState();
+    }
+
+    private async Task RetryQuiz()
+    {
+        outcome = LessonOutcome.None;
+        lastResults = null;
+        quizAttempt++;
+        showQuiz = true;
+        await SaveState();
+    }
+
+    private void OpenEcho(Echo e) =>
+        Nav.NavigateTo(e.SynthesisQuizId != null ? $"/synthesis/{e.SynthesisQuizId}" : $"/topic/{e.TopicId}");
+
+    private void OpenSimulator(SimulatorInfo sim) => Nav.NavigateTo(sim.Route);
+
+    private async Task SetDepth(string d)
+    {
+        depth = d;
+        var p = await Progress.GetProfileAsync();
+        p.ContentDepth = d;
+        await Progress.SaveProfileAsync(p);
+    }
+
+    private void OpenExplain(Concept c)
+    {
+        explainOpenFor = c.Id;
+        noteSaved = false;
+        noteDraft = profile?.ConceptNotes.TryGetValue(c.Id, out var n) == true ? n.Text : "";
+    }
+
+    private async Task SaveNote(Concept c)
+    {
+        if (string.IsNullOrWhiteSpace(noteDraft)) return;
+        var p = await Progress.GetProfileAsync();
+        p.ConceptNotes[c.Id] = new ConceptNote
+        {
+            TopicId = TopicId,
+            LessonId = LessonId,
+            ConceptTitle = c.Title,
+            Text = noteDraft.Trim(),
+            Updated = DateTime.Now.ToString("yyyy-MM-dd")
+        };
+        await Progress.SaveProfileAsync(p);
+        noteSaved = true;
     }
 
     public void Dispose()
@@ -437,6 +720,56 @@ else
 }
 
 <style>
+    .depth-toggle { display: flex; justify-content: center; gap: 4px; margin: -4px 0 12px; }
+    .depth-btn {
+        padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: transparent;
+        color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .depth-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(74, 95, 224, 0.1); }
+
+    .try-it-card {
+        display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 14px;
+        border-radius: 12px; border: 1px solid var(--primary-light); background: rgba(74, 95, 224, 0.06); cursor: pointer;
+    }
+    .try-it-icon { color: var(--primary); flex-shrink: 0; }
+    .try-it-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .try-it-text small { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--primary); }
+    .try-it-text strong { color: var(--text-primary); }
+    .try-it-text span { font-size: 0.8rem; color: var(--text-secondary); }
+
+    .explain-back { margin-top: 14px; }
+    .explain-toggle { background: none; border: none; padding: 0; color: var(--primary); font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+    .explain-input {
+        width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.9rem; resize: vertical;
+    }
+    .explain-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .explain-model { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-surface); }
+    .explain-model small { color: var(--text-muted); font-weight: 600; }
+    .explain-model p { margin: 4px 0 0; color: var(--text-secondary); line-height: 1.5; }
+    .explain-saved { display: block; margin-top: 6px; color: var(--success); }
+
+    .post-quiz { max-width: 640px; margin: 0 auto; padding: 20px; }
+    .post-quiz-head { display: flex; align-items: center; gap: 12px; color: var(--success); margin-bottom: 12px; }
+    .post-quiz-head h2 { margin: 0; color: var(--text-primary); }
+    .post-quiz-head small { color: var(--text-muted); }
+    .echoes h3 { margin: 8px 0 0; }
+    .echoes-sub { color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 8px; }
+    .echo-card {
+        display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 8px;
+        border-radius: 10px; border: 1px solid var(--border); background: var(--bg-surface); cursor: pointer;
+    }
+    .echo-card > div { flex: 1; min-width: 0; }
+    .echo-card strong { color: var(--text-primary); }
+    .echo-domain { display: block; color: var(--text-muted); text-transform: capitalize; font-size: 0.75rem; }
+    .echo-card p { margin: 4px 0 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
+    .post-quiz-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .missed-concept {
+        display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px;
+        border-radius: 10px; border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-primary);
+        cursor: pointer; font-family: inherit; font-size: 0.9rem;
+    }
+
     .concept-viewer {
         max-width: 800px;
         margin: 0 auto;

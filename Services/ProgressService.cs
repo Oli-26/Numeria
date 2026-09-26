@@ -11,6 +11,7 @@ public class ProgressService : IProgressService
     private readonly IContentRepository _contentRepo;
     private UserProfile? _cachedProfile;
     private const string StorageKey = "mathvoyager_profile";
+    private const string CorruptBackupKey = "mathvoyager_profile_corrupt_backup";
 
     public ProgressService(IJSRuntime js, IContentRepository contentRepo)
     {
@@ -25,14 +26,34 @@ public class ProgressService : IProgressService
         var json = await _js.InvokeAsync<string?>("localStorage.getItem", StorageKey);
         if (json != null)
         {
-            _cachedProfile = JsonSerializer.Deserialize<UserProfile>(json, new JsonSerializerOptions
+            UserProfile? profile;
+            try
             {
-                PropertyNameCaseInsensitive = true
-            }) ?? new UserProfile();
+                profile = JsonSerializer.Deserialize<UserProfile>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (JsonException)
+            {
+                profile = null;
+            }
+
+            // Wrong shape (e.g. a bare array or primitive) or a null result: keep the
+            // bad blob for recovery instead of losing it, and start fresh.
+            if (profile == null)
+            {
+                await _js.InvokeVoidAsync("localStorage.setItem", CorruptBackupKey, json);
+                profile = new UserProfile { SchemaVersion = ProfileMigration.CurrentSchemaVersion };
+            }
+
+            _cachedProfile = profile;
+            if (ProfileMigration.Migrate(profile))
+                await SaveProfileAsync(profile);
         }
         else
         {
-            _cachedProfile = new UserProfile();
+            _cachedProfile = new UserProfile { SchemaVersion = ProfileMigration.CurrentSchemaVersion };
         }
         return _cachedProfile;
     }
@@ -67,6 +88,22 @@ public class ProgressService : IProgressService
         }
     }
 
+    public const int MaxQuizHistory = 300;
+
+    public static void TrimQuizHistory(UserProfile profile, int max = MaxQuizHistory)
+    {
+        var excess = profile.QuizHistory.Count - max;
+        if (excess <= 0) return;
+        foreach (var old in profile.QuizHistory.Take(excess))
+        {
+            profile.ArchivedQuizCount++;
+            if (old.Score == 100) profile.ArchivedPerfectQuizzes++;
+            profile.ArchivedScoreSum += old.Score;
+            profile.ArchivedBestScore = Math.Max(profile.ArchivedBestScore, old.Score);
+        }
+        profile.QuizHistory.RemoveRange(0, excess);
+    }
+
     public async Task RecordQuizResultAsync(string quizId, string? topicId, int score, int correctCount, int totalCount, int xpEarned)
     {
         var profile = await GetProfileAsync();
@@ -80,6 +117,7 @@ public class ProgressService : IProgressService
             Date = DateTime.Now.ToString("yyyy-MM-dd"),
             XpEarned = xpEarned
         });
+        TrimQuizHistory(profile);
 
         // Update topic stats
         if (topicId != null)
@@ -188,7 +226,7 @@ public class ProgressService : IProgressService
 
     public async Task ResetProgressAsync()
     {
-        _cachedProfile = new UserProfile();
+        _cachedProfile = new UserProfile { SchemaVersion = ProfileMigration.CurrentSchemaVersion };
         await SaveProfileAsync(_cachedProfile);
     }
 }

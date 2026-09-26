@@ -35,10 +35,10 @@
             var route = await JS.InvokeAsync<string?>("Notifications.consumePendingDeepLink");
             if (!string.IsNullOrWhiteSpace(route)) NavigateIfDifferent(route!);
 
-            // Warm deep link: subscribe to phine:deeplink so notification taps
+            // Warm deep link: subscribe to nous:deeplink so notification taps
             // and shortcut launches that arrive while the app is alive route too.
             _selfRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("eval", "(function(ref){window.addEventListener('phine:deeplink',function(e){ref.invokeMethodAsync('OnDeepLink',e.detail);});})(arguments[0])", _selfRef);
+            await JS.InvokeVoidAsync("MathCanvas.addWindowListener", "nous:deeplink", "OnDeepLink", _selfRef);
         }
         catch { /* JS bridge unavailable — ignore */ }
     }
@@ -72,7 +72,8 @@
     public async ValueTask DisposeAsync()
     {
         Nav.LocationChanged -= OnLocationChanged;
+        try { await JS.InvokeVoidAsync("MathCanvas.removeWindowListener", "nous:deeplink", "OnDeepLink"); }
+        catch { /* JS bridge may already be disposed */ }
         _selfRef?.Dispose();
-        await Task.CompletedTask;
     }
 }

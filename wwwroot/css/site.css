@@ -36,6 +36,10 @@
     padding: 0;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 html, body {
     font-family: var(--font-main);
     background: var(--bg-main);
@@ -44,6 +48,10 @@ html, body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    overscroll-behavior-y: contain;
 }
 
 /* Per-domain hue map. Body overlay below tints the page; domain cards reuse the same RGB. */
@@ -59,6 +67,8 @@ html[data-domain="linguistics"] { --domain-rgb: 255, 112, 67; }
 html[data-domain="misc"]        { --domain-rgb: 94, 53, 177; }
 html[data-domain="economics"]   { --domain-rgb: 22, 160, 133; }
 html[data-domain="literature"]  { --domain-rgb: 142, 44, 64; }
+html[data-domain="psychology"]  { --domain-rgb: 192, 80, 158; }
+html[data-domain="sociology"]   { --domain-rgb: 212, 160, 23; }
 
 body::before {
     content: '';
@@ -79,6 +89,20 @@ body {
     padding-bottom: calc(70px + env(safe-area-inset-bottom));
 }
 
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+@supports (scrollbar-color: auto) {
+    html { scrollbar-color: var(--border) var(--bg-surface); scrollbar-width: thin; }
+}
+
+::selection {
+    background: rgba(var(--domain-rgb), 0.2);
+    color: var(--text-primary);
+}
+
 .app-container {
     min-height: 100vh;
 }
@@ -93,6 +117,8 @@ body {
 h1, h2, h3 {
     color: var(--text-primary);
     line-height: 1.3;
+    text-wrap: balance;
+    text-rendering: optimizeLegibility;
 }
 
 h1 { font-size: 1.75rem; font-weight: 700; }
@@ -102,6 +128,11 @@ h3 { font-size: 1.15rem; font-weight: 600; }
 a {
     color: var(--primary);
     text-decoration: none;
+}
+
+a, button, .card-clickable, .option-btn, .tab, .nav-item {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 /* Cards */
@@ -122,6 +153,14 @@ a {
 .card-clickable {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+}
+
+.card-raised {
+    box-shadow: 0 4px 16px var(--shadow);
+}
+
+.card-floating {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* Buttons */
@@ -276,6 +315,13 @@ a {
     border-color: var(--success);
 }
 
+@media (min-width: 1024px) {
+    #toast-container {
+        left: 236px;
+        right: 16px;
+    }
+}
+
 @keyframes toastIn {
     from { opacity: 0; transform: translateX(100%); }
     to { opacity: 1; transform: translateX(0); }
@@ -345,8 +391,20 @@ a {
     gap: 10px;
 }
 
-.feedback {
-    display: flex;
+@keyframes optionEnter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.options-grid.stagger-options > .option-btn {
+    animation: optionEnter 0.35s ease both;
+}
+.options-grid.stagger-options > .option-btn:nth-child(1) { animation-delay: 0.03s; }
+.options-grid.stagger-options > .option-btn:nth-child(2) { animation-delay: 0.06s; }
+.options-grid.stagger-options > .option-btn:nth-child(3) { animation-delay: 0.09s; }
+.options-grid.stagger-options > .option-btn:nth-child(4) { animation-delay: 0.12s; }
+.options-grid.stagger-options > .option-btn:nth-child(5) { animation-delay: 0.15s; }
+.options-grid.stagger-options > .option-btn:nth-child(6) { animation-delay: 0.18s; }
     align-items: center;
     gap: 8px;
     padding: 12px 16px;
@@ -549,16 +607,13 @@ a {
     }
 }
 
-/* Wide tablets/desktop: 3-col only when truly wide */
+/* Desktop: sidebar layout */
 @media (min-width: 1024px) {
     .options-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 14px;
     }
-}
 
-/* Desktop */
-@media (min-width: 1024px) {
     .app-container {
         display: flex;
         flex-direction: row;
@@ -585,6 +640,13 @@ a {
     }
 }
 
+@media (min-width: 1280px) {
+    .main-content {
+        max-width: 1100px;
+        padding: 40px 64px;
+    }
+}
+
 /* Ensure all interactive elements inherit theme colors */
 input, select, textarea, button {
     color: inherit;
@@ -597,8 +659,12 @@ select,
 textarea {
     background: var(--bg-surface);
     color: var(--text-primary);
-    border-color: var(--border);
+    border: 1.5px solid var(--border);
     font-family: var(--font-main);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input::placeholder,
@@ -613,7 +679,7 @@ select:focus-visible,
 textarea:focus-visible {
     outline: none;
     border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.18);
+    box-shadow: 0 0 0 3px rgba(var(--domain-rgb), 0.2);
 }
 
 strong {
@@ -1098,6 +1164,11 @@ button:focus-visible,
     background: var(--bg-surface);
 }
 
+.page-header .back-btn:active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease;
+}
+
 .page-header .back-btn:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.4);
@@ -1155,18 +1226,15 @@ html[data-nav-dir="back"] .page-shell {
 }
 
 /* ── Card frame cosmetics ── */
-[data-frame="gold"] .card,
-[data-frame="gold"] .quiz-container {
+[data-frame="gold"] .card {
     border: 2px solid #D4AF37;
     box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.4), 0 4px 18px rgba(212, 175, 55, 0.18);
 }
-[data-frame="silver"] .card,
-[data-frame="silver"] .quiz-container {
+[data-frame="silver"] .card {
     border: 2px solid #C0C0C0;
     box-shadow: 0 0 0 1px rgba(192, 192, 192, 0.4), 0 4px 14px rgba(180, 180, 200, 0.18);
 }
-[data-frame="holo"] .card,
-[data-frame="holo"] .quiz-container {
+[data-frame="holo"] .card {
     border: 2px solid transparent;
     background-image:
         linear-gradient(var(--bg-card), var(--bg-card)),
@@ -1175,8 +1243,7 @@ html[data-nav-dir="back"] .page-shell {
     background-clip: padding-box, border-box;
     box-shadow: 0 0 18px rgba(180, 130, 255, 0.25);
 }
-[data-frame="foil"] .card,
-[data-frame="foil"] .quiz-container {
+[data-frame="foil"] .card {
     border: 2px solid transparent;
     background-image:
         linear-gradient(var(--bg-card), var(--bg-card)),
@@ -1184,10 +1251,22 @@ html[data-nav-dir="back"] .page-shell {
     background-origin: border-box;
     background-clip: padding-box, border-box;
 }
-[data-frame="parchment"] .card,
-[data-frame="parchment"] .quiz-container {
+[data-frame="parchment"] .card {
     border: 2px double #8B5A2B;
     box-shadow: inset 0 0 0 1px rgba(139, 90, 43, 0.2), 0 2px 10px rgba(80, 50, 20, 0.15);
+}
+
+/* ── Brand mark (home hero) ── */
+.brand-mark {
+    margin: 0 0 8px;
+    line-height: 0;
+}
+.brand-mark img {
+    width: 72px;
+    height: 72px;
+    display: block;
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 /* ── Streak flame skins ── */
@@ -1206,4 +1285,10 @@ html[data-nav-dir="back"] .page-shell {
 @keyframes rainbowHue {
     from { filter: drop-shadow(0 0 4px rgba(255, 100, 200, 0.5)) hue-rotate(0deg); }
     to { filter: drop-shadow(0 0 4px rgba(255, 100, 200, 0.5)) hue-rotate(360deg); }
+}
+
+@media print {
+    .bottom-nav, #toast-container, #confetti-container { display: none !important; }
+    .main-content { max-width: none; margin: 0; padding: 0; }
+    body { padding: 0; }
 }

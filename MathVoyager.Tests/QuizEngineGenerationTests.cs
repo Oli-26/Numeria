@@ -79,6 +79,26 @@ public class QuizEngineGenerationTests
     }
 
     [Fact]
+    public async Task GenerateLearned_Tier1_LoadsOnlyTouchedTopics()
+    {
+        var repo = new SeedRepo();
+        repo.AddTopic("alg", lessons: new[] { "l1" });
+        repo.AddTopic("geom", lessons: new[] { "g1" });
+        repo.AddTopic("stats", lessons: new[] { "s1" });
+        for (int i = 0; i < 6; i++) repo.AddQuestion("alg", "l1", $"a{i}");
+        repo.AddQuestion("geom", "g1", "g-q1");
+
+        var qs = await new QuizEngine(repo).GenerateLearnedQuizAsync(
+            completedLessonIds: new[] { "l1" },
+            completedTopicIds: null,
+            engagedTopicIds: new[] { "alg" },
+            count: 5);
+
+        Assert.Equal(5, qs.Count);
+        Assert.Equal(new[] { "alg" }, repo.LoadedTopics.ToArray());
+    }
+
+    [Fact]
     public async Task GenerateLearned_EmptyInputs_ReturnsEmpty()
     {
         var repo = new SeedRepo();
@@ -182,8 +202,12 @@ public class QuizEngineGenerationTests
             Task.FromResult(_topicLessons.TryGetValue(topicId, out var l) ? l : new List<Lesson>());
         public Task<Lesson?> GetLessonAsync(string topicId, string lessonId) =>
             Task.FromResult(_topicLessons.TryGetValue(topicId, out var l) ? l.FirstOrDefault(x => x.Id == lessonId) : null);
-        public Task<List<Question>> GetQuestionsAsync(string topicId) =>
-            Task.FromResult(_topicQuestions.TryGetValue(topicId, out var q) ? q : new List<Question>());
+        public HashSet<string> LoadedTopics { get; } = new();
+        public Task<List<Question>> GetQuestionsAsync(string topicId)
+        {
+            LoadedTopics.Add(topicId);
+            return Task.FromResult(_topicQuestions.TryGetValue(topicId, out var q) ? q : new List<Question>());
+        }
         public Task<List<Question>> GetQuestionsForLessonAsync(string topicId, string lessonId) =>
             Task.FromResult(LessonScopedQuestions.TryGetValue($"{topicId}/{lessonId}", out var q) ? q : new List<Question>());
         public Task<List<Question>> GetMasteryQuestionsAsync(string topicId) => Task.FromResult(new List<Question>());

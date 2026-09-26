@@ -1,4 +1,4 @@
-// tts.js — Web Speech API wrapper for Numeria
+// tts.js — Web Speech API wrapper for Nous
 // Exposes window.TTS with: getVoices, speak, pause, resume, stop, isSpeaking
 
 (function () {

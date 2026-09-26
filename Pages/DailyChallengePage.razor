@@ -2,11 +2,22 @@
 @inject IContentRepository Content
 @inject IProgressService Progress
 @inject NavigationManager Nav
+@inject IConnectionsService Connections
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Daily Challenge</h1>
 </div>
+
+@if (pick != null && !started)
+{
+    <div class="card card-clickable pick-card" @onclick='() => Nav.NavigateTo($"/topic/{pick.Topic.Id}/lesson/{pick.Lesson.Id}")'>
+        <div class="pick-label"><Icon Name="sparkles" Size="14" /> Today's pick</div>
+        <p class="pick-hook">@pick.Hook</p>
+        <strong style="color: @pick.Topic.Color">@pick.Lesson.Title</strong>
+        <small>@pick.Reason</small>
+    </div>
+}
 
 @if (alreadyDone)
 {
@@ -33,7 +44,7 @@ else if (ready)
 
     @if (started)
     {
-        <QuizComponent TopicId="@null" LessonId="@null" OnComplete="OnComplete" />
+        <QuizComponent TopicId="@null" LessonId="@null" XpMultiplier="1.5" OnComplete="OnComplete" />
     }
 }
 else
@@ -50,6 +61,7 @@ else
     private bool alreadyDone;
     private bool ready;
     private bool started;
+    private DailyPick? pick;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -62,6 +74,8 @@ else
 
             // Check if user has any completed lessons
             ready = profile.LessonsCompleted.Count > 0;
+            try { pick = await Connections.GetDailyPickAsync(profile, DateTime.Now); }
+            catch { pick = null; }
 
             StateHasChanged();
         }
@@ -85,6 +99,10 @@ else
 }
 
 <style>
+    .pick-card { max-width: 500px; margin: 0 auto 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px; border-left: 3px solid var(--accent); }
+    .pick-label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+    .pick-hook { margin: 4px 0; color: var(--text-primary); font-weight: 600; line-height: 1.45; }
+    .pick-card small { color: var(--text-muted); }
     .daily-intro { max-width: 500px; margin: 0 auto; }
     .daily-card { text-align: center; padding: 32px 24px; }
     .daily-icon { font-size: 3rem; margin-bottom: 8px; }

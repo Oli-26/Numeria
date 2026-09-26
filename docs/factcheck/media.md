@@ -1,0 +1,122 @@
+# Fact-check: media
+
+- Topics covered (11): media-history, media-journalism, media-press-freedom, media-bias, media-state-control, media-propaganda, media-economics, media-broadcast, media-digital, media-misinformation, media-theory
+- Concepts checked: 198
+- Questions checked: 330
+- Fixed: 71
+- Flagged (not edited): 29
+- Checked against: general knowledge plus targeted web checks for post-2024 events (Hungary 2026 election, CPB dissolution, VOA shutdown litigation, FTC v. Meta ruling, TikTok USDS joint venture).
+
+## Fixed
+
+- media-history / med-hist-03-c2: "six New York papers ... AP (1846)" -> "five" (AP's founding account: five NYC papers in 1846)
+- media-history / med-hist-05-c1: "I Love Lucy finale in 1953 reached 71%" -> "episode in which Lucy gives birth (January 1953)" (the 71.7% rating was "Lucy Goes to the Hospital"; the series ended 1957)
+- media-history / med-hist-04-c2: first Lumiere programme (28 Dec 1895) "including a train arriving at La Ciotat" -> train film "shown in the weeks after" (L'Arrivee d'un train was not in the 28 Dec programme; also removed em dash)
+- media-history / med-hist-05-c2: "BBC, NHK, ARD/ZDF, and the CBC ... funded mostly by household licence fees" -> CBC "mainly by parliamentary grants" (CBC has not been licence-fee funded)
+- media-history / med-hist-06-c1: first ARPANET packets "between UCLA and Stanford" -> "UCLA and the Stanford Research Institute" (SRI, not Stanford University)
+- media-history / med-hist-q16: distractor "Wireless used Morse code; broadcasting used voice" -> "Wireless was analogue; broadcasting was digital" (the distractor was also broadly true, giving two defensible answers)
+- media-history / med-hist-03-c2: "By 1858, a transatlantic cable linked New York to London" -> "By 1866, after a short-lived 1858 attempt, a lasting transatlantic cable linked America to Britain" (1858 cable failed within weeks)
+- media-journalism / med-jour-06-c3: "Britain's The Times 'Insight' team" -> "Sunday Times" (Insight is the Sunday Times investigations unit)
+- media-press-freedom / med-pf-01-c3: French "(until recently) Holocaust-denial laws" -> "Holocaust-denial laws" (Gayssot Act of 1990 remains in force; upheld 2016)
+- media-press-freedom / med-pf-02-c1: "The American Newsroom Defense Fund, ... and the National Press Club track such cases internationally" -> "Reporters Committee for Freedom of the Press, CPJ, and RSF" (no such organisation as the American Newsroom Defense Fund)
+- media-press-freedom / med-pf-02-c3: Branzburg "Three reporters had refused to identify drug-using sources" -> sources were drug users in one case, Black Panthers in the others (Pappas and Caldwell covered the Panthers)
+- media-press-freedom / med-pf-03-c2: EU Whistleblower Directive "still incomplete in several states" -> "several states missed the deadline by years" (dated present-tense claim; most laggards transposed by 2024)
+- media-press-freedom / med-pf-04-c3: "the UK is consulting on its own anti-SLAPP regime" -> "introduced a limited anti-SLAPP rule for economic-crime cases in 2023" (Economic Crime and Corporate Transparency Act 2023)
+- media-press-freedom / med-pf-06-c1: "The Nordic countries (Norway, Finland, Denmark, Sweden, the Netherlands)" -> Netherlands "often joined" (the Netherlands is not Nordic)
+- media-press-freedom / med-pf-06-c1: "a Nordic dispute over BBC funding" -> "a British dispute" (BBC is British)
+- media-press-freedom / med-pf-06-c3: foreign-agent registries "originally Russia's ... and similar US efforts" -> "Russia's 2012 law, which cited the older US FARA as precedent" (US FARA dates from 1938, so Russia's was not the original)
+- media-bias / med-bias-04-c3: 2024 news-desert figures "documented by Penny Abernathy at UNC's Hussman School" -> "first at UNC ... and since 2020 at Northwestern's Medill School" (the 2024 counts are Medill's reports)
+- media-state-control / med-sc-02-c2, med-sc-q08 (explanation): PBS/NPR "dependent on ... federal appropriation" -> notes that Congress rescinded all CPB funding in 2025 (Rescissions Act of 2025) and CPB voted to dissolve (Jan 2026)
+- media-state-control / med-sc-03-c3: Iran's "Halal Internet programme since 2020" -> "(National Information Network) programme, under development since the early 2010s"
+- media-state-control / med-sc-04-c1: Great Firewall blocks "Wikipedia (in part)" -> "(all language editions since 2019)"
+- media-state-control / med-sc-05-c2, med-sc-q23 (option + answer): PEN America 2013 "28% ... curtailed or avoided material on certain topics" -> 28% curtailed or avoided social-media activity (16% avoided writing/speaking on a topic) (misquoted survey item)
+- media-state-control / med-sc-06-c2, med-sc-q29 (option + answer): Rundfunkrat "in the Laender constitutions ... independent of both federal and state governments" -> Laender broadcasting laws/treaties; councils "mainly" civil society, state-affiliated members capped at one third since the 2014 ZDF ruling (councils do include government/party appointees)
+- media-propaganda / med-prop-02-c3: "Burson Cohn & Wolfe" -> "Burson" (merged with Hill & Knowlton into Burson in 2024)
+- media-propaganda / med-prop-03-c1: Wellington House "led by writers including John Buchan and Arnold Bennett" -> "run by Charles Masterman and drawing on writers including..." (Masterman headed it)
+- media-propaganda / med-prop-04-c1, med-prop-q16 (explanation): "more than 70% of German households had [a Volksempfaenger] by 1941 ... listening to BBC broadcasts was made a capital offence" -> about 70% of households owned a radio by 1939; listening to foreign stations punishable by penal servitude, spreading their news by death in serious cases (1939 decree; 70% was radio ownership, not Volksempfaenger ownership)
+- media-propaganda / med-prop-05-c1: "The first modern advertising textbook, Albert Lasker's The Lasker Story, codified the practice" -> Lasker of Lord & Thomas championed "salesmanship in print" (The Lasker Story is a 1963 publication of his 1925 talks, not a founding textbook)
+- media-propaganda / med-prop-06-c1, med-prop-q27 (explanation): "Twitter identified more than 50,000 IRA-linked accounts" -> 3,814 IRA-linked accounts plus some 50,000 automated Russia-linked accounts (conflated two Twitter disclosures)
+- media-propaganda / med-prop-q13: "launched in 1942 and still operating today" -> "launched in 1942"; explanation notes the 2025 shutdown attempt and ongoing litigation (VOA programming largely halted since March 2025)
+- media-propaganda / med-prop-06-c2, med-prop-q28 (explanation): Cambridge Analytica's Brexit role "remains contested"/stated as fact -> UK Information Commissioner concluded in 2020 it was not involved beyond initial enquiries
+- media-economics / med-econ-01-c2: two-sided markets "recognised by the 2014 Nobel Prize" -> "recognised in Tirole's 2014 Nobel Prize" (Rochet did not share it)
+- media-economics / med-econ-01-c3, med-econ-q03 (prompt + explanation): "around 2,500 newspapers closing between 2005 and 2024" -> 2005-2022, "(more than 3,200 by 2024)" (2,500 is Medill's 2022 figure; its 2024 report says 3,200+)
+- media-economics / med-econ-02-c1: NYT 2024 print circulation ~300,000 "is roughly half what the Daily News delivered in the late 1940s" -> "roughly an eighth of the 2.4 million daily copies" (arithmetic error)
+- media-economics / med-econ-02-c3, med-econ-q09 (option + answer): US TV ad market peak "early 2010s" -> "late 2010s" (contradicted the same lesson's and explanation's "peaked around 2018")
+- media-economics / med-econ-03-c2: Substack competitors "Beehiiv, Ghost, Buttondown, Stripe Press" -> dropped Stripe Press (Stripe's book imprint, not a newsletter platform; em dashes removed)
+- media-economics / med-econ-04-c2: Disney owns "the Hulu majority" -> "Hulu" (Disney bought out Comcast's stake, 2023-25)
+- media-economics / med-econ-04-c2, med-econ-q20 (explanation): "Paramount Global" -> "Paramount (Paramount Skydance since 2025)" (Skydance merger closed Aug 2025)
+- media-economics / med-econ-05-c1: "threats to NPR/PBS funding under the Trump administrations" -> adds "culminating in the 2025 rescission of their federal funding"
+- media-economics / med-econ-05-c2: typo "la firewall" -> "the firewall"
+- media-economics / med-econ-05-c3: "the Media Pluralism and Freedom Fund" -> "Journalismfund Europe" (could not identify any fund of that name; replaced with a real European funder)
+- media-economics / med-econ-06-c3: "By 2024 TikTok captured an estimated 10-15% of global digital ad revenue" -> attributes it to parent ByteDance including Douyin (TikTok alone is c.3-4%)
+- media-broadcast / med-bc-02-c1: "the 1953 I Love Lucy finale (in which Lucy Ricardo gives birth)" -> "the 1953 episode in which Lucy Ricardo gives birth" (not the finale; series ran to 1957)
+- media-broadcast / med-bc-02-c2: CBC "funded mostly by household licence fees" -> CBC mainly by parliamentary grants; ABC "(until 1974)" (Canada dropped its licence fee in 1953; Australia in 1974)
+- media-broadcast / med-bc-02-c2: "The BBC's 1955-1964 monopoly was broken by ... ITV" -> "The BBC's television monopoly was broken in 1955 by ... ITV"
+- media-broadcast / med-bc-02-c3, med-bc-q10 (pair + explanation): Apollo 11 "first global live event" -> "largest worldwide live audience yet" (the 1967 Our World satellite broadcast was the first live global TV event)
+- media-broadcast / med-bc-04-c2, med-bc-q17 (explanation): Fairness Doctrine repealed 1987 "under chairman Mark Fowler" -> "under chairman Dennis Patrick" (Fowler left in April 1987; the August 1987 repeal came under Patrick)
+- media-broadcast / med-bc-04-c3, med-bc-q18 (explanation): Sinclair "over 200 local television stations" -> "nearly 200" (Sinclair reports c.185)
+- media-broadcast / med-bc-06-c2: "HBO Max (2020, later Max)" -> "renamed Max in 2023, then HBO Max again in 2025"
+- media-digital / med-dig-01-c3: "resignation of Senate Majority Leader Trent Lott" (2002) -> "incoming Senate Majority Leader" (he was minority leader at the time, majority-leader-designate)
+- media-digital / med-dig-02-c1: Facebook ad revenue "grew from $1 billion in 2008" -> "from under $300 million in 2008" (2008 total revenue c.$272M)
+- media-digital / med-dig-02-c1: Meta antitrust "a debate without resolution as of mid-decade" -> Nov 2025 ruling (Boasberg) that Meta no longer holds monopoly power; FTC appealing
+- media-digital / med-dig-02-c3: TikTok "Launched internationally in 2017 (after the merger with Musical.ly)" -> "launched 2017 and merged with Musical.ly in 2018" (order reversed)
+- media-digital / med-dig-02-c3: added that the 2024 divestment law led to the January 2026 TikTok USDS joint venture with ByteDance at just under 20% (ownership status outdated; em dash removed)
+- media-digital / med-dig-03-c1: YouTube "two billion daily logged-in users" -> "monthly" (YouTube's 2B+ figure is monthly)
+- media-digital / med-dig-03-c2: "The 2023 Levy and Mathur natural experiment (turning Facebook off ... 2020 election) produced modest reductions in some polarisation measures" -> the 2020 Meta election experiments (deactivation; chronological feeds; published 2023-24) found little measurable polarisation effect (misattributed study and misreported result)
+- media-digital / med-dig-04-c1: "Ko-fi (2017)" -> "Ko-fi (2012)"
+- media-digital / med-dig-05-c1: Gonzalez v. Google (2023) "left Section 230 substantially intact while limiting some applications" -> "declined to address Section 230 at all" (decided via Twitter v. Taamneh)
+- media-digital / med-dig-05-c3, med-dig-q22 (explanation): DSA "in force from 2024 for very large platforms" -> VLOPs from August 2023, all platforms from February 2024
+- media-digital / med-dig-06-c3: Biden AI executive order "substantially modified by the Trump administration in early 2025" -> "revoked ... in January 2025"
+- media-misinformation / med-mis-03-c2: "Twitter identified more than 50,000 IRA-linked accounts" -> 3,814 IRA accounts plus c.50,000 automated Russia-linked accounts
+- media-misinformation / med-mis-03-c2, med-mis-q13 (explanation): "the EU's Disinfo Lab" -> "EU DisinfoLab, a Brussels-based NGO" (not an EU body)
+- media-misinformation / med-mis-03-c2: "The IRA itself continues despite Prigozhin's 2023 death" -> his media group incl. the IRA was reportedly wound down (also contradicted media-state-control's "now-dismantled")
+- media-misinformation / med-mis-03-c3, med-mis-q15 (explanation): Global Engagement Center presented as active -> "closed in December 2024"
+- media-misinformation / med-mis-04-c1: Washington Post Fact Checker "launched 2011" -> "launched 2007 (relaunched 2011)"
+- media-misinformation / med-mis-04-c2, med-mis-q20 (pair + explanation): Meta's US third-party fact-checking termination "2024" -> 2025 (announced 7 Jan 2025, wound down by April 2025)
+- media-misinformation / med-mis-05-c2: "the South China Morning Post's AI presenters" -> "Xinhua news agency's AI anchors from 2018" (could not substantiate SCMP AI presenters; Xinhua's is the standard example)
+- media-misinformation / med-mis-06-c1: typo "a uncomfortable" -> "an uncomfortable"
+- media-misinformation / med-mis-06-c3: US state deepfake laws "Texas SB 4" -> "Texas SB 751" (SB 751, 2019, is the election-deepfake law; SB 4 is a 2023 immigration law)
+- media-theory / med-th-01-c3: "Wired magazine's 1995 declaration of McLuhan as ... patron saint" -> "from its first issue in 1993" (masthead named him patron saint from launch; sentence rewritten without em dashes)
+- media-theory / med-th-03-c1: Hall's "the Eldorado documentary" -> "the BBC television series Redemption Song (1991)" (no Hall documentary called Eldorado; Redemption Song is his BBC series)
+- media-theory / med-th-05-c1: Orwell's "1984 (1948)" -> "(1949)" (published June 1949)
+- media-theory / med-th-05-c3: "His daughter, Andrew Postman" -> "His son" (also contradicted med-th-q24, which correctly says son)
+
+## Flagged (not edited)
+
+- media-history / med-hist-05-c2: "PBS was created by the Public Broadcasting Act of 1967": the Act created CPB; PBS itself was founded by CPB in 1969. Loose, left (sentence has an em dash; not worth a rewrite)
+- media-history / med-hist-02-c2: Index Librorum Prohibitorum (1559) "the first formal list of banned books": earlier lists existed (Paris 1544, Louvain 1546, Venice 1549); 1559 is the first papal Index
+- media-history / med-hist-q19: answer "replace newspapers with state-only radio" overstates; the regime also controlled the press (Gleichschaltung). Best option available, left
+- media-journalism / med-jour-02-c1, med-jour-q07: "lede" spelled to avoid confusion with hot-metal lead: popular newsroom etymology; lexicographers note the spelling is attested only from the mid-20th century, so the origin story is uncertain. Left
+- media-journalism / med-jour-01-c1: Elements of Journalism (2001) "lists ten principles": the 2001 first edition had nine; the tenth was added in 2007. Current editions have ten, so left
+- media-press-freedom / med-pf-06-c2, med-pf-q28: Gaza "over 130 journalists killed by Israeli military action by mid-2024 ... more than the entire Vietnam War's tally": CPJ's own count was c.108-115 by mid-2024 (c.128 by Oct 2024); the 130+ figure matches IFJ-style counts. Figures are also now well out of date (far higher by 2025-26). Needs a dated, sourced rewrite
+- media-press-freedom / med-pf-06-c1: "RSF's 2024 report described the global situation as 'difficult' in nearly half of all countries": could not confirm the exact wording/proportion
+- media-press-freedom / med-pf-02-c2: DOJ subpoena guidelines described as current; the 2022 Garland policy was rescinded in April 2025. Text hedges ("shifts with administrations"), left
+- media-state-control / med-sc-03-c1, med-sc-q12: "50 Cent Party ... paid posters": King-Pan-Roberts (2017) found the posts come mostly from government employees as part of their jobs, and are cheerleading rather than argument. Left as colloquial
+- media-state-control / med-sc-03-c1: "Propaganda Department (since 2018 the Publicity Department)": the English rendering "Publicity Department" dates from 1998; the 2018 change was its absorption of press/film regulation
+- media-propaganda / med-prop-02-c3: same Cambridge Analytica "UK Brexit referendum" claim stated as fact (sentence has em dashes; left for a rewrite)
+- media-propaganda / med-prop-01-c3, med-prop-q05: Common Sense "sold an estimated 500,000 copies": traditional figure, disputed by recent bibliographic work (Loughran) as far too high; worth hedging
+- media-propaganda / med-prop-03-c1: CPI's "German-language propaganda ... included the targeted suppression of German-language newspapers": suppression was done mainly via the Post Office and the Trading with the Enemy Act (1917), not the CPI
+- media-propaganda / med-prop-05-c3, med-prop-q24: Google + Meta "roughly 60% of the global digital ad market": recent estimates put the pair nearer 45-50% (Amazon, ByteDance, Alibaba growing); answer still the closest option, but figure is dated
+- media-propaganda / med-prop-q13: VOA's first broadcast (Feb 1942) predates OWI (June 1942); "launched as the foreign-broadcasting arm of OWI" is slightly loose
+- media-economics / med-econ-01-c3, med-econ-04-c2, med-econ-06-c1, med-econ-q26: Google + Meta "roughly 60%" of global digital ad revenue: dated; recent estimates c.45-50%. Answer still the nearest option
+- media-economics / med-econ-02-c1: NYT 2024 print circulation "about 300,000": depends on the metric (weekday AAM vs print subscriptions of c.600k)
+- media-economics / med-econ-03-c2, med-econ-q13: "total Substack writer payouts crossed $300 million by 2024": could not confirm
+- media-economics / med-econ-04-c2: Warner Bros. Discovery ownership described as stable; the company was the subject of 2025-26 sale/breakup deals whose outcome I could not confirm
+- media-broadcast / med-bc-02-c2, med-bc-q07: "PBS was created by the Public Broadcasting Act of 1967": the Act created CPB; PBS followed in 1969
+- media-broadcast / med-bc-03-c1: "By the late 1960s, CATV systems served over 6 million American households": industry counts put cable subscribers at c.4.5 million in 1970; figure looks high
+- media-broadcast / med-bc-06-c2: Netflix content budget "comparable to all the traditional Hollywood studios combined": unsupported comparison
+- media-broadcast / med-bc-06-c3, med-bc-q30: Rogan Spotify deal "$200 million" (2020): initial reports said $100M+; $200M came from 2022 NYT reporting; better as "reportedly"
+- media-digital / med-dig-01-c1, med-dig-q01: Usenet "using the NNTP protocol" at its 1980 launch: early Usenet ran over UUCP; NNTP arrived in 1986
+- media-digital / med-dig-04-c1: 2 million full-time creators "roughly the size of the global journalism profession at its peak": unsupported comparison
+- media-digital / med-dig-06-c2: "Pink Slime ... networks of AI-generated local news sites": pink-slime networks predate generative AI and are mostly templated partisan sites; AI use is a subset
+- media-misinformation / med-mis-01-c3: "Truth-default theory (Tim Levine) and the illusory truth effect show that repeated exposure ... increases perceived plausibility": truth-default theory is about presuming honesty, not repetition
+- media-misinformation / med-mis-03-c3: "India's domestic operations against opposition politicians ... documented by the Disinfo Lab": EU DisinfoLab's India work (Indian Chronicles) concerned an international pro-India/anti-Pakistan network, not domestic ops
+- media-misinformation / med-mis-05-c1: lists DALL-E (2021) among diffusion models; DALL-E 1 was autoregressive (DALL-E 2 is diffusion)
+
+## Systemic notes
+
+- The core history and theory topics (history, journalism, bias, theory) were solid; errors clustered in the 'current state of play' topics (economics, digital, misinformation, state-control, propaganda), which were written around 2024 and had drifted: Meta fact-checking end, CPB/NPR/PBS defunding, VOA shutdown, TikTok's US joint venture, Paramount Skydance, HBO Max rename, FTC v. Meta ruling.
+- Recurring copy-paste errors propagated across topics: the Twitter '50,000 IRA-linked accounts' conflation appeared in three places; the 'I Love Lucy finale' error in two; 'EU Disinfo Lab' treated as an EU body in two topics; the Google+Meta '60% of digital ads' figure in four places (flagged; dated but not fixed).
+- Several invented or garbled specifics of the kind seen in other fields: a non-existent 'American Newsroom Defense Fund', a 'Media Pluralism and Freedom Fund', a 'Levy and Mathur' 2020 deactivation experiment, SCMP 'AI presenters', Stuart Hall's 'Eldorado documentary', Stripe Press as a newsletter platform, and Texas 'SB 4' as a deepfake law.
+- Many long sentences contain em dashes; edited sentences were rewritten without them where touched, but the files still carry many pre-existing em dashes (not mass-edited, per brief).
+- Dated figures to watch on the next pass: Gaza journalist death counts (CPJ), ICC membership, Gallup media-trust figure (new 2025 low of 28%), Warner Bros. Discovery ownership.

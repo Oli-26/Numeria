@@ -26,5 +26,6 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITtsService, TtsService>();
 builder.Services.AddScoped<IRunService, RunService>();
+builder.Services.AddScoped<IConnectionsService, ConnectionsService>();
 
 await builder.Build().RunAsync();

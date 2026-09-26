@@ -1,7 +1,7 @@
 @inject IJSRuntime JS
 
-<div class="notepad-wrapper">
-    <button class="notepad-toggle @(isOpen ? "open" : "")" @onclick="Toggle">
+<div class="notepad-wrapper" @ref="wrapperRef">
+    <button class="notepad-toggle @(isOpen ? "open" : "")" @onclick="Toggle" title="Drag to move">
         @if (isOpen) { <Icon Name="x-mark" Size="16" /> } else { <Icon Name="pencil" Size="16" /> }
     </button>
 
@@ -21,6 +21,8 @@
 @code {
     private bool isOpen;
     private string notes = "";
+    private ElementReference wrapperRef;
+    private bool dragInit;
 
     private void Toggle()
     {
@@ -30,6 +32,15 @@
     private void Clear()
     {
         notes = "";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!dragInit)
+        {
+            dragInit = true;
+            await JS.TryInvokeVoidAsync("NotepadDrag.init", wrapperRef);
+        }
     }
 }
 
@@ -49,16 +60,19 @@
         background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         color: white;
         font-size: 1.3rem;
-        cursor: pointer;
+        cursor: grab;
         box-shadow: 0 3px 12px rgba(74, 95, 224, 0.4);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: box-shadow 0.2s ease;
         -webkit-tap-highlight-color: transparent;
         display: flex;
         align-items: center;
         justify-content: center;
+        touch-action: none;
+        user-select: none;
     }
 
     .notepad-toggle:active {
+        cursor: grabbing;
         transform: scale(0.93);
     }
 

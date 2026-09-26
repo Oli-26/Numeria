@@ -1,41 +1,36 @@
-# Phine
+# Nous
 
-A mathematics learning app built with Blazor WebAssembly and Capacitor for Android. Learn topics from calculus to topology through interactive lessons, quizzes, and challenges.
+A multi-field learning app built with Blazor WebAssembly and Capacitor for Android. Nous covers 227 topics across 15 fields (mathematics, physics, chemistry, biology, geology, materials, computer science, history, economics, politics, philosophy, linguistics, literature, media and esoterica) through short lessons, quizzes, spaced review and hands-on simulators, and it keeps pointing out how the fields connect.
+
+The Android package id and some internal names still say MathVoyager (the project's original name); they are kept for compatibility with installed copies and saved progress.
 
 ## Features
 
-### Core Learning
-- **16 topics, 140 lessons** covering calculus, linear algebra, topology, number theory, probability, group theory, graph theory, differential geometry, set theory, fractals, Fourier analysis, complex analysis, theory of computation, philosophy of math, combinatorics, and differential equations
-- **7 question types**: multiple choice, fill-in, true/false, concept matching, proof ordering, find-the-error, and visual identification
-- **Worked examples** with step-by-step guided problem solving
-- **Spaced repetition** review system for long-term retention
-- **Formula Codex** reference for common formulas across topics
+### Learning
+- **227 topics, about 1,470 lessons, about 4,800 concepts, about 8,900 quiz questions**, all static JSON under `wwwroot/data/`
+- **11 question types**: multiple choice, fill-in, true/false, numeric input, multiple select, categorize, concept matching, proof ordering, find-the-error, visual identify and visual puzzle
+- **Lessons you must pass**: a lesson completes at 60% on its quiz (3 of 5); otherwise Nous points you back to the concepts you missed
+- **Guess first**: selected concepts open with a prediction question before the explanation
+- **Depth layers**: a Simpler / Standard / Deeper toggle on concepts that have extra layers
+- **Explain it back**: write a concept in your own words, compare with a model answer, keep it in the Notebook
+- **Spaced repetition** at the concept level: a review card tests the idea with a different question each time, and due cards are interleaved across topics
+- **Worked examples**, a **Formula Codex**, and data-driven visuals (timelines, maps, flow and cycle diagrams, payoff matrices, sliders, charts)
 
-### Gamification
-- **XP and leveling** system with streak tracking
-- **Mastery challenges** with 4 tiers per topic (Apprentice, Adept, Master, Grandmaster)
-- **Daily challenges** with bonus XP
-- **Achievements** for milestones
-- **Shop** with purchasable power-ups (XP boosts, streak freezes, hint packs) and unlockable features
-- **Leaderboard** with online score submission
-- **Completion cards** earned for finishing topics
+### Connections
+- **Knowledge graph** of all topics, where every link says in one sentence why the two topics connect
+- **Echoes**: after a lesson, one or two links to where the same idea turns up in another field
+- **Guided paths**: question-led journeys through 8 to 12 lessons from several fields (for example "How do we know the Earth is old?")
+- **Big Questions** hub gathering paths, lessons, simulators and reading, including open-problem tours of the Riemann hypothesis, P vs NP and the foundations of quantum mechanics
+- **Home recommendations**: continue, recommended next (by graph distance) and nearby topics in other fields, plus a daily pick
+- **Synthesis quizzes** that need knowledge from several fields at once
 
-### Extras
-- **Proof Builder** — construct mathematical proofs from logical blocks
-- **Mistake Museum** — spot errors in worked solutions
-- **What If? Playground** — interactive math experiments with visualizations
-- **Hall of Fame** — mathematician biographies with a Top Trumps card game
-- **Compendium of Constants** — explore famous mathematical constants
-- **Fortune Cookies** — daily math quotes and fun facts
-- **Notepad** — scratchpad available during quizzes
+### Simulators
+Twenty free simulators, linked from the lessons they illustrate: Particle Sandbox, Cosmic Scale, Evolution Simulator, Cell Tour, Reaction Bench, Molecule Builder, Deep Time, Rock ID, Era Map, Trade Routes, Trolley Lab, Sound Shift, Phase Diagram, Algorithm Race, Cipher Decoder, Power Map, Market Sim, Front Page, Plot Geometry and Etymology Tracer.
 
-### App
-- 4 themes: default, dark, chalkboard, neon, blueprint
-- Onboarding flow with personalized topic suggestions
-- Session persistence — resume lessons and quizzes where you left off
-- Profile page with detailed statistics and study history
-- Shareable profile cards
-- Sound effects and animations
+### Progress and extras
+- XP, levels, streaks, mastery challenges, topic runs, achievements and completion cards
+- Shop for themes, avatars, power-ups and a few extras (Proof Builder, Mistake Museum, What If? Playground, Hall of Fame, Compendium of Constants)
+- Optional leaderboard; daily challenge; fortune cookies; notepad during quizzes; text to speech for lessons
 
 ## Tech Stack
 
@@ -45,7 +40,7 @@ A mathematics learning app built with Blazor WebAssembly and Capacitor for Andro
 - **Storage**: Browser localStorage for user progress
 - **Styling**: Vanilla CSS with CSS custom properties for theming
 
-No backend server required — the app runs entirely client-side.
+No backend server required: the app runs entirely client-side.
 
 ## Getting Started
 
@@ -83,7 +78,7 @@ The APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`.
 ## Project Structure
 
 ```
-├── Pages/                  # 22 Razor page components
+├── Pages/                  # Razor page components
 ├── Components/             # Shared components (QuizComponent, Icon, Notepad, etc.)
 ├── Services/               # Business logic (quiz engine, gamification, progress, etc.)
 ├── Data/                   # Repository interfaces and implementations
@@ -103,18 +98,23 @@ The APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`.
 ## Content Structure
 
 Each topic has its own directory under `wwwroot/data/` containing:
-- `lessons.json` — lesson definitions with concepts and content
-- `questions.json` — quiz questions for all lessons
-- `mastery-questions.json` — harder questions for mastery challenges
+- `lessons.json`: lesson definitions with concepts and content
+- `questions.json`: quiz questions for all lessons
+- `mastery-questions.json`: harder questions for mastery challenges
 
 Global data files:
-- `topics.json` — topic metadata (name, color, difficulty, lesson count)
-- `achievements.json` — achievement definitions and conditions
-- `shop.json` — shop items and pricing
-- `formula-codex.json` — formula reference entries
-- `proof-challenges.json` — proof builder puzzles
-- `mistake-challenges.json` — mistake museum puzzles
-- `fortune-cookies.json` — daily quotes and facts
+- `topics.json`: topic metadata (name, color, difficulty, lesson count)
+- `achievements.json`: achievement definitions and conditions
+- `shop.json`: shop items and pricing
+- `formula-codex.json`: formula reference entries
+- `proof-challenges.json`: proof builder puzzles
+- `mistake-challenges.json`: mistake museum puzzles
+- `fortune-cookies.json`: daily quotes and facts
+- `topic-graph.json`: topic nodes and prereq/related edges, each with a one-line `why`
+- `paths.json`: guided paths (question, hook, ordered lesson steps with notes)
+- `big-questions.json`: Big Questions hub entries and open-problem tours
+- `concept-extras.json`: optional per-concept layers keyed by concept id: `discovery` (guess-first question), `modelSummary`, `contentHtmlSimple`, `contentHtmlDeep`, `simulatorRoute`, `visualizationType` + `visualizationConfig`
+- `synthesis-quizzes.json`, `topic-resources.json`: cross-field quizzes and further reading
 
 ## Adding Content
 

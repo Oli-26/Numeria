@@ -202,7 +202,15 @@ else if (state == ReviewState.Complete)
         if (currentIndex >= dueCards.Count) return;
         var card = dueCards[currentIndex];
         var questions = await Content.GetQuestionsAsync(card.TopicId);
-        currentQuestion = questions.FirstOrDefault(q => q.Id == card.QuestionId);
+        currentQuestion = null;
+        if (card.ConceptId != null)
+        {
+            // Concept cards test the idea, not a memorised question: prefer a sibling question.
+            var siblings = questions.Where(q => q.ConceptId == card.ConceptId).ToList();
+            var fresh = siblings.Where(q => q.Id != card.QuestionId).ToList();
+            currentQuestion = fresh.Count > 0 ? fresh[Random.Shared.Next(fresh.Count)] : siblings.FirstOrDefault();
+        }
+        currentQuestion ??= questions.FirstOrDefault(q => q.Id == card.QuestionId);
         revealed = false;
 
         // Skip missing questions
@@ -232,7 +240,8 @@ else if (state == ReviewState.Complete)
     private async Task Rate(bool remembered)
     {
         var card = dueCards[currentIndex];
-        await ReviewService.UpdateCardAsync(card.QuestionId, remembered);
+        if (currentQuestion != null) card.QuestionId = currentQuestion.Id;
+        await ReviewService.UpdateCardAsync(card.QuestionId, remembered, card.ConceptId);
 
         if (remembered)
         {

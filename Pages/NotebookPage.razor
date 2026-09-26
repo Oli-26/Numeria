@@ -1,0 +1,130 @@
+@page "/notebook"
+@inject IProgressService Progress
+@inject IContentRepository Content
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Notebook</h1>
+</div>
+
+@if (profile == null)
+{
+    <div class="skeleton skeleton-card" style="height: 100px"></div>
+}
+else if (profile.ConceptNotes.Count == 0)
+{
+    <div class="card notebook-empty">
+        <Icon Name="pencil" Size="32" />
+        <h2>Nothing here yet</h2>
+        <p>In any lesson, tap "Explain it back in your own words" under a concept. Putting an idea into your own words is one of the most reliable ways to learn it, and your notes collect here.</p>
+    </div>
+}
+else
+{
+    <p class="notebook-intro">@profile.ConceptNotes.Count note@(profile.ConceptNotes.Count == 1 ? "" : "s") in your own words.</p>
+    @foreach (var group in profile.ConceptNotes.GroupBy(kv => kv.Value.TopicId).OrderBy(g => TopicName(g.Key)))
+    {
+        <h3 class="notebook-topic" style="color: @TopicColor(group.Key)">@TopicName(group.Key)</h3>
+        @foreach (var (conceptId, note) in group.OrderByDescending(kv => kv.Value.Updated).Select(kv => (kv.Key, kv.Value)))
+        {
+            var id = conceptId;
+            <div class="card notebook-note">
+                <div class="notebook-note-head">
+                    <strong>@note.ConceptTitle</strong>
+                    <small>@note.Updated</small>
+                </div>
+                @if (editing == id)
+                {
+                    <textarea class="explain-input" rows="3" @bind="draft" @bind:event="oninput" aria-label="Edit note"></textarea>
+                    <div class="notebook-actions">
+                        <button class="btn btn-sm btn-primary" disabled="@string.IsNullOrWhiteSpace(draft)" @onclick="() => Save(id)">Save</button>
+                        <button class="btn btn-sm btn-outline" @onclick="() => editing = null">Cancel</button>
+                    </div>
+                }
+                else
+                {
+                    <p class="notebook-text">@note.Text</p>
+                    @if (summaries.TryGetValue(id, out var model))
+                    {
+                        <details class="notebook-model">
+                            <summary>Compare with a model answer</summary>
+                            <p>@model</p>
+                        </details>
+                    }
+                    <div class="notebook-actions">
+                        <button class="btn btn-sm btn-outline" @onclick='() => Nav.NavigateTo($"/topic/{note.TopicId}/lesson/{note.LessonId}")'>Open lesson</button>
+                        <button class="btn btn-sm btn-outline" @onclick="() => Edit(id, note.Text)">Edit</button>
+                        <button class="btn btn-sm btn-outline" @onclick="() => Delete(id)">Delete</button>
+                    </div>
+                }
+            </div>
+        }
+    }
+}
+
+@code {
+    private UserProfile? profile;
+    private List<Topic> topics = new();
+    private readonly Dictionary<string, string> summaries = new();
+    private string? editing;
+    private string draft = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        profile = await Progress.GetProfileAsync();
+        topics = await Content.GetTopicsAsync();
+        foreach (var topicId in profile.ConceptNotes.Values.Select(n => n.TopicId).Distinct())
+        {
+            var lessons = await Content.GetLessonsAsync(topicId);
+            foreach (var c in lessons.SelectMany(l => l.Concepts))
+                if (c.ModelSummary != null && profile.ConceptNotes.ContainsKey(c.Id))
+                    summaries[c.Id] = c.ModelSummary;
+        }
+    }
+
+    private string TopicName(string id) => topics.FirstOrDefault(t => t.Id == id)?.Name ?? id;
+    private string TopicColor(string id) => topics.FirstOrDefault(t => t.Id == id)?.Color ?? "var(--text-primary)";
+
+    private void Edit(string id, string text)
+    {
+        editing = id;
+        draft = text;
+    }
+
+    private async Task Save(string id)
+    {
+        if (profile == null || !profile.ConceptNotes.TryGetValue(id, out var note)) return;
+        note.Text = draft.Trim();
+        note.Updated = DateTime.Now.ToString("yyyy-MM-dd");
+        await Progress.SaveProfileAsync(profile);
+        editing = null;
+    }
+
+    private async Task Delete(string id)
+    {
+        if (profile == null) return;
+        profile.ConceptNotes.Remove(id);
+        await Progress.SaveProfileAsync(profile);
+    }
+}
+
+<style>
+    .notebook-empty { text-align: center; padding: 32px 24px; color: var(--text-muted); }
+    .notebook-empty p { color: var(--text-secondary); line-height: 1.6; }
+    .notebook-intro { color: var(--text-secondary); margin: 0 0 8px; }
+    .notebook-topic { margin: 18px 0 8px; font-size: 1rem; }
+    .notebook-note { padding: 14px; margin-bottom: 10px; }
+    .notebook-note-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .notebook-note-head strong { color: var(--text-primary); }
+    .notebook-note-head small { color: var(--text-muted); white-space: nowrap; }
+    .notebook-text { margin: 8px 0; color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; }
+    .notebook-model { margin: 4px 0 8px; font-size: 0.88rem; color: var(--text-secondary); }
+    .notebook-model summary { cursor: pointer; color: var(--primary); }
+    .notebook-model p { margin: 6px 0 0; line-height: 1.5; }
+    .notebook-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .explain-input {
+        width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.9rem; resize: vertical; margin-top: 8px;
+    }
+</style>

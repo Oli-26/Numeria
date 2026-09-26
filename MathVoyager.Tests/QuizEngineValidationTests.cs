@@ -61,6 +61,7 @@ public class QuizEngineValidationTests
     [Theory]
     [InlineData("x^2", "x^3")]
     [InlineData("3x", "4x")]
+    [InlineData("x^3/3 + C", "x^3/3")]
     public void FillIn_RejectsWrong(string correct, string user)
     {
         var r = NewEngine().ValidateAnswer(Fill(correct), user);
@@ -95,6 +96,10 @@ public class QuizEngineValidationTests
     [InlineData("1/4", "25%", true)]
     [InlineData("1/2", "0.5", true)]
     [InlineData("1/2", "0.6", false)]
+    [InlineData("0.0005", "0", false)]
+    [InlineData("1066", "1070", false)]
+    [InlineData("2.5", "2.52", true)]
+    [InlineData("0.002", "0.003", false)]
     public void FillIn_FractionEquivalence(string correct, string user, bool expected)
     {
         var r = NewEngine().ValidateAnswer(Fill(correct), user);

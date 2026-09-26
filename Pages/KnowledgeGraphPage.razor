@@ -4,14 +4,22 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @inject HttpClient Http
+@inject IConnectionsService Connections
 @implements IAsyncDisposable
 
 <div class="graph-page">
     <div class="graph-header">
         <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Knowledge Graph</h1>
+        <h1><span class="graph-title-icon"><Icon Name="graph" Size="20" /></span> Knowledge Graph</h1>
         <div class="graph-controls">
-            <select class="domain-filter" @onchange="OnDomainChanged" value="@selectedDomain">
+            <select class="domain-filter" @onchange="OnLayoutChanged" value="@selectedLayout" title="Layout">
+                <option value="force">Force</option>
+                <option value="circular">Circular</option>
+                <option value="grid">Grid</option>
+                <option value="hierarchical">Hierarchical</option>
+                <option value="radial">Radial</option>
+            </select>
+            <select class="domain-filter" @onchange="OnDomainChanged" value="@selectedDomain" title="Filter">
                 <option value="all">All Domains</option>
                 @foreach (var d in domains)
                 {
@@ -47,6 +55,21 @@
                     {
                         <span class="tooltip-badge">Tap to study →</span>
                     }
+                    @{ var links = LinksFor(selectedNodeId); }
+                    @if (links.Count > 0)
+                    {
+                        <div class="tooltip-links" @onclick:stopPropagation="true">
+                            @foreach (var (otherId, edge) in links)
+                            {
+                                <button class="tooltip-link" @onclick='() => Nav.NavigateTo($"/topic/{otherId}")'>
+                                    <span class="tooltip-link-name" style="color: @GetNodeColor(otherId)">
+                                        @(edge.Type == "prereq" ? (edge.To == selectedNodeId ? "Needs " : "Leads to ") : "Linked to ")@GetNodeName(otherId)
+                                    </span>
+                                    <small>@edge.Why</small>
+                                </button>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         }
@@ -78,6 +101,7 @@
 @code {
     private bool graphReady;
     private string selectedDomain = "all";
+    private string selectedLayout = "force";
     private string? selectedNodeId;
 
     private List<Topic>? allTopics;
@@ -85,6 +109,14 @@
     private HashSet<string> completedTopics = new();
 
     private DotNetObjectReference<KnowledgeGraphPage>? selfRef;
+    private List<TopicEdge> edges = new();
+
+    private List<(string otherId, TopicEdge edge)> LinksFor(string id) => edges
+        .Where(e => (e.From == id || e.To == id) && !string.IsNullOrEmpty(e.Why))
+        .OrderByDescending(e => e.Strength)
+        .Take(4)
+        .Select(e => (e.From == id ? e.To : e.From, e))
+        .ToList();
 
     // Domain → representative colour, matching DomainsPage
     private static string DomainHue(string id) => id switch
@@ -129,6 +161,7 @@
 
         // Load graph JSON
         var graphJson = await FetchGraphJson();
+        edges = (await Connections.GetGraphAsync()).Edges;
 
         // Build colour map from topics
         var colorMap = new Dictionary<string, string>();
@@ -186,6 +219,13 @@
         await JS.InvokeVoidAsync("TopicGraph.filterDomain", selectedDomain);
     }
 
+    private async Task OnLayoutChanged(ChangeEventArgs e)
+    {
+        selectedLayout = e.Value?.ToString() ?? "force";
+        selectedNodeId = null;
+        await JS.InvokeVoidAsync("TopicGraph.setLayout", selectedLayout);
+    }
+
     private string GetNodeColor(string id)
     {
         var topic = allTopics?.FirstOrDefault(t => t.Id == id);
@@ -207,12 +247,21 @@
 
     public async ValueTask DisposeAsync()
     {
-        await JS.InvokeVoidAsync("TopicGraph.destroy");
+        try { await JS.InvokeVoidAsync("TopicGraph.destroy"); }
+        catch { /* JS bridge may already be disposed */ }
         selfRef?.Dispose();
     }
 }
 
 <style>
+    .tooltip-links { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 40vh; overflow-y: auto; }
+    .tooltip-link {
+        text-align: left; background: var(--bg-surface); border: 1px solid var(--border);
+        border-radius: 8px; padding: 6px 8px; cursor: pointer; font-family: inherit; color: var(--text-secondary);
+    }
+    .tooltip-link-name { display: block; font-weight: 600; font-size: 0.8rem; }
+    .tooltip-link small { display: block; font-size: 0.75rem; line-height: 1.35; }
+
     .graph-page {
         display: flex;
         flex-direction: column;
@@ -237,10 +286,26 @@
         font-size: 1.1rem;
         font-weight: 700;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .graph-title-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white;
     }
 
     .graph-controls {
         flex-shrink: 0;
+        display: flex;
+        gap: 6px;
     }
 
     .domain-filter {
@@ -310,7 +375,7 @@
         padding: 0;
         cursor: pointer;
         min-width: 180px;
-        max-width: 260px;
+        max-width: min(340px, calc(100vw - 32px));
         animation: fadeSlideUp 0.15s ease;
         z-index: 20;
     }

@@ -6,8 +6,8 @@
 
 <nav class="bottom-nav">
     <div class="nav-brand" @onclick='() => Navigate("/")'>
-        <span class="nav-brand-icon">Φ</span>
-        <span class="nav-brand-name">Phine</span>
+        <span class="nav-brand-icon">ν</span>
+        <img class="nav-brand-name" src="nous-wordmark.svg" alt="Nous" />
         @if (level > 0)
         {
             <div class="nav-level-badge">
@@ -48,11 +48,13 @@
     private string currentUri = "";
     private int level;
     private double xpPct;
+    private EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs>? _locationChangedHandler;
 
     protected override void OnInitialized()
     {
         currentUri = Nav.ToBaseRelativePath(Nav.Uri);
-        Nav.LocationChanged += OnLocationChanged;
+        _locationChangedHandler = (_, e) => _ = OnLocationChanged(e);
+        Nav.LocationChanged += _locationChangedHandler;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -73,7 +75,7 @@
         xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
     }
 
-    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private async Task OnLocationChanged(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         try
         {
@@ -89,7 +91,8 @@
 
     public void Dispose()
     {
-        Nav.LocationChanged -= OnLocationChanged;
+        if (_locationChangedHandler != null)
+            Nav.LocationChanged -= _locationChangedHandler;
     }
 
     private bool IsActive(string path)
@@ -157,6 +160,7 @@
         height: 4px;
         background: var(--primary);
         border-radius: 0 0 4px 4px;
+        filter: drop-shadow(0 0 4px rgba(var(--domain-rgb), 0.4));
         animation: navIndicator 0.3s ease;
     }
 
@@ -234,11 +238,9 @@
         }
 
         .nav-brand-name {
-            font-family: 'Cinzel', Georgia, serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            color: var(--text-primary);
+            display: block;
+            height: 22px;
+            width: auto;
         }
 
         .nav-level-badge {

@@ -1,5 +1,5 @@
 /**
- * notifications.js — Capacitor LocalNotifications bridge for Numeria.
+ * notifications.js — Capacitor LocalNotifications bridge for Nous.
  *
  * Exposes window.Notifications with a consistent API.
  * Falls back gracefully:
@@ -15,11 +15,11 @@
     var REVIEW_NOTIFICATION_BASE_ID = 2001;
 
     // Branded notification channel — registered once per install.
-    var CHANNEL_ID = 'phine_reminders';
-    var CHANNEL_NAME = 'Phine reminders';
+    var CHANNEL_ID = 'nous_reminders';
+    var CHANNEL_NAME = 'Nous reminders';
     var CHANNEL_DESC = 'Daily streak nudges and review reminders.';
     var BRAND_COLOR = '#FFD76A'; // gold accent matching the app icon
-    var SMALL_ICON = 'ic_stat_phine';
+    var SMALL_ICON = 'ic_stat_nous';
     var LARGE_ICON = 'ic_launcher';
 
     function isCapacitorAvailable() {
@@ -35,7 +35,7 @@
     // Deep-link bridge — when the user taps a notification, Capacitor fires
     // localNotificationActionPerformed with the original notification's `extra`
     // payload. We stash the target route in sessionStorage so the Blazor app
-    // can navigate on cold start, and dispatch a 'phine:deeplink' event for
+    // can navigate on cold start, and dispatch a 'nous:deeplink' event for
     // warm taps where the WebView is already alive.
     function _routeFromAction(action) {
         try {
@@ -46,16 +46,16 @@
 
     function _stashRoute(route) {
         if (!route) return;
-        try { sessionStorage.setItem('phine_pending_deeplink', route); } catch (e) { }
-        try { window.dispatchEvent(new CustomEvent('phine:deeplink', { detail: route })); } catch (e) { }
+        try { sessionStorage.setItem('nous_pending_deeplink', route); } catch (e) { }
+        try { window.dispatchEvent(new CustomEvent('nous:deeplink', { detail: route })); } catch (e) { }
     }
 
     // Action type IDs registered with the plugin. Tapping a button on the
     // notification fires localNotificationActionPerformed with these actionIds:
     //   review_now -> deep-link to /review
     //   snooze_1h  -> reschedule the same reminder 60 min from now
-    var ACTION_REVIEW = 'PHINE_REVIEW';
-    var ACTION_STREAK = 'PHINE_STREAK';
+    var ACTION_REVIEW = 'NOUS_REVIEW';
+    var ACTION_STREAK = 'NOUS_STREAK';
 
     var capacitorImpl = {
         _plugin: null,
@@ -66,17 +66,16 @@
         _getPlugin: async function () {
             if (this._plugin) return this._plugin;
             try {
-                var mod = await import('/node_modules/@capacitor/local-notifications/dist/esm/index.js').catch(function () {
-                    // Capacitor bundles the plugin into the global scope when using the CLI sync path.
-                    return null;
-                });
-                // Try the global injected by capacitor sync (Android WebView)
-                if (!mod && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) {
+                // Try the global injected by capacitor sync (Android WebView/Capacitor runtime)
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) {
                     this._plugin = window.Capacitor.Plugins.LocalNotifications;
-                } else if (mod && mod.LocalNotifications) {
-                    this._plugin = mod.LocalNotifications;
                 } else {
-                    this._plugin = null;
+                    try {
+                        var mod = await import('/capacitor-local-notifications/dist/esm/index.js').catch(function () { return null; });
+                        this._plugin = (mod && mod.LocalNotifications) ? mod.LocalNotifications : null;
+                    } catch (e) {
+                        this._plugin = null;
+                    }
                 }
             } catch (e) {
                 this._plugin = null;
@@ -99,7 +98,7 @@
                         {
                             id: ACTION_STREAK,
                             actions: [
-                                { id: 'open_app',  title: 'Open Phine' },
+                                { id: 'open_app',  title: 'Open Nous' },
                                 { id: 'snooze_1h', title: 'Later' }
                             ]
                         }
@@ -253,6 +252,11 @@
             var p = await this._getPlugin();
             if (!p) return;
             try {
+                // Remove the action listener so the callback + closure chain can GC.
+                if (this._listenerAttached && typeof p.removeAllListeners === 'function') {
+                    try { p.removeAllListeners('localNotificationActionPerformed'); } catch (e) {}
+                    this._listenerAttached = false;
+                }
                 var pending = await p.getPending();
                 if (pending && pending.notifications && pending.notifications.length > 0) {
                     await p.cancel({ notifications: pending.notifications.map(function (n) { return { id: n.id }; }) });
@@ -297,14 +301,14 @@
             if (fire <= now) return; // already passed today, skip
             var delay = fire - now;
             setTimeout(function () {
-                try { new Notification(title, { body: body, icon: '/phine-icon.svg' }); } catch (e) { }
+                try { new Notification(title, { body: body, icon: '/nous-icon.svg' }); } catch (e) { }
             }, delay);
         },
 
         scheduleReviewReminder: async function (deltaMinutes, title, body, _route) {
             if (!('Notification' in window) || Notification.permission !== 'granted') return;
             setTimeout(function () {
-                try { new Notification(title, { body: body, icon: '/phine-icon.svg' }); } catch (e) { }
+                try { new Notification(title, { body: body, icon: '/nous-icon.svg' }); } catch (e) { }
             }, deltaMinutes * 60 * 1000);
         },
 
@@ -354,8 +358,8 @@
         // Pop the route stashed when a notification was tapped (cold-start path).
         consumePendingDeepLink: function () {
             try {
-                var r = sessionStorage.getItem('phine_pending_deeplink');
-                if (r) sessionStorage.removeItem('phine_pending_deeplink');
+                var r = sessionStorage.getItem('nous_pending_deeplink');
+                if (r) sessionStorage.removeItem('nous_pending_deeplink');
                 return r;
             } catch (e) { return null; }
         }

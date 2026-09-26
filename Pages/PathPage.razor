@@ -1,0 +1,160 @@
+@page "/paths"
+@page "/path/{PathId}"
+@inject IConnectionsService Connections
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back" @onclick='() => Nav.NavigateTo(PathId == null ? "/" : "/paths")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>@(path?.Question ?? "Guided Paths")</h1>
+</div>
+
+@if (paths == null || profile == null)
+{
+    <div class="skeleton skeleton-card" style="height: 120px"></div>
+}
+else if (PathId == null)
+{
+    <p class="paths-intro">Each path follows one question across several fields, one lesson at a time.</p>
+    <div class="paths-list stagger-in">
+        @foreach (var p in paths)
+        {
+            var pp = p;
+            var done = DoneCount(pp);
+            <div class="card card-clickable path-card" @onclick='() => Nav.NavigateTo($"/path/{pp.Id}")'>
+                <div class="path-card-icon"><Icon Name="@pp.Icon" Size="24" /></div>
+                <div class="path-card-body">
+                    <strong>@pp.Question</strong>
+                    <p>@pp.Hook</p>
+                    <div class="path-card-meta">
+                        <span>@pp.Steps.Count lessons</span>
+                        @if (profile.PathsStarted.Contains(pp.Id) || done > 0)
+                        {
+                            <span class="path-progress-text">@done / @pp.Steps.Count done</span>
+                        }
+                    </div>
+                    @if (done > 0)
+                    {
+                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: @((100.0 * done / pp.Steps.Count).ToString("F0"))%"></div></div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else if (path == null)
+{
+    <div class="card" style="padding: 24px; text-align: center">
+        <p>That path does not exist.</p>
+        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/paths")'>All paths</button>
+    </div>
+}
+else
+{
+    <div class="card path-hero">
+        <div class="path-card-icon"><Icon Name="@path.Icon" Size="28" /></div>
+        <p>@path.Hook</p>
+        @{ var next = NextStep(path); }
+        @if (next != null)
+        {
+            <button class="btn btn-accent btn-lg" style="width: 100%" @onclick="() => StartStep(next)">
+                @(DoneCount(path) == 0 ? "Start the path" : "Continue")
+            </button>
+        }
+        else
+        {
+            <div class="path-complete"><Icon Name="checkmark-circle" Size="18" /> Path complete</div>
+        }
+    </div>
+
+    <ol class="path-steps">
+        @for (int i = 0; i < path.Steps.Count; i++)
+        {
+            var step = path.Steps[i];
+            var info = stepInfo.GetValueOrDefault(Key(step));
+            var isDone = profile.LessonsCompleted.Contains(step.LessonId);
+            var isNext = next == step;
+            <li class="path-step @(isDone ? "done" : "") @(isNext ? "next" : "")" @onclick="() => StartStep(step)">
+                <div class="path-step-marker" style="border-color: @(info.topic?.Color ?? "var(--border)")">
+                    @if (isDone) { <Icon Name="check" Size="14" /> } else { <span>@(i + 1)</span> }
+                </div>
+                <div class="path-step-body">
+                    <small style="color: @(info.topic?.Color ?? "var(--text-muted)")">@(info.topic?.Name ?? step.TopicId)</small>
+                    <strong>@(info.lesson?.Title ?? step.LessonId)</strong>
+                    <p>@step.Note</p>
+                </div>
+            </li>
+        }
+    </ol>
+}
+
+@code {
+    [Parameter] public string? PathId { get; set; }
+
+    private List<LearningPath>? paths;
+    private LearningPath? path;
+    private UserProfile? profile;
+    private readonly Dictionary<string, (Topic? topic, Lesson? lesson)> stepInfo = new();
+
+    private static string Key(PathStep s) => s.TopicId + "/" + s.LessonId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        profile = await Progress.GetProfileAsync();
+        paths = await Connections.GetPathsAsync();
+        path = PathId == null ? null : paths.FirstOrDefault(p => p.Id == PathId);
+        if (path != null)
+        {
+            var topics = await Content.GetTopicsAsync();
+            foreach (var step in path.Steps)
+            {
+                var lessons = await Content.GetLessonsAsync(step.TopicId);
+                stepInfo[Key(step)] = (topics.FirstOrDefault(t => t.Id == step.TopicId), lessons.FirstOrDefault(l => l.Id == step.LessonId));
+            }
+        }
+    }
+
+    private int DoneCount(LearningPath p) => p.Steps.Count(s => profile?.LessonsCompleted.Contains(s.LessonId) == true);
+
+    private PathStep? NextStep(LearningPath p) => p.Steps.FirstOrDefault(s => profile?.LessonsCompleted.Contains(s.LessonId) != true);
+
+    private async Task StartStep(PathStep step)
+    {
+        if (path == null) return;
+        var p = await Progress.GetProfileAsync();
+        if (!p.PathsStarted.Contains(path.Id))
+        {
+            p.PathsStarted.Add(path.Id);
+            await Progress.SaveProfileAsync(p);
+        }
+        Nav.NavigateTo($"/topic/{step.TopicId}/lesson/{step.LessonId}");
+    }
+}
+
+<style>
+    .paths-intro { color: var(--text-secondary); margin: 0 0 12px; }
+    .paths-list { display: flex; flex-direction: column; gap: 12px; }
+    .path-card { display: flex; gap: 14px; padding: 16px; align-items: flex-start; }
+    .path-card-icon { color: var(--accent); flex-shrink: 0; }
+    .path-card-body { flex: 1; min-width: 0; }
+    .path-card-body strong { color: var(--text-primary); font-size: 1.02rem; }
+    .path-card-body p { margin: 4px 0 8px; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
+    .path-card-meta { display: flex; gap: 12px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
+    .path-progress-text { color: var(--success); font-weight: 600; }
+    .path-hero { padding: 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .path-hero p { margin: 0; color: var(--text-secondary); line-height: 1.6; }
+    .path-complete { display: flex; align-items: center; gap: 8px; color: var(--success); font-weight: 700; }
+    .path-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+    .path-step { display: flex; gap: 12px; padding: 12px 4px; cursor: pointer; border-bottom: 1px solid var(--border); }
+    .path-step.next { background: rgba(196, 129, 58, 0.07); border-radius: 10px; }
+    .path-step-marker {
+        width: 30px; height: 30px; border-radius: 50%; border: 2px solid; flex-shrink: 0; display: flex;
+        align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+    }
+    .path-step.done .path-step-marker { background: var(--success); border-color: var(--success) !important; color: white; }
+    .path-step-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .path-step-body small { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .path-step-body strong { color: var(--text-primary); }
+    .path-step-body p { margin: 2px 0 0; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.45; }
+</style>

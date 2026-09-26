@@ -2,6 +2,14 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
+@if (DataWidget.Types.Contains(VisualizationType))
+{
+    <div class="canvas-container data-widget-container">
+        <DataWidget Type="@VisualizationType" Config="@Config" />
+    </div>
+    return;
+}
+
 <div class="canvas-container">
     <canvas id="@CanvasId"></canvas>
 
@@ -108,6 +116,7 @@
     [Parameter] public string CanvasId { get; set; } = "viz-canvas";
     [Parameter] public string VisualizationType { get; set; } = "";
     [Parameter] public bool ShowControls { get; set; } = true;
+    [Parameter] public Dictionary<string, object>? Config { get; set; }
 
     private const int Width = 350;
     private const int Height = 280;
@@ -144,6 +153,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (DataWidget.Types.Contains(VisualizationType)) return;
         if (firstRender || !initialized)
         {
             try

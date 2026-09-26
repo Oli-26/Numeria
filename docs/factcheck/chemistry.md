@@ -1,0 +1,141 @@
+# Fact-check: chemistry
+
+- Topics covered (16): chem-atoms, chem-organic, chem-inorganic, chem-biochemistry, chem-physical, chem-analytical, chem-polymers, chem-green, chem-nuclear, chem-computational, chem-surface, chem-pharma, chem-organometallic, chem-quantum-chem, chem-spectroscopy, chem-single-molecule-spec
+- Concepts checked: 342 (lessons.json)
+- Questions checked: 678 (questions.json)
+- Fixed: 90 log entries (some cover a lesson and its matching question together)
+- Flagged (not edited): 29
+- All 32 touched/checked JSON files parse; no em dashes introduced.
+
+## Fixed
+
+- chem-atoms / chem-atom-01-c2: "C-14 ... used for dating fossils" -> "used for radiocarbon dating of once-living material up to about 50,000 years old" (radiocarbon cannot date most fossils; common myth)
+- chem-atoms / chem-atom-07-c2: "EA: energy released when an electron is added. Halogens have very negative EA" -> "EA: the energy change when an electron is added (negative means energy is released)" (definition contradicted its own sign convention)
+- chem-atoms / chem-atom-08-c3: "Fe → Fe³⁺ at the anode; O₂ → O²⁻ at the cathode" -> "Fe → Fe²⁺ at the anode (later oxidized further to Fe³⁺); O₂ + H₂O → OH⁻ at the cathode" (anodic product is Fe²⁺; aqueous O₂ reduction gives OH⁻, not free O²⁻)
+- chem-atoms / chem-atom-q39: "Zn² (E° = -0.76 V)" -> "Zn (E° = -0.76 V for Zn²⁺/Zn)" (garbled species label)
+- chem-organic / chem-org-01-c3: alkenes "Formula CₙH₂ₙ" -> "CₙH₂ₙ (with one double bond)" (text says "one or more" double bonds; formula only holds for one)
+- chem-organic / chem-org-05-c1 + chem-org-07-c1: thalidomide enantiomer story -> added "the two interconvert in the body" (single-enantiomer thalidomide would not have prevented the harm; common myth)
+- chem-organic / chem-org-06-c3: "click chemistry (Nobel 2001 and 2022)" -> "(Nobel 2022, his second after 2001)" (2001 prize was for asymmetric oxidation, not click)
+- chem-organic / chem-org-07-c3 + chem-org-q34: sitagliptin transaminase "replacing ... Rh-BINAP" -> "rhodium-catalysed (Josiphos) asymmetric hydrogenation"; q34 "catalyzes a reductive amination" -> "converts a ketone directly into the chiral amine" (Merck route used Rh-Josiphos; enzyme is a transaminase)
+- chem-organic / chem-org-08-c1: Robinson tropinone "(1917, only 4 steps)" -> "(1917, a one-pot synthesis)"
+- chem-organic / chem-org-q09 explanation: "EWGs stabilise negative charge at ortho/para..." -> ortho/para attack puts arenium positive charge on the EWG-bearing carbon (wrong mechanistic rationale)
+- chem-organic / chem-org-q28 correct option + answer: "thermally the two HOMOs don't match" -> "the HOMO of one and LUMO of the other don't match" (FMO analysis is HOMO-LUMO, not HOMO-HOMO)
+- chem-organic / chem-org-q36: "(Woodward, then Eschenmoser)" -> "(Woodward and Eschenmoser jointly)" (B12 was a simultaneous collaboration)
+- chem-organic / chem-org-q38: "Step economy (Trost)" -> "Atom economy (Trost), step economy and ideal synthesis (Wender)" (step economy is Wender's; Trost coined atom economy)
+- chem-organic / chem-org-q39: "Artemisinin is produced commercially by engineered yeast" -> artemisinic acid precursor produced by yeast (route is semi-synthetic)
+- chem-inorganic / chem-inorg-03-c3: "Low-spin → fewer unpaired → diamagnetic" -> "fewer unpaired electrons; diamagnetic only if none remain (e.g. low-spin d⁶)" (low-spin d⁵, d⁷ are paramagnetic)
+- chem-inorganic / chem-inorg-07-c2: cross-coupling "appears in essentially every drug..." -> "appears in a large share of the drugs..." (overclaim)
+- chem-inorganic / chem-inorg-q08: "one reactant produces seven products" -> "two reactant particles become seven" (EDTA + hexaaqua complex is 2 particles)
+- chem-biochemistry / chem-bio-02-c3: statins "resembling the substrate mevalonate" -> "resembling the substrate HMG-CoA" (mevalonate is the product)
+- chem-biochemistry / chem-bio-03-c1: "Glycolysis works under anaerobic conditions (... cancer cells, the Warburg effect)" -> cancer cells favour it even when oxygen is present (Warburg effect is aerobic glycolysis)
+- chem-biochemistry / chem-bio-03-c3: "citrate ... traverses 8 reactions back to oxaloacetate" -> "the remaining 7 reactions of the 8-step cycle"
+- chem-biochemistry / chem-bio-05-c2: "Each 120° rotation of γ changes the conformation of one β-subunit" -> "shifts the conformations of the β-subunits" (binding-change: all three change each step)
+- chem-biochemistry / chem-bio-05-c2: "ETC ~28–32 ATP" -> "ETC ~26–28 ATP" (2 + 2 + 28–32 contradicted the stated total of 30–32)
+- chem-biochemistry / chem-bio-06-c2: membrane proteins "include all transporters, receptors" -> "all transporters, most receptors" (nuclear receptors are soluble)
+- chem-biochemistry / chem-bio-q07: Lineweaver-Burk "gives K_m as the x-intercept × (−1)" -> "x-intercept of −1/K_m"
+- chem-biochemistry / chem-bio-q10: "Competitive: parallel shift of Lineweaver–Burk x-intercept" -> lines meet on the y-axis, x-intercept moves toward zero (parallel lines are the uncompetitive pattern)
+- chem-biochemistry / chem-bio-q23: "β-oxidation ... has slightly lower ATP yield per carbon" -> "each FADH₂ ... is worth less ATP than an NADH" (fats give more ATP per carbon than glucose)
+- chem-physical / chem-phys-03-c3: "decreases Q toward K if Q < K, or increases Q toward K if Q > K" -> swapped (direction was reversed)
+- chem-physical / chem-phys-08-c3: "Capillarity drives sap rise in trees" -> "helps sap rise ... (though transpiration pull does most of the work)" (cohesion-tension, not capillarity, lifts sap)
+- chem-physical / chem-phys-q17: O₂ MO count "Bonding 8, Antibonding 4" while listing 1s MOs -> clarified as valence-only count (numbers were inconsistent with the listed configuration)
+- chem-physical / chem-phys-q39: removed "capillary blood flow" as an example of capillary action (blood flow in capillaries is pressure-driven)
+- chem-analytical / chem-anly-05-c3: "FDA 21 CFR Part 11 and ICH Q2 guidelines govern pharmaceutical validation" -> "ICH Q2 guidelines (adopted by the FDA and EMA)" (Part 11 covers electronic records/signatures, not method validation)
+- chem-analytical / chem-anly-q13: "Rf close to 1: highly non-polar (reverse-phase) or highly polar (normal-phase)" -> swapped (polarity logic was reversed)
+- chem-analytical / chem-anly-q23: "ICH Q2(R1)" -> "ICH Q2 ... current revision Q2(R2), 2023" (outdated)
+- chem-analytical / chem-anly-q30: "ESI and MALDI shared the 2002 Nobel" -> Fenn (ESI) and Tanaka (soft laser desorption, forerunner of MALDI) (MALDI's developers Karas and Hillenkamp were not laureates)
+- chem-polymers / chem-poly-01-c2: "typically not crystalline ... never quite reaching a regular crystal" -> "rarely fully crystalline ... even polyethylene is semicrystalline" (PE, PP, nylon, PET are semicrystalline)
+- chem-polymers / chem-poly-01-c3: plastic "more by mass than steel" -> "more by volume than steel" (steel ~1.9 billion t/yr vs plastic ~0.4 billion t)
+- chem-polymers / chem-poly-04-c1: "Misfolding causes disease: Alzheimer's, prion diseases, sickle cell" -> sickle cell reframed as mutant haemoglobin aggregation (HbS folds normally)
+- chem-polymers / chem-poly-q01: "Polyethylene is millions of -CH₂- units" -> "thousands of" (typical PE is ~10^3 to 10^5 units; matches lesson)
+- chem-nuclear / chem-nuc-01-c3: radiotoxicity "inversely proportional to half-life and the energy of its emissions" -> "... and proportional to the energy" (higher energy means more hazard)
+- chem-nuclear / chem-nuc-02-c1: "Libby's 1950s development" -> "late-1940s" (method published 1949)
+- chem-nuclear / chem-nuc-02-c2: "oldest rocks (4.4 billion years)" -> "oldest known minerals (4.4-billion-year-old zircons)" (oldest rocks are ~4.0 Ga)
+- chem-nuclear / chem-nuc-03-c1 + chem-nuc-q11: "³²P-labeled DNA helped solve/proved the genetic code" -> showed genes are made of DNA (Hershey-Chase); the code was cracked with other methods
+- chem-nuclear / chem-nuc-04-c2: oganesson atoms "decay in microseconds" -> "within about a millisecond" (Og-294 half-life ~0.7 ms)
+- chem-nuclear / chem-nuc-05-c2: "recovers ~96% of the uranium and ~1% plutonium" -> spent fuel is ~96% U and ~1% Pu, PUREX recovers both (>99%) (garbled recovery figures)
+- chem-nuclear / chem-nuc-05-c2: "France, Russia, Japan, and the UK reprocess" -> France and Russia; UK stopped 2022; Japan's Rokkasho delayed (outdated)
+- chem-nuclear / chem-nuc-05-c3 + chem-nuc-q23: Onkalo "in operation as of 2025" -> expected to begin final disposal around 2026-27 once licensed (STUK positive safety assessment Aug 2026; licence decision pending)
+- chem-computational / chem-comp-04-c3: "The first FDA-approved drugs from AI-driven pipelines began clinical trials in the 2020s" -> "The first drug candidates from AI-driven pipelines entered clinical trials around 2020" (no AI-discovered drug was FDA-approved; approval follows trials)
+- chem-surface / chem-surf-03-c3: "iron: not coincidentally what Haber found by trial" -> iron near the volcano peak (Ru, Os close by); promoted iron found by Mittasch's BASF team (Haber used osmium/uranium)
+- chem-surface / chem-surf-04-c2: removed "The 2024 Nobel went to Schütz for entropic membrane biophysics." (fabricated: no such prize; 2024 Chemistry Nobel was Baker, Hassabis, Jumper)
+- chem-surface / chem-surf-q17: LNPs "Cationic lipids ... vesicles fuse with cells" -> ionizable lipids; uptake by cells then endosomal escape
+- chem-pharma / chem-pharm-04-c2: fragment-derived approved drugs "vemurafenib, navitoclax" -> "vemurafenib, venetoclax" (navitoclax is not approved; matches q17)
+- chem-pharma / chem-pharm-04-c3: "The first AI-discovered candidate to enter clinical trials (INS018_055) reached Phase II in 2023" -> AI candidates first entered trials around 2020 (Exscientia DSP-1181); INS018_055 reached Phase II in 2023
+- chem-organometallic / omet-01-c1: Fischer carbenes have a "pi-acceptor heteroatom" -> "pi-donor heteroatom substituent"
+- chem-organometallic / omet-01-c3: 18e noble-gas config "(n)s^2 (n)p^6 (n)d^10" -> "(n-1)d^10 ns^2 np^6"
+- chem-organometallic / omet-03-c1: "Wilkinson's complex earned its 1973 Nobel ... and changed industrial hydrogenation" -> the 1973 Nobel was for sandwich compounds; catalyst "proved just as influential" (the catalyst was not the prize citation; little industrial use)
+- chem-organometallic / omet-04-c3: acetic acid "at gigatonne scale" -> "millions of tonnes a year" (~20 Mt/yr)
+- chem-organometallic / omet-05-c2: "Hartwig's ferrocene-based ligands (DPPF, JosiPhos)" -> "the ferrocene-based ligands Hartwig championed" (DPPF and Josiphos were not Hartwig's inventions)
+- chem-organometallic / omet-06-c2: "The drug Vaniqa (eflornithine), ... (simeprevir, grazoprevir) depend on Grubbs catalysts" -> "Macrocyclic HCV protease inhibitors (such as simeprevir and vaniprevir)" (eflornithine is a simple amino acid not made by metathesis; grazoprevir's macrocycle is not RCM-closed)
+- chem-organometallic / omet-07-c3: "The 2008 papers by MacMillan, Yoon, and Stephenson" -> "2008-2009" (Stephenson's paper was 2009)
+- chem-organometallic / omet-08-c1 + omet-q57 + omet-q64: earth-abundant metals "10^4 to 10^6 times" / "at least 10,000 times" more abundant than Pd -> 10^3 to 10^6 / more than 1,000 (Co, Cu, Ni are only ~2,000-6,000x Pd)
+- chem-organometallic / omet-08-c1: ICH limits "<10 ppm Pd, <5 ppm Ir/Rh" -> "about 10 ppm for Pd, Rh or Ir in an oral drug" (ICH Q3D gives the same 100 µg/day oral PDE for all three)
+- chem-organometallic / omet-08-c3: "Buchwald and Liu groups" -> "Buchwald and Ma groups" (amino-acid-promoted Cu coupling is Dawei Ma's)
+- chem-organometallic / omet-q32 step 2: "Both rely on oxidative addition of CH3I as the rate-determining step" was a second error (Cativa's RDS is migratory CO insertion) -> replaced with an accurate statement so only step 3 is wrong
+- chem-organometallic / omet-q72: two wrong steps (4 and 5) with key "5" -> step 5 rewritten as the correct remedy, key changed to "4", explanation updated
+- chem-quantum-chem / qchem-03-c3: "doubling the basis quadruples the time for HF, scales as N⁴" -> "multiplies HF time by about 16, since HF scales as N⁴" (self-contradictory)
+- chem-quantum-chem / qchem-06-c1 + qchem-q41 + qchem-q46: meta-GGA example "M06" -> "M06-L" (M06 is a hybrid meta-GGA with 27% HF exchange)
+- chem-quantum-chem / qchem-06-c3 (text + formula) + qchem-q45: GMTKN55 "~1,500 reaction energies and ~500 transition states" / "~2,000 reaction energies" -> "~1,500 relative energies (reaction energies and barrier heights)" (GMTKN55 has 1,505 relative energies in total)
+- chem-quantum-chem / qchem-08-c1: Gaussian default "4·10⁻⁴ a.u. RMS" -> "3·10⁻⁴ a.u. RMS force" (defaults: max force 4.5e-4, RMS force 3.0e-4)
+- chem-quantum-chem / qchem-08-c1: "Symmetric structures sit at saddle points" -> a structure forced into too high a symmetry can (overgeneralisation; many minima are symmetric)
+- chem-quantum-chem / qchem-10-c3 + qchem-q77: DM21 "meta-GGA-style" -> local hybrid (uses local exact-exchange features)
+- chem-quantum-chem / qchem-10-c3: "ML-corrected DFT improves accuracy at no additional cost" -> "can improve accuracy, though current ML functionals cost more to evaluate"
+- chem-spectroscopy / spec-02-c2 + spec-q14: 13C carbonyl "195–205 ppm for ketones, 200–210 ppm for aldehydes" -> "205–220 ketones, 190–205 aldehydes" (e.g. acetone 207, benzaldehyde 192)
+- chem-spectroscopy / spec-02-c2 formula + spec-q15: 13C/1H ratio "(γH/γC)^(5/2) ≈ 64 ... ≈ 5700" -> exponent 3 (receptivity); (3.98)^2.5 is ~32, only γ^3 gives ~63 and ~5700
+- chem-spectroscopy / spec-04-c3: removed "the K+ channel selectivity filter" as an ssNMR result crystallography couldn't produce (it was solved by X-ray crystallography, MacKinnon, Nobel 2003)
+- chem-spectroscopy / spec-06-c3 + spec-q44: isobar "C9H14N2O3 (194.105528)" -> "C10H14N2O2" (C9H14N2O3 has nominal mass 198; 194.105528 is C10H14N2O2)
+- chem-spectroscopy / spec-05-c2: Raman "~10^10× weaker than fluorescence" -> cross sections ~10^13–10^14 times smaller (~1e-30 vs ~1e-16 cm²)
+- chem-spectroscopy / spec-07-c2: L/I "isobaric, indistinguishable at unit mass" -> isomers with identical mass (indistinguishable at any resolution)
+- chem-spectroscopy / spec-09-c1: ROA signals "~10^-5 of Raman" -> "~10^-3–10^-4" (typical circular intensity differences)
+- chem-single-molecule-spec / smol-01-c1: "The next two centuries of fluorescence-microscopy engineering, from Minsky's 1957 ..." -> "The following decades"
+- chem-single-molecule-spec / smol-01-c3: "Two years later Michel Orrit (1990)" after Moerner 1989 -> "A year later"
+- chem-single-molecule-spec / smol-01-c3 + smol-q06: "By 1996, Steven Chu and Shimon Weiss had demonstrated single-pair FRET on freely diffusing DNA, and Taekjip Ha in the Selvin/Weiss lab ..." -> Ha and Weiss reported the first single-pair FRET in 1996; by 1999 Ha, in Chu's lab, recorded continuous immobilised trajectories; q06 pair "Ha 1996: first surface-immobilised smFRET trajectories" -> "First single-pair FRET measurement"
+- chem-single-molecule-spec / smol-02-c2: Alexa Fluors "replace cyanines with sulfonated rhodamines" -> sulfonated rhodamines (488, 568) and sulfonated cyanines (555, 647)
+- chem-single-molecule-spec / smol-02-c2 + smol-q10: JF dyes "ΦF > 0.9" -> "up to ~0.9" (JF549 0.88, JF646 0.54)
+- chem-single-molecule-spec / smol-03-c2 (text + formula) + smol-q22: ALEX corrections "β (direct acceptor excitation) ... δ (acceptor-only contamination)" -> δ = direct acceptor excitation, β = excitation-intensity normalisation (Hellenkamp et al. 2018 convention)
+- chem-single-molecule-spec / smol-04-c3: Jarzynski test "The 2005 Liphardt-Bustamante-Tinoco demonstration" -> 2002 (Science 2002; 2005 was the Crooks test by Collin et al.)
+- chem-single-molecule-spec / smol-04-c3: "Cesare Bustamante" -> "Carlos Bustamante"
+- chem-single-molecule-spec / smol-05-c3 + smol-07-c3 + smol-q52 + smol-q54: MINFLUX kinesin milestone "2024 Hell-lab paper (Schmidt et al.)" / "Carter, Schmidt, and Hell (2023-2024)" -> 2023 Hell-lab papers (Deguchi et al. and Wolff et al., Science)
+- chem-single-molecule-spec / smol-06-c1 + smol-q41: iSCAT "scattering cross-sections ∝ V² ... contrast linear in mass" (self-contradictory) -> interferometric detection measures scattered field ∝ polarizability ∝ V, hence linear in mass; q41 correct option reworded
+- chem-single-molecule-spec / smol-06-c2: PromethION "~400 Tb of sequence per run" -> "over 10 Tb" (ONT quotes ~7-14 Tb for 48 flow cells)
+- chem-single-molecule-spec / smol-06-c2: nanopore "each ion passing through is electronically counted" -> "the ionic current is read out electronically"
+
+## Flagged (not edited)
+
+- chem-atoms / chem-atom-02-c2: "Covalent bonds ... typically stronger than ionic bonds" (comparison is ill-defined; ionic lattice energies are often larger than single covalent bond energies; consider softening)
+- chem-atoms / chem-atom-q29 explanation: "4s is slightly lower in energy than 3d for neutral atoms" (for the transition metals themselves 3d is generally lower in energy; 4s occupancy is explained by electron repulsion; contested teaching point)
+- chem-organic / chem-org-07-c1 + chem-org-q31: "regulators require chiral drugs as single enantiomers" (FDA 1992 policy requires characterising each enantiomer but still permits racemates; overstated)
+- chem-inorganic / chem-inorg-01-c1: mercury liquid "because its d¹⁰ shell weakens interatomic interactions" (main cause is relativistic contraction of the 6s² pair; d¹⁰ explanation incomplete)
+- chem-inorganic / chem-inorg-q38: transmetalation "often the rate-limiting step" (in many Suzuki systems oxidative addition is rate-limiting; system dependent)
+- chem-biochemistry / chem-bio-05-c3: "CO binds cytochrome c oxidase even more tightly than O₂" (CO's toxicity is mainly via haemoglobin; relative COX affinity claim doubtful)
+- chem-biochemistry / chem-bio-q34: "Roughly 1/3 of human proteins are phosphorylated" (older estimate; phosphoproteomics now suggests well over half)
+- chem-physical / chem-phys-q40: pairs "Capillarity" with "Sap rise in trees" (only a minor contribution; consider another example)
+- chem-green / chem-green-01-c3 + chem-green-q03: pharma E-factor "~100-1000" (Sheldon's canonical table gives 25 to >100; answer key may overstate)
+- chem-green / chem-green-05-c1 + chem-green-q21: sertraline redesign "cut waste ~80% and energy ~60%" (could not verify these specific figures; EPA award summary emphasises solvent and reagent reductions)
+- chem-green / chem-green-q12: "Heterogeneous catalysts are usually: ... Less active than homogeneous catalysts" distractor is arguably also true (per-site activity); consider rewording
+- chem-nuclear / chem-nuc-04-c3: NAA used "to authenticate art (lead and zinc isotopes)" and "to date documents" (NAA measures elemental composition, not isotope ratios, and does not date documents)
+- chem-nuclear / chem-nuc-q23 answer: "vitrified waste in steel canisters" (Onkalo, the flagship, uses unreprocessed spent fuel in copper canisters; answer is only one variant)
+- chem-pharma / chem-pharm-q18: imatinib as "an early structure-based-design success" (it came from screening plus medicinal chemistry; the Abl co-crystal structure followed)
+- chem-pharma / chem-pharm-01-c1: "Roughly 15,000 drugs are approved worldwide" (depends heavily on definition; could not confirm)
+- chem-surface / chem-surf-01-c3: "Silver ... melts at ~700 K as 4-nm clusters" (plausible size-dependent depression but unverified figure)
+- chem-organometallic / omet-03-c3: Ru(BINAP)(OAc)2 as the beta-keto ester catalyst and the "industrial synthesis of (S)-naproxen, levofloxacin" (beta-keto esters use RuX2(BINAP); industrial naproxen by this route is doubtful)
+- chem-organometallic / omet-05-c1: "most modern drug candidates contain at least one bond made by Pd cross-coupling" (overclaim; unsourced)
+- chem-quantum-chem / qchem-q16: FindTheError key is step 4 but step 3 ("the remaining 1% is negligible") is equally wrong; two defensible answers
+- chem-quantum-chem / qchem-q48: key is step 5 but steps 3 and 4 are also defensible errors
+- chem-spectroscopy / spec-q48: key is step 6 but step 5 ("definitively caffeine") is the error the explanation actually describes; two defensible answers
+- chem-spectroscopy / spec-q72: explanation says the keyed step 6 "is correct in principle"; question is internally muddled
+- chem-spectroscopy / spec-q55 + spec-07-c3: TMT "up to 18 samples" (TMTpro 32/35-plex reagents appear to have been released since; verify)
+- chem-single-molecule-spec / smol-07-c3: "Subsequent 2024 reports apply the same precision to F1-ATPase rotation, RNA polymerase translocation, and ribosomal protein dynamics" (could not verify; possibly fabricated); lesson title and formula still say "2024 MINFLUX"
+- chem-single-molecule-spec / smol-05-c3 + smol-q39: "reaching 1 nm requires N ≈ 10^6 photons, more than any organic dye delivers" (idealised s/√N gives ~6×10^4; best JF dyes emit 10^6-10^7; the q39 explanation itself contradicts the statement)
+- chem-single-molecule-spec / smol-05-c1: formula σ² = (s²+a²/12)/N + 8πs⁴b²/(a²N²) attributed to Mortensen 2010 (this form is Thompson-Larson-Webb 2002; Mortensen adds a 16/9 factor)
+- chem-single-molecule-spec / smol-02-c3: STORM dark state "long-lived radical anion" (for Cy5/Alexa647 in thiol buffer the dark state is a thiol adduct; radical anion applies to rhodamine/oxazine dSTORM)
+- chem-single-molecule-spec / smol-07-c2: "tFlow / FRET-DGM (Husada 2023)" and several tool/software names across this topic could not be verified
+- chem-single-molecule-spec / smol-07-c3: "The IDP field is built almost entirely on smFRET" (overclaim; NMR, SAXS and others are central)
+
+## Systemic notes
+
+- Core topics (atoms, organic, inorganic, physical, biochemistry, analytical) were mostly sound; errors there were classic textbook slips (sign conventions, reversed directions, Lineweaver-Burk patterns, radiocarbon "dates fossils", thalidomide myth).
+- The advanced, detail-dense topics (chem-single-molecule-spec, chem-spectroscopy, chem-organometallic, chem-quantum-chem) are much weaker per concept. They contain many specific names, years, citations and product/instrument names, and a noticeable fraction were garbled or fabricated (a nonexistent "2024 Nobel to Schütz" in chem-surface, "Cesare" Bustamante, wrong MINFLUX paper authors, "Vaniqa (eflornithine)" as a metathesis drug, a wrong-mass isobar formula). These topics deserve a second expert pass; flagged items there are the most likely remaining errors.
+- FindTheError questions in the advanced topics often have two defensible "wrong steps" (e.g. qchem-q16, qchem-q48, spec-q48; omet-q32 and omet-q72 were fixed). Worth auditing the whole FindTheError type for single-error uniqueness.
+- Several time-sensitive claims were stale: Onkalo "operational 2025", UK/Japan reprocessing, ICH Q2(R1), "first FDA-approved AI drugs". Content that states a year or "current" status should be rechecked periodically.
+- Scaling/arithmetic claims were a recurring failure mode (N⁴ "quadruples", γ^(5/2) giving 64, ATP totals not summing, plastic "more by mass than steel"). A quick numeric sanity pass catches these.

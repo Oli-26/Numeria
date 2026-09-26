@@ -117,7 +117,7 @@ public class GamificationService : IGamificationService
         return c.Type switch
         {
             "lessons-completed" => profile.LessonsCompleted.Count >= (c.Count ?? 0),
-            "perfect-quiz" => profile.QuizHistory.Count(q => q.Score == 100) >= (c.Count ?? 0),
+            "perfect-quiz" => profile.PerfectQuizCount >= (c.Count ?? 0),
             "streak" => profile.CurrentStreak >= (c.Days ?? 0),
             "longest-streak" => profile.LongestStreak >= (c.Days ?? 0),
             "topic-completed" => profile.TopicsCompleted.Contains(c.TopicId ?? ""),

@@ -18,89 +18,228 @@
     </div>
 }
 
-@if (profile != null)
+@if (loading)
 {
-    <!-- Your stats card -->
-    <div class="card your-score-card">
-        <div class="your-score-left">
-            <div class="your-avatar">@(profile.DisplayName.Length > 0 ? profile.DisplayName[0] : '?')</div>
-            <div class="your-info">
-                <strong>@profile.DisplayName</strong>
-                <small>Level @myLevel · @profile.TopicsCompleted.Count topics completed</small>
+    <div class="loading">Loading leaderboard...</div>
+}
+else if (loadFailed)
+{
+    <div class="empty-state card">
+        <div class="empty-icon"><Icon Name="award" Size="36" /></div>
+        <p>Couldn't load the leaderboard. Check your connection and try again.</p>
+        <button class="btn btn-primary btn-sm" @onclick="ReloadLeaderboard">Retry</button>
+    </div>
+}
+else if (entries.Count == 0)
+{
+    <div class="empty-state card">
+        <div class="empty-icon"><Icon Name="award" Size="36" /></div>
+        <p>No scores yet. Be the first!</p>
+        @if (profile != null)
+        {
+            <button class="btn btn-primary btn-sm" @onclick="SubmitScore" disabled="@(string.IsNullOrWhiteSpace(playerName))">Submit Your Score</button>
+        }
+    </div>
+}
+else
+{
+    @* ── Top 3 Plinths ── *@
+    @if (entries.Count >= 1)
+    {
+        var leaderXp = entries[0].Score;
+        <div class="podium-wrap">
+            <div class="podium-banner">
+                <span class="podium-banner-rule"></span>
+                <span class="podium-banner-text">Top Scholars</span>
+                <span class="podium-banner-rule"></span>
+            </div>
+            <div class="podium">
+                @* 2nd place *@
+                @if (entries.Count >= 2)
+                {
+                    var e2 = entries[1];
+                    var pct2 = leaderXp > 0 ? (double)e2.Score / leaderXp * 100 : 0;
+                    <div class="plinth second">
+                        <div class="plinth-rosette silver-rosette">
+                            <span class="rosette-numeral">II</span>
+                        </div>
+                        <div class="plinth-avatar silver">@(e2.Name.Length > 0 ? char.ToUpper(e2.Name[0]) : '?')</div>
+                        <div class="plinth-name">@e2.Name.Replace("_", " ")</div>
+                        <div class="plinth-xp"><span class="xp-num">@e2.Score.ToString("N0")</span><span class="xp-unit">XP</span></div>
+                        <div class="plinth-meta">Lvl @e2.Seconds · @e2.Text</div>
+                        <div class="plinth-progress"><div class="plinth-progress-fill silver-fill" style="width: @pct2.ToString("F0")%"></div></div>
+                        <div class="plinth-bar silver-bar"></div>
+                    </div>
+                }
+                else { <div class="plinth empty"></div> }
+
+                @* 1st place *@
+                @{
+                    var e1 = entries[0];
+                    var pct1 = 100;
+                }
+                <div class="plinth first">
+                    <div class="plinth-rosette gold-rosette">
+                        <svg viewBox="0 0 60 60" class="laurel-svg" aria-hidden="true">
+                            <path d="M 18 30 Q 12 22 14 14 Q 18 18 20 24 Q 22 28 22 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M 16 32 Q 9 30 8 22 Q 12 24 14 28 Q 16 30 17 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M 17 36 Q 10 38 9 46 Q 13 44 16 40 Q 17 38 18 37" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M 42 30 Q 48 22 46 14 Q 42 18 40 24 Q 38 28 38 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M 44 32 Q 51 30 52 22 Q 48 24 46 28 Q 44 30 43 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M 43 36 Q 50 38 51 46 Q 47 44 44 40 Q 43 38 42 37" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span class="rosette-numeral">I</span>
+                    </div>
+                    <div class="plinth-avatar gold">@(e1.Name.Length > 0 ? char.ToUpper(e1.Name[0]) : '?')</div>
+                    <div class="plinth-name">@e1.Name.Replace("_", " ")</div>
+                    <div class="plinth-xp"><span class="xp-num">@e1.Score.ToString("N0")</span><span class="xp-unit">XP</span></div>
+                    <div class="plinth-meta">Lvl @e1.Seconds · @e1.Text</div>
+                    <div class="plinth-progress"><div class="plinth-progress-fill gold-fill" style="width: @pct1%"></div></div>
+                    <div class="plinth-bar gold-bar"></div>
+                </div>
+
+                @* 3rd place *@
+                @if (entries.Count >= 3)
+                {
+                    var e3 = entries[2];
+                    var pct3 = leaderXp > 0 ? (double)e3.Score / leaderXp * 100 : 0;
+                    <div class="plinth third">
+                        <div class="plinth-rosette bronze-rosette">
+                            <span class="rosette-numeral">III</span>
+                        </div>
+                        <div class="plinth-avatar bronze">@(e3.Name.Length > 0 ? char.ToUpper(e3.Name[0]) : '?')</div>
+                        <div class="plinth-name">@e3.Name.Replace("_", " ")</div>
+                        <div class="plinth-xp"><span class="xp-num">@e3.Score.ToString("N0")</span><span class="xp-unit">XP</span></div>
+                        <div class="plinth-meta">Lvl @e3.Seconds · @e3.Text</div>
+                        <div class="plinth-progress"><div class="plinth-progress-fill bronze-fill" style="width: @pct3.ToString("F0")%"></div></div>
+                        <div class="plinth-bar bronze-bar"></div>
+                    </div>
+                }
+                else { <div class="plinth empty"></div> }
             </div>
         </div>
-        <div class="your-score-right">
-            <span class="your-xp">@profile.TotalXp XP</span>
-        </div>
-    </div>
+    }
 
-    <!-- Submit / Update score -->
-    <div class="submit-section">
-        @if (!submitted)
-        {
+    @* ── Your Rank stat strip ── *@
+    @if (profile != null)
+    {
+        <div class="card my-rank-card">
+            <div class="my-rank-grid">
+                <div class="my-rank-cell">
+                    <span class="my-rank-val">@(myRank > 0 ? $"#{myRank}" : "—")</span>
+                    <span class="my-rank-label">Your rank</span>
+                </div>
+                <div class="my-rank-cell">
+                    <span class="my-rank-val">@profile.TotalXp.ToString("N0")</span>
+                    <span class="my-rank-label">Your XP</span>
+                </div>
+                <div class="my-rank-cell">
+                    <span class="my-rank-val">@(percentile >= 0 ? $"top {percentile}%" : "—")</span>
+                    <span class="my-rank-label">Percentile</span>
+                </div>
+                <div class="my-rank-cell">
+                    <span class="my-rank-val">@(xpToNext > 0 ? $"+{xpToNext:N0}" : "—")</span>
+                    <span class="my-rank-label">to rank @(myRank > 1 ? myRank - 1 : 1)</span>
+                </div>
+            </div>
+
+            @* Position bar — visual where you sit on full XP range *@
+            @if (entries.Count > 0)
+            {
+                var maxXp = entries.Max(e => e.Score);
+                var minXp = entries.Min(e => e.Score);
+                var range = Math.Max(1, maxXp - minXp);
+                var myPos = Math.Clamp((double)(profile.TotalXp - minXp) / range * 100, 0, 100);
+                <div class="rank-track">
+                    @foreach (var e in entries)
+                    {
+                        var pos = (double)(e.Score - minXp) / range * 100;
+                        <span class="rank-tick" style="left: @pos.ToString("F1")%"></span>
+                    }
+                    <span class="rank-marker" style="left: @myPos.ToString("F1")%"></span>
+                </div>
+                <div class="rank-track-labels">
+                    <small>@minXp.ToString("N0") XP</small>
+                    <small>@maxXp.ToString("N0") XP</small>
+                </div>
+            }
+        </div>
+    }
+
+    @* ── Submit / Update ── *@
+    @if (profile != null && !submitted)
+    {
+        <div class="submit-section">
             <div class="name-input-row">
                 <input type="text" class="fill-input" @bind="playerName" placeholder="Your display name..."
                        maxlength="20" />
                 <button class="btn btn-accent" @onclick="SubmitScore" disabled="@(submitting || string.IsNullOrWhiteSpace(playerName))">
-                    @(submitting ? "Sending..." : "Submit Score")
+                    @(submitting ? "..." : "Submit")
                 </button>
             </div>
-        }
-        else
-        {
-            <div class="submitted-msg"><Icon Name="checkmark-circle" Size="20" /> Score submitted!</div>
-        }
-    </div>
-}
-
-<!-- Leaderboard table -->
-<div class="section">
-    @if (loading)
-    {
-        <div class="loading">Loading leaderboard...</div>
-    }
-    else if (entries.Count == 0)
-    {
-        <div class="empty-state card">
-            <div class="empty-icon"><Icon Name="award" Size="36" /></div>
-            <p>No scores yet. Be the first!</p>
-            <button class="btn btn-primary btn-sm" @onclick="SubmitScore" disabled="@(string.IsNullOrWhiteSpace(playerName))">Submit Your Score</button>
         </div>
     }
-    else
+    else if (submitted)
     {
-        <div class="lb-list">
-            @for (int i = 0; i < entries.Count; i++)
-            {
-                var entry = entries[i];
-                var rank = i + 1;
-                var isYou = profile != null && entry.Name.Replace("_", " ") == profile.DisplayName.Replace(" ", "_").Replace("_", " ");
+        <div class="submitted-msg"><Icon Name="checkmark-circle" Size="18" /> Score submitted</div>
+    }
 
-                <div class="lb-row @(isYou ? "lb-you" : "") @(rank <= 3 ? "lb-top" : "")">
-                    <div class="lb-rank">
+    @* ── Top 10 XP bar chart ── *@
+    @if (entries.Count >= 4)
+    {
+        <div class="card chart-card">
+            <div class="chart-head">
+                <h3 class="chart-title">Top 10 by XP</h3>
+                <span class="chart-sub">range @entries.Take(10).Min(e => e.Score).ToString("N0") – @entries.Take(10).Max(e => e.Score).ToString("N0")</span>
+            </div>
+            @{ var top10 = entries.Take(10).ToList(); var topMax = top10.Max(e => e.Score); var topMin = top10.Min(e => e.Score); }
+            <div class="bar-chart">
+                @for (int i = 0; i < top10.Count; i++)
+                {
+                    var e = top10[i];
+                    var rank = i + 1;
+                    var pct = topMax > 0 ? (double)e.Score / topMax * 100 : 0;
+                    var gap = topMax - e.Score;
+                    var isYou = profile != null && NameMatch(e.Name, profile.DisplayName);
+                    <div class="bar-row @(isYou ? "you" : "")" style="animation-delay: @((i * 60).ToString())ms">
+                        <span class="bar-rank rank-@rank">@RomanNumeral(rank)</span>
+                        <span class="bar-name" title="@e.Name.Replace("_", " ")">@e.Name.Replace("_", " ")</span>
+                        <span class="bar-lvl" title="Level @e.Seconds">L@(e.Seconds)</span>
+                        <div class="bar-track">
+                            <div class="bar-fill r@(rank)" style="width: @pct.ToString("F1")%"></div>
+                            <span class="bar-val-inline">@e.Score.ToString("N0")</span>
+                        </div>
                         @if (rank == 1)
                         {
-                            <span class="medal gold"><Icon Name="gold" Size="28" Stroke="none" /></span>
-                        }
-                        else if (rank == 2)
-                        {
-                            <span class="medal silver"><Icon Name="silver" Size="28" Stroke="none" /></span>
-                        }
-                        else if (rank == 3)
-                        {
-                            <span class="medal bronze"><Icon Name="bronze" Size="28" Stroke="none" /></span>
+                            <span class="bar-gap leader">leader</span>
                         }
                         else
                         {
-                            <span class="rank-num">#@rank</span>
+                            <span class="bar-gap" title="@gap.ToString("N0") XP behind #1">−@gap.ToString("N0")</span>
                         }
                     </div>
-                    <div class="lb-player">
-                        <div class="lb-avatar" style="background: @GetAvatarColor(rank)">@(entry.Name.Length > 0 ? entry.Name[0] : '?')</div>
-                        <div class="lb-name-col">
-                            <strong>@entry.Name.Replace("_", " ")</strong>
-                            <small>Lvl @entry.Seconds · @entry.Text</small>
-                        </div>
+                }
+            </div>
+        </div>
+    }
+
+    @* ── Full list (rest) ── *@
+    @if (entries.Count > 3)
+    {
+        <h3 class="list-title">All Players</h3>
+        <div class="lb-list">
+            @for (int i = 3; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                var rank = i + 1;
+                var isYou = profile != null && NameMatch(entry.Name, profile.DisplayName);
+
+                <div class="lb-row @(isYou ? "lb-you" : "")">
+                    <span class="rank-num">#@rank</span>
+                    <div class="lb-avatar" style="background: @GetAvatarColor(rank)">@(entry.Name.Length > 0 ? char.ToUpper(entry.Name[0]) : '?')</div>
+                    <div class="lb-name-col">
+                        <strong>@entry.Name.Replace("_", " ")</strong>
+                        <small>Lvl @entry.Seconds · @entry.Text</small>
                     </div>
                     <div class="lb-score">
                         <span class="lb-xp">@entry.Score.ToString("N0")</span>
@@ -110,7 +249,7 @@
             }
         </div>
     }
-</div>
+}
 
 @code {
     private UserProfile? profile;
@@ -120,6 +259,10 @@
     private bool submitting;
     private bool submitted;
     private int myLevel;
+    private int myRank;
+    private int percentile = -1;
+    private int xpToNext;
+    private bool loadFailed;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -129,10 +272,46 @@
             playerName = profile.DisplayName;
             myLevel = Gamification.GetLevel(profile.TotalXp);
 
-            entries = await Leaderboard.GetLeaderboardAsync(50);
+            await ReloadLeaderboard();
             loading = false;
             StateHasChanged();
         }
+    }
+
+    private async Task ReloadLeaderboard()
+    {
+        var result = await Leaderboard.GetLeaderboardAsync(50);
+        loadFailed = result == null;
+        entries = result ?? new();
+        ComputeMyRank();
+        StateHasChanged();
+    }
+
+    private void ComputeMyRank()
+    {
+        if (profile == null || entries.Count == 0) { myRank = 0; percentile = -1; xpToNext = 0; return; }
+        var matched = entries.FindIndex(e => NameMatch(e.Name, profile.DisplayName));
+        if (matched >= 0)
+        {
+            myRank = matched + 1;
+        }
+        else
+        {
+            // virtual rank: count how many entries beat us
+            var beaten = entries.Count(e => e.Score > profile.TotalXp);
+            myRank = beaten + 1;
+        }
+        percentile = entries.Count > 0 ? (int)Math.Ceiling((double)myRank / Math.Max(myRank, entries.Count) * 100) : -1;
+        // XP gap to person directly above
+        var above = entries.Where(e => e.Score > profile.TotalXp).OrderBy(e => e.Score).FirstOrDefault();
+        xpToNext = above != null ? Math.Max(0, above.Score - profile.TotalXp) : 0;
+    }
+
+    private bool NameMatch(string a, string b)
+    {
+        var na = (a ?? "").Replace("_", " ").Trim().ToLowerInvariant();
+        var nb = (b ?? "").Replace("_", " ").Trim().ToLowerInvariant();
+        return na.Length > 0 && na == nb;
     }
 
     private async Task SubmitScore()
@@ -141,7 +320,6 @@
         submitting = true;
         StateHasChanged();
 
-        // Update display name if changed
         if (playerName != profile.DisplayName)
         {
             profile.DisplayName = playerName;
@@ -155,8 +333,7 @@
         {
             submitted = true;
             await JS.InvokeVoidAsync("showToast", "Score submitted!", "");
-            // Refresh leaderboard
-            entries = await Leaderboard.GetLeaderboardAsync(50);
+            await ReloadLeaderboard();
         }
         else
         {
@@ -166,6 +343,13 @@
         submitting = false;
         StateHasChanged();
     }
+
+    private string RomanNumeral(int n) => n switch
+    {
+        1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V",
+        6 => "VI", 7 => "VII", 8 => "VIII", 9 => "IX", 10 => "X",
+        _ => n.ToString()
+    };
 
     private string GetAvatarColor(int rank) => rank switch
     {
@@ -186,117 +370,277 @@
     }
     .demo-banner small { color: var(--accent); }
 
-    .your-score-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 16px;
-        margin-bottom: 12px;
-        border-color: var(--primary);
+    /* ── Top-3 Plinths (parchment / scholarly theme) ── */
+    .podium-wrap {
+        background:
+            radial-gradient(ellipse at top, rgba(196, 129, 58, 0.08), transparent 70%),
+            var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 14px 12px 4px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 10px var(--shadow);
     }
-    .your-score-card:hover { transform: none; }
-    .your-score-left { display: flex; align-items: center; gap: 12px; }
-    .your-avatar {
-        width: 44px; height: 44px; border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-light));
-        color: white; display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 1.2rem;
-    }
-    .your-info { display: flex; flex-direction: column; }
-    .your-info small { color: var(--text-muted); font-size: 0.8rem; }
-    .your-xp { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
 
-    .submit-section { margin-bottom: 16px; }
-    .name-input-row { display: flex; gap: 10px; }
+    /* Engraved banner header */
+    .podium-banner {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 12px;
+    }
+    .podium-banner-rule {
+        flex: 1; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        opacity: 0.6;
+    }
+    .podium-banner-text {
+        font-size: 0.72rem; font-weight: 800; letter-spacing: 2.5px;
+        color: var(--accent); text-transform: uppercase;
+    }
+
+    .podium {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr 1fr;
+        gap: 8px;
+        align-items: end;
+        max-width: 460px;
+        margin: 0 auto;
+    }
+    .plinth {
+        position: relative;
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        padding: 28px 6px 0;
+        animation: plinthIn 0.5s ease backwards;
+    }
+    .plinth.empty { padding: 0; }
+    .plinth.first { animation-delay: 0.2s; }
+    .plinth.second { animation-delay: 0.05s; }
+    .plinth.third { animation-delay: 0.1s; }
+    @@keyframes plinthIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Rank rosette: roman numeral on a circular seal */
+    .plinth-rosette {
+        position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
+        width: 38px; height: 38px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; z-index: 2;
+        background: var(--bg-card);
+        border: 2px solid currentColor;
+    }
+    .plinth.first .plinth-rosette { width: 56px; height: 56px; top: -8px; }
+    .gold-rosette   { color: #B8860B; box-shadow: 0 0 0 4px rgba(196, 129, 58, 0.18), 0 2px 6px rgba(184, 134, 11, 0.25); }
+    .silver-rosette { color: #6B6458; box-shadow: 0 0 0 4px rgba(107, 100, 88, 0.15); }
+    .bronze-rosette { color: #8B5A2B; box-shadow: 0 0 0 4px rgba(139, 90, 43, 0.15); }
+    .laurel-svg {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        opacity: 0.85;
+    }
+    .rosette-numeral {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1rem; font-weight: 700;
+        font-feature-settings: "smcp"; letter-spacing: 0.5px;
+        z-index: 1;
+    }
+    .plinth.first .rosette-numeral { font-size: 1.35rem; }
+
+    .plinth-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--bg-card); font-weight: 800; font-size: 1.15rem;
+        font-family: Georgia, 'Times New Roman', serif;
+        border: 2px solid var(--bg-card);
+        box-shadow: 0 1px 6px var(--shadow);
+        margin-top: 4px;
+    }
+    .plinth.first .plinth-avatar { width: 54px; height: 54px; font-size: 1.4rem; }
+    .plinth-avatar.gold   { background: linear-gradient(135deg, #C4813A, #8B5A2B); }
+    .plinth-avatar.silver { background: linear-gradient(135deg, #807A6E, #524E47); }
+    .plinth-avatar.bronze { background: linear-gradient(135deg, #A06542, #6B3F20); }
+
+    .plinth-name {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.85rem; font-weight: 700; color: var(--text-primary);
+        max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        text-align: center; padding: 0 4px;
+    }
+    .plinth.first .plinth-name { font-size: 0.95rem; }
+
+    .plinth-xp { display: flex; align-items: baseline; gap: 3px; }
+    .plinth-xp .xp-num {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1rem; font-weight: 800; color: var(--accent);
+    }
+    .plinth.first .plinth-xp .xp-num { font-size: 1.2rem; }
+    .plinth-xp .xp-unit { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; }
+
+    .plinth-meta {
+        font-size: 0.68rem; color: var(--text-muted);
+        max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        padding: 0 4px;
+    }
+
+    .plinth-progress {
+        width: 80%; height: 3px; background: var(--bg-surface);
+        border-radius: 2px; overflow: hidden; margin-top: 4px;
+    }
+    .plinth-progress-fill { height: 100%; transition: width 0.8s ease; }
+    .gold-fill   { background: linear-gradient(90deg, #C4813A, #E0A96C); }
+    .silver-fill { background: linear-gradient(90deg, #807A6E, #B0AAA0); }
+    .bronze-fill { background: linear-gradient(90deg, #A06542, #C18867); }
+
+    /* Plinth bar — engraved stone tablet, no metallic shine */
+    .plinth-bar {
+        width: 100%; min-height: 32px;
+        margin-top: 6px;
+        border-radius: 4px 4px 0 0;
+        position: relative;
+        background-image:
+            repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 6px),
+            linear-gradient(180deg, var(--bg-surface), var(--border));
+        border: 1px solid var(--border);
+        border-bottom: none;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+    .plinth.first  .plinth-bar { min-height: 56px; }
+    .plinth.second .plinth-bar { min-height: 42px; }
+    .plinth.third  .plinth-bar { min-height: 28px; }
+    .gold-bar   { background-image: repeating-linear-gradient(0deg, rgba(139,90,43,0.06) 0 1px, transparent 1px 7px), linear-gradient(180deg, #E8D9C2, #C9B294); border-color: #B89472; }
+    .silver-bar { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 6px), linear-gradient(180deg, #DDD9D0, #B8B2A6); border-color: #A8A296; }
+    .bronze-bar { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 6px), linear-gradient(180deg, #C5A483, #9E7B5C); border-color: #8B6B4D; }
+
+    /* ── My Rank card ── */
+    .my-rank-card { padding: 14px 16px; margin-bottom: 12px; border-color: var(--primary); }
+    .my-rank-card:hover { transform: none; }
+    .my-rank-grid {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px;
+    }
+    .my-rank-cell { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .my-rank-val { font-size: 1.05rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+    .my-rank-label { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+    .rank-track {
+        position: relative; height: 8px; background: var(--bg-surface);
+        border-radius: 4px; margin: 4px 6px 0;
+    }
+    .rank-tick {
+        position: absolute; top: 50%; transform: translate(-50%, -50%);
+        width: 3px; height: 8px; background: var(--text-muted); opacity: 0.35; border-radius: 1px;
+    }
+    .rank-marker {
+        position: absolute; top: 50%; transform: translate(-50%, -50%);
+        width: 14px; height: 14px; border-radius: 50%;
+        background: var(--accent); border: 2px solid var(--bg-card);
+        box-shadow: 0 0 0 2px var(--accent), 0 0 8px rgba(240, 160, 48, 0.5);
+        z-index: 2;
+    }
+    .rank-track-labels { display: flex; justify-content: space-between; padding: 6px 4px 0; }
+    .rank-track-labels small { color: var(--text-muted); font-size: 0.7rem; }
+
+    /* ── Submit ── */
+    .submit-section { margin-bottom: 14px; }
+    .name-input-row { display: flex; gap: 8px; }
     .name-input-row .fill-input { flex: 1; }
     .submitted-msg {
-        text-align: center; padding: 10px;
-        color: var(--success); font-weight: 600;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 8px; color: var(--success); font-weight: 600;
+        margin-bottom: 14px;
     }
 
+    /* ── Top 10 chart ── */
+    .chart-card { padding: 14px 16px; margin-bottom: 14px; }
+    .chart-card:hover { transform: none; }
+    .chart-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+    .chart-title { margin: 0; font-size: 0.95rem; color: var(--text-secondary); font-family: Georgia, 'Times New Roman', serif; }
+    .chart-sub { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+
+    .bar-chart { display: flex; flex-direction: column; gap: 5px; }
+    .bar-row {
+        display: grid;
+        grid-template-columns: 28px minmax(60px, 1fr) 32px 1.6fr 56px;
+        align-items: center; gap: 8px;
+        padding: 4px 6px; margin: 0 -6px;
+        border-radius: 6px;
+        animation: barIn 0.45s var(--ease-out, ease) backwards;
+    }
+    @@keyframes barIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+    .bar-row.you {
+        background: rgba(91, 106, 191, 0.08);
+        box-shadow: inset 2px 0 0 var(--primary);
+    }
+    .bar-rank {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+        text-align: center; letter-spacing: 0.5px;
+    }
+    .bar-rank.rank-1 { color: #B8860B; font-size: 0.85rem; }
+    .bar-rank.rank-2 { color: #6B6458; }
+    .bar-rank.rank-3 { color: #8B5A2B; }
+    .bar-row.you .bar-rank { color: var(--primary); }
+    .bar-name {
+        font-size: 0.82rem; color: var(--text-primary);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .bar-row.you .bar-name { font-weight: 700; }
+    .bar-lvl {
+        font-size: 0.65rem; font-weight: 700;
+        color: var(--text-muted); background: var(--bg-surface);
+        padding: 2px 6px; border-radius: 4px;
+        text-align: center;
+    }
+    .bar-track {
+        position: relative; height: 16px; background: var(--bg-surface);
+        border-radius: 8px; overflow: hidden;
+        border: 1px solid var(--border);
+    }
+    .bar-fill {
+        height: 100%; border-radius: 8px 0 0 8px;
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+        transition: width 0.7s var(--ease-spring, ease);
+    }
+    .bar-fill.r1 { background: linear-gradient(90deg, #C4813A, #E0A96C); }
+    .bar-fill.r2 { background: linear-gradient(90deg, #807A6E, #B0AAA0); }
+    .bar-fill.r3 { background: linear-gradient(90deg, #A06542, #C18867); }
+    .bar-val-inline {
+        position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 0.7rem; font-weight: 700;
+        color: var(--text-primary); pointer-events: none;
+        text-shadow: 0 0 3px var(--bg-card);
+    }
+    .bar-gap {
+        font-size: 0.65rem; font-weight: 600;
+        color: var(--error); text-align: right; white-space: nowrap;
+        opacity: 0.75;
+    }
+    .bar-gap.leader {
+        color: var(--accent); opacity: 1;
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* ── List rest ── */
+    .list-title { margin: 14px 4px 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; }
     .lb-list {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        background: var(--border);
-        border-radius: var(--radius-md);
-        overflow: hidden;
+        display: flex; flex-direction: column; gap: 4px;
+        background: var(--border); border-radius: var(--radius-md); overflow: hidden;
     }
-
     .lb-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        background: var(--bg-card);
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px; background: var(--bg-card);
         transition: background 0.2s ease;
     }
-
-    .lb-row.lb-you {
-        background: rgba(74, 95, 224, 0.08);
-        border-color: var(--primary);
-    }
-
-    .lb-row.lb-top {
-        padding: 12px 14px;
-    }
-
-    .lb-rank {
-        width: 36px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-
-    .medal { font-size: 1.4rem; }
-    .rank-num { color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
-
-    .lb-player {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-    }
-
+    .lb-row.lb-you { background: rgba(74, 95, 224, 0.08); }
+    .rank-num { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; width: 32px; flex-shrink: 0; }
     .lb-avatar {
-        width: 34px; height: 34px; border-radius: 50%;
+        width: 32px; height: 32px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
     }
-
-    .lb-name-col {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-    }
-
-    .lb-name-col strong {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .lb-name-col small {
-        color: var(--text-muted);
-        font-size: 0.75rem;
-    }
-
-    .lb-score {
-        text-align: right;
-        flex-shrink: 0;
-    }
-
-    .lb-xp {
-        font-weight: 700;
-        font-size: 1.05rem;
-        color: var(--accent);
-    }
-
-    .lb-score small {
-        color: var(--text-muted);
-        font-size: 0.7rem;
-        display: block;
-    }
+    .lb-name-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .lb-name-col strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; }
+    .lb-name-col small { color: var(--text-muted); font-size: 0.7rem; }
+    .lb-score { text-align: right; flex-shrink: 0; }
+    .lb-xp { font-weight: 700; font-size: 0.95rem; color: var(--accent); }
+    .lb-score small { color: var(--text-muted); font-size: 0.65rem; display: block; }
 
     .empty-state { text-align: center; padding: 40px 24px; }
     .empty-state .empty-icon { margin-bottom: 12px; color: var(--text-muted); }
