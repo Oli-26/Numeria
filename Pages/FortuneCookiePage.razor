@@ -26,7 +26,9 @@
             <div class="cookie-category"><Icon Name="@GetCategoryIcon(todayCookie.Category)" Size="14" /> @CookieLabel(todayCookie.Category, todayDomain)</div>
             <p class="cookie-text">@todayCookie.Text</p>
             <div class="cookie-date">@DateTime.Now.ToString("MMMM d, yyyy")</div>
+            <button class="btn btn-sm btn-outline cookie-share" @onclick="ShareCookie"><Icon Name="share" Size="16" /> Share</button>
         </div>
+        <canvas id="cookie-canvas" style="display:none"></canvas>
     }
 
     <div class="section" style="margin-top: 24px">
@@ -141,6 +143,23 @@ else
         history.Insert(0, new HistoryItem(today, todayDomain, todayCookie));
     }
 
+    private async Task ShareCookie()
+    {
+        if (todayCookie == null) return;
+        var label = CookieLabel(todayCookie.Category, todayDomain);
+        try
+        {
+            await JS.InvokeVoidAsync("NousShare.drawCookieCard", "cookie-canvas",
+                new { text = todayCookie.Text, label, footer = "A daily fortune cookie from Nous · nous-9vy.pages.dev" });
+            var result = await JS.InvokeAsync<string>("NousShare.shareCanvas", "cookie-canvas", "A fortune cookie from Nous", "", "nous-cookie.png");
+            if (result == "copied") await JS.InvokeVoidAsync("showToast", "Image copied", "");
+            if (result != "unsupported") return;
+        }
+        catch { }
+        await JS.InvokeVoidAsync("clipboardWrite", $"{todayCookie.Text}\n\nA daily fortune cookie from Nous: https://nous-9vy.pages.dev");
+        await JS.InvokeVoidAsync("showToast", "Copied to clipboard", "");
+    }
+
     private string GetCategoryLabel(string cat) => cat switch
     {
         "paradox" => "Paradox",
@@ -221,6 +240,7 @@ else
     }
 
     .cookie-date { font-size: 0.75rem; color: var(--text-muted); }
+    .cookie-share { align-self: center; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
 
     .cookie-history { display: flex; flex-direction: column; gap: 8px; }
     .cookie-history-item { padding: 12px 14px; }
