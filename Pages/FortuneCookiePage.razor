@@ -120,11 +120,6 @@ else
         if (sets.TryGetValue(domain, out var set)) return set;
         try { set = await Http.GetFromJsonAsync<List<FortuneCookie>>($"data/fortunes/{domain}.json") ?? new(); }
         catch { set = new(); }
-        if (set.Count == 0 && domain == "math")
-        {
-            try { set = await Http.GetFromJsonAsync<List<FortuneCookie>>("data/fortune-cookies.json") ?? new(); }
-            catch { set = new(); }
-        }
         return sets[domain] = set;
     }
 

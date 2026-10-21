@@ -128,4 +128,20 @@ public class ContentDataTests
         foreach (var sim in MathVoyager.Services.SimulatorCatalog.All)
             Assert.DoesNotContain(shop, i => i.UnlockData.TryGetValue("feature", out var f) && "/" + f == sim.Route);
     }
+
+    private record Cookie(int Id, string Text, string Category);
+
+    [Fact]
+    public void EverySubjectHasFortuneCookies()
+    {
+        var categories = new HashSet<string> { "fact", "quote", "paradox", "history", "mystery", "fun", "beauty", "probability", "topology" };
+        foreach (var domain in Load<List<Domain>>("domains.json"))
+        {
+            var cookies = Load<List<Cookie>>(Path.Combine("fortunes", domain.Id + ".json"));
+            Assert.True(cookies.Count >= 30, $"{domain.Id}: {cookies.Count} cookies");
+            Assert.Equal(Enumerable.Range(1, cookies.Count), cookies.Select(c => c.Id));
+            Assert.All(cookies, c => Assert.Contains(c.Category, categories));
+            Assert.All(cookies, c => Assert.DoesNotContain('—', c.Text));
+        }
+    }
 }
