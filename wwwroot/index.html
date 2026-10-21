@@ -299,6 +299,15 @@
             return importProfileData(json) ? 'ok' : 'invalid';
         }
 
+        // Play's in-app review sheet; false on the web or when the plugin is missing.
+        async function requestStoreReview() {
+            var cap = window.Capacitor;
+            var review = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins && cap.Plugins.InAppReview;
+            if (!review) return false;
+            try { await review.requestReview(); return true; }
+            catch (e) { return false; }
+        }
+
         // 'native' inside the Android app; otherwise which install prompt suits this browser.
         function nousPlatform() {
             var cap = window.Capacitor;

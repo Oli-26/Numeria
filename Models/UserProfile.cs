@@ -90,6 +90,7 @@ public class UserProfile
     // Fortune cookies
     public List<string> ViewedCookieDates { get; set; } = new();
     public Dictionary<string, string> ViewedCookies { get; set; } = new(); // date -> "domain:id"; dates before this map are math cookies
+    public string? StoreReviewAskedDate { get; set; }
 
     // Notifications
     public bool NotificationsEnabled { get; set; }

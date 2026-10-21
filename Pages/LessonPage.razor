@@ -653,6 +653,24 @@ else
         pathForLesson = paths.FirstOrDefault(pa => p.PathsStarted.Contains(pa.Id) && pa.Steps.Any(st => st.LessonId == lesson.Id && st.TopicId == TopicId));
         echoes = await Connections.GetEchoesAsync(TopicId);
         outcome = LessonOutcome.Passed;
+        _ = MaybeAskForReviewAsync();
+    }
+
+    // Google decides whether the review sheet actually shows; we only ask after a passed lesson, from the fifth on, every 120 days at most.
+    private async Task MaybeAskForReviewAsync()
+    {
+        try
+        {
+            var profile = await Progress.GetProfileAsync();
+            if (profile.LessonsCompleted.Count < 5) return;
+            if (DateTime.TryParse(profile.StoreReviewAskedDate, out var last) && (DateTime.Now - last).TotalDays < 120) return;
+            await Task.Delay(1500);
+            if (!await JS.InvokeAsync<bool>("requestStoreReview")) return;
+            profile = await Progress.GetProfileAsync();
+            profile.StoreReviewAskedDate = DateTime.Now.ToString("yyyy-MM-dd");
+            await Progress.SaveProfileAsync(profile);
+        }
+        catch { }
     }
 
     private void RevisitConcept(int index)
