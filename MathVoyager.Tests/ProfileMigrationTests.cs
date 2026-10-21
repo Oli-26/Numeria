@@ -156,4 +156,22 @@ public class ProfileMigrationTests
         Assert.Equal("cc-04", s.QuizState!.LessonId);
         Assert.Equal(new[] { "cc-q30", "cc-q31" }, s.QuizState.QuestionIds);
     }
+
+    [Fact]
+    public void V1Profile_OnOldDefaultTheme_MovesToNous_WithoutRerunningRenames()
+    {
+        var p = Load("""{ "schemaVersion": 1, "selectedTheme": "dark", "lessonsCompleted": ["comp-09"] }""");
+        Assert.True(ProfileMigration.Migrate(p));
+        Assert.Equal("nous", p.SelectedTheme);
+        Assert.Contains("theme-dark", p.ShopPurchases);
+        Assert.Equal(new[] { "comp-09" }, p.LessonsCompleted);
+    }
+
+    [Fact]
+    public void V1Profile_OnAnotherTheme_KeepsIt()
+    {
+        var p = Load("""{ "schemaVersion": 1, "selectedTheme": "parchment" }""");
+        ProfileMigration.Migrate(p);
+        Assert.Equal("parchment", p.SelectedTheme);
+    }
 }

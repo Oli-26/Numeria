@@ -7,7 +7,7 @@ public class UserProfile
     public string DisplayName { get; set; } = "Mathematician";
     public string SelectedAvatar { get; set; } = "default";
     public string SelectedTitle { get; set; } = "";
-    public string SelectedTheme { get; set; } = "dark";
+    public string SelectedTheme { get; set; } = "nous";
     public string SelectedFrame { get; set; } = "";
     public string SelectedFlame { get; set; } = "";
     public int TotalXp { get; set; }

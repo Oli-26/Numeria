@@ -3,11 +3,13 @@ using MathVoyager.Models;
 
 namespace MathVoyager.Services;
 
-// Lesson, concept and question ids used to collide between topic pairs. One topic of each pair was
-// renamed; profiles saved before that store the old, ambiguous ids and are remapped here on load.
+// Upgrades profiles saved by older builds, on load.
+// v1: lesson, concept and question ids used to collide between topic pairs. One topic of each pair was
+// renamed; profiles saved before that store the old, ambiguous ids and are remapped here.
+// v2: the rebrand made the light "nous" theme the default in place of "dark".
 public static class ProfileMigration
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     // Lesson counts are a snapshot of each topic at rename time: old lesson numbers above
     // OwnerLessons existed only in the renamed topic, so they are unambiguous.
@@ -38,7 +40,11 @@ public static class ProfileMigration
     public static bool Migrate(UserProfile p)
     {
         if (p.SchemaVersion >= CurrentSchemaVersion) return false;
-        foreach (var r in Renames) MigrateTopic(p, r);
+        if (p.SchemaVersion < 1)
+            foreach (var r in Renames) MigrateTopic(p, r);
+        // Dark was the default and stays owned in the shop, so anyone who wants it back can reselect it.
+        if (p.SchemaVersion < 2 && p.SelectedTheme is "dark" or "default")
+            p.SelectedTheme = "nous";
         p.SchemaVersion = CurrentSchemaVersion;
         return true;
     }

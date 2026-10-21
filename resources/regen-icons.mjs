@@ -1,15 +1,20 @@
 import sharp from 'sharp';
-import { readFileSync, mkdirSync } from 'fs';
+import { readFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
 import { dirname } from 'path';
+
+// Store art (play-store-icon-*.png, icon.png, feature-graphic.png) are hand-made masters and are not regenerated.
+// The SVG sources here come from gen-logo.py.
 
 const ROOT = '/home/oli/Documents/Code/Math';
 const RES = `${ROOT}/resources`;
 const MIPMAP_BASE = `${ROOT}/android/app/src/main/res`;
+const WWW = `${ROOT}/wwwroot`;
+const CREAM = { r: 244, g: 239, b: 230, alpha: 1 };
 
 const fgSvg = readFileSync(`${RES}/icon-foreground.svg`);
 const bgSvg = readFileSync(`${RES}/icon-background.svg`);
 const onlySvg = readFileSync(`${RES}/icon-only.svg`);
-const featureSvg = readFileSync(`${RES}/feature-graphic.svg`);
+const markSvg = readFileSync(`${WWW}/nous-mark.svg`);
 
 const densities = [
   { name: 'ldpi',    adaptive:  81, legacy: 36 },
@@ -37,31 +42,42 @@ async function renderSvg(svg, size, out, { circle = false } = {}) {
   console.log('  →', out.replace(ROOT + '/', ''));
 }
 
-async function renderRect(svg, w, h, out) {
-  ensureDir(out);
-  await sharp(svg, { density: 192 }).resize(w, h, { fit: 'fill' }).png().toFile(out);
+// Logo centred on cream, sized to a fraction of the shorter side.
+async function renderSplash(out) {
+  const { width, height } = await sharp(out).metadata();
+  const h = Math.round(Math.min(width, height) * 0.3);
+  const mark = await sharp(markSvg, { density: 384 }).resize({ height: h }).png().toBuffer();
+  await sharp({ create: { width, height, channels: 4, background: CREAM } })
+    .composite([{ input: mark, gravity: 'center' }])
+    .png().toFile(out);
   console.log('  →', out.replace(ROOT + '/', ''));
 }
 
-console.log('Adaptive icon (foreground + background) — 5 densities');
+console.log('Adaptive icon (foreground + background): 6 densities');
 for (const d of densities) {
   await renderSvg(fgSvg, d.adaptive, `${MIPMAP_BASE}/mipmap-${d.name}/ic_launcher_foreground.png`);
   await renderSvg(bgSvg, d.adaptive, `${MIPMAP_BASE}/mipmap-${d.name}/ic_launcher_background.png`);
 }
 
-console.log('\nLegacy launcher (square + round) — 5 densities');
+console.log('\nLegacy launcher (square + round): 6 densities');
 for (const d of densities) {
   await renderSvg(onlySvg, d.legacy, `${MIPMAP_BASE}/mipmap-${d.name}/ic_launcher.png`);
   await renderSvg(onlySvg, d.legacy, `${MIPMAP_BASE}/mipmap-${d.name}/ic_launcher_round.png`, { circle: true });
 }
 
-console.log('\nStore icons');
-await renderSvg(onlySvg, 512,  `${RES}/play-store-icon-512.png`);
-await renderSvg(onlySvg, 1024, `${RES}/play-store-icon-1024.png`);
-await renderSvg(onlySvg, 1024, `${RES}/icon.png`);
+console.log('\nLegacy splash (pre-Android 12): every existing drawable*/splash.png, size kept');
+for (const dir of readdirSync(MIPMAP_BASE).filter(n => n.startsWith('drawable')).sort()) {
+  const out = `${MIPMAP_BASE}/${dir}/splash.png`;
+  if (existsSync(out)) await renderSplash(out);
+}
 
-console.log('\nFeature graphic (1024×500)');
-await renderRect(featureSvg, 1024, 500, `${RES}/feature-graphic.png`);
-await renderRect(featureSvg, 1024, 500, `${RES}/play-store-feature-graphic-1024x500.png`);
+console.log('\nWeb icons');
+await renderSvg(onlySvg, 64, `${WWW}/favicon.png`);
+await renderSvg(onlySvg, 192, `${WWW}/icon-192.png`);
+const maskable = `${WWW}/icon-512-maskable.png`;
+await sharp(bgSvg, { density: 384 }).resize(512, 512)
+  .composite([{ input: await sharp(fgSvg, { density: 384 }).resize(512, 512).png().toBuffer() }])
+  .png().toFile(maskable);
+console.log('  →', maskable.replace(ROOT + '/', ''));
 
 console.log('\nDone.');

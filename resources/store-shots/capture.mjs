@@ -18,13 +18,14 @@ const base = 'http://127.0.0.1:' + srv.address().port;
 const browser = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell' });
 const SHOTS = [
   ['home', '/'],
+  ['subjects', '/domains'],
+  ['strange', '/topic/religion-cargo-cults/lesson/rcrg-01'],
   ['guess', '/topic/chem-atoms/lesson/chem-atom-01'],
   ['tryit', '/topic/econ-micro/lesson/econ-micro-01', '!.try-it-card', 470],
-  ['path', '/path/earth-old'],
   ['bigq', '/big-questions'],
-  ['graph', '/graph'],
+  ['graph', '/graph', null, 0, 8000],
 ];
-const settle = async (page, ms = 1800) => { await page.waitForSelector('.initial-loader, #app .loading-progress', { state: 'detached', timeout: 60000 }).catch(() => {}); await page.waitForTimeout(ms); };
+const settle = async (page, ms = 1800) => { await page.waitForSelector('#splash', { state: 'detached', timeout: 60000 }).catch(() => {}); await page.waitForTimeout(ms); };
 try {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.abort());
@@ -44,13 +45,14 @@ try {
   await page.evaluate(() => {
     const p = JSON.parse(localStorage.getItem('mathvoyager_profile'));
     Object.assign(p, { totalXp: 640, points: 420, currentStreak: 6, longestStreak: 9, totalQuestionsAnswered: 58, totalCorrectAnswers: 47, totalStudyMinutes: 95,
-      lessonsCompleted: ['calc-01', 'calc-02', 'phys-part-01', 'econ-micro-01', 'bio-eco-01'], pathsStarted: ['earth-old'] });
+      lessonsCompleted: ['calc-01', 'calc-02', 'phys-part-01', 'econ-micro-01', 'bio-eco-01', 'hpre-01', 'rcrg-01'], pathsStarted: ['earth-old'],
+      currentDomain: 'history', lastActivityDate: new Date().toISOString().slice(0, 10) });
     localStorage.setItem('mathvoyager_profile', JSON.stringify(p));
   });
   const css = '*:focus,*:focus-visible{outline:none!important}';
   const shots = process.argv[2] === 'explore' ? JSON.parse(process.argv[3]) : SHOTS;
-  for (let [n, u, sel, off] of shots) {
-    await page.goto(base + u); await settle(page, 2200);
+  for (let [n, u, sel, off, wait] of shots) {
+    await page.goto(base + u); await settle(page, wait || 2200);
     await page.addStyleTag({ content: css });
     await page.evaluate(() => document.activeElement && document.activeElement.blur());
     if (sel && sel.startsWith('!')) {

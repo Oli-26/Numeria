@@ -421,6 +421,9 @@
       var ctx = this.ctx;
       var W = this.w, H = this.h;
       ctx.clearRect(0, 0, W, H);
+      var css = getComputedStyle(this.canvas);
+      var labelColor = css.getPropertyValue('--text-primary').trim() || '#fff';
+      var haloColor = css.getPropertyValue('--bg-main').trim() || '#000';
 
       ctx.save();
       ctx.translate(this.camX, this.camY);
@@ -483,15 +486,19 @@
         // Label
         var fontSize = Math.max(8, Math.min(11, 11 * this.scale)) / this.scale;
         ctx.font = 'bold ' + fontSize + 'px system-ui, sans-serif';
-        ctx.fillStyle = isHovered ? '#fff' : 'rgba(255,255,255,0.75)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        // Label below node
-        ctx.fillText(
-          n.name.length > 16 ? n.name.slice(0, 15) + '…' : n.name,
-          n.x,
-          n.y + r + fontSize * 0.8
-        );
+        var text = n.name.length > 16 ? n.name.slice(0, 15) + '…' : n.name;
+        var ty = n.y + r + fontSize * 0.8;
+        // Halo in the page colour keeps labels readable where they cross edges and nodes, in light and dark themes.
+        ctx.globalAlpha = isHovered ? 1 : 0.85;
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3 / this.scale;
+        ctx.strokeStyle = haloColor;
+        ctx.strokeText(text, n.x, ty);
+        ctx.fillStyle = labelColor;
+        ctx.fillText(text, n.x, ty);
+        ctx.globalAlpha = 1;
       }
 
       ctx.restore();

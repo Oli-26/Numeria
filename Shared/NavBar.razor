@@ -6,8 +6,8 @@
 
 <nav class="bottom-nav">
     <div class="nav-brand" @onclick='() => Navigate("/")'>
-        <span class="nav-brand-icon">ν</span>
-        <img class="nav-brand-name" src="nous-wordmark.svg" alt="Nous" />
+        <img class="nav-brand-icon" src="nous-mark.svg" alt="" />
+        <span class="nav-brand-name" role="img" aria-label="Nous"></span>
         @if (level > 0)
         {
             <div class="nav-level-badge">
@@ -24,11 +24,7 @@
     </a>
     <a class="nav-item @(IsActive("/domains") ? "active" : "")" href="/domains" @onclick:preventDefault @onclick='() => Navigate("/domains")'>
         <span class="nav-icon"><Icon Name="book" Size="22" /></span>
-        <span class="nav-label">Domains</span>
-    </a>
-    <a class="nav-item @(IsActive("/profile") ? "active" : "")" href="/profile" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
-        <span class="nav-icon"><Icon Name="user" Size="22" /></span>
-        <span class="nav-label">Profile</span>
+        <span class="nav-label">Subjects</span>
     </a>
     <a class="nav-item @(IsActive("/leaderboard") ? "active" : "")" href="/leaderboard" @onclick:preventDefault @onclick='() => Navigate("/leaderboard")'>
         <span class="nav-icon"><Icon Name="trophy" Size="22" /></span>
@@ -38,7 +34,11 @@
         <span class="nav-icon"><Icon Name="phi" Size="22" /></span>
         <span class="nav-label">Shop</span>
     </a>
-    <a class="nav-item @(IsActive("/settings") ? "active" : "")" href="/settings" @onclick:preventDefault @onclick='() => Navigate("/settings")'>
+    <a class="nav-item @(IsActive("/profile") ? "active" : "")" href="/profile" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
+        <span class="nav-icon"><Icon Name="user" Size="22" /></span>
+        <span class="nav-label">Profile</span>
+    </a>
+    <a class="nav-item nav-item-wide @(IsActive("/settings") ? "active" : "")" href="/settings" @onclick:preventDefault @onclick='() => Navigate("/settings")'>
         <span class="nav-icon"><Icon Name="settings" Size="22" /></span>
         <span class="nav-label">Settings</span>
     </a>
@@ -150,24 +150,8 @@
         color: var(--primary);
     }
 
-    .nav-item.active::before {
-        content: '';
-        position: absolute;
-        top: -6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 30px;
-        height: 4px;
-        background: var(--primary);
-        border-radius: 0 0 4px 4px;
-        filter: drop-shadow(0 0 4px rgba(var(--domain-rgb), 0.4));
-        animation: navIndicator 0.3s ease;
-    }
-
-    @@keyframes navIndicator {
-        from { width: 0; opacity: 0; }
-        to { width: 30px; opacity: 1; }
-    }
+    /* Phones reach Settings from Profile; the sidebar has room for it. */
+    .nav-item-wide { display: none; }
 
     .nav-icon {
         font-size: 1.4rem;
@@ -211,6 +195,8 @@
             box-shadow: none;
         }
 
+        .nav-item-wide { display: flex; }
+
         .nav-brand {
             display: flex;
             flex-direction: column;
@@ -226,21 +212,17 @@
         .nav-brand-icon {
             width: 44px;
             height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            font-family: 'Cinzel', Georgia, serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            object-fit: contain;
         }
 
+        /* Masked so the wordmark takes the theme's text colour. */
         .nav-brand-name {
             display: block;
             height: 22px;
-            width: auto;
+            aspect-ratio: 395 / 120;
+            background: var(--text-primary);
+            -webkit-mask: url(nous-wordmark.svg) center / contain no-repeat;
+            mask: url(nous-wordmark.svg) center / contain no-repeat;
         }
 
         .nav-level-badge {
@@ -284,16 +266,7 @@
         }
 
         .nav-item.active {
-            background: rgba(74, 95, 224, 0.08);
-        }
-
-        .nav-item.active::before {
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 20px;
-            border-radius: 0 3px 3px 0;
+            background: color-mix(in srgb, var(--primary) 8%, transparent);
         }
 
         .nav-icon {

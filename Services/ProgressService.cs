@@ -49,7 +49,11 @@ public class ProgressService : IProgressService
 
             _cachedProfile = profile;
             if (ProfileMigration.Migrate(profile))
+            {
                 await SaveProfileAsync(profile);
+                // index.html applied the pre-migration theme at boot.
+                await _js.InvokeVoidAsync("applyTheme", profile.SelectedTheme);
+            }
         }
         else
         {

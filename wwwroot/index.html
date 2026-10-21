@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0e2a" />
+    <meta name="theme-color" content="#F4EFE6" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Nous" />
@@ -13,7 +13,7 @@
     <title>Nous</title>
     <base href="/" />
     <link rel="stylesheet" href="css/site.css" />
-    <link id="theme-css" rel="stylesheet" href="css/themes/dark.css" />
+    <link id="theme-css" rel="stylesheet" href="css/themes/nous.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,107 +24,71 @@
 </head>
 
 <body>
-    <div id="splash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;
-        justify-content:center;align-items:center;
-        background:#0c0e1a;
-        font-family:'Cinzel',Georgia,serif;
-        transition:opacity 0.5s ease;opacity:1;overflow:hidden;">
-
-        <!-- Animated grid background -->
-        <div style="position:absolute;inset:0;
-            background-image:
-                linear-gradient(rgba(74,95,224,0.06) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(74,95,224,0.06) 1px, transparent 1px);
-            background-size:40px 40px;
-            animation:gridPulse 4s ease-in-out infinite;">
-        </div>
-
-        <!-- Radial glow -->
-        <div style="position:absolute;width:500px;height:500px;
-            background:radial-gradient(circle, rgba(74,95,224,0.15) 0%, rgba(180,140,255,0.08) 40%, transparent 70%);
-            border-radius:50%;animation:glowPulse 3s ease-in-out infinite;">
-        </div>
-
-        <!-- Orbiting math symbols -->
-        <div class="orbit-ring" style="position:absolute;width:280px;height:280px;">
-            <div class="orbit-symbol" style="--delay:0s;--angle:0deg;">&#x03C0;</div>
-            <div class="orbit-symbol" style="--delay:-2.5s;--angle:60deg;">&#x222B;</div>
-            <div class="orbit-symbol" style="--delay:-5s;--angle:120deg;">&#x221E;</div>
-            <div class="orbit-symbol" style="--delay:-7.5s;--angle:180deg;">&#x2211;</div>
-            <div class="orbit-symbol" style="--delay:-10s;--angle:240deg;">&#x0394;</div>
-            <div class="orbit-symbol" style="--delay:-12.5s;--angle:300deg;">&#x03C6;</div>
-        </div>
-
-        <!-- Logo -->
-        <div style="position:relative;animation:splashLogo 0.8s cubic-bezier(0.34,1.56,0.64,1) both;">
-            <div style="position:absolute;inset:-8px;border-radius:28px;
-                background:linear-gradient(135deg,#4a5fe0,#b48cff,#ff8ec6,#4a5fe0);
-                background-size:300% 300%;animation:borderGlow 3s ease infinite;opacity:0.7;filter:blur(2px);">
-            </div>
-            <img src="nous-icon.svg" alt="" style="position:relative;width:100px;height:100px;border-radius:24px;
-                box-shadow:0 12px 48px rgba(74,95,224,0.3);" />
-        </div>
-
-        <!-- App name -->
-        <div style="position:relative;margin-top:28px;font-size:2.6rem;font-weight:700;letter-spacing:0.12em;
-            background:linear-gradient(90deg,#7eb4ff,#b48cff,#ff8ec6,#7eb4ff);
-            background-size:200% auto;
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-            background-clip:text;
-            animation:splashName 0.6s ease 0.3s both,shimmer 2.5s linear 0.9s infinite;">
-            NOUS
-        </div>
-
-        <!-- Tagline -->
-        <div style="position:relative;margin-top:10px;color:rgba(180,200,255,0.4);font-size:0.8rem;font-weight:400;
-            letter-spacing:3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-            animation:splashTag 0.5s ease 0.6s both;">
-            EXPLORE MATHEMATICS
-        </div>
-
-        <!-- Loading bar -->
-        <div style="position:relative;margin-top:44px;width:120px;height:3px;
-            background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;
-            animation:splashLoader 0.4s ease 0.8s both;">
-            <div style="width:100%;height:100%;
-                background:linear-gradient(90deg,transparent,#4a5fe0,#b48cff,transparent);
-                animation:loadSlide 1.5s ease-in-out infinite;">
-            </div>
-        </div>
+    <!-- The thread runs through the labyrinth to the ball; it draws itself while Blazor boots. -->
+    <div id="splash">
+        <svg class="splash-mark" viewBox="156 22 712 846" aria-hidden="true">
+            <g fill="none" stroke-linecap="round">
+                <g class="splash-rings" stroke="#BFB3A2" stroke-width="56">
+                    <path d="M411.88 200.18A327.5 327.5 0 1 0 612.12 200.18" />
+                    <path d="M582.06 726.34A225.5 225.5 0 1 0 441.94 726.34" />
+                    <path d="M625.06 454.15A127 127 0 1 0 625.06 569.85" />
+                </g>
+                <path class="splash-thread" pathLength="1" d="M512 52L512 235A277 277 0 0 0 512 789L512 685A173 173 0 0 0 685 512L512 512"
+                    stroke="#C8643B" stroke-width="60" stroke-linejoin="round" />
+                <g class="splash-ball">
+                    <circle cx="512" cy="512" r="77.5" fill="#C8643B" />
+                    <g stroke="#702F15" stroke-opacity=".45" stroke-width="14.4">
+                        <path d="M455.9 471.2C485.8 493.1 499.8 521.7 455.7 558" />
+                        <path d="M491.7 440.5C533.7 476.8 547 523.3 501.8 583.5" />
+                        <path d="M542.7 445.6C567.8 486.6 573.5 530.5 547.9 578.4" />
+                    </g>
+                </g>
+            </g>
+        </svg>
+        <div class="splash-word" role="img" aria-label="Nous"></div>
+        <div class="splash-tag">Philosophy, science and the humanities.</div>
+        <div class="splash-loader"><div></div></div>
 
         <style>
-            @keyframes shimmer { to { background-position: 200% center; } }
-            @keyframes splashLogo { from { opacity:0; transform:scale(0.5) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
-            @keyframes splashName { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-            @keyframes splashTag { from { opacity:0; } to { opacity:1; } }
-            @keyframes splashLoader { from { opacity:0; } to { opacity:1; } }
-            @keyframes glowPulse { 0%,100% { transform:scale(1);opacity:1; } 50% { transform:scale(1.1);opacity:0.7; } }
-            @keyframes gridPulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
-            @keyframes borderGlow { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
-            @keyframes loadSlide { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
-            @keyframes orbitSpin { from { transform:rotate(var(--angle)); } to { transform:rotate(calc(var(--angle) + 360deg)); } }
-
-            .orbit-ring {
-                animation: ringRotate 15s linear infinite;
+            #splash {
+                position: fixed; inset: 0; z-index: 9999;
+                display: flex; flex-direction: column; justify-content: center; align-items: center;
+                background: var(--bg-main, #F4EFE6);
+                transition: opacity 0.5s ease; opacity: 1; overflow: hidden;
             }
-            @keyframes ringRotate { to { transform:rotate(360deg); } }
-
-            .orbit-symbol {
-                position:absolute;
-                font-family:Georgia,'Times New Roman',serif;
-                font-size:1.3rem;
-                color:rgba(180,200,255,0.12);
-                animation:symbolFade 5s ease-in-out infinite;
-                animation-delay:var(--delay);
+            .splash-mark { width: 112px; height: auto; overflow: visible; }
+            .splash-rings { animation: splashFade 0.5s ease both; }
+            .splash-thread { stroke-dasharray: 1 2; animation: splashThread 1.1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s both; }
+            .splash-ball { transform-origin: 512px 512px; animation: splashBall 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1.1s both; }
+            .splash-word {
+                margin-top: 26px; width: 150px; aspect-ratio: 395 / 120;
+                background: var(--text-primary, #2A211B);
+                -webkit-mask: url(nous-wordmark.svg) center / contain no-repeat;
+                mask: url(nous-wordmark.svg) center / contain no-repeat;
+                animation: splashRise 0.6s ease 0.5s both;
             }
-            .orbit-symbol:nth-child(1) { top:0;left:50%;transform:translateX(-50%); }
-            .orbit-symbol:nth-child(2) { top:18%;right:3%; }
-            .orbit-symbol:nth-child(3) { bottom:18%;right:3%; }
-            .orbit-symbol:nth-child(4) { bottom:0;left:50%;transform:translateX(-50%); }
-            .orbit-symbol:nth-child(5) { bottom:18%;left:3%; }
-            .orbit-symbol:nth-child(6) { top:18%;left:3%; }
-
-            @keyframes symbolFade { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+            .splash-tag {
+                margin-top: 10px; color: var(--text-muted, #6B5E50);
+                font: 400 0.92rem/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                animation: splashFade 0.6s ease 0.8s both;
+            }
+            .splash-loader {
+                margin-top: 40px; width: 96px; height: 2px; border-radius: 2px; overflow: hidden;
+                background: var(--border, #DDD3C4); animation: splashFade 0.4s ease 1.2s both;
+            }
+            .splash-loader div {
+                width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, #C8643B, transparent);
+                animation: loadSlide 1.5s ease-in-out infinite;
+            }
+            @keyframes splashFade { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes splashThread { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+            @keyframes splashBall { from { transform: scale(0); } to { transform: scale(1); } }
+            @keyframes splashRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+            @keyframes loadSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+            @media (prefers-reduced-motion: reduce) {
+                #splash * { animation: none !important; }
+            }
         </style>
     </div>
 
@@ -152,14 +116,10 @@
         (function () {
             if (!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) return;
 
-            // Status bar — light icons over the navy app background.
+            // Status bar colour and icon style follow the theme: see syncStatusBar.
             try {
                 var sb = window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
-                if (sb) {
-                    sb.setStyle && sb.setStyle({ style: 'DARK' }).catch(function () { });
-                    sb.setBackgroundColor && sb.setBackgroundColor({ color: '#0a0e2a' }).catch(function () { });
-                    sb.setOverlaysWebView && sb.setOverlaysWebView({ overlay: false }).catch(function () { });
-                }
+                if (sb && sb.setOverlaysWebView) sb.setOverlaysWebView({ overlay: false }).catch(function () { });
             } catch (e) { }
 
             // Hardware back — pop history; minimize on root.
@@ -207,11 +167,28 @@
         // Theme management
         function applyTheme(themeId) {
             var link = document.getElementById('theme-css');
+            link.onload = syncStatusBar;
             if (themeId && themeId !== 'default') {
                 link.href = 'css/themes/' + themeId + '.css';
             } else {
-                link.href = 'css/themes/dark.css';
+                link.href = 'css/themes/nous.css';
             }
+        }
+
+        // Browser theme-color and the native status bar take the active theme's background.
+        function syncStatusBar() {
+            var bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-main').trim() || '#F4EFE6';
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', bg);
+            var cap = window.Capacitor;
+            var sb = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins && cap.Plugins.StatusBar;
+            if (!sb) return;
+            var m = /^#([0-9a-f]{6})$/i.exec(bg);
+            var n = m ? parseInt(m[1], 16) : 0xF4EFE6;
+            var luma = 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+            // Capacitor's LIGHT style means dark icons, for light backgrounds.
+            sb.setStyle && sb.setStyle({ style: luma > 140 ? 'LIGHT' : 'DARK' }).catch(function () { });
+            sb.setBackgroundColor && sb.setBackgroundColor({ color: bg }).catch(function () { });
         }
 
         // Font size management
@@ -261,6 +238,7 @@
                     if (profile.selectedFlame) applyFlame(profile.selectedFlame);
                 }
             } catch(e) {}
+            syncStatusBar();
         })();
 
         // Data export
@@ -283,6 +261,55 @@
             } catch(e) {
                 return false;
             }
+        }
+
+        // Text backups are gzipped so they survive note apps and keyboards that cap pasted text
+        // (Google Keep stops at 20,000 characters). gzip's CRC also catches a cut-off paste.
+        var BACKUP_PREFIX = 'NOUS1:';
+
+        async function exportBackupText() {
+            var json = exportProfileData();
+            if (!json) return null;
+            var gz = new Uint8Array(await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+            var bin = '';
+            for (var i = 0; i < gz.length; i += 0x8000) bin += String.fromCharCode.apply(null, gz.subarray(i, i + 0x8000));
+            return BACKUP_PREFIX + btoa(bin);
+        }
+
+        // Returns 'ok', 'cut' (incomplete paste) or 'invalid'.
+        async function importBackupText(text) {
+            text = (text || '').trim();
+            var at = text.indexOf(BACKUP_PREFIX);
+            if (at < 0) {
+                if (importProfileData(text)) return 'ok';
+                return text.charAt(0) === '{' ? 'cut' : 'invalid';
+            }
+            var json;
+            try {
+                var bin = atob(text.slice(at + BACKUP_PREFIX.length).replace(/[^A-Za-z0-9+/=]/g, ''));
+                var bytes = new Uint8Array(bin.length);
+                for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                json = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+            } catch (e) {
+                return 'cut';
+            }
+            return importProfileData(json) ? 'ok' : 'invalid';
+        }
+
+        function nativeClipboard() {
+            var cap = window.Capacitor;
+            return cap && cap.isNativePlatform && cap.isNativePlatform() && cap.Plugins && cap.Plugins.Clipboard;
+        }
+
+        async function clipboardWrite(text) {
+            var clip = nativeClipboard();
+            if (clip) await clip.write({ string: text });
+            else await navigator.clipboard.writeText(text);
+        }
+
+        async function clipboardRead() {
+            var clip = nativeClipboard();
+            return clip ? ((await clip.read()).value || '') : await navigator.clipboard.readText();
         }
 
         // File download helper. On Capacitor (Android), <a download> is blocked
@@ -329,7 +356,7 @@
             return new Promise(function(resolve, reject) {
                 var input = document.createElement('input');
                 input.type = 'file';
-                input.accept = '.json';
+                input.accept = '.json,.txt,application/json,text/plain';
                 input.onchange = function(e) {
                     var file = e.target.files[0];
                     if (!file) { reject('No file'); return; }

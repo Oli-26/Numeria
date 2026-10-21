@@ -7,7 +7,7 @@
 @inject ITtsService TtsService
 
 <div class="page-header">
-    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="Back to profile" @onclick='() => Nav.NavigateTo("/profile")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Settings</h1>
 </div>
 
@@ -21,7 +21,7 @@
             </div>
             <button class="btn btn-sm btn-outline" @onclick='() => Nav.NavigateTo("/shop")'>Browse</button>
         </div>
-        @if (activeTheme != "dark")
+        @if (activeTheme != "nous")
         {
             <button class="btn btn-sm btn-outline reset-theme-btn" @onclick="ResetTheme">
                 Reset to Default
@@ -236,13 +236,24 @@
             </div>
         </div>
         <div class="backup-buttons">
-            <button class="btn btn-sm btn-primary" @onclick="ExportData" style="flex:1">
-                Export Data
-            </button>
-            <button class="btn btn-sm btn-outline" @onclick="ImportData" style="flex:1">
-                Import Data
-            </button>
+            <button class="btn btn-sm btn-primary" @onclick="ExportData" style="flex:1">Export file</button>
+            <button class="btn btn-sm btn-outline" @onclick="CopyBackup" style="flex:1">Copy backup</button>
         </div>
+        <div class="backup-buttons">
+            <button class="btn btn-sm btn-outline" @onclick="ImportData" style="flex:1">Import file</button>
+            <button class="btn btn-sm btn-outline" @onclick="TogglePaste" style="flex:1">Paste backup</button>
+        </div>
+        @if (showPaste)
+        {
+            <textarea class="paste-box" rows="5" placeholder="Paste your copied backup here" @bind="pasteText" @bind:event="oninput"></textarea>
+            <div class="backup-buttons">
+                <button class="btn btn-sm btn-outline" @onclick="PasteFromClipboard" style="flex:1">Paste from clipboard</button>
+                <button class="btn btn-sm @(confirmPasteImport ? "btn-danger" : "btn-primary")" @onclick="ImportPasted"
+                        disabled="@string.IsNullOrWhiteSpace(pasteText)" style="flex:1">
+                    @(confirmPasteImport ? "Tap again to replace progress" : "Restore")
+                </button>
+            </div>
+        }
     </div>
 
     <div class="card settings-item danger-item">
@@ -339,7 +350,7 @@
 </div>
 
 @code {
-    private string activeTheme = "dark";
+    private string activeTheme = "nous";
     private bool confirmReset;
     private bool soundEnabled = true;
     private string currentName = "";
@@ -533,8 +544,8 @@
 
     private async Task ResetTheme()
     {
-        await ThemeService.ApplyThemeAsync("dark");
-        activeTheme = "dark";
+        await ThemeService.ApplyThemeAsync("nous");
+        activeTheme = "nous";
         await JS.InvokeVoidAsync("showToast", "Theme reset to default.", "");
         await JS.TryInvokeVoidAsync("Sounds.playClick");
     }
@@ -542,9 +553,9 @@
     private async Task DoReset()
     {
         await Progress.ResetProgressAsync();
-        await ThemeService.ApplyThemeAsync("dark");
+        await ThemeService.ApplyThemeAsync("nous");
         confirmReset = false;
-        activeTheme = "dark";
+        activeTheme = "nous";
         await JS.InvokeVoidAsync("showToast", "Progress reset.", "");
     }
 
@@ -577,7 +588,7 @@
             {
                 var filename = $"nous-backup-{DateTime.Now:yyyy-MM-dd}.json";
                 await JS.InvokeVoidAsync("downloadFile", filename, json);
-                await JS.InvokeVoidAsync("showToast", "Backup ready — pick where to save", "");
+                await JS.InvokeVoidAsync("showToast", "Backup ready: pick where to save", "");
             }
         }
         catch
@@ -586,22 +597,79 @@
         }
     }
 
+    private bool showPaste;
+    private string pasteText = "";
+    private bool confirmPasteImport;
+
+    private void TogglePaste()
+    {
+        showPaste = !showPaste;
+        confirmPasteImport = false;
+    }
+
+    // Phones often cannot create a file to import, so the backup can travel as plain text.
+    private async Task CopyBackup()
+    {
+        try
+        {
+            var text = await JS.InvokeAsync<string?>("exportBackupText");
+            if (text == null) return;
+            await JS.InvokeVoidAsync("clipboardWrite", text);
+            await JS.InvokeVoidAsync("showToast", $"Backup copied ({text.Length:N0} characters). Paste it somewhere safe.", "");
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("showToast", "Could not copy", "");
+        }
+    }
+
+    private async Task PasteFromClipboard()
+    {
+        try
+        {
+            pasteText = await JS.InvokeAsync<string>("clipboardRead");
+            confirmPasteImport = false;
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("showToast", "Long-press the box and choose Paste", "");
+        }
+    }
+
+    private async Task ImportPasted()
+    {
+        if (!confirmPasteImport)
+        {
+            confirmPasteImport = true;
+            return;
+        }
+        confirmPasteImport = false;
+        await RestoreFromText(pasteText);
+    }
+
+    private async Task RestoreFromText(string text)
+    {
+        switch (await JS.InvokeAsync<string>("importBackupText", text))
+        {
+            case "ok":
+                await JS.InvokeVoidAsync("showToast", "Data restored! Reloading...", "");
+                await Task.Delay(1000);
+                await JS.InvokeVoidAsync("location.reload");
+                break;
+            case "cut":
+                await JS.InvokeVoidAsync("showToast", "This backup is cut off. Copy it again in full.", "");
+                break;
+            default:
+                await JS.InvokeVoidAsync("showToast", "That doesn't look like a Nous backup", "");
+                break;
+        }
+    }
+
     private async Task ImportData()
     {
         try
         {
-            var json = await JS.InvokeAsync<string>("pickAndReadFile");
-            var success = await JS.InvokeAsync<bool>("importProfileData", json);
-            if (success)
-            {
-                await JS.InvokeVoidAsync("showToast", "Data restored! Reloading...", "");
-                await Task.Delay(1000);
-                await JS.InvokeVoidAsync("location.reload");
-            }
-            else
-            {
-                await JS.InvokeVoidAsync("showToast", "Invalid backup file", "");
-            }
+            await RestoreFromText(await JS.InvokeAsync<string>("pickAndReadFile"));
         }
         catch
         {
@@ -732,7 +800,7 @@
 
     private string FormatThemeName(string theme) => theme switch
     {
-        "default" => "Default",
+        "nous" or "default" => "Nous",
         "dark" => "Dark Mode",
         "chalkboard" => "Chalkboard",
         "neon" => "Neon Glow",
@@ -826,13 +894,20 @@
     }
     .font-btn:active { transform: scale(0.95); }
     .font-btn.active {
-        border-color: var(--primary); background: rgba(74, 95, 224, 0.08);
+        border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent);
         color: var(--primary);
     }
 
     /* Backup buttons */
     .backup-buttons {
         display: flex; gap: 8px; margin-top: 12px;
+    }
+
+    .paste-box {
+        display: block; width: 100%; box-sizing: border-box; margin-top: 12px; padding: 10px;
+        border: 1px solid var(--border); border-radius: var(--radius-sm);
+        background: var(--bg-surface); color: var(--text-primary);
+        font: 0.8rem/1.4 ui-monospace, monospace; resize: vertical;
     }
 
     /* Notification sub-section */
@@ -881,7 +956,7 @@
     }
     .tts-speed-opt:active { transform: scale(0.95); }
     .tts-speed-opt.active {
-        border-color: var(--primary); background: rgba(74, 95, 224, 0.08);
+        border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent);
         color: var(--primary);
     }
     .tts-voice-select {

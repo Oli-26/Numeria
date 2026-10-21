@@ -67,6 +67,7 @@ html[data-domain="linguistics"] { --domain-rgb: 255, 112, 67; }
 html[data-domain="misc"]        { --domain-rgb: 94, 53, 177; }
 html[data-domain="economics"]   { --domain-rgb: 22, 160, 133; }
 html[data-domain="literature"]  { --domain-rgb: 142, 44, 64; }
+html[data-domain="religion"]    { --domain-rgb: 162, 59, 114; }
 html[data-domain="psychology"]  { --domain-rgb: 192, 80, 158; }
 html[data-domain="sociology"]   { --domain-rgb: 212, 160, 23; }
 
@@ -184,7 +185,7 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: var(--primary);
     color: white;
 }
 
@@ -193,12 +194,12 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 }
 
 .btn-accent {
-    background: linear-gradient(135deg, var(--accent), #E09020);
+    background: var(--accent);
     color: white;
 }
 
 .btn-success {
-    background: linear-gradient(135deg, var(--success), #388E3C);
+    background: var(--success);
     color: white;
 }
 
@@ -228,13 +229,13 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    background: var(--primary);
     border-radius: 10px;
     transition: width 0.5s ease;
 }
 
 .progress-bar-fill.accent {
-    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    background: var(--accent);
 }
 
 /* XP display */
@@ -242,8 +243,8 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    color: #1a1a2e;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--xp-text);
     font-weight: 700;
     font-size: 0.85rem;
     padding: 4px 10px;
@@ -353,7 +354,7 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 
 .option-btn.selected {
     border-color: var(--primary);
-    background: rgba(74, 95, 224, 0.08);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .option-btn.correct {
@@ -483,6 +484,9 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 }
 
 /* Page header */
+/* FocusOnNavigate moves focus to each page's h1 for screen readers; it is not a tab stop, so no ring. */
+h1:focus { outline: none; }
+
 .page-header {
     display: flex;
     align-items: center;
@@ -556,7 +560,7 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: rgba(91, 106, 191, 0.1);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .empty-state h2 {
@@ -1101,7 +1105,7 @@ button:focus-visible,
 .option-btn:focus-visible,
 .card-clickable:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.4);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 /* ── Reduced motion ── */
@@ -1171,7 +1175,7 @@ button:focus-visible,
 
 .page-header .back-btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(91, 106, 191, 0.4);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 /* ── Concept figures (history topic images) ─────────────────────────── */

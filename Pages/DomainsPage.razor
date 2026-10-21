@@ -5,11 +5,10 @@
 @inject IJSRuntime JS
 
 <div class="page-header">
-    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-    <h1>Domains</h1>
+    <h1>Subjects</h1>
 </div>
 
-<p class="domains-intro">Pick what you're learning. Each domain has its own topics, explorations, and color.</p>
+<p class="domains-intro">Pick what you're learning. Each subject has its own topics and hands-on labs.</p>
 
 @foreach (var group in GroupedDomains())
 {
@@ -22,8 +21,7 @@
                 <div class="domain-card card-clickable @(currentDomain == d.Id ? "active" : "")"
                      style="--domain-hue: @hue; border-color: @(currentDomain == d.Id ? hue : "var(--border)")"
                      @onclick="() => SetDomain(d.Id)">
-                    <div class="domain-card-bg"></div>
-                    <div class="domain-card-icon" style="color: @hue; background: @(hue)1F">
+                    <div class="domain-card-icon" style="color: @hue">
                         <Icon Name="@d.Icon" Size="28" />
                     </div>
                     <div class="domain-card-text">
@@ -80,7 +78,7 @@
     private static string Category(string id) => id switch
     {
         "math" or "physics" or "biology" or "chemistry" or "geology" or "materials" or "cs" => "Science & Math",
-        "philosophy" or "history" or "linguistics" or "literature" => "Humanities",
+        "philosophy" or "religion" or "history" or "linguistics" or "literature" => "Humanities",
         "economics" or "politics" or "media" or "psychology" or "sociology" => "Social Sciences",
         _ => "Other"
     };
@@ -113,6 +111,7 @@
         "politics" => "#3949AB",
         "media" => "#0277BD",
         "literature" => "#8E2C40",
+        "religion" => "#A23B72",
         "psychology" => "#C0509E",
         "sociology" => "#D4A017",
         _ => "#5B6ABF"
@@ -172,18 +171,10 @@
         box-shadow: 0 4px 18px color-mix(in srgb, var(--domain-hue) 22%, transparent);
     }
 
-    .domain-card-bg {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, color-mix(in srgb, var(--domain-hue) 14%, transparent), transparent 70%);
-        pointer-events: none;
-    }
-
     .domain-card-icon {
         position: relative;
-        width: 52px;
+        width: 36px;
         height: 52px;
-        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
