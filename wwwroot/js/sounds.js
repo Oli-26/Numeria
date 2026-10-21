@@ -243,13 +243,17 @@ window.Sounds = {
 // Init mute state from localStorage
 try { Sounds._muted = localStorage.getItem('nous-sound-muted') === 'true'; } catch(e) {}
 
+function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 // ── Confetti system ──
 window.Confetti = {
     launch(count) {
         var container = document.getElementById('confetti-container');
-        if (!container) return;
-        var colors = ['#7eb4ff', '#b48cff', '#ff8ec6', '#4CAF50', '#FFD080', '#EF5350', '#4A5FE0'];
-        for (var i = 0; i < (count || 60); i++) {
+        if (!container || prefersReducedMotion()) return;
+        var colors = ['#B4552F', '#C8643B', '#BC8434', '#D8A85C', '#5B8A3C', '#7A3E5E', '#4E5D6A'];
+        for (var i = 0; i < Math.min(count || 40, 40); i++) {
             var piece = document.createElement('div');
             piece.className = 'confetti-piece';
             piece.style.left = Math.random() * 100 + '%';
@@ -272,6 +276,7 @@ window.AnimCounter = {
     run(elementId, endVal, duration, prefix, suffix) {
         var el = document.getElementById(elementId);
         if (!el) return;
+        if (prefersReducedMotion()) { el.textContent = (prefix || '') + endVal.toLocaleString() + (suffix || ''); return; }
         var start = 0;
         var dur = duration || 600;
         var pre = prefix || '';
@@ -292,6 +297,7 @@ window.AnimCounter = {
 // ── XP float popup ──
 window.XpFloat = {
     show(amount, x, y) {
+        if (prefersReducedMotion()) return;
         var el = document.createElement('div');
         el.className = 'xp-float';
         el.textContent = '+' + amount + ' XP';

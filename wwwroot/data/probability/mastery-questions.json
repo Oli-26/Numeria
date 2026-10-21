@@ -12,7 +12,7 @@
       "A sigma-algebra on the real line"
     ],
     "correctAnswer": "A measurable function from the sample space (Omega, F) to (R, Borel sets)",
-    "explanation": "In rigorous probability theory (built on measure theory), a random variable X: Omega -> R must be F/Borel-measurable, meaning that for every Borel set B in R, the preimage X^{-1}(B) belongs to the sigma-algebra F on Omega. This ensures that events like {X <= a} = X^{-1}((-inf, a]) are in F and thus have well-defined probabilities. Not every real-valued function is measurable -- measurability is the key technical requirement that makes P(X in B) well-defined. The sigma-algebra F encodes which questions about outcomes have definite probability answers.",
+    "explanation": "In rigorous probability theory (built on measure theory), a random variable X: Omega -> R must be F/Borel-measurable, meaning that for every Borel set B in R, the preimage X^{-1}(B) belongs to the sigma-algebra F on Omega. This ensures that events like {X <= a} = X^{-1}((-inf, a]) are in F and thus have well-defined probabilities. Not every real-valued function is measurable: measurability is the key technical requirement that makes P(X in B) well-defined. The sigma-algebra F encodes which questions about outcomes have definite probability answers.",
     "xpReward": 40
   },
   {
@@ -33,7 +33,7 @@
     "difficulty": 3,
     "prompt": "True or False: If {X_n} is a martingale with respect to filtration {F_n} and tau is a bounded stopping time, then E[X_tau] = E[X_0] (the Optional Stopping Theorem).",
     "correctAnswer": "True",
-    "explanation": "The Optional Stopping Theorem (OST) states that for a martingale {X_n} and a bounded stopping time tau (tau <= N for some constant N), we have E[X_tau] = E[X_0]. Boundedness is crucial -- without it, the theorem can fail spectacularly. Classic counterexample: the gambler's ruin martingale X_n = symmetric random walk, with tau = first hitting time of +1. Then E[X_tau] = 1 but E[X_0] = 0. The issue is tau has infinite expectation. Sufficient conditions for OST beyond boundedness include: (1) E[tau] < infinity and increments are bounded, or (2) the martingale is uniformly integrable.",
+    "explanation": "The Optional Stopping Theorem (OST) states that for a martingale {X_n} and a bounded stopping time tau (tau <= N for some constant N), we have E[X_tau] = E[X_0]. Boundedness is crucial, without it, the theorem can fail spectacularly. Classic counterexample: the gambler's ruin martingale X_n = symmetric random walk, with tau = first hitting time of +1. Then E[X_tau] = 1 but E[X_0] = 0. The issue is tau has infinite expectation. Sufficient conditions for OST beyond boundedness include: (1) E[tau] < infinity and increments are bounded, or (2) the martingale is uniformly integrable.",
     "xpReward": 40
   },
   {
@@ -109,7 +109,7 @@
     "difficulty": 3,
     "prompt": "True or False: If X_n are iid random variables with E[X_1] = mu and E[X_1^2] < infinity, then the Central Limit Theorem guarantees that sqrt(n)(X_bar_n - mu) converges almost surely to a normal distribution.",
     "correctAnswer": "False",
-    "explanation": "The CLT states that sqrt(n)(X_bar_n - mu)/sigma converges IN DISTRIBUTION to N(0,1), not almost surely. These are very different modes of convergence. Convergence in distribution means the CDFs converge, but the random variables themselves need not converge pointwise. In fact, sqrt(n)(X_bar_n - mu) does NOT converge almost surely to anything -- its magnitude oscillates and grows like sqrt(log log n) by the law of the iterated logarithm. The statement would be correct with 'converges in distribution' instead of 'converges almost surely.' This is a common and important conceptual error.",
+    "explanation": "The CLT states that sqrt(n)(X_bar_n - mu)/sigma converges IN DISTRIBUTION to N(0,1), not almost surely. These are very different modes of convergence. Convergence in distribution means the CDFs converge, but the random variables themselves need not converge pointwise. In fact, sqrt(n)(X_bar_n - mu) does NOT converge almost surely to anything: its magnitude oscillates and grows like sqrt(log log n) by the law of the iterated logarithm. The statement would be correct with 'converges in distribution' instead of 'converges almost surely.' This is a common and important conceptual error.",
     "xpReward": 40
   },
   {
@@ -136,7 +136,7 @@
       { "left": "Exponential martingale e^{theta S_n - n psi(theta)}", "right": "Used in large deviation bounds via Chernoff method" }
     ],
     "correctAnswer": null,
-    "explanation": "These are the four canonical martingale constructions. The simple random walk (with fair coin flips) is the prototypical martingale: the expected next value equals the current value. The Doob martingale E[X|F_n] is the fundamental construction for any integrable X -- it's the sequence of best predictions that converges to X by the martingale convergence theorem. The likelihood ratio process is a martingale under the alternative measure Q, crucial for hypothesis testing and the Radon-Nikodym theorem. The exponential (Wald) martingale tilts the random walk by an exponential factor, enabling sharp large deviation estimates beyond what CLT provides.",
+    "explanation": "These are the four canonical martingale constructions. The simple random walk (with fair coin flips) is the prototypical martingale: the expected next value equals the current value. The Doob martingale E[X|F_n] is the fundamental construction for any integrable X: it's the sequence of best predictions that converges to X by the martingale convergence theorem. The likelihood ratio process is a martingale under the alternative measure Q, crucial for hypothesis testing and the Radon-Nikodym theorem. The exponential (Wald) martingale tilts the random walk by an exponential factor, enabling sharp large deviation estimates beyond what CLT provides.",
     "xpReward": 40
   },
   {

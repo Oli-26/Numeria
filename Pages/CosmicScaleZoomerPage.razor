@@ -67,7 +67,7 @@ else
                 @((MarkupString)BackgroundForRegime(Cur.Exponent))
             </div>
             <div class="cosmic-scene-layer" @key="currentIndex">
-                @((MarkupString)Cur.Svg)
+                @((MarkupString)SceneSvg)
             </div>
             <div class="cosmic-frame-chrome">
                 <span class="chrome-corner tl"></span>
@@ -133,7 +133,12 @@ else
 
 @code {
     private bool unlocked;
+    private bool reducedMotion;
     private int currentIndex = 17;
+
+    // CSS cannot pause SVG animate elements, so reduced-motion users get the scenes without them.
+    private static readonly System.Text.RegularExpressions.Regex SvgAnimate = new(@"<animate\b[^>]*/>");
+    private string SceneSvg => reducedMotion ? SvgAnimate.Replace(Cur.Svg, "") : Cur.Svg;
 
     private Scale Cur => scales[currentIndex];
     private Scale? Prv => currentIndex > 0 ? scales[currentIndex - 1] : null;
@@ -172,6 +177,8 @@ else
         if (firstRender)
         {
             var profile = await Progress.GetProfileAsync();
+            try { reducedMotion = await JS.InvokeAsync<bool>("prefersReducedMotion"); }
+            catch (JSException) { }
             unlocked = true;
             StateHasChanged();
         }
@@ -246,7 +253,7 @@ else
             ProtonSvg()),
 
         new Scale(-14, "Atomic Nucleus",
-            "The dense bundle of protons and neutrons at an atom's centre. If an atom were a football stadium, the nucleus would be a marble at the centre circle.",
+            "The dense bundle of protons and neutrons at an atom's center. If an atom were a football stadium, the nucleus would be a marble at the center circle.",
             "linear-gradient(135deg, #330044 0%, #110018 100%)",
             NucleusSvg()),
 
@@ -256,17 +263,17 @@ else
             AtomSvg("#4FC3F7")),
 
         new Scale(-10, "Atom",
-            "The classical 'building block' of chemistry. Mostly empty space - electrons buzz in shells around a tiny dense nucleus.",
+            "The classical 'building block' of chemistry. Mostly empty space: electrons buzz in shells around a tiny dense nucleus.",
             "linear-gradient(135deg, #003355 0%, #001125 100%)",
             AtomSvg("#81D4FA")),
 
         new Scale(-9, "DNA Helix Width",
-            "The double helix of deoxyribonucleic acid - the chemical alphabet of life. Just two nanometres wide, but stretches to two metres if uncoiled inside one of your cells.",
+            "The double helix of deoxyribonucleic acid, the chemical alphabet of life. Just two nanometers wide, but stretches to two meters if uncoiled inside one of your cells.",
             "linear-gradient(135deg, #003322 0%, #00120b 100%)",
             DnaSvg()),
 
         new Scale(-8, "Virus",
-            "Tiny biological packages of genetic material in a protein shell. Not quite alive, not quite dead - they hijack living cells to copy themselves.",
+            "Tiny biological packages of genetic material in a protein shell. Not quite alive, not quite dead; they hijack living cells to copy themselves.",
             "linear-gradient(135deg, #332200 0%, #120c00 100%)",
             VirusSvg()),
 
@@ -276,62 +283,62 @@ else
             BacteriumSvg()),
 
         new Scale(-5, "Animal Cell",
-            "The basic unit of complex life - a tiny self-contained factory with a nucleus, mitochondria, and a few hundred other moving parts. You are made of about 30 trillion of these.",
+            "The basic unit of complex life: a tiny self-contained factory with a nucleus, mitochondria, and a few hundred other moving parts. You are made of about 30 trillion of these.",
             "linear-gradient(135deg, #332244 0%, #110d18 100%)",
             CellSvg()),
 
         new Scale(-4, "Grain of Salt",
-            "About a quarter of a millimetre across - small enough to dissolve instantly, large enough to crunch between your teeth. Each grain is a near-perfect cubic crystal.",
+            "About a quarter of a millimeter across: small enough to dissolve instantly, large enough to crunch between your teeth. Each grain is a near-perfect cubic crystal.",
             "linear-gradient(135deg, #222244 0%, #0c0c1c 100%)",
             CubeSvg("#E0E0E0")),
 
         new Scale(-3, "Ant",
-            "A few millimetres long but able to lift fifty times its own weight. Ants form colonies that behave like a single super-organism.",
+            "A few millimeters long but able to lift fifty times its own weight. Ants form colonies that behave like a single super-organism.",
             "linear-gradient(135deg, #4a3318 0%, #1a1108 100%)",
             AntSvg()),
 
         new Scale(-2, "Coin",
-            "A few centimetres across - the comfortable size of human-made tokens for trade. Most coins in history have hovered around this size for ergonomic reasons.",
+            "A few centimeters across, the comfortable size of human-made tokens for trade. Most coins in history have hovered around this size for ergonomic reasons.",
             "linear-gradient(135deg, #332211 0%, #120a05 100%)",
             CoinSvg()),
 
         new Scale(-1, "Cat",
-            "About a tenth of a metre at the shoulder for a small cat. Domestic cats have changed shape remarkably little in 10,000 years of living with humans.",
+            "About a tenth of a meter at the shoulder for a small cat. Domestic cats have changed shape remarkably little in 10,000 years of living with humans.",
             "linear-gradient(135deg, #4a3a20 0%, #1a1408 100%)",
             CatSvg()),
 
         new Scale(0, "Toddler",
-            "One metre tall - a small child. The metre was originally defined as one ten-millionth of the distance from the equator to the North Pole.",
+            "One meter tall: a small child. The meter was originally defined as one ten-millionth of the distance from the equator to the North Pole.",
             "linear-gradient(180deg, #67a8d8 0%, #2c5577 100%)",
             FigureSvg(0.6)),
 
         new Scale(1, "Adult Human",
-            "Around 1.7 metres tall on average. You are roughly halfway in scale between an atom and a star, geometrically speaking.",
+            "Around 1.7 meters tall on average. You are roughly halfway in scale between an atom and a star, geometrically speaking.",
             "linear-gradient(180deg, #67a8d8 0%, #2c5577 100%)",
             FigureSvg(1.0)),
 
         new Scale(2, "Blue Whale",
-            "Up to 30 metres long and 200 tonnes - the largest animal ever to have lived on Earth. Its tongue alone weighs as much as an elephant.",
+            "Up to 30 meters long and 200 tonnes, the largest animal ever to have lived on Earth. Its tongue alone weighs as much as an elephant.",
             "linear-gradient(180deg, #2e6790 0%, #0a2238 100%)",
             WhaleSvg()),
 
         new Scale(3, "Eiffel Tower",
-            "330 metres tall - taller than any building had ever been when it was finished in 1889. Made of 18,000 wrought iron pieces and 2.5 million rivets.",
+            "330 meters tall, taller than any building had ever been when it was finished in 1889. Made of 18,000 wrought iron pieces and 2.5 million rivets.",
             "linear-gradient(180deg, #d8a878 0%, #5e3018 100%)",
             TowerSvg()),
 
         new Scale(4, "Mount Everest Height",
-            "8,849 metres above sea level - the highest point on Earth's surface. It still grows a few millimetres per year as the Indian plate pushes north.",
+            "8,849 meters above sea level, the highest point on Earth's surface. It still grows a few millimeters per year as the Indian plate pushes north.",
             "linear-gradient(180deg, #8a9bb5 0%, #2a3a5a 100%)",
             MountainSvg()),
 
         new Scale(5, "Large City",
-            "A hundred kilometres across - the size of a major metropolitan region like Greater London or Tokyo. Visible as a glow from low Earth orbit at night.",
+            "A hundred kilometers across: the size of a major metropolitan region like Greater London or Tokyo. Visible as a glow from low Earth orbit at night.",
             "linear-gradient(180deg, #1a2855 0%, #050a1a 100%)",
             CitySvg()),
 
         new Scale(6, "Small Country",
-            "A thousand kilometres - roughly the length of Britain or Italy. About the distance light travels in 1/300th of a second.",
+            "A thousand kilometers, roughly the length of Britain or Italy. About the distance light travels in 1/300th of a second.",
             "linear-gradient(180deg, #112844 0%, #050a18 100%)",
             CountrySvg()),
 
@@ -341,17 +348,17 @@ else
             EarthSvg()),
 
         new Scale(8, "Earth-Moon Distance",
-            "The Moon orbits an average of 384,400 km away - about 30 Earth-diameters. Light takes 1.3 seconds to make the trip.",
+            "The Moon orbits an average of 384,400 km away, about 30 Earth-diameters. Light takes 1.3 seconds to make the trip.",
             "radial-gradient(circle at 30% 50%, #001533 0%, #000008 100%)",
             EarthMoonSvg()),
 
         new Scale(9, "Sun's Diameter",
-            "The Sun is 1.39 million km across - 109 times wider than Earth. You could fit about 1.3 million Earths inside it.",
+            "The Sun is 1.39 million km across, 109 times wider than Earth. You could fit about 1.3 million Earths inside it.",
             "radial-gradient(circle at 50% 50%, #4a2a00 0%, #150800 100%)",
             SunSvg()),
 
         new Scale(11, "Earth-Sun Distance (1 AU)",
-            "One Astronomical Unit: 149.6 million kilometres. Light from the Sun takes 8 minutes and 20 seconds to reach you.",
+            "One Astronomical Unit: 149.6 million kilometers. Light from the Sun takes 8 minutes and 20 seconds to reach you.",
             "radial-gradient(circle at 30% 50%, #221100 0%, #050300 100%)",
             OrbitSvg()),
 
@@ -366,17 +373,17 @@ else
             OortCloudSvg()),
 
         new Scale(16, "One Light Year",
-            "The distance light travels in a year - about 9.46 trillion kilometres. The nearest star, Proxima Centauri, is 4.24 of these away.",
+            "The distance light travels in a year: about 9.46 trillion kilometers. The nearest star, Proxima Centauri, is 4.24 of these away.",
             "radial-gradient(circle at 50% 50%, #000a33 0%, #000002 100%)",
             StarFieldSvg(false)),
 
-        new Scale(18, "Stellar Neighbourhood",
+        new Scale(18, "Stellar Neighborhood",
             "The closest few hundred stars to the Sun, spanning about a hundred light years. Most are dim red dwarfs you cannot see without a telescope.",
             "radial-gradient(circle at 50% 50%, #00114a 0%, #000003 100%)",
             StarFieldSvg(true)),
 
         new Scale(21, "Milky Way Galaxy",
-            "Our home galaxy: a barred spiral 100,000 light years across, containing 200-400 billion stars. The Sun orbits the galactic centre once every 230 million years.",
+            "Our home galaxy: a barred spiral 100,000 light years across, containing 200-400 billion stars. The Sun orbits the galactic center once every 230 million years.",
             "radial-gradient(circle at 50% 50%, #1a0033 0%, #050010 100%)",
             GalaxySvg()),
 
@@ -391,7 +398,7 @@ else
             SuperclusterSvg()),
 
         new Scale(27, "Observable Universe",
-            "About 93 billion light years across - all that we can ever see. Beyond this horizon, light has not had time to reach us since the Big Bang 13.8 billion years ago.",
+            "About 93 billion light years across: all that we can ever see. Beyond this horizon, light has not had time to reach us since the Big Bang 13.8 billion years ago.",
             "radial-gradient(circle at 50% 50%, #000022 0%, #000000 100%)",
             UniverseSvg())
     };
@@ -435,13 +442,10 @@ else
             </g>
             <g fill='#FFFFFF'>
                 <circle cx='130' cy='34' r='0.8'>
-                    <animate attributeName='opacity' values='0.3;1;0.3' dur='3.4s' repeatCount='indefinite'/>
                 </circle>
                 <circle cx='52' cy='98' r='0.8'>
-                    <animate attributeName='opacity' values='1;0.3;1' dur='4.2s' repeatCount='indefinite'/>
                 </circle>
                 <circle cx='168' cy='98' r='0.8'>
-                    <animate attributeName='opacity' values='0.5;1;0.5' dur='5.1s' repeatCount='indefinite'/>
                 </circle>
             </g>
         </svg>";
@@ -532,13 +536,13 @@ else
             <circle cx='100' cy='80' r='55' fill='url(#confine)'/>
             <g stroke='#FFD54F' stroke-width='1.6' fill='none' opacity='0.85'>
                 <path d='M85 75 Q92 70 100 75 Q108 80 115 75' stroke-dasharray='2 2'>
-                    <animate attributeName='stroke-dashoffset' values='0;-8' dur='1.2s' repeatCount='indefinite'/>
+                    <animate attributeName='stroke-dashoffset' values='0;-8' dur='2.4s' repeatCount='indefinite'/>
                 </path>
                 <path d='M85 75 Q90 88 100 95' stroke-dasharray='2 2'>
-                    <animate attributeName='stroke-dashoffset' values='0;-8' dur='1.4s' repeatCount='indefinite'/>
+                    <animate attributeName='stroke-dashoffset' values='0;-8' dur='2.8s' repeatCount='indefinite'/>
                 </path>
                 <path d='M115 75 Q110 88 100 95' stroke-dasharray='2 2'>
-                    <animate attributeName='stroke-dashoffset' values='0;-8' dur='1.0s' repeatCount='indefinite'/>
+                    <animate attributeName='stroke-dashoffset' values='0;-8' dur='2.0s' repeatCount='indefinite'/>
                 </path>
             </g>
             <circle cx='85' cy='75' r='11' fill='#E53935' stroke='#FFCDD2' stroke-width='1'/>
@@ -591,8 +595,6 @@ else
             <circle cx='100' cy='80' r='6' fill='#FF6B6B'/>
             <circle cx='100' cy='80' r='6' fill='none' stroke='#FFCDD2' stroke-width='0.6'/>
             <circle cx='100' cy='80' r='10' fill='none' stroke='{color}' stroke-width='0.4' opacity='0.5'>
-                <animate attributeName='r' values='10;14;10' dur='3.6s' repeatCount='indefinite'/>
-                <animate attributeName='opacity' values='0.5;0;0.5' dur='3.6s' repeatCount='indefinite'/>
             </circle>
         </svg>";
 
@@ -926,7 +928,6 @@ else
                 <line x1='120' y1='115' x2='122' y2='140'/>
             </g>
             <circle cx='100' cy='30' r='1.5' fill='#FFEB3B'>
-                <animate attributeName='opacity' values='0.5;1;0.5' dur='1.6s' repeatCount='indefinite'/>
             </circle>
         </svg>";
 
@@ -985,7 +986,6 @@ else
             <polygon points='100,50 112,40 125,50' fill='#263238'/>
             <line x1='112' y1='40' x2='112' y2='32' stroke='#263238' stroke-width='1.4'/>
             <circle cx='112' cy='30' r='1.4' fill='#FF1744'>
-                <animate attributeName='opacity' values='0.3;1;0.3' dur='1.4s' repeatCount='indefinite'/>
             </circle>
             <g fill='#FFD54F'>
                 <rect x='44' y='100' width='3' height='4'/><rect x='52' y='100' width='3' height='4'/><rect x='60' y='100' width='3' height='4'/>
@@ -1037,7 +1037,6 @@ else
             <path d='M65 100 Q70 95 80 100 L75 110 Z' fill='#FFF59D' opacity='0.6'/>
             <g fill='#FFD54F' stroke='#F57F17' stroke-width='0.5'>
                 <circle cx='95' cy='80' r='3.5'>
-                    <animate attributeName='r' values='3.5;5;3.5' dur='2.4s' repeatCount='indefinite'/>
                 </circle>
                 <circle cx='75' cy='65' r='2.2'/>
                 <circle cx='115' cy='100' r='2.2'/>
@@ -1122,13 +1121,10 @@ else
                 </radialGradient>
             </defs>
             <circle cx='100' cy='80' r='75' fill='url(#sunCorona)'>
-                <animate attributeName='r' values='75;78;75' dur='4s' repeatCount='indefinite'/>
             </circle>
             <circle cx='100' cy='80' r='60' fill='url(#sunCorona)' opacity='0.7'>
-                <animate attributeName='r' values='60;64;60' dur='3.2s' repeatCount='indefinite'/>
             </circle>
             <circle cx='100' cy='80' r='44' fill='url(#sunCore)'>
-                <animate attributeName='opacity' values='0.95;1;0.95' dur='2.6s' repeatCount='indefinite'/>
             </circle>
             <g fill='#FB8C00' opacity='0.55'>
                 <circle cx='84' cy='76' r='3'/>
@@ -1147,10 +1143,8 @@ else
                 <line x1='148' y1='128' x2='155' y2='135'/>
             </g>
             <path d='M60 70 Q55 60 50 50' stroke='#FF6F00' stroke-width='1.5' fill='none' opacity='0.7'>
-                <animate attributeName='opacity' values='0.7;0.2;0.7' dur='3.6s' repeatCount='indefinite'/>
             </path>
             <path d='M140 90 Q150 100 158 115' stroke='#FF6F00' stroke-width='1.5' fill='none' opacity='0.6'>
-                <animate attributeName='opacity' values='0.6;0.1;0.6' dur='4.2s' repeatCount='indefinite'/>
             </path>
         </svg>";
 
@@ -1168,7 +1162,6 @@ else
             </defs>
             <ellipse cx='60' cy='80' rx='100' ry='35' fill='none' stroke='#FFC107' stroke-width='0.6' stroke-dasharray='2,3' opacity='0.7'/>
             <circle cx='60' cy='80' r='22' fill='url(#orbSun)'>
-                <animate attributeName='opacity' values='0.92;1;0.92' dur='3s' repeatCount='indefinite'/>
             </circle>
             <circle cx='60' cy='80' r='34' fill='#FFD54F' opacity='0.18'/>
             <circle cx='160' cy='80' r='9' fill='url(#orbE)' stroke='#0D2A4F' stroke-width='0.5'/>
@@ -1267,8 +1260,6 @@ else
                 <g fill='#FFD54F'>
                     <circle cx='100' cy='80' r='3'/>
                     <circle cx='100' cy='80' r='5' fill='none' stroke='#FFD54F' stroke-width='0.4' opacity='0.5'>
-                        <animate attributeName='r' values='5;9;5' dur='3.4s' repeatCount='indefinite'/>
-                        <animate attributeName='opacity' values='0.5;0;0.5' dur='3.4s' repeatCount='indefinite'/>
                     </circle>
                 </g>
                 <g fill='#FFAB91'>
@@ -1290,7 +1281,6 @@ else
                 </defs>
                 <circle cx='100' cy='80' r='55' fill='url(#oneLy)'/>
                 <circle cx='100' cy='80' r='55' fill='none' stroke='#FFEB3B' stroke-width='0.5' stroke-dasharray='2 4' opacity='0.6'>
-                    <animate attributeName='stroke-dashoffset' values='0;-12' dur='8s' repeatCount='indefinite'/>
                 </circle>
                 <circle cx='100' cy='80' r='4' fill='#FFD54F'/>
                 <g fill='#FFFFFF' opacity='0.85'>
@@ -1577,14 +1567,13 @@ else
     .cosmic-magnitude {
         font-size: 1.6rem; font-weight: 800; color: var(--accent);
         text-align: center; font-family: 'Cinzel', serif; letter-spacing: 0.5px;
-        text-shadow: 0 0 12px rgba(255, 200, 80, 0.25);
     }
     .cosmic-magnitude sup { font-size: 1.1rem; }
     .cosmic-mono-readout {
         font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace;
         font-size: 0.7rem; color: var(--text-muted);
         padding: 3px 8px; border: 1px solid var(--border);
-        border-radius: 4px; background: rgba(0,0,0,0.18);
+        border-radius: 4px; background: var(--bg-surface);
         letter-spacing: 0.5px;
     }
 
@@ -1614,7 +1603,7 @@ else
     }
     .cosmic-bg-layer { z-index: 0; opacity: 0.85; }
     .cosmic-bg-layer svg { width: 100%; height: 100%; max-width: none; }
-    .cosmic-scene-layer { z-index: 1; animation: sceneFade 0.45s ease; }
+    .cosmic-scene-layer { z-index: 1; animation: sceneFade 0.25s ease-out; }
 
     .cosmic-frame-chrome {
         position: absolute; inset: 0; pointer-events: none; z-index: 2;
@@ -1655,7 +1644,6 @@ else
     .axis-tick.axis-tick-here {
         height: 12px; width: 2px; background: var(--accent); opacity: 1;
         transform: translate(-1px, -6px);
-        box-shadow: 0 0 6px var(--accent);
     }
     .axis-cursor {
         position: absolute; top: -4px; width: 0; height: 0;
@@ -1714,28 +1702,28 @@ else
         background: var(--primary); color: white; border-color: var(--primary);
     }
 
-    .regime-subatomic .cosmic-magnitude { color: #B388FF; text-shadow: 0 0 14px rgba(124,77,255,0.5); }
-    .regime-molecular .cosmic-magnitude { color: #80DEEA; text-shadow: 0 0 12px rgba(0,200,200,0.4); }
-    .regime-micro .cosmic-magnitude { color: #FFB74D; text-shadow: 0 0 10px rgba(255,150,40,0.35); }
-    .regime-human .cosmic-magnitude { color: #FFD54F; text-shadow: 0 0 10px rgba(255,200,60,0.35); }
-    .regime-planetary .cosmic-magnitude { color: #4FC3F7; text-shadow: 0 0 12px rgba(79,195,247,0.5); }
-    .regime-stellar .cosmic-magnitude { color: #FFEB3B; text-shadow: 0 0 14px rgba(255,235,59,0.5); }
-    .regime-cosmic .cosmic-magnitude { color: #CE93D8; text-shadow: 0 0 16px rgba(206,147,216,0.55); }
+    /* muted regime hues, mixed toward --text-primary so they stay legible in light and dark themes */
+    .regime-subatomic .cosmic-magnitude { color: color-mix(in srgb, #7A3E5E 80%, var(--text-primary)); }
+    .regime-molecular .cosmic-magnitude { color: color-mix(in srgb, #2F6B66 80%, var(--text-primary)); }
+    .regime-micro .cosmic-magnitude { color: color-mix(in srgb, #5B6E3A 80%, var(--text-primary)); }
+    .regime-human .cosmic-magnitude { color: color-mix(in srgb, #B4552F 80%, var(--text-primary)); }
+    .regime-planetary .cosmic-magnitude { color: color-mix(in srgb, #4E5D6A 80%, var(--text-primary)); }
+    .regime-stellar .cosmic-magnitude { color: color-mix(in srgb, #9A6B2A 80%, var(--text-primary)); }
+    .regime-cosmic .cosmic-magnitude { color: color-mix(in srgb, #6B4A35 80%, var(--text-primary)); }
 
     @@keyframes scaleIn {
         from { opacity: 0; transform: scale(0.98); }
         to { opacity: 1; transform: scale(1); }
     }
     @@keyframes sceneFade {
-        from { opacity: 0; transform: scale(0.94); filter: blur(2px); }
-        to { opacity: 1; transform: scale(1); filter: blur(0); }
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
     }
 
     @@media (prefers-reduced-motion: reduce) {
         .cosmic-display { animation: none; }
         .cosmic-scene-layer { animation: none; }
-        .cosmic-svg-frame svg animate,
-        .cosmic-bg-layer svg animate { display: none; }
+        .axis-cursor, .zoom-btn, .jump-chip { transition: none; }
     }
 
     @@media (max-width: 480px) {

@@ -122,6 +122,19 @@
     private const int Height = 280;
     private const double Scale = 40;
 
+    // Theme tokens; mathCanvas.js resolves var()/color-mix() against the live theme at draw time.
+    private const string Primary = "var(--primary)";
+    private const string Ink = "var(--text-primary)";
+    private const string Muted = "var(--text-muted)";
+    private const string Card = "var(--bg-card)";
+    private const string Slate = "var(--viz-slate)";
+    private const string Teal = "var(--viz-teal)";
+    private const string Olive = "var(--viz-olive)";
+    private const string Plum = "var(--viz-plum)";
+    private const string Ochre = "var(--viz-ochre)";
+
+    private static string Tint(string color, int percent) => $"color-mix(in srgb, {color} {percent}%, transparent)";
+
     // Riemann sums
     private int rectangleCount = 10;
 
@@ -344,23 +357,23 @@
     {
         await Viz.DrawAxesAsync(CanvasId, Scale, Scale);
         var points = PlotFunction(x => x * x, -3, 3);
-        await Viz.DrawFunctionAsync(CanvasId, points, "#4A90D9");
-        await Viz.DrawPointAsync(CanvasId, ToScreenX(2), ToScreenY(4), 7, "#EF5350", "(2, 4)");
+        await Viz.DrawFunctionAsync(CanvasId, points, Primary);
+        await Viz.DrawPointAsync(CanvasId, ToScreenX(2), ToScreenY(4), 7, Slate, "(2, 4)");
 
         // Approaching arrows
         for (int i = 1; i <= 3; i++)
         {
             var x = 2 - i * 0.4;
             var y = x * x;
-            await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(y), 4, "rgba(74, 144, 217, 0.5)");
+            await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(y), 4, Tint(Primary, 50));
         }
         for (int i = 1; i <= 3; i++)
         {
             var x = 2 + i * 0.4;
             var y = x * x;
-            await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(y), 4, "rgba(74, 144, 217, 0.5)");
+            await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(y), 4, Tint(Primary, 50));
         }
-        await Viz.DrawTextAsync(CanvasId, "lim x² as x→2 = 4", Width / 2, 24, "#4A90D9", 13);
+        await Viz.DrawTextAsync(CanvasId, "lim x² as x→2 = 4", Width / 2, 24, Primary, 13);
     }
 
     private async Task DrawTangentLine()
@@ -370,7 +383,7 @@
         Func<double, double> fPrime = x => x / 2;
 
         var points = PlotFunction(f, -4, 4);
-        await Viz.DrawFunctionAsync(CanvasId, points, "#4A90D9");
+        await Viz.DrawFunctionAsync(CanvasId, points, Primary);
 
         // Tangent line at tangentX
         var slope = fPrime(tangentX);
@@ -380,9 +393,9 @@
             new[] { ToScreenX(tangentX - 2), ToScreenY(yAtX - 2 * slope) },
             new[] { ToScreenX(tangentX + 2), ToScreenY(yAtX + 2 * slope) }
         };
-        await Viz.DrawFunctionAsync(CanvasId, tangentPoints, "#EF5350", 2);
-        await Viz.DrawPointAsync(CanvasId, ToScreenX(tangentX), ToScreenY(yAtX), 6, "#EF5350");
-        await Viz.DrawTextAsync(CanvasId, $"slope = {slope:F1}", Width / 2, 24, "#EF5350", 13);
+        await Viz.DrawFunctionAsync(CanvasId, tangentPoints, Slate, 2);
+        await Viz.DrawPointAsync(CanvasId, ToScreenX(tangentX), ToScreenY(yAtX), 6, Slate);
+        await Viz.DrawTextAsync(CanvasId, $"slope = {slope:F1}", Width / 2, 24, Slate, 13);
     }
 
     private async Task DrawRiemannSums()
@@ -402,20 +415,20 @@
             await Viz.DrawRectAsync(CanvasId,
                 ToScreenX(x), ToScreenY(y),
                 dx * Scale, y * Scale,
-                "rgba(74, 95, 224, 0.25)", "#4A5FE0");
+                Tint(Primary, 25), Primary);
         }
 
         var curvePoints = PlotFunction(f, -0.5, 3.5);
-        await Viz.DrawFunctionAsync(CanvasId, curvePoints, "#4A90D9", 2.5);
-        await Viz.DrawTextAsync(CanvasId, $"n={rectangleCount}, area ≈ {totalArea:F2}", Width / 2, 24, "#4A5FE0", 13);
+        await Viz.DrawFunctionAsync(CanvasId, curvePoints, Slate, 2.5);
+        await Viz.DrawTextAsync(CanvasId, $"n={rectangleCount}, area ≈ {totalArea:F2}", Width / 2, 24, Primary, 13);
     }
 
     private async Task DrawVectorBasic()
     {
         await Viz.DrawAxesAsync(CanvasId, Scale, Scale);
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(3), ToScreenY(2), "#4A90D9", "v = (3,2)");
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(0), "#EF5350", "î");
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(0), ToScreenY(1), "#4CAF50", "ĵ");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(3), ToScreenY(2), Primary, "v = (3,2)");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(0), Slate, "î");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(0), ToScreenY(1), Olive, "ĵ");
     }
 
     private async Task DrawMatrixTransform()
@@ -434,7 +447,7 @@
                 var ty = matC * t + matD * y;
                 vLine[i] = new[] { ToScreenX(tx), ToScreenY(ty) };
             }
-            await Viz.DrawFunctionAsync(CanvasId, vLine, "rgba(74, 95, 224, 0.3)", 1);
+            await Viz.DrawFunctionAsync(CanvasId, vLine, Tint(Primary, 30), 1);
 
             // Horizontal line
             var hLine = new double[9][];
@@ -445,15 +458,15 @@
                 var ty = matC * x + matD * t;
                 hLine[i] = new[] { ToScreenX(tx), ToScreenY(ty) };
             }
-            await Viz.DrawFunctionAsync(CanvasId, hLine, "rgba(74, 95, 224, 0.3)", 1);
+            await Viz.DrawFunctionAsync(CanvasId, hLine, Tint(Primary, 30), 1);
         }
 
         // Transformed basis vectors
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(matA), ToScreenY(matC), "#EF5350", "î'");
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(matB), ToScreenY(matD), "#4CAF50", "ĵ'");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(matA), ToScreenY(matC), Slate, "î'");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(matB), ToScreenY(matD), Olive, "ĵ'");
 
         var det = matA * matD - matB * matC;
-        await Viz.DrawTextAsync(CanvasId, $"det = {det:F1}", Width / 2, 24, "#4A5FE0", 13);
+        await Viz.DrawTextAsync(CanvasId, $"det = {det:F1}", Width / 2, 24, Primary, 13);
     }
 
     private async Task DrawSystemLines()
@@ -461,14 +474,14 @@
         await Viz.DrawAxesAsync(CanvasId, Scale, Scale);
         // 2x + y = 5 -> y = 5 - 2x
         var line1 = PlotFunction(x => 5 - 2 * x, -2, 5);
-        await Viz.DrawFunctionAsync(CanvasId, line1, "#4A90D9", 2.5);
+        await Viz.DrawFunctionAsync(CanvasId, line1, Primary, 2.5);
         // x - y = 1 -> y = x - 1
         var line2 = PlotFunction(x => x - 1, -2, 5);
-        await Viz.DrawFunctionAsync(CanvasId, line2, "#EF5350", 2.5);
+        await Viz.DrawFunctionAsync(CanvasId, line2, Slate, 2.5);
         // Intersection at (2, 1)
-        await Viz.DrawPointAsync(CanvasId, ToScreenX(2), ToScreenY(1), 7, "#4CAF50", "(2, 1)");
-        await Viz.DrawTextAsync(CanvasId, "2x + y = 5", ToScreenX(-1), ToScreenY(5.5), "#4A90D9", 11);
-        await Viz.DrawTextAsync(CanvasId, "x - y = 1", ToScreenX(3.5), ToScreenY(3), "#EF5350", 11);
+        await Viz.DrawPointAsync(CanvasId, ToScreenX(2), ToScreenY(1), 7, Ochre, "(2, 1)");
+        await Viz.DrawTextAsync(CanvasId, "2x + y = 5", ToScreenX(-1), ToScreenY(5.5), Primary, 11);
+        await Viz.DrawTextAsync(CanvasId, "x - y = 1", ToScreenX(3.5), ToScreenY(3), Slate, 11);
     }
 
     private async Task DrawEigenDemo()
@@ -478,18 +491,18 @@
         // Eigenvector for λ=2: (1, 0), for λ=3: (1, 1)
 
         // Show some regular vectors being transformed (they change direction)
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(1.5), "rgba(150,150,150,0.4)", "");
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(2*1+1*1.5), ToScreenY(0*1+3*1.5), "rgba(150,150,150,0.4)", "");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(1.5), Tint(Ink, 30), "");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(2*1+1*1.5), ToScreenY(0*1+3*1.5), Tint(Ink, 30), "");
 
         // Eigenvector 1: (1, 0) -> (2, 0)
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(0), "#4A90D9", "v₁");
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(2), ToScreenY(0), "#EF5350", "λ=2");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(0), Slate, "v₁");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(2), ToScreenY(0), Primary, "λ=2");
 
         // Eigenvector 2: (1, 1) -> (3, 3)
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(1), "#7B68EE", "v₂");
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(3), ToScreenY(3), "#E8715A", "λ=3");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(1), ToScreenY(1), Teal, "v₂");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(3), ToScreenY(3), Ochre, "λ=3");
 
-        await Viz.DrawTextAsync(CanvasId, "Eigenvectors stay on their line", Width / 2, 24, "#4A5FE0", 12);
+        await Viz.DrawTextAsync(CanvasId, "Eigenvectors stay on their line", Width / 2, 24, Primary, 12);
     }
 
     private async Task DrawShapeMorph()
@@ -502,8 +515,8 @@
             var angle = 2 * Math.PI * i / n1;
             circle[i] = new[] { Width * 0.2 + 50 * Math.Cos(angle), Height / 2.0 + 50 * Math.Sin(angle) };
         }
-        await Viz.DrawFunctionAsync(CanvasId, circle, "#4A90D9", 3);
-        await Viz.DrawTextAsync(CanvasId, "Circle", Width * 0.2, Height / 2.0 + 75, "#4A90D9", 12);
+        await Viz.DrawFunctionAsync(CanvasId, circle, Primary, 3);
+        await Viz.DrawTextAsync(CanvasId, "Circle", Width * 0.2, Height / 2.0 + 75, Primary, 12);
 
         // Square
         var sq = new double[][]
@@ -513,8 +526,8 @@
             new[] { Width * 0.5 + 40, Height / 2.0 + 40 },
             new[] { Width * 0.5 - 40, Height / 2.0 + 40 },
         };
-        await Viz.DrawShapeAsync(CanvasId, sq, null, "#7B68EE", 3);
-        await Viz.DrawTextAsync(CanvasId, "Square", Width * 0.5, Height / 2.0 + 75, "#7B68EE", 12);
+        await Viz.DrawShapeAsync(CanvasId, sq, null, Slate, 3);
+        await Viz.DrawTextAsync(CanvasId, "Square", Width * 0.5, Height / 2.0 + 75, Slate, 12);
 
         // Triangle
         var tri = new double[][]
@@ -523,13 +536,13 @@
             new[] { Width * 0.8 + 50, Height / 2.0 + 40 },
             new[] { Width * 0.8 - 50, Height / 2.0 + 40 },
         };
-        await Viz.DrawShapeAsync(CanvasId, tri, null, "#E8715A", 3);
-        await Viz.DrawTextAsync(CanvasId, "Triangle", Width * 0.8, Height / 2.0 + 75, "#E8715A", 12);
+        await Viz.DrawShapeAsync(CanvasId, tri, null, Ochre, 3);
+        await Viz.DrawTextAsync(CanvasId, "Triangle", Width * 0.8, Height / 2.0 + 75, Ochre, 12);
 
         // Equals signs
-        await Viz.DrawTextAsync(CanvasId, "≃", Width * 0.35, Height / 2.0, "#4CAF50", 24);
-        await Viz.DrawTextAsync(CanvasId, "≃", Width * 0.65, Height / 2.0, "#4CAF50", 24);
-        await Viz.DrawTextAsync(CanvasId, "All homeomorphic!", Width / 2, 24, "#4CAF50", 13);
+        await Viz.DrawTextAsync(CanvasId, "≃", Width * 0.35, Height / 2.0, Olive, 24);
+        await Viz.DrawTextAsync(CanvasId, "≃", Width * 0.65, Height / 2.0, Olive, 24);
+        await Viz.DrawTextAsync(CanvasId, "All homeomorphic!", Width / 2, 24, Olive, 13);
     }
 
     private async Task DrawEulerCounter()
@@ -547,7 +560,7 @@
             new[] { w2 + s + off, h2 + s + off },
             new[] { w2 - s + off, h2 + s + off }
         };
-        await Viz.DrawShapeAsync(CanvasId, bf, "rgba(74, 95, 224, 0.05)", "rgba(74, 95, 224, 0.3)", 1.5);
+        await Viz.DrawShapeAsync(CanvasId, bf, Tint(Primary, 5), Tint(Primary, 30), 1.5);
 
         // Front face
         var ff = new double[][] {
@@ -556,20 +569,20 @@
             new[] { w2 + s - off, h2 + s - off },
             new[] { w2 - s - off, h2 + s - off }
         };
-        await Viz.DrawShapeAsync(CanvasId, ff, "rgba(74, 95, 224, 0.08)", "#4A5FE0", 2);
+        await Viz.DrawShapeAsync(CanvasId, ff, Tint(Primary, 8), Primary, 2);
 
         // Connecting edges
         for (int i = 0; i < 4; i++)
         {
             var edge = new double[][] { ff[i], bf[i] };
-            await Viz.DrawFunctionAsync(CanvasId, edge, "rgba(74, 95, 224, 0.5)", 1.5);
+            await Viz.DrawFunctionAsync(CanvasId, edge, Tint(Primary, 50), 1.5);
         }
 
         // Vertices
-        foreach (var p in ff) await Viz.DrawPointAsync(CanvasId, p[0], p[1], 4, "#EF5350");
-        foreach (var p in bf) await Viz.DrawPointAsync(CanvasId, p[0], p[1], 4, "#EF5350");
+        foreach (var p in ff) await Viz.DrawPointAsync(CanvasId, p[0], p[1], 4, Ink);
+        foreach (var p in bf) await Viz.DrawPointAsync(CanvasId, p[0], p[1], 4, Ink);
 
-        await Viz.DrawTextAsync(CanvasId, $"V={eulerV}  E={eulerE}  F={eulerF}  χ={eulerV - eulerE + eulerF}", Width / 2, Height - 16, "#4A5FE0", 13);
+        await Viz.DrawTextAsync(CanvasId, $"V={eulerV}  E={eulerE}  F={eulerF}  χ={eulerV - eulerE + eulerF}", Width / 2, Height - 16, Primary, 13);
     }
 
     private async Task DrawTaylorApprox()
@@ -578,8 +591,8 @@
 
         // Draw sin(x) as the target
         var sinPoints = PlotFunction(Math.Sin, -4, 4);
-        await Viz.DrawFunctionAsync(CanvasId, sinPoints, "rgba(74, 144, 217, 0.4)", 2);
-        await Viz.DrawTextAsync(CanvasId, "sin(x)", ToScreenX(3.2), ToScreenY(Math.Sin(3.2)) - 12, "#4A90D9", 11);
+        await Viz.DrawFunctionAsync(CanvasId, sinPoints, Tint(Slate, 50), 2);
+        await Viz.DrawTextAsync(CanvasId, "sin(x)", ToScreenX(3.2), ToScreenY(Math.Sin(3.2)) - 12, Slate, 11);
 
         // Taylor approximation of sin(x): x - x^3/3! + x^5/5! - ...
         double TaylorSin(double x)
@@ -597,8 +610,8 @@
         }
 
         var taylorPoints = PlotFunction(TaylorSin, -4, 4);
-        await Viz.DrawFunctionAsync(CanvasId, taylorPoints, "#EF5350", 2.5);
-        await Viz.DrawTextAsync(CanvasId, $"Taylor ({taylorTerms} term{(taylorTerms != 1 ? "s" : "")})", Width / 2, 24, "#EF5350", 13);
+        await Viz.DrawFunctionAsync(CanvasId, taylorPoints, Primary, 2.5);
+        await Viz.DrawTextAsync(CanvasId, $"Taylor ({taylorTerms} term{(taylorTerms != 1 ? "s" : "")})", Width / 2, 24, Primary, 13);
     }
 
     private async Task DrawGradientField()
@@ -614,7 +627,7 @@
                 var angle = 2 * Math.PI * i / 32;
                 circle[i] = new[] { ToScreenX(r * Math.Cos(angle)), ToScreenY(r * Math.Sin(angle)) };
             }
-            await Viz.DrawFunctionAsync(CanvasId, circle, "rgba(74, 95, 224, 0.15)", 1);
+            await Viz.DrawFunctionAsync(CanvasId, circle, Tint(Slate, 30), 1);
         }
 
         // Draw gradient arrows at grid points: grad(x^2+y^2) = (2x, 2y)
@@ -632,11 +645,11 @@
                 await Viz.DrawVectorAsync(CanvasId,
                     ToScreenX(x), ToScreenY(y),
                     ToScreenX(x + nx), ToScreenY(y + ny),
-                    "#EF5350", null);
+                    Primary, null);
             }
         }
 
-        await Viz.DrawTextAsync(CanvasId, "∇(x²+y²) = (2x, 2y)", Width / 2, 24, "#4A5FE0", 12);
+        await Viz.DrawTextAsync(CanvasId, "∇(x²+y²) = (2x, 2y)", Width / 2, 24, Primary, 12);
     }
 
     private async Task DrawPrimeSieve()
@@ -660,13 +673,13 @@
             int col = (n - 1) % gridSize;
             double x = 10 + col * cellW;
             double y = 28 + row * cellH;
-            var fill = isPrime[n] ? "rgba(46, 204, 113, 0.3)" : "rgba(200, 200, 220, 0.15)";
-            var border = isPrime[n] ? "#2ECC71" : "rgba(200, 200, 220, 0.3)";
+            var fill = isPrime[n] ? Tint(Primary, 20) : Tint(Ink, 4);
+            var border = isPrime[n] ? Primary : "var(--border)";
             await Viz.DrawRectAsync(CanvasId, x, y, cellW - 2, cellH - 2, fill, border);
-            var color = isPrime[n] ? "#1A1A2E" : "#AAAACC";
+            var color = isPrime[n] ? Ink : Muted;
             await Viz.DrawTextAsync(CanvasId, n.ToString(), x + cellW / 2 - 1, y + cellH / 2 + 4, color, 10);
         }
-        await Viz.DrawTextAsync(CanvasId, "Primes highlighted (Sieve of Eratosthenes)", Width / 2, 16, "#2ECC71", 12);
+        await Viz.DrawTextAsync(CanvasId, "Primes highlighted (Sieve of Eratosthenes)", Width / 2, 16, Primary, 12);
     }
 
     private async Task DrawModClock()
@@ -681,20 +694,20 @@
             var a = 2 * Math.PI * i / 32;
             circle[i] = new[] { cx + r * Math.Cos(a), cy + r * Math.Sin(a) };
         }
-        await Viz.DrawFunctionAsync(CanvasId, circle, "rgba(74, 95, 224, 0.3)", 2);
+        await Viz.DrawFunctionAsync(CanvasId, circle, Tint(Primary, 30), 2);
         // Numbers
         for (int i = 0; i < 12; i++)
         {
             var a = -Math.PI / 2 + 2 * Math.PI * i / 12;
             var nx = cx + (r - 16) * Math.Cos(a);
             var ny = cy + (r - 16) * Math.Sin(a) + 4;
-            await Viz.DrawTextAsync(CanvasId, i.ToString(), nx, ny, "#1A1A2E", 13);
-            await Viz.DrawPointAsync(CanvasId, cx + r * Math.Cos(a), cy + r * Math.Sin(a), 3, "#4A5FE0");
+            await Viz.DrawTextAsync(CanvasId, i.ToString(), nx, ny, Ink, 13);
+            await Viz.DrawPointAsync(CanvasId, cx + r * Math.Cos(a), cy + r * Math.Sin(a), 3, Primary);
         }
         // Highlight: 17 mod 12 = 5
         var ha = -Math.PI / 2 + 2 * Math.PI * 5 / 12;
-        await Viz.DrawVectorAsync(CanvasId, cx, cy, cx + (r - 30) * Math.Cos(ha), cy + (r - 30) * Math.Sin(ha), "#EF5350", "17≡5");
-        await Viz.DrawTextAsync(CanvasId, "17 mod 12 = 5", Width / 2, 16, "#E67E22", 12);
+        await Viz.DrawVectorAsync(CanvasId, cx, cy, cx + (r - 30) * Math.Cos(ha), cy + (r - 30) * Math.Sin(ha), Slate, "17≡5");
+        await Viz.DrawTextAsync(CanvasId, "17 mod 12 = 5", Width / 2, 16, Slate, 12);
     }
 
     private async Task DrawDiceProbability()
@@ -708,11 +721,11 @@
             double x = 30 + (face - 1) * barW;
             double h = prob * maxH * 3; // scale up for visibility
             double y = Height - 30 - h;
-            await Viz.DrawRectAsync(CanvasId, x + 4, y, barW - 8, h, "rgba(230, 126, 34, 0.4)", "#E67E22");
-            await Viz.DrawTextAsync(CanvasId, face.ToString(), x + barW / 2, Height - 14, "#1A1A2E", 13);
-            await Viz.DrawTextAsync(CanvasId, "1/6", x + barW / 2, y - 8, "#E67E22", 10);
+            await Viz.DrawRectAsync(CanvasId, x + 4, y, barW - 8, h, Tint(Primary, 35), Primary);
+            await Viz.DrawTextAsync(CanvasId, face.ToString(), x + barW / 2, Height - 14, Ink, 13);
+            await Viz.DrawTextAsync(CanvasId, "1/6", x + barW / 2, y - 8, Primary, 10);
         }
-        await Viz.DrawTextAsync(CanvasId, "P(each face) = 1/6", Width / 2, 16, "#E67E22", 12);
+        await Viz.DrawTextAsync(CanvasId, "P(each face) = 1/6", Width / 2, 16, Primary, 12);
     }
 
     private async Task DrawDistributionPlot()
@@ -735,10 +748,10 @@
             double x = 20 + k * barW;
             double h = (probs[k] / maxProb) * (Height - 65);
             double y = Height - 30 - h;
-            await Viz.DrawRectAsync(CanvasId, x + 2, y, barW - 4, h, "rgba(74, 95, 224, 0.35)", "#4A5FE0");
-            await Viz.DrawTextAsync(CanvasId, k.ToString(), x + barW / 2, Height - 14, "#1A1A2E", 10);
+            await Viz.DrawRectAsync(CanvasId, x + 2, y, barW - 4, h, Tint(Primary, 35), Primary);
+            await Viz.DrawTextAsync(CanvasId, k.ToString(), x + barW / 2, Height - 14, Ink, 10);
         }
-        await Viz.DrawTextAsync(CanvasId, "Binomial(n=10, p=0.5)", Width / 2, 16, "#4A5FE0", 12);
+        await Viz.DrawTextAsync(CanvasId, "Binomial(n=10, p=0.5)", Width / 2, 16, Primary, 12);
     }
 
     private async Task DrawSymmetrySquare()
@@ -751,17 +764,17 @@
             new[] { cx - s, cy - s }, new[] { cx + s, cy - s },
             new[] { cx + s, cy + s }, new[] { cx - s, cy + s }
         };
-        await Viz.DrawShapeAsync(CanvasId, sq, "rgba(155, 89, 182, 0.15)", "#9B59B6", 2.5);
+        await Viz.DrawShapeAsync(CanvasId, sq, Tint(Primary, 15), Primary, 2.5);
         // Label corners
-        await Viz.DrawTextAsync(CanvasId, "1", cx - s - 12, cy - s - 6, "#9B59B6", 13);
-        await Viz.DrawTextAsync(CanvasId, "2", cx + s + 12, cy - s - 6, "#9B59B6", 13);
-        await Viz.DrawTextAsync(CanvasId, "3", cx + s + 12, cy + s + 14, "#9B59B6", 13);
-        await Viz.DrawTextAsync(CanvasId, "4", cx - s - 12, cy + s + 14, "#9B59B6", 13);
+        await Viz.DrawTextAsync(CanvasId, "1", cx - s - 12, cy - s - 6, Primary, 13);
+        await Viz.DrawTextAsync(CanvasId, "2", cx + s + 12, cy - s - 6, Primary, 13);
+        await Viz.DrawTextAsync(CanvasId, "3", cx + s + 12, cy + s + 14, Primary, 13);
+        await Viz.DrawTextAsync(CanvasId, "4", cx - s - 12, cy + s + 14, Primary, 13);
         // Symmetry axes (dashed appearance via short segments)
-        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx, cy - s - 20 }, new[] { cx, cy + s + 20 } }, "rgba(155, 89, 182, 0.4)", 1.5);
-        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx - s - 20, cy }, new[] { cx + s + 20, cy } }, "rgba(155, 89, 182, 0.4)", 1.5);
-        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx - s - 15, cy - s - 15 }, new[] { cx + s + 15, cy + s + 15 } }, "rgba(155, 89, 182, 0.25)", 1.5);
-        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx + s + 15, cy - s - 15 }, new[] { cx - s - 15, cy + s + 15 } }, "rgba(155, 89, 182, 0.25)", 1.5);
+        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx, cy - s - 20 }, new[] { cx, cy + s + 20 } }, Tint(Primary, 40), 1.5);
+        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx - s - 20, cy }, new[] { cx + s + 20, cy } }, Tint(Primary, 40), 1.5);
+        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx - s - 15, cy - s - 15 }, new[] { cx + s + 15, cy + s + 15 } }, Tint(Primary, 25), 1.5);
+        await Viz.DrawFunctionAsync(CanvasId, new[] { new[] { cx + s + 15, cy - s - 15 }, new[] { cx - s - 15, cy + s + 15 } }, Tint(Primary, 25), 1.5);
         // Rotation arrow
         var arc = new double[9][];
         for (int i = 0; i <= 8; i++)
@@ -769,8 +782,8 @@
             var a = -Math.PI / 4 + Math.PI / 2 * i / 8;
             arc[i] = new[] { cx + 30 * Math.Cos(a), cy + 30 * Math.Sin(a) };
         }
-        await Viz.DrawFunctionAsync(CanvasId, arc, "#E67E22", 2);
-        await Viz.DrawTextAsync(CanvasId, "D₄: 4 rotations + 4 reflections = 8 symmetries", Width / 2, 16, "#9B59B6", 11);
+        await Viz.DrawFunctionAsync(CanvasId, arc, Slate, 2);
+        await Viz.DrawTextAsync(CanvasId, "D₄: 4 rotations + 4 reflections = 8 symmetries", Width / 2, 16, Primary, 11);
     }
 
     private async Task DrawGraphBasic()
@@ -790,22 +803,22 @@
         {
             await Viz.DrawFunctionAsync(CanvasId,
                 new[] { new[] { positions[a].x, positions[a].y }, new[] { positions[b].x, positions[b].y } },
-                "rgba(26, 188, 156, 0.5)", 2);
+                Tint(Primary, 50), 2);
         }
         // Vertices
         foreach (var (x, y, label) in positions)
         {
-            await Viz.DrawPointAsync(CanvasId, x, y, 10, "#1ABC9C");
-            await Viz.DrawTextAsync(CanvasId, label, x, y - 16, "#1A1A2E", 13);
+            await Viz.DrawPointAsync(CanvasId, x, y, 10, Primary);
+            await Viz.DrawTextAsync(CanvasId, label, x, y - 16, Ink, 13);
         }
-        await Viz.DrawTextAsync(CanvasId, "G = (V, E) — 5 vertices, 7 edges", Width / 2, 16, "#1ABC9C", 12);
+        await Viz.DrawTextAsync(CanvasId, "G = (V, E): 5 vertices, 7 edges", Width / 2, 16, Primary, 12);
     }
 
     private async Task DrawFactorTree()
     {
         // Factor tree: 60 -> 2 * 30 -> 2 * 15 -> 3 * 5
-        var primeColor = "#2ECC71";
-        var compositeColor = "#4A90D9";
+        var primeColor = Olive;
+        var compositeColor = Slate;
         double midX = Width / 2.0;
 
         // Node positions: (x, y, label, isPrime)
@@ -828,14 +841,14 @@
                 new[] { nodes[p].x, nodes[p].y + 12 },
                 new[] { nodes[c].x, nodes[c].y - 12 }
             };
-            await Viz.DrawFunctionAsync(CanvasId, line, "rgba(74, 95, 224, 0.4)", 1.5);
+            await Viz.DrawFunctionAsync(CanvasId, line, Tint(Primary, 40), 1.5);
         }
 
         // Draw nodes
         foreach (var (x, y, label, isPrime) in nodes)
         {
             var color = isPrime ? primeColor : compositeColor;
-            var fillBg = isPrime ? "rgba(46, 204, 113, 0.15)" : "rgba(74, 144, 217, 0.1)";
+            var fillBg = isPrime ? Tint(Olive, 15) : Tint(Slate, 10);
             // Draw a circle background
             await Viz.DrawPointAsync(CanvasId, x, y, isPrime ? 18 : 20, fillBg);
             await Viz.DrawPointAsync(CanvasId, x, y, isPrime ? 16 : 18, fillBg);
@@ -843,11 +856,11 @@
         }
 
         // Multiplication signs
-        await Viz.DrawTextAsync(CanvasId, "×", midX - 15, 100, "#888", 12);
-        await Viz.DrawTextAsync(CanvasId, "×", midX + 50, 164, "#888", 12);
-        await Viz.DrawTextAsync(CanvasId, "×", midX + 100, 228, "#888", 12);
+        await Viz.DrawTextAsync(CanvasId, "×", midX - 15, 100, Muted, 12);
+        await Viz.DrawTextAsync(CanvasId, "×", midX + 50, 164, Muted, 12);
+        await Viz.DrawTextAsync(CanvasId, "×", midX + 100, 228, Muted, 12);
 
-        await Viz.DrawTextAsync(CanvasId, "60 = 2² × 3 × 5 (primes in green)", Width / 2, 16, "#4A90D9", 12);
+        await Viz.DrawTextAsync(CanvasId, "60 = 2² × 3 × 5 (primes in green)", Width / 2, 16, Slate, 12);
     }
 
     private async Task DrawBayesVisual()
@@ -868,42 +881,42 @@
         // Disease column
         // True positive (disease + test positive) -- highlighted
         await Viz.DrawRectAsync(CanvasId, left, top, diseaseW, diseasePosH,
-            "rgba(231, 76, 60, 0.5)", "#E74C3C");
-        await Viz.DrawTextAsync(CanvasId, "TP", left + diseaseW / 2, top + diseasePosH / 2 + 4, "#FFF", 11);
+            Tint(Primary, 45), Primary);
+        await Viz.DrawTextAsync(CanvasId, "TP", left + diseaseW / 2, top + diseasePosH / 2 + 4, Ink, 11);
 
         // False negative (disease + test negative)
         await Viz.DrawRectAsync(CanvasId, left, top + diseasePosH, diseaseW, diseaseNegH,
-            "rgba(231, 76, 60, 0.15)", "#E74C3C");
-        await Viz.DrawTextAsync(CanvasId, "FN", left + diseaseW / 2, top + diseasePosH + diseaseNegH / 2 + 4, "#C0392B", 9);
+            Tint(Primary, 12), Primary);
+        await Viz.DrawTextAsync(CanvasId, "FN", left + diseaseW / 2, top + diseasePosH + diseaseNegH / 2 + 4, Primary, 9);
 
         // Healthy column
         // False positive (healthy + test positive) -- also highlighted for comparison
         await Viz.DrawRectAsync(CanvasId, left + diseaseW, top, healthyW, healthyPosH,
-            "rgba(230, 126, 34, 0.4)", "#E67E22");
-        await Viz.DrawTextAsync(CanvasId, "FP", left + diseaseW + healthyW / 2, top + healthyPosH / 2 + 4, "#FFF", 11);
+            Tint(Ochre, 40), Ochre);
+        await Viz.DrawTextAsync(CanvasId, "FP", left + diseaseW + healthyW / 2, top + healthyPosH / 2 + 4, Ink, 11);
 
         // True negative (healthy + test negative)
         await Viz.DrawRectAsync(CanvasId, left + diseaseW, top + healthyPosH, healthyW, healthyNegH,
-            "rgba(46, 204, 113, 0.15)", "#2ECC71");
-        await Viz.DrawTextAsync(CanvasId, "TN", left + diseaseW + healthyW / 2, top + healthyPosH + healthyNegH / 2 + 4, "#2ECC71", 11);
+            Tint(Olive, 15), Olive);
+        await Viz.DrawTextAsync(CanvasId, "TN", left + diseaseW + healthyW / 2, top + healthyPosH + healthyNegH / 2 + 4, Olive, 11);
 
         // Labels
-        await Viz.DrawTextAsync(CanvasId, "Disease 1%", left + diseaseW / 2, top - 6, "#E74C3C", 10);
-        await Viz.DrawTextAsync(CanvasId, "Healthy 99%", left + diseaseW + healthyW / 2, top - 6, "#2ECC71", 10);
+        await Viz.DrawTextAsync(CanvasId, "Disease 1%", left + diseaseW / 2, top - 6, Primary, 10);
+        await Viz.DrawTextAsync(CanvasId, "Healthy 99%", left + diseaseW + healthyW / 2, top - 6, Olive, 10);
 
         // Horizontal line showing "all positives"
         var posLineY = top + Math.Max(diseasePosH, healthyPosH) + 4;
         await Viz.DrawFunctionAsync(CanvasId, new double[][] {
             new[] { left - 2, posLineY },
             new[] { left + diseaseW + healthyW + 2, posLineY }
-        }, "rgba(243, 156, 18, 0.6)", 1.5);
-        await Viz.DrawTextAsync(CanvasId, "↑ all test+ above", Width / 2, posLineY + 14, "#E67E22", 10);
+        }, Tint(Ochre, 60), 1.5);
+        await Viz.DrawTextAsync(CanvasId, "↑ all test+ above", Width / 2, posLineY + 14, Ochre, 10);
 
         // Bottom: P(disease|+) calculation
         double tp = 0.95 * 0.01;
         double fp = 0.05 * 0.99;
         double pDiseaseGivenPos = tp / (tp + fp);
-        await Viz.DrawTextAsync(CanvasId, $"P(disease|+) = TP/(TP+FP) ≈ {pDiseaseGivenPos:P0}", Width / 2, Height - 6, "#E74C3C", 11);
+        await Viz.DrawTextAsync(CanvasId, $"P(disease|+) = TP/(TP+FP) ≈ {pDiseaseGivenPos:P0}", Width / 2, Height - 6, Primary, 11);
     }
 
     private async Task DrawBellCurve()
@@ -923,7 +936,7 @@
             shade3.Add(new[] { ToScreenX(x), ToScreenY(normal(x)) });
         }
         shade3.Add(new[] { ToScreenX(3 * sigma), ToScreenY(0) });
-        await Viz.DrawShapeAsync(CanvasId, shade3.ToArray(), "rgba(52, 152, 219, 0.10)", null, 0);
+        await Viz.DrawShapeAsync(CanvasId, shade3.ToArray(), Tint(Primary, 10), null, 0);
 
         // Shade 2-sigma region (95%)
         var shade2 = new List<double[]>();
@@ -933,7 +946,7 @@
             shade2.Add(new[] { ToScreenX(x), ToScreenY(normal(x)) });
         }
         shade2.Add(new[] { ToScreenX(2 * sigma), ToScreenY(0) });
-        await Viz.DrawShapeAsync(CanvasId, shade2.ToArray(), "rgba(52, 152, 219, 0.15)", null, 0);
+        await Viz.DrawShapeAsync(CanvasId, shade2.ToArray(), Tint(Primary, 15), null, 0);
 
         // Shade 1-sigma region (68%)
         var shade1 = new List<double[]>();
@@ -943,23 +956,23 @@
             shade1.Add(new[] { ToScreenX(x), ToScreenY(normal(x)) });
         }
         shade1.Add(new[] { ToScreenX(sigma), ToScreenY(0) });
-        await Viz.DrawShapeAsync(CanvasId, shade1.ToArray(), "rgba(52, 152, 219, 0.25)", null, 0);
+        await Viz.DrawShapeAsync(CanvasId, shade1.ToArray(), Tint(Primary, 25), null, 0);
 
         // Draw the bell curve itself
         var curvePoints = PlotFunction(normal, -4, 4);
-        await Viz.DrawFunctionAsync(CanvasId, curvePoints, "#3498DB", 2.5);
+        await Viz.DrawFunctionAsync(CanvasId, curvePoints, Primary, 2.5);
 
         // Labels for sigma regions
         double peakY = normal(0);
         double labelY = ToScreenY(peakY * 0.3);
-        await Viz.DrawTextAsync(CanvasId, "68%", Width / 2, labelY, "#2980B9", 11);
+        await Viz.DrawTextAsync(CanvasId, "68%", Width / 2, labelY, Ink, 11);
         if (sigma <= 2.0)
         {
-            await Viz.DrawTextAsync(CanvasId, "95%", ToScreenX(1.5 * sigma), labelY + 16, "rgba(41,128,185,0.7)", 10);
-            await Viz.DrawTextAsync(CanvasId, "99.7%", ToScreenX(2.5 * sigma), labelY + 30, "rgba(41,128,185,0.5)", 9);
+            await Viz.DrawTextAsync(CanvasId, "95%", ToScreenX(1.5 * sigma), labelY + 16, Tint(Ink, 70), 10);
+            await Viz.DrawTextAsync(CanvasId, "99.7%", ToScreenX(2.5 * sigma), labelY + 30, Tint(Ink, 50), 9);
         }
 
-        await Viz.DrawTextAsync(CanvasId, $"Normal(μ=0, σ={sigma:F1})", Width / 2, 16, "#3498DB", 12);
+        await Viz.DrawTextAsync(CanvasId, $"Normal(μ=0, σ={sigma:F1})", Width / 2, 16, Primary, 12);
     }
 
     private async Task DrawPermutationCycle()
@@ -980,19 +993,19 @@
         // Draw circles and labels
         for (int i = 0; i < 4; i++)
         {
-            await Viz.DrawPointAsync(CanvasId, positions[i].x, positions[i].y, r, "rgba(74, 95, 224, 0.12)");
-            await Viz.DrawPointAsync(CanvasId, positions[i].x, positions[i].y, r - 2, "rgba(74, 95, 224, 0.08)");
-            await Viz.DrawTextAsync(CanvasId, (i + 1).ToString(), positions[i].x, positions[i].y + 5, "#4A5FE0", 16, "center");
+            await Viz.DrawPointAsync(CanvasId, positions[i].x, positions[i].y, r, Tint(Primary, 12));
+            await Viz.DrawPointAsync(CanvasId, positions[i].x, positions[i].y, r - 2, Tint(Primary, 8));
+            await Viz.DrawTextAsync(CanvasId, (i + 1).ToString(), positions[i].x, positions[i].y + 5, Primary, 16, "center");
         }
 
         // Permutation: 1->3, 2->1, 3->4, 4->2
         // Cycles: (1 3 4 2)
         var arrows = new (int from, int to, string color)[]
         {
-            (0, 2, "#E74C3C"),  // 1 -> 3
-            (1, 0, "#2ECC71"),  // 2 -> 1
-            (2, 3, "#9B59B6"),  // 3 -> 4
-            (3, 1, "#E67E22"),  // 4 -> 2
+            (0, 2, Slate),  // 1 -> 3
+            (1, 0, Olive),  // 2 -> 1
+            (2, 3, Plum),  // 3 -> 4
+            (3, 1, Ochre),  // 4 -> 2
         };
 
         foreach (var (from, to, color) in arrows)
@@ -1040,8 +1053,8 @@
         }
 
         // Labels
-        await Viz.DrawTextAsync(CanvasId, "Permutation (1 3 4 2): one 4-cycle", Width / 2, 16, "#4A5FE0", 12);
-        await Viz.DrawTextAsync(CanvasId, "1→3  2→1  3→4  4→2", Width / 2, Height - 12, "#666", 11);
+        await Viz.DrawTextAsync(CanvasId, "Permutation (1 3 4 2): one 4-cycle", Width / 2, 16, Primary, 12);
+        await Viz.DrawTextAsync(CanvasId, "1→3  2→1  3→4  4→2", Width / 2, Height - 12, Muted, 11);
     }
 
     private async Task DrawEulerBridges()
@@ -1060,11 +1073,11 @@
         };
 
         // Draw landmasses
-        var oddColor = "#E74C3C";
+        var oddColor = Primary;
         foreach (var (x, y, w, h, label, deg) in lands)
         {
             // All vertices have odd degree in Konigsberg
-            await Viz.DrawRectAsync(CanvasId, x - w / 2, y - h / 2, w, h, "rgba(231, 76, 60, 0.15)", oddColor);
+            await Viz.DrawRectAsync(CanvasId, x - w / 2, y - h / 2, w, h, Tint(Primary, 15), oddColor);
             await Viz.DrawTextAsync(CanvasId, label, x, y + 4, oddColor, 10, "center");
         }
 
@@ -1089,15 +1102,15 @@
                 new[] { lands[from].x + offX, lands[from].y + offY },
                 new[] { lands[to].x + offX, lands[to].y + offY }
             };
-            await Viz.DrawFunctionAsync(CanvasId, line, "#4A90D9", 3);
+            await Viz.DrawFunctionAsync(CanvasId, line, Slate, 3);
             // Bridge label
             double mx = (lands[from].x + lands[to].x) / 2.0 + offX;
             double my = (lands[from].y + lands[to].y) / 2.0 + offY;
-            await Viz.DrawPointAsync(CanvasId, mx, my, 3, "#4A90D9");
+            await Viz.DrawPointAsync(CanvasId, mx, my, 3, Slate);
         }
 
-        await Viz.DrawTextAsync(CanvasId, "Königsberg: all vertices odd → no Euler path", Width / 2, 16, "#E74C3C", 11);
-        await Viz.DrawTextAsync(CanvasId, "7 bridges, 4 landmasses", Width / 2, Height - 8, "#4A90D9", 10);
+        await Viz.DrawTextAsync(CanvasId, "Königsberg: all vertices odd → no Euler path", Width / 2, 16, Primary, 11);
+        await Viz.DrawTextAsync(CanvasId, "7 bridges, 4 landmasses", Width / 2, Height - 8, Slate, 10);
     }
 
     private async Task DrawGraphColoringDemo()
@@ -1108,12 +1121,12 @@
 
         var vertices = new (double x, double y, string label, string color)[]
         {
-            (cx, cy - r, "A", "#E74C3C"),                          // red
-            (cx + r * 0.87, cy - r * 0.3, "B", "#3498DB"),        // blue
-            (cx + r * 0.7, cy + r * 0.7, "C", "#2ECC71"),         // green
-            (cx - r * 0.7, cy + r * 0.7, "D", "#E74C3C"),         // red
-            (cx - r * 0.87, cy - r * 0.3, "E", "#F39C12"),        // yellow
-            (cx, cy + 5, "F", "#2ECC71"),                          // green (center)
+            (cx, cy - r, "A", Primary),
+            (cx + r * 0.87, cy - r * 0.3, "B", Slate),
+            (cx + r * 0.7, cy + r * 0.7, "C", Olive),
+            (cx - r * 0.7, cy + r * 0.7, "D", Primary),
+            (cx - r * 0.87, cy - r * 0.3, "E", Ochre),
+            (cx, cy + 5, "F", Olive),
         };
 
         // Edges ensuring no two adjacent share a color
@@ -1129,19 +1142,19 @@
         {
             await Viz.DrawFunctionAsync(CanvasId,
                 new[] { new[] { vertices[a].x, vertices[a].y }, new[] { vertices[b].x, vertices[b].y } },
-                "rgba(100, 100, 120, 0.3)", 1.5);
+                Tint(Ink, 25), 1.5);
         }
 
         // Draw vertices
         foreach (var (x, y, label, color) in vertices)
         {
             await Viz.DrawPointAsync(CanvasId, x, y, 16, color);
-            await Viz.DrawTextAsync(CanvasId, label, x, y + 5, "#FFF", 13, "center");
+            await Viz.DrawTextAsync(CanvasId, label, x, y + 5, Card, 13, "center");
         }
 
         // Legend
         var colors = new (string name, string color)[] {
-            ("R", "#E74C3C"), ("B", "#3498DB"), ("G", "#2ECC71"), ("Y", "#F39C12")
+            ("1", Primary), ("2", Slate), ("3", Olive), ("4", Ochre)
         };
         double legendX = 24;
         for (int i = 0; i < colors.Length; i++)
@@ -1149,8 +1162,8 @@
             await Viz.DrawPointAsync(CanvasId, legendX + i * 28, Height - 14, 6, colors[i].color);
         }
 
-        await Viz.DrawTextAsync(CanvasId, "4-coloring: no adjacent vertices share a color", Width / 2, 16, "#4A5FE0", 11);
-        await Viz.DrawTextAsync(CanvasId, "χ(G) ≤ 4 for planar graphs", Width / 2, Height - 8, "#888", 10);
+        await Viz.DrawTextAsync(CanvasId, "4-coloring: no adjacent vertices share a color", Width / 2, 16, Primary, 11);
+        await Viz.DrawTextAsync(CanvasId, "χ(G) ≤ 4 for planar graphs", Width / 2, Height - 8, Muted, 10);
     }
 
     private async Task DrawChainRuleViz()
@@ -1167,9 +1180,9 @@
         double scaleL = 25;
         // Draw mini axes for left panel
         await Viz.DrawFunctionAsync(CanvasId,
-            new[] { new[] { 4.0, lCy }, new[] { plotW - 4, lCy } }, "rgba(26,26,46,0.2)", 1);
+            new[] { new[] { 4.0, lCy }, new[] { plotW - 4, lCy } }, Tint(Ink, 20), 1);
         await Viz.DrawFunctionAsync(CanvasId,
-            new[] { new[] { lCx, plotY + 4 }, new[] { lCx, plotY + plotH - 4 } }, "rgba(26,26,46,0.2)", 1);
+            new[] { new[] { lCx, plotY + 4 }, new[] { lCx, plotY + plotH - 4 } }, Tint(Ink, 20), 1);
 
         // Plot g(x) = x^2 on left
         Func<double, double> g = x => x * x;
@@ -1182,16 +1195,16 @@
             double sy = lCy - g(x) * scaleL;
             gPoints[i] = new[] { sx, sy };
         }
-        await Viz.DrawFunctionAsync(CanvasId, gPoints, "#4A90D9", 2);
-        await Viz.DrawTextAsync(CanvasId, "g(x) = x²", lCx, plotY + plotH + 14, "#4A90D9", 11);
+        await Viz.DrawFunctionAsync(CanvasId, gPoints, Primary, 2);
+        await Viz.DrawTextAsync(CanvasId, "g(x) = x²", lCx, plotY + plotH + 14, Primary, 11);
 
         // Right panel: f(u) = sin(u)
         double rCx = plotW + gap + plotW / 2.0, rCy = plotY + plotH / 2.0;
         double scaleR = 22;
         await Viz.DrawFunctionAsync(CanvasId,
-            new[] { new[] { plotW + gap + 4, rCy }, new[] { Width - 4.0, rCy } }, "rgba(26,26,46,0.2)", 1);
+            new[] { new[] { plotW + gap + 4, rCy }, new[] { Width - 4.0, rCy } }, Tint(Ink, 20), 1);
         await Viz.DrawFunctionAsync(CanvasId,
-            new[] { new[] { rCx, plotY + 4 }, new[] { rCx, plotY + plotH - 4 } }, "rgba(26,26,46,0.2)", 1);
+            new[] { new[] { rCx, plotY + 4 }, new[] { rCx, plotY + plotH - 4 } }, Tint(Ink, 20), 1);
 
         // Plot f(u) = sin(u) on right
         Func<double, double> f = u => Math.Sin(u);
@@ -1204,8 +1217,8 @@
             double sy = rCy - f(u) * scaleR * 2;
             fPoints[i] = new[] { sx, sy };
         }
-        await Viz.DrawFunctionAsync(CanvasId, fPoints, "#E74C3C", 2);
-        await Viz.DrawTextAsync(CanvasId, "f(u) = sin(u)", rCx, plotY + plotH + 14, "#E74C3C", 11);
+        await Viz.DrawFunctionAsync(CanvasId, fPoints, Slate, 2);
+        await Viz.DrawTextAsync(CanvasId, "f(u) = sin(u)", rCx, plotY + plotH + 14, Slate, 11);
 
         // Show the chain: pick x=1.2 -> g(1.2)=1.44 -> f(1.44)=sin(1.44)
         double xVal = 1.2;
@@ -1215,20 +1228,20 @@
         // Mark x on left
         double xPxL = lCx + xVal * scaleL;
         double yPxL = lCy - gVal * scaleL;
-        await Viz.DrawPointAsync(CanvasId, xPxL, yPxL, 5, "#EF5350", "");
-        await Viz.DrawTextAsync(CanvasId, $"x={xVal:F1}", xPxL, lCy + 14, "#EF5350", 9);
+        await Viz.DrawPointAsync(CanvasId, xPxL, yPxL, 5, Ink, "");
+        await Viz.DrawTextAsync(CanvasId, $"x={xVal:F1}", xPxL, lCy + 14, Ink, 9);
 
         // Intermediate value: draw dashed horizontal line from g output to f input
         double uPxR = rCx + gVal * scaleR;
         double vPxR = rCy - fVal * scaleR * 2;
-        await Viz.DrawPointAsync(CanvasId, uPxR, vPxR, 5, "#EF5350", "");
+        await Viz.DrawPointAsync(CanvasId, uPxR, vPxR, 5, Ink, "");
 
         // Arrow connecting the two panels
-        await Viz.DrawVectorAsync(CanvasId, xPxL + 8, yPxL, plotW + gap - 4, rCy - gVal * scaleR * 0.3, "#9B59B6", "");
-        await Viz.DrawTextAsync(CanvasId, $"g={gVal:F2}", (xPxL + plotW + gap) / 2.0, yPxL - 10, "#9B59B6", 9);
+        await Viz.DrawVectorAsync(CanvasId, xPxL + 8, yPxL, plotW + gap - 4, rCy - gVal * scaleR * 0.3, Plum, "");
+        await Viz.DrawTextAsync(CanvasId, $"g={gVal:F2}", (xPxL + plotW + gap) / 2.0, yPxL - 10, Plum, 9);
 
         // Title
-        await Viz.DrawTextAsync(CanvasId, "Chain rule: d/dx f(g(x)) = f'(g(x))·g'(x)", Width / 2, 14, "#4A5FE0", 11);
+        await Viz.DrawTextAsync(CanvasId, "Chain rule: d/dx f(g(x)) = f'(g(x))·g'(x)", Width / 2, 14, Primary, 11);
     }
 
     private async Task DrawDotProductViz()
@@ -1244,10 +1257,10 @@
         double bx = bLen * Math.Cos(thetaRad), by = bLen * Math.Sin(thetaRad);
 
         // Draw vector a
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(ax), ToScreenY(ay), "#4A90D9", "a");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(ax), ToScreenY(ay), Primary, "a");
 
         // Draw vector b
-        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(bx), ToScreenY(by), "#E74C3C", "b");
+        await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(bx), ToScreenY(by), Slate, "b");
 
         // Projection of b onto a: proj = (a.b / a.a) * a
         double dotProd = ax * bx + ay * by;
@@ -1257,7 +1270,7 @@
 
         // Draw projection (dashed via short segments)
         // Projection point on a-line
-        await Viz.DrawPointAsync(CanvasId, ToScreenX(projX), ToScreenY(projY), 4, "#9B59B6", "");
+        await Viz.DrawPointAsync(CanvasId, ToScreenX(projX), ToScreenY(projY), 4, Plum, "");
 
         // Dashed line from b tip to projection point
         int dashes = 10;
@@ -1269,13 +1282,13 @@
                 new[] { ToScreenX(bx + (projX - bx) * t0), ToScreenY(by + (projY - by) * t0) },
                 new[] { ToScreenX(bx + (projX - bx) * t1), ToScreenY(by + (projY - by) * t1) }
             };
-            await Viz.DrawFunctionAsync(CanvasId, dashLine, "#9B59B6", 1.5);
+            await Viz.DrawFunctionAsync(CanvasId, dashLine, Plum, 1.5);
         }
 
         // Draw projection vector (shadow on a)
         if (Math.Abs(projScalar) > 0.01)
         {
-            await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(projX), ToScreenY(projY), "rgba(155,89,182,0.6)", "proj");
+            await Viz.DrawVectorAsync(CanvasId, CX, CY, ToScreenX(projX), ToScreenY(projY), Tint(Plum, 60), "proj");
         }
 
         // Angle arc
@@ -1287,15 +1300,15 @@
             double a2 = thetaRad * i / arcSteps;
             arcPoints[i] = new[] { ToScreenX(arcR * Math.Cos(a2)), ToScreenY(arcR * Math.Sin(a2)) };
         }
-        await Viz.DrawFunctionAsync(CanvasId, arcPoints, "#F39C12", 1.5);
+        await Viz.DrawFunctionAsync(CanvasId, arcPoints, Ochre, 1.5);
         // Angle label
         double labelAngle = thetaRad / 2;
-        await Viz.DrawTextAsync(CanvasId, "θ", ToScreenX(0.85 * Math.Cos(labelAngle)), ToScreenY(0.85 * Math.Sin(labelAngle)), "#F39C12", 12);
+        await Viz.DrawTextAsync(CanvasId, "θ", ToScreenX(0.85 * Math.Cos(labelAngle)), ToScreenY(0.85 * Math.Sin(labelAngle)), Ochre, 12);
 
         // Display dot product value
         double cosTheta = Math.Cos(thetaRad);
         double dotValue = aLen * bLen * cosTheta;
-        await Viz.DrawTextAsync(CanvasId, $"a·b = |a||b|cosθ = {dotValue:F2}", Width / 2, 20, "#4A5FE0", 12);
+        await Viz.DrawTextAsync(CanvasId, $"a·b = |a||b|cosθ = {dotValue:F2}", Width / 2, 20, Primary, 12);
     }
 
     // ── Fractal visualizations ──────────────────────────────────
@@ -1323,12 +1336,12 @@
         allPoints.Add(new[] { ax, ay }); // close the shape
 
         // Draw filled shape with gradient-like effect
-        await Viz.DrawShapeAsync(CanvasId, allPoints.ToArray(), "rgba(142, 68, 173, 0.12)", "#8E44AD", 2);
+        await Viz.DrawShapeAsync(CanvasId, allPoints.ToArray(), Tint(Primary, 12), null, 0);
 
         // Draw the outline with a brighter color
-        await Viz.DrawFunctionAsync(CanvasId, allPoints.ToArray(), "#9B59B6", 2);
+        await Viz.DrawFunctionAsync(CanvasId, allPoints.ToArray(), Primary, 2);
 
-        await Viz.DrawTextAsync(CanvasId, $"Koch Snowflake (iteration {kochIterations})", Width / 2, 16, "#8E44AD", 12);
+        await Viz.DrawTextAsync(CanvasId, $"Koch Snowflake (iteration {kochIterations})", Width / 2, 16, Primary, 12);
     }
 
     private List<double[]> KochCurvePoints(double x1, double y1, double x2, double y2, int depth)
@@ -1373,12 +1386,12 @@
         // Draw the filled background triangle
         await Viz.DrawShapeAsync(CanvasId,
             new[] { new[] { topX, topY }, new[] { blX, blY }, new[] { brX, brY } },
-            "rgba(142, 68, 173, 0.06)", null, 0);
+            Tint(Primary, 6), null, 0);
 
         // Recursively draw Sierpinski
         await DrawSierpinskiTriangle(topX, topY, blX, blY, brX, brY, sierpinskiIterations);
 
-        await Viz.DrawTextAsync(CanvasId, $"Sierpinski Triangle (iteration {sierpinskiIterations})", Width / 2, Height - 6, "#8E44AD", 11);
+        await Viz.DrawTextAsync(CanvasId, $"Sierpinski Triangle (iteration {sierpinskiIterations})", Width / 2, Height - 6, Primary, 11);
     }
 
     private async Task DrawSierpinskiTriangle(double x1, double y1, double x2, double y2, double x3, double y3, int depth)
@@ -1388,7 +1401,7 @@
             // Draw filled triangle
             await Viz.DrawShapeAsync(CanvasId,
                 new[] { new[] { x1, y1 }, new[] { x2, y2 }, new[] { x3, y3 } },
-                "rgba(155, 89, 182, 0.35)", "#9B59B6", 1);
+                Tint(Primary, 35), Primary, 1);
             return;
         }
 
@@ -1523,17 +1536,19 @@
         double plotW = Width - marginL - marginR;
         double plotH = Height - marginT - marginB;
 
+        string stable = Tint(Slate, 60), doubling = Tint(Primary, 45), chaotic = Tint(Ochre, 40);
+
         // Draw axes
         await Viz.DrawFunctionAsync(CanvasId,
             new[] { new[] { marginL, marginT }, new[] { marginL, Height - marginB }, new[] { Width - marginR, Height - marginB } },
-            "rgba(142, 68, 173, 0.4)", 1);
+            Tint(Ink, 35), 1);
 
         // Axis labels
-        await Viz.DrawTextAsync(CanvasId, "2.5", marginL, Height - 10, "#888", 9);
-        await Viz.DrawTextAsync(CanvasId, "4.0", Width - marginR, Height - 10, "#888", 9);
-        await Viz.DrawTextAsync(CanvasId, "r", Width / 2, Height - 6, "#8E44AD", 10);
-        await Viz.DrawTextAsync(CanvasId, "1", marginL - 12, marginT + 4, "#888", 9);
-        await Viz.DrawTextAsync(CanvasId, "0", marginL - 12, Height - marginB + 4, "#888", 9);
+        await Viz.DrawTextAsync(CanvasId, "2.5", marginL, Height - 10, Muted, 9);
+        await Viz.DrawTextAsync(CanvasId, "4.0", Width - marginR, Height - 10, Muted, 9);
+        await Viz.DrawTextAsync(CanvasId, "r", Width / 2, Height - 6, Muted, 10);
+        await Viz.DrawTextAsync(CanvasId, "1", marginL - 12, marginT + 4, Muted, 9);
+        await Viz.DrawTextAsync(CanvasId, "0", marginL - 12, Height - marginB + 4, Muted, 9);
 
         for (int ri = 0; ri < rSteps; ri++)
         {
@@ -1551,21 +1566,21 @@
                 x = r * x * (1 - x);
                 double screenY = marginT + plotH * (1 - x);
 
-                // Color based on r: purple in stable region, transitioning to magenta/gold in chaos
+                // Color based on r: stable, period-doubling, chaotic
                 double t = (r - rMin) / (rMax - rMin);
                 string color;
                 if (t < 0.4)
-                    color = "rgba(142, 68, 173, 0.6)";
+                    color = stable;
                 else if (t < 0.7)
-                    color = "rgba(192, 57, 43, 0.4)";
+                    color = doubling;
                 else
-                    color = "rgba(230, 126, 34, 0.35)";
+                    color = chaotic;
 
                 await Viz.DrawRectAsync(CanvasId, screenX, screenY, 1.2, 1.2, color, null);
             }
         }
 
-        await Viz.DrawTextAsync(CanvasId, "Bifurcation Diagram: x → rx(1-x)", Width / 2, 14, "#8E44AD", 12);
+        await Viz.DrawTextAsync(CanvasId, "Bifurcation Diagram: x → rx(1-x)", Width / 2, 14, Primary, 12);
     }
 
     // ── End fractal visualizations ───────────────────────────────
@@ -1573,7 +1588,7 @@
     private async Task DrawDefault()
     {
         await Viz.DrawAxesAsync(CanvasId, Scale, Scale);
-        await Viz.DrawTextAsync(CanvasId, "Visualization", Width / 2, Height / 2, "#8888AA", 14);
+        await Viz.DrawTextAsync(CanvasId, "Visualization", Width / 2, Height / 2, Muted, 14);
     }
 
     // Slider input handlers (fire on every drag movement)

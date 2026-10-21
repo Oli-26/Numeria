@@ -7,7 +7,7 @@
     "prompt": "Why does a B-tree (with high branching factor) outperform a red-black tree for on-disk database indexes?",
     "options": ["B-trees use less memory", "B-trees match disk page size, minimizing I/O round trips", "B-trees are simpler to implement", "B-trees don't need balance"],
     "correctAnswer": "B-trees match disk page size, minimizing I/O round trips",
-    "explanation": "Each B-tree node holds many keys (typically hundreds), matching a disk page. The tree is shallow — 3-4 levels for billions of rows — so lookup needs only a handful of disk reads. Red-black trees have many more levels, and each node access could be a separate read.",
+    "explanation": "Each B-tree node holds many keys (typically hundreds), matching a disk page. The tree is shallow, 3-4 levels for billions of rows, so lookup needs only a handful of disk reads. Red-black trees have many more levels, and each node access could be a separate read.",
     "xpReward": 40
   },
   {
@@ -28,7 +28,7 @@
     "prompt": "What is the asymptotic running time of m union-find operations on n elements with path compression and union by rank?",
     "options": ["O(m log* n)", "O(m log log n)", "O(m log n)", "O(m α(n))"],
     "correctAnswer": "O(m α(n))",
-    "explanation": "Tarjan proved this bound where α is the inverse Ackermann function — effectively constant for any practical input.",
+    "explanation": "Tarjan proved this bound where α is the inverse Ackermann function: effectively constant for any practical input.",
     "xpReward": 40
   },
   {
@@ -72,7 +72,7 @@
       "Therefore my data structure has logarithmic insert and lookup"
     ],
     "correctAnswer": "4",
-    "explanation": "Step 4 is wrong. Inserting into a sorted array requires shifting elements to maintain order — O(n), not O(log n). Binary search FINDS the insertion point in O(log n), but the actual insertion is O(n). For O(log n) insert + lookup, use a balanced BST or skip list; for O(1) average lookup, use a hash table.",
+    "explanation": "Step 4 is wrong. Inserting into a sorted array requires shifting elements to maintain order: O(n), not O(log n). Binary search FINDS the insertion point in O(log n), but the actual insertion is O(n). For O(log n) insert + lookup, use a balanced BST or skip list; for O(1) average lookup, use a hash table.",
     "xpReward": 50
   },
   {
@@ -82,7 +82,7 @@
     "difficulty": 3,
     "prompt": "An adjacency matrix is more space-efficient than an adjacency list for graphs where the number of edges E is close to V^2 (very dense graphs).",
     "correctAnswer": "True",
-    "explanation": "For dense graphs, adjacency lists pay O(V + E) ≈ O(V^2) anyway, plus per-edge overhead for list nodes/pointers. An adjacency matrix is exactly V^2 bits or bytes — often smaller. For sparse graphs, lists win clearly.",
+    "explanation": "For dense graphs, adjacency lists pay O(V + E) ≈ O(V^2) anyway, plus per-edge overhead for list nodes/pointers. An adjacency matrix is exactly V^2 bits or bytes, often smaller. For sparse graphs, lists win clearly.",
     "xpReward": 40
   },
   {

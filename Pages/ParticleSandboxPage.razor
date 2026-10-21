@@ -251,7 +251,7 @@ else
             },
             new() {
                 new Product("Quark jets", "A virtual photon or Z boson decays into a quark-antiquark pair that hadronize into sprays of pions and kaons.", "#E74C3C"),
-                new Product("Gluon radiation", "Hard gluon emission produces a third jet -- the original LEP discovery of the gluon.", "#2ECC71"),
+                new Product("Gluon radiation", "Hard gluon emission produces a third jet: the original LEP discovery of the gluon.", "#2ECC71"),
                 new Product("Gamma rays", "Initial-state radiation accompanies the collision.", "var(--accent)")
             },
             "At TeV energies the electron and positron annihilate into a virtual photon (or Z) which materialises into quarks. Color confinement turns the bare quarks into collimated jets of hadrons."
@@ -267,7 +267,7 @@ else
             },
             new() {
                 new Product("Higgs boson", "Produced via gluon-gluon fusion through a top-quark loop, then decays almost instantly.", "#9B59B6"),
-                new Product("Two photons", "A clean Higgs to gamma-gamma decay -- the channel ATLAS and CMS used in 2012.", "var(--accent)"),
+                new Product("Two photons", "A clean Higgs to gamma-gamma decay, the channel ATLAS and CMS used in 2012.", "var(--accent)"),
                 new Product("Quark / gluon jets", "Beam remnants and underlying event spray hadrons in every direction.", "#E74C3C")
             },
             "At LHC energies (~13 TeV) gluons inside the protons fuse into a Higgs boson. The Higgs lives for ~10^-22 seconds before decaying; the di-photon channel was the smoking-gun signature in the 2012 discovery."
@@ -281,11 +281,11 @@ else
                 new Track("#4A90D9", true)
             },
             new() {
-                new Product("Pion shower", "Charged and neutral pions -- the lightest mesons -- dominate the debris.", "#E74C3C"),
+                new Product("Pion shower", "Charged and neutral pions (the lightest mesons) dominate the debris.", "#E74C3C"),
                 new Product("Kaons", "Strange-quark mesons appear when the energy crosses their production threshold.", "#2ECC71"),
                 new Product("Proton remnants", "The original protons usually break up into a forward-going hadronic mess.", "#F39C12")
             },
-            "Above ~GeV the protons no longer bounce elastically. The strong force converts kinetic energy into new quark-antiquark pairs that immediately bind into mesons -- mostly pions."
+            "Above ~GeV the protons no longer bounce elastically. The strong force converts kinetic energy into new quark-antiquark pairs that immediately bind into mesons, mostly pions."
         ),
         "neutrino|electron|medium" => new CollisionResult(
             "Neutrino-Electron Charged-Current Scattering",
@@ -296,7 +296,7 @@ else
             },
             new() {
                 new Product("W boson (virtual)", "Mediates the charged-current interaction; never observed directly here, only its effect.", "#9B59B6"),
-                new Product("Outgoing electron", "Recoils with most of the visible energy -- the experimentally observed track.", "#4A90D9"),
+                new Product("Outgoing electron", "Recoils with most of the visible energy: the experimentally observed track.", "#4A90D9"),
                 new Product("Outgoing neutrino", "Carries energy away invisibly; inferred from missing momentum.", "var(--text-muted)")
             },
             "An electron-neutrino can swap a W boson with an electron, turning into an electron and producing a neutrino. This is exactly the reaction Super-Kamiokande and SNO used to confirm neutrino oscillation."
@@ -308,10 +308,10 @@ else
                 new Track("#E74C3C", true)
             },
             new() {
-                new Product("Electron-positron pair", "Two real photons can produce a matter-antimatter pair if their combined energy exceeds 2*m_e*c^2 -- the Breit-Wheeler process.", "#4A90D9"),
+                new Product("Electron-positron pair", "Two real photons can produce a matter-antimatter pair if their combined energy exceeds 2*m_e*c^2 (the Breit-Wheeler process) process.", "#4A90D9"),
                 new Product("Recoiling lepton", "Charged tracks curl in any surrounding magnetic field.", "#E74C3C")
             },
-            "Two photons can briefly act as virtual electron loops and scatter off each other -- a purely quantum-electrodynamic effect predicted in 1934 and finally observed at the LHC in lead-lead collisions."
+            "Two photons can briefly act as virtual electron loops and scatter off each other, a purely quantum-electrodynamic effect predicted in 1934 and finally observed at the LHC in lead-lead collisions."
         ),
         "photon|atom|low" => new CollisionResult(
             "Photoelectric Effect",
@@ -320,9 +320,9 @@ else
             },
             new() {
                 new Product("Ejected electron", "A bound atomic electron absorbs the whole photon and is kicked free with kinetic energy E_gamma - W.", "#4A90D9"),
-                new Product("Ionised atom", "What remains has a hole in its inner shell and will fluoresce or Auger-decay.", "#F39C12")
+                new Product("Ionized atom", "What remains has a hole in its inner shell and will fluoresce or Auger-decay.", "#F39C12")
             },
-            "A single photon transfers all its energy to a bound electron, ejecting it from the atom. Einstein's 1905 explanation -- which won him the Nobel -- showed light comes in quanta and launched quantum mechanics."
+            "A single photon transfers all its energy to a bound electron, ejecting it from the atom. Einstein's 1905 explanation (which won him the Nobel) showed light comes in quanta and launched quantum mechanics."
         ),
         "proton|atom|low" => new CollisionResult(
             "Rutherford Scattering",
@@ -334,7 +334,7 @@ else
                 new Product("Deflected proton", "Most pass through; a tiny fraction bounce back from the dense nucleus.", "#F39C12"),
                 new Product("Recoiling nucleus", "The atom barely budges if it is heavy.", "#4A90D9")
             },
-            "Rutherford fired alpha particles at gold foil in 1909 and watched some bounce straight back. That single experiment proved the atom is mostly empty space with a tiny dense nucleus -- and killed the plum-pudding model."
+            "Rutherford fired alpha particles at gold foil in 1909 and watched some bounce straight back. That single experiment proved the atom is mostly empty space with a tiny dense nucleus, and killed the plum-pudding model."
         ),
         _ => null
     };
@@ -501,5 +501,13 @@ else
     @@keyframes psFadeIn {
         from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: none; }
+    }
+
+    /* jump straight to each animation's end state so the drawn tracks still appear */
+    @@media (prefers-reduced-motion: reduce) {
+        .ps-result, .ps-incoming-left, .ps-incoming-right, .ps-in-left, .ps-in-right,
+        .ps-vertex, .ps-vertex-core, .ps-out-track, .ps-out-track-straight {
+            animation-duration: 0.01ms !important; animation-delay: 0s !important;
+        }
     }
 </style>

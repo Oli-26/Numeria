@@ -280,10 +280,10 @@ else if (state == ViewState.Lost && run != null)
         cursor: pointer; transition: all 0.15s ease;
     }
     .artifact-card:hover { border-color: var(--primary); }
-    .artifact-card.selected { border-color: var(--primary); background: rgba(91,106,191,0.08); }
+    .artifact-card.selected { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
     .artifact-icon {
         width: 36px; height: 36px; border-radius: 50%;
-        background: rgba(91,106,191,0.12); color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary);
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .artifact-text strong { display: block; font-size: 0.95rem; }
@@ -295,14 +295,14 @@ else if (state == ViewState.Lost && run != null)
         margin-bottom: 12px; border: 1px solid var(--border);
     }
     .run-lives { display: flex; gap: 4px; }
-    .life.filled { color: #e63946; }
+    .life.filled { color: var(--error); }
     .life.lost { color: var(--text-muted); opacity: 0.4; }
     .run-floor { font-weight: 700; font-size: 0.9rem; color: var(--text-secondary); }
 
     .run-artifact-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
     .run-artifact-chip {
         display: inline-flex; gap: 6px; align-items: center;
-        background: rgba(91,106,191,0.08); border: 1px solid rgba(91,106,191,0.2);
+        background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
         padding: 4px 10px; border-radius: 999px; font-size: 0.78rem;
         color: var(--primary);
     }
@@ -322,24 +322,16 @@ else if (state == ViewState.Lost && run != null)
         color: var(--text-muted); display: flex; align-items: center; justify-content: center;
         cursor: not-allowed; transition: all 0.15s ease;
     }
-    .run-node.enemy { border-color: rgba(91,106,191,0.4); }
-    .run-node.elite { border-color: rgba(255,165,0,0.6); color: #ff9500; }
-    .run-node.boss { border-color: rgba(230,57,70,0.7); color: #e63946; width: 64px; height: 64px; }
+    .run-node.enemy { border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+    .run-node.elite { border-color: color-mix(in srgb, var(--accent) 60%, transparent); color: var(--accent); }
+    .run-node.boss { border-color: color-mix(in srgb, var(--error) 70%, transparent); color: var(--error); width: 64px; height: 64px; }
     .run-node.visited { opacity: 0.35; background: var(--bg-card); }
     .run-node.selectable {
-        cursor: pointer; box-shadow: 0 0 0 0 rgba(91,106,191,0.5);
-        animation: pulseNode 1.6s ease-in-out infinite;
+        cursor: pointer; background: var(--bg-card);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
     }
     .run-node.selectable:hover { transform: scale(1.08); }
-    .run-node.boss.selectable { animation: pulseBoss 1.4s ease-in-out infinite; }
-    @@keyframes pulseNode {
-        0%,100% { box-shadow: 0 0 0 0 rgba(91,106,191,0.5); }
-        50% { box-shadow: 0 0 0 8px rgba(91,106,191,0); }
-    }
-    @@keyframes pulseBoss {
-        0%,100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.6); }
-        50% { box-shadow: 0 0 0 12px rgba(230,57,70,0); }
-    }
+    .run-node.boss.selectable { box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 25%, transparent); }
 
     .run-end-card { text-align: center; padding: 24px; max-width: 500px; margin: 0 auto; }
     .run-end-card:hover { transform: none; }
@@ -347,11 +339,11 @@ else if (state == ViewState.Lost && run != null)
         width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 8px;
         display: flex; align-items: center; justify-content: center;
     }
-    .run-end-badge.win { background: linear-gradient(135deg, #FFD700, #FF6B35); color: white; }
+    .run-end-badge.win { background: #C4813A; color: white; }
     .run-end-badge.loss { background: var(--bg-surface); color: var(--text-muted); }
     .run-seal-banner {
         margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm);
-        background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,107,53,0.18));
-        font-weight: 700; color: #FFD700;
+        background: color-mix(in srgb, var(--accent) 14%, transparent);
+        font-weight: 700; color: var(--xp-text);
     }
 </style>

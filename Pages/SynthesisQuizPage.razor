@@ -597,7 +597,7 @@ else
         width: 48px;
         height: 48px;
         border-radius: 12px;
-        background: rgba(74,95,224,0.12);
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
         color: var(--primary);
         display: flex;
         align-items: center;
@@ -637,7 +637,7 @@ else
     .synthesis-card-accent {
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, color-mix(in srgb, var(--quiz-theme) 8%, transparent), transparent 60%);
+        background: color-mix(in srgb, var(--quiz-theme, var(--primary)) 4%, transparent);
         pointer-events: none;
     }
 
@@ -806,17 +806,17 @@ else
         display: flex; align-items: center; gap: 8px; padding: 4px;
         border-radius: var(--radius-sm);
     }
-    .match-row.correct { background: rgba(76,175,80,0.08); }
-    .match-row.incorrect { background: rgba(239,83,80,0.08); }
+    .match-row.correct { background: color-mix(in srgb, var(--success) 8%, transparent); }
+    .match-row.incorrect { background: color-mix(in srgb, var(--error) 8%, transparent); }
     .match-item {
         flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
         font-size: 0.9rem; text-align: center; border: 2px solid var(--border);
         background: var(--bg-card); transition: all 0.2s ease;
     }
     .match-item.left { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .match-item.left.active { border-color: var(--primary); background: rgba(74,95,224,0.08); box-shadow: 0 0 0 2px rgba(74,95,224,0.2); }
+    .match-item.left.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
     .match-item.left.matched { border-color: var(--primary-light); color: var(--primary); }
-    .match-item.right.matched { border-color: var(--primary-light); background: rgba(74,95,224,0.05); cursor: pointer; }
+    .match-item.right.matched { border-color: var(--primary-light); background: color-mix(in srgb, var(--primary) 5%, transparent); cursor: pointer; }
     .match-item.right.empty { border-style: dashed; color: var(--text-muted); background: var(--bg-surface); }
     .match-arrow { color: var(--text-muted); font-size: 0.85rem; flex-shrink: 0; width: 28px; text-align: center; }
     .match-arrow.connected { color: var(--primary); font-size: 1.1rem; }
@@ -827,7 +827,7 @@ else
         background: var(--bg-card); color: var(--text-primary); font-size: 0.9rem;
         cursor: pointer; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
     }
-    .match-option-btn.available { border-color: var(--primary-light); background: rgba(74,95,224,0.05); }
+    .match-option-btn.available { border-color: var(--primary-light); background: color-mix(in srgb, var(--primary) 5%, transparent); }
     .match-option-btn.used { opacity: 0.4; text-decoration: line-through; cursor: default; }
 
     /* Results */
@@ -858,8 +858,8 @@ else
         border-radius: var(--radius-md);
         min-width: 80px;
     }
-    .correct-stat { background: rgba(76,175,80,0.1); color: var(--success); }
-    .wrong-stat { background: rgba(239,83,80,0.1); color: var(--error); }
+    .correct-stat { background: color-mix(in srgb, var(--success) 10%, transparent); color: var(--success); }
+    .wrong-stat { background: color-mix(in srgb, var(--error) 10%, transparent); color: var(--error); }
     .score-stat { background: var(--bg-surface); color: var(--text-primary); }
     .stat-number { font-size: 1.5rem; font-weight: 700; }
     .stat-label { font-size: 0.8rem; opacity: 0.8; }

@@ -285,7 +285,7 @@
             <div class="settings-icon"><Icon Name="zap" Size="24" Stroke="var(--accent)" /></div>
             <div class="settings-info">
                 <h3>Dev Mode</h3>
-                <p>@(devMode ? "Active — everything unlocked" : "Unlock all features, items, and give max points")</p>
+                <p>@(devMode ? "Active: everything unlocked" : "Unlock all features, items, and give max points")</p>
             </div>
             <button class="toggle-btn @(devMode ? "on" : "")" aria-label="@(devMode ? "Disable dev mode" : "Enable dev mode")" @onclick="ToggleDevMode">
                 <span class="toggle-knob"></span>
@@ -431,7 +431,7 @@
             }
 
             await Progress.SaveProfileAsync(profile);
-            await JS.InvokeVoidAsync("showToast", "Dev mode ON — everything unlocked!", "");
+            await JS.InvokeVoidAsync("showToast", "Dev mode ON: everything unlocked!", "");
             await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
         }
         else
@@ -685,7 +685,7 @@
             var granted = await NotificationSvc.RequestPermissionAsync();
             if (!granted)
             {
-                await JS.InvokeVoidAsync("showToast", "Permission denied — check app settings", "");
+                await JS.InvokeVoidAsync("showToast", "Permission denied. Check app settings.", "");
                 return;
             }
             notificationsEnabled = true;
@@ -859,7 +859,7 @@
     .name-edit-buttons { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
 
     /* Danger */
-    .danger-item { border-color: rgba(239, 83, 80, 0.2); }
+    .danger-item { border-color: color-mix(in srgb, var(--error) 20%, transparent); }
     .btn-danger {
         background: var(--error); color: white; border: none;
         padding: 6px 14px; border-radius: var(--radius-sm);
@@ -869,8 +869,8 @@
     .btn-danger:active { opacity: 0.8; }
 
     .confirm-box {
-        margin-top: 12px; padding: 14px; background: rgba(239, 83, 80, 0.06);
-        border-radius: var(--radius-sm); border: 1px solid rgba(239, 83, 80, 0.2);
+        margin-top: 12px; padding: 14px; background: color-mix(in srgb, var(--error) 6%, transparent);
+        border-radius: var(--radius-sm); border: 1px solid color-mix(in srgb, var(--error) 20%, transparent);
         animation: staggerUp 0.3s ease;
     }
     .confirm-box p { color: var(--error); font-size: 0.9rem; margin: 0 0 10px; font-weight: 500; }
@@ -927,7 +927,7 @@
     .time-input:focus { border-color: var(--primary); }
 
     /* Dev */
-    .dev-item { border-color: rgba(240,160,48,0.2); }
+    .dev-item { border-color: color-mix(in srgb, var(--accent) 20%, transparent); }
 
     /* About */
     .about-card { padding: 20px; }

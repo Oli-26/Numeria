@@ -186,7 +186,7 @@
                         if (domTopics.Count == 0) continue;
                         var avg = DomainAvgProgress(d.Id);
                         var mastered = domTopics.Count(t => profile.TopicMastery.GetValueOrDefault(t.Id, 0) > 0);
-                        var hue = DomainColor(d.Id);
+                        var hue = SubjectHues.For(d.Id);
                         <div class="domain-row">
                             <div class="domain-row-head">
                                 <span class="domain-row-name">@d.Name</span>
@@ -209,7 +209,7 @@
                     if (domTopics.Count == 0) continue;
 
                     <div class="topic-domain-group">
-                        <div class="topic-domain-head" style="color: @DomainColor(d.Id)">@d.Name <small>@domTopics.Count</small></div>
+                        <div class="topic-domain-head" style="color: @SubjectHues.For(d.Id)">@d.Name <small>@domTopics.Count</small></div>
                         <div class="topic-rows">
                             @foreach (var topic in domTopics)
                             {
@@ -224,7 +224,7 @@
                                             <span class="topic-row-name">@topic.Name</span>
                                             @if (mastery > 0)
                                             {
-                                                <span class="topic-row-mastery" title="@GetMasteryName(mastery)" style="color: @GetMasteryColor(mastery)">
+                                                <span class="topic-row-mastery" title="@GetMasteryName(mastery)" style="color: color-mix(in srgb, @GetMasteryColor(mastery) 70%, var(--text-primary))">
                                                     <Icon Name="@GetMasteryIcon(mastery)" Size="13" />
                                                 </span>
                                             }
@@ -434,30 +434,6 @@ else
         return dts.Average(t => topicProgress.GetValueOrDefault(t.Id, 0));
     }
 
-    private string DomainColor(string domainId) => domainId switch
-    {
-        "math" => "#4A5FE0",
-        "philosophy" => "#A78BFA",
-        "physics" => "#22B8CF",
-        "biology" => "#22C55E",
-        "chemistry" => "#F59E0B",
-        "geology" => "#A0522D",
-        "materials" => "#94A3B8",
-        "history" => "#B45309",
-        "linguistics" => "#EC4899",
-        "cs" => "#6366F1",
-        "economics" => "#10B981",
-        "literature" => "#D97706",
-        "politics" => "#EF4444",
-        "psychology" => "#F97316",
-        "anthropology" => "#84CC16",
-        "music" => "#F472B6",
-        "art" => "#FB7185",
-        "religion" => "#A23B72",
-        "media" => "#06B6D4",
-        _ => "var(--primary)"
-    };
-
     private bool FilterMatch(Topic t, string filter) => filter switch
     {
         "active" => topicProgress.GetValueOrDefault(t.Id, 0) > 0,
@@ -467,7 +443,7 @@ else
 
     private string GetMasteryName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
     private string GetMasteryIcon(int tier) => tier switch { 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
-    private string GetMasteryColor(int tier) => tier switch { 1 => "#CD7F32", 2 => "#C0C0C0", 3 => "#FFD700", 4 => "#FF6B35", _ => "var(--bg-surface)" };
+    private string GetMasteryColor(int tier) => tier switch { 1 => "#A06542", 2 => "#807A6E", 3 => "#C4813A", 4 => "var(--primary)", _ => "var(--bg-surface)" };
 
     private string FormatTime(int minutes)
     {
@@ -673,9 +649,9 @@ else
         width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
         font-weight: 700; font-size: 0.85rem;
     }
-    .history-score.great { background: rgba(76, 175, 80, 0.15); color: var(--success); }
-    .history-score.ok { background: rgba(255, 152, 0, 0.15); color: var(--warning); }
-    .history-score.low { background: rgba(239, 83, 80, 0.15); color: var(--error); }
+    .history-score.great { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); }
+    .history-score.ok { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
+    .history-score.low { background: color-mix(in srgb, var(--error) 15%, transparent); color: var(--error); }
     .history-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
     .history-info small { color: var(--text-muted); font-size: 0.8rem; }
     .history-right { text-align: right; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }

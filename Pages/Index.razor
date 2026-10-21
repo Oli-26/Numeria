@@ -319,30 +319,30 @@
     private static readonly Lab[] Labs =
     {
         new("*", "Hall of Fame", "Top Trumps and a timeline", "award", "var(--accent)", "/hall-of-fame", "unlock-halloffame-*"),
-        new("math", "What If?", "Break the rules of math", "target", "#9B59B6", "/playground", "unlock-playground"),
-        new("math", "Constants", "Numbers that define reality", "book", "#4A90D9", "/compendium", "unlock-compendium"),
+        new("math", "What If?", "Break the rules of math", "target", "var(--primary)", "/playground", "unlock-playground"),
+        new("math", "Constants", "Numbers that define reality", "book", "var(--accent)", "/compendium", "unlock-compendium"),
         new("math", "Proof Builder", "Build proofs from blocks", "puzzle", "var(--primary)", "/proofs", "unlock-proofs"),
-        new("math", "Mistake Museum", "Spot the flaw", "search", "var(--error)", "/mistakes", "unlock-mistakes"),
+        new("math", "Mistake Museum", "Spot the flaw", "search", "var(--accent)", "/mistakes", "unlock-mistakes"),
         new("physics", "Particle Sandbox", "Smash particles, see decays", "rocket", "var(--primary)", "/particle-sandbox"),
-        new("physics", "Cosmic Scale", "Planck length to universe", "target", "#4A90D9", "/cosmic-scale"),
-        new("biology", "Evolution Sim", "Apply pressure, watch traits drift", "trending-up", "#2ECC71", "/evolution-sim"),
-        new("biology", "Cell Tour", "Tap organelles to learn", "search", "#E91E63", "/cell-tour"),
-        new("chemistry", "Reaction Bench", "Combine reagents, see results", "fire", "var(--error)", "/reaction-bench"),
-        new("chemistry", "Molecule Builder", "Drag atoms, build molecules", "puzzle", "#9B59B6", "/molecule-builder"),
-        new("geology", "Deep Time", "4.5 Gyr scrollable timeline", "clock", "#E67E22", "/deep-time"),
-        new("geology", "Rock ID", "Identify samples", "search", "#607D8B", "/rock-id"),
-        new("history", "Era Map", "Empires across time", "calendar", "var(--accent)", "/era-map"),
-        new("history", "Trade Routes", "Silk Road, Spice Route, more", "trending-up", "#1ABC9C", "/trade-routes"),
-        new("linguistics", "Etymology", "Trace words to PIE roots", "scroll", "#4A5FE0", "/etymology"),
-        new("linguistics", "Sound Shift", "Run Grimm's Law on a word", "speech", "#1ABC9C", "/sound-shift"),
-        new("philosophy", "Trolley Lab", "Branching ethical dilemmas", "puzzle", "#9B59B6", "/trolley-lab"),
-        new("materials", "Phase Diagram", "Drag T/P, change states", "flask", "#4A90D9", "/phase-diagram"),
+        new("physics", "Cosmic Scale", "Planck length to universe", "target", "var(--accent)", "/cosmic-scale"),
+        new("biology", "Evolution Sim", "Apply pressure, watch traits drift", "trending-up", "var(--primary)", "/evolution-sim"),
+        new("biology", "Cell Tour", "Tap organelles to learn", "search", "var(--accent)", "/cell-tour"),
+        new("chemistry", "Reaction Bench", "Combine reagents, see results", "fire", "var(--primary)", "/reaction-bench"),
+        new("chemistry", "Molecule Builder", "Drag atoms, build molecules", "puzzle", "var(--accent)", "/molecule-builder"),
+        new("geology", "Deep Time", "4.5 Gyr scrollable timeline", "clock", "var(--primary)", "/deep-time"),
+        new("geology", "Rock ID", "Identify samples", "search", "var(--accent)", "/rock-id"),
+        new("history", "Era Map", "Empires across time", "calendar", "var(--primary)", "/era-map"),
+        new("history", "Trade Routes", "Silk Road, Spice Route, more", "trending-up", "var(--accent)", "/trade-routes"),
+        new("linguistics", "Etymology", "Trace words to PIE roots", "scroll", "var(--primary)", "/etymology"),
+        new("linguistics", "Sound Shift", "Run Grimm's Law on a word", "speech", "var(--accent)", "/sound-shift"),
+        new("philosophy", "Trolley Lab", "Branching ethical dilemmas", "puzzle", "var(--primary)", "/trolley-lab"),
+        new("materials", "Phase Diagram", "Drag T/P, change states", "flask", "var(--primary)", "/phase-diagram"),
         new("cs", "Algorithm Race", "Sorts head-to-head", "code", "var(--primary)", "/algorithm-race"),
-        new("misc", "Cipher Decoder", "Layered cipher puzzles", "eye", "#8E44AD", "/cipher-decoder"),
-        new("politics", "Power Map", "Voter sim and electoral systems", "balance-scale", "#4A5FE0", "/power-map"),
-        new("economics", "Market Sim", "Supply, demand, taxes, deadweight", "coin", "#2ECC71", "/market-sim"),
-        new("media", "Front Page", "Build a story, see the framing", "antenna", "#E91E63", "/front-page"),
-        new("literature", "Plot Geometry", "Freytag pyramids of famous works", "quill", "#F39C12", "/plot-geometry"),
+        new("misc", "Cipher Decoder", "Layered cipher puzzles", "eye", "var(--primary)", "/cipher-decoder"),
+        new("politics", "Power Map", "Voter sim and electoral systems", "balance-scale", "var(--primary)", "/power-map"),
+        new("economics", "Market Sim", "Supply, demand, taxes, deadweight", "coin", "var(--primary)", "/market-sim"),
+        new("media", "Front Page", "Build a story, see the framing", "antenna", "var(--primary)", "/front-page"),
+        new("literature", "Plot Geometry", "Freytag pyramids of famous works", "quill", "var(--primary)", "/plot-geometry"),
     };
 
     // Hall of Fame has no figure list for these subjects yet.
@@ -402,10 +402,14 @@
             currentDomain = string.IsNullOrEmpty(profile.CurrentDomain) ? "math" : profile.CurrentDomain;
             cookieViewed = profile.ViewedCookieDates.Contains(DateTime.Now.ToString("yyyy-MM-dd"));
 
+            // Paint the header and subject first; progress and today's pick fill in after.
+            StateHasChanged();
+
             foreach (var topic in topics)
             {
                 topicProgress[topic.Id] = await Progress.GetTopicProgressAsync(topic.Id);
             }
+            StateHasChanged();
 
             await LoadRecommendationsAsync(profile);
 
@@ -810,10 +814,10 @@
         background: var(--text-muted);
     }
 
-    .topic-level-dot.level-beginner { background: #2ECC71; }
-    .topic-level-dot.level-intermediate { background: #F1C40F; }
-    .topic-level-dot.level-advanced { background: #E67E22; }
-    .topic-level-dot.level-graduate { background: #E91E63; }
+    .topic-level-dot.level-beginner { background: var(--success); }
+    .topic-level-dot.level-intermediate { background: var(--accent); }
+    .topic-level-dot.level-advanced { background: var(--primary); }
+    .topic-level-dot.level-graduate { background: var(--primary-dark); }
 
     .topic-tile {
         display: flex;

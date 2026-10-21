@@ -1,13 +1,13 @@
 :root {
-    --primary: #5B6ABF;
-    --primary-light: #8892D0;
-    --primary-dark: #3D4891;
+    --primary: #B4552F;
+    --primary-light: #C8643B;
+    --primary-dark: #8F4224;
     --accent: #C4813A;
     --accent-light: #E0A96C;
     --bg-main: #F5F3EF;
     --bg-card: #FFFFFF;
     --bg-surface: #EBE8E2;
-    --domain-rgb: 91, 106, 191;
+    --domain-rgb: 180, 85, 47;
     --text-primary: #2C2A26;
     --text-secondary: #5C5850;
     --text-muted: #6B6458;
@@ -24,10 +24,17 @@
 
     /* Motion system */
     --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
     --dur-fast: 150ms;
     --dur-normal: 250ms;
     --dur-slow: 400ms;
+}
+
+@font-face {
+    font-family: 'Cinzel';
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/cinzel-700-latin.woff2') format('woff2');
 }
 
 *, *::before, *::after {
@@ -54,7 +61,7 @@ body {
     overscroll-behavior-y: contain;
 }
 
-/* Per-domain hue map. Body overlay below tints the page; domain cards reuse the same RGB. */
+/* Per-domain hue map, used for selection and focus tints. */
 html[data-domain="math"]        { --domain-rgb: 91, 106, 191; }
 html[data-domain="philosophy"]  { --domain-rgb: 142, 99, 181; }
 html[data-domain="physics"]     { --domain-rgb: 74, 144, 217; }
@@ -67,20 +74,13 @@ html[data-domain="linguistics"] { --domain-rgb: 255, 112, 67; }
 html[data-domain="misc"]        { --domain-rgb: 94, 53, 177; }
 html[data-domain="economics"]   { --domain-rgb: 22, 160, 133; }
 html[data-domain="literature"]  { --domain-rgb: 142, 44, 64; }
+html[data-domain="cs"]          { --domain-rgb: 38, 166, 154; }
+html[data-domain="politics"]    { --domain-rgb: 57, 73, 171; }
+html[data-domain="media"]       { --domain-rgb: 2, 119, 189; }
 html[data-domain="religion"]    { --domain-rgb: 162, 59, 114; }
 html[data-domain="psychology"]  { --domain-rgb: 192, 80, 158; }
 html[data-domain="sociology"]   { --domain-rgb: 212, 160, 23; }
 
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: -1;
-    background:
-        radial-gradient(ellipse 90vw 70vh at 50% -10%, rgba(var(--domain-rgb), 0.16), transparent 70%),
-        radial-gradient(ellipse 80vw 60vh at 100% 110%, rgba(var(--domain-rgb), 0.08), transparent 70%);
-}
 
 html.font-small { font-size: 13px; }
 html.font-medium { font-size: 16px; }
@@ -398,7 +398,7 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 }
 
 .options-grid.stagger-options > .option-btn {
-    animation: optionEnter 0.35s ease both;
+    animation: optionEnter 0.3s var(--ease-out) backwards;
 }
 .options-grid.stagger-options > .option-btn:nth-child(1) { animation-delay: 0.03s; }
 .options-grid.stagger-options > .option-btn:nth-child(2) { animation-delay: 0.06s; }
@@ -442,21 +442,18 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
     line-height: 1.5;
 }
 
-.anim-correct { animation: popCorrect 0.4s ease; }
-.anim-incorrect { animation: shakeWrong 0.4s ease; }
+.anim-correct { animation: popCorrect 0.25s var(--ease-out); }
+.anim-incorrect { animation: shakeWrong 0.3s ease; }
 
 @keyframes popCorrect {
-    0% { transform: scale(0.9); opacity: 0; }
-    50% { transform: scale(1.03); }
-    100% { transform: scale(1); opacity: 1; }
+    from { opacity: 0; transform: translateY(4px); }
 }
 
 @keyframes shakeWrong {
     0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(8px); }
-    60% { transform: translateX(-5px); }
-    80% { transform: translateX(5px); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
 }
 
 /* Math expression container */
@@ -712,7 +709,7 @@ strong {
 }
 
 .btn:not(:active) {
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease, box-shadow 0.15s ease;
+    transition: transform 0.2s var(--ease-out), filter 0.2s ease, box-shadow 0.15s ease;
 }
 
 .btn-primary:active, .btn-accent:active {
@@ -737,8 +734,8 @@ strong {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-    animation: skeletonShimmer 1.5s ease infinite;
+    background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--bg-card) 55%, transparent) 50%, transparent 100%);
+    animation: skeletonShimmer 1.8s ease infinite;
 }
 
 @keyframes skeletonShimmer {
@@ -811,81 +808,46 @@ strong {
 
 /* ── Progress bar animate from 0 ── */
 .progress-bar-fill.animate-in {
-    animation: progressGrow 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: progressGrow 0.6s var(--ease-out);
 }
 
 @keyframes progressGrow {
-    from { width: 0% !important; }
+    from { width: 0; }
 }
 
 /* ── Tab content crossfade ── */
 .tab-content {
-    animation: tabFade 0.25s ease;
+    animation: tabFade 0.2s ease;
 }
 
 @keyframes tabFade {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
 }
 
 /* Page-level fade in */
 .main-content {
-    animation: pageIn 0.3s ease;
+    animation: pageIn 0.25s ease;
 }
 
 @keyframes pageIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
 }
 
-/* ── Staggered card entrance ── */
+/* ── Staggered card entrance ──
+   Fill "backwards" only: a forwards fill pins opacity/transform and overrides dimming, hover and press. */
 .stagger-in > * {
-    opacity: 0;
-    animation: staggerUp 0.4s ease forwards;
+    animation: staggerUp 0.3s var(--ease-out) backwards;
 }
-.stagger-in > *:nth-child(1) { animation-delay: 0.03s; }
-.stagger-in > *:nth-child(2) { animation-delay: 0.06s; }
-.stagger-in > *:nth-child(3) { animation-delay: 0.09s; }
-.stagger-in > *:nth-child(4) { animation-delay: 0.12s; }
-.stagger-in > *:nth-child(5) { animation-delay: 0.15s; }
-.stagger-in > *:nth-child(6) { animation-delay: 0.18s; }
-.stagger-in > *:nth-child(7) { animation-delay: 0.21s; }
-.stagger-in > *:nth-child(8) { animation-delay: 0.24s; }
-.stagger-in > *:nth-child(9) { animation-delay: 0.27s; }
-.stagger-in > *:nth-child(10) { animation-delay: 0.30s; }
-.stagger-in > *:nth-child(11) { animation-delay: 0.33s; }
-.stagger-in > *:nth-child(12) { animation-delay: 0.36s; }
-.stagger-in > *:nth-child(13) { animation-delay: 0.39s; }
-.stagger-in > *:nth-child(14) { animation-delay: 0.42s; }
-.stagger-in > *:nth-child(15) { animation-delay: 0.45s; }
-.stagger-in > *:nth-child(16) { animation-delay: 0.48s; }
-.stagger-in > *:nth-child(n+17) { animation-delay: 0.50s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.03s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.06s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.09s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.12s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.15s; }
+.stagger-in > *:nth-child(7) { animation-delay: 0.18s; }
+.stagger-in > *:nth-child(n+8) { animation-delay: 0.2s; }
 
 @keyframes staggerUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Progress bar shimmer ── */
-.progress-bar-fill {
-    position: relative;
-    overflow: hidden;
-}
-
-.progress-bar-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shimmer 2.5s ease infinite;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 200%; }
+    from { opacity: 0; transform: translateY(8px); }
 }
 
 /* ── Card hover ── */
@@ -895,12 +857,7 @@ strong {
 
 /* ── Pulse animation ── */
 .pulse {
-    animation: pulse 2s ease infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    animation: settleIn 0.35s var(--ease-out) backwards;
 }
 
 /* ── XP float animation ── */
@@ -917,8 +874,8 @@ strong {
 
 @keyframes xpFloat {
     0% { opacity: 1; transform: translateY(0) scale(1); }
-    60% { opacity: 1; transform: translateY(-40px) scale(1.15); }
-    100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+    60% { opacity: 1; transform: translateY(-36px); }
+    100% { opacity: 0; transform: translateY(-56px); }
 }
 
 /* ── Confetti container ── */
@@ -951,54 +908,34 @@ strong {
 /* ── Streak flame animation ── */
 .streak-fire {
     display: inline-block;
-    animation: flamePulse 0.8s ease infinite alternate;
-}
-
-@keyframes flamePulse {
-    from { transform: scale(1) rotate(-3deg); filter: brightness(1); }
-    to { transform: scale(1.15) rotate(3deg); filter: brightness(1.2); }
 }
 
 /* ── Question slide transition ── */
 .question-enter {
-    animation: questionSlideIn 0.35s ease;
+    animation: questionSlideIn 0.25s var(--ease-out);
 }
 
 @keyframes questionSlideIn {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; transform: translateX(12px); }
 }
 
 /* ── Results count-up effect ── */
 .count-up {
-    animation: countPop 0.5s ease both;
+    animation: settleIn 0.35s var(--ease-out) backwards;
 }
 
-@keyframes countPop {
-    0% { transform: scale(0.5); opacity: 0; }
-    70% { transform: scale(1.15); }
-    100% { transform: scale(1); opacity: 1; }
+@keyframes settleIn {
+    from { opacity: 0; transform: translateY(6px); }
 }
 
 /* ── Level-up burst ── */
 .level-up-burst {
-    animation: levelBurst 0.8s ease;
-}
-
-@keyframes levelBurst {
-    0% { transform: scale(0.8); opacity: 0; }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
+    animation: settleIn 0.4s var(--ease-out) 0.15s backwards;
 }
 
 /* ── Achievement pop-in ── */
 .achievement-pop {
-    animation: achievePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes achievePop {
-    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    animation: settleIn 0.4s var(--ease-out) 0.25s backwards;
 }
 
 /* ── Ripple effect for tappable elements ── */
@@ -1117,20 +1054,13 @@ button:focus-visible,
     *::before,
     *::after {
         animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
 
-    .stagger-in > * {
-        opacity: 1;
-        animation: none;
-    }
+    html { scroll-behavior: auto; }
 
-    .main-content {
-        animation: none;
-    }
-
-    .progress-bar-fill::after,
     .skeleton::after {
         animation: none;
     }
@@ -1150,7 +1080,7 @@ button:focus-visible,
 }
 
 .btn:not(:active) {
-    transition: transform var(--dur-normal) var(--ease-spring),
+    transition: transform var(--dur-normal) var(--ease-out),
                 filter var(--dur-normal) var(--ease-out),
                 box-shadow var(--dur-fast) var(--ease-out);
 }
@@ -1196,7 +1126,7 @@ button:focus-visible,
     display: block;
     max-height: 400px;
     object-fit: contain;
-    background: #1a1a1a;
+    background: #fff;
 }
 
 .concept-figure figcaption {
@@ -1210,22 +1140,11 @@ button:focus-visible,
    Page transitions
    ============================================================ */
 .page-shell {
-    animation: pageEnter var(--dur-normal) var(--ease-out);
-    will-change: transform, opacity;
+    animation: pageEnter 150ms ease-out;
 }
 
 @keyframes pageEnter {
-    from { opacity: 0; transform: translateX(18px); }
-    to   { opacity: 1; transform: translateX(0); }
-}
-
-html[data-nav-dir="back"] .page-shell {
-    animation-name: pageEnterBack;
-}
-
-@keyframes pageEnterBack {
-    from { opacity: 0; transform: translateX(-18px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1263,30 +1182,16 @@ html[data-nav-dir="back"] .page-shell {
     box-shadow: inset 0 0 0 1px rgba(139, 90, 43, 0.2), 0 2px 10px rgba(80, 50, 20, 0.15);
 }
 
-/* ── Brand mark (home hero) ── */
-.brand-mark {
-    margin: 0 0 8px;
-    line-height: 0;
-}
-.brand-mark img {
-    width: 72px;
-    height: 72px;
-    display: block;
-    border-radius: 16px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-}
-
 /* ── Streak flame skins ── */
 [data-flame="blue"] .streak-fire { color: #4AB8FF; filter: drop-shadow(0 0 4px rgba(74, 184, 255, 0.6)); }
 [data-flame="purple"] .streak-fire { color: #C880FF; filter: drop-shadow(0 0 4px rgba(200, 128, 255, 0.6)); }
 [data-flame="lightning"] .streak-fire {
     color: #FFE066;
     filter: drop-shadow(0 0 6px rgba(255, 224, 102, 0.7));
-    animation: flamePulse 0.4s ease infinite alternate;
 }
 [data-flame="rainbow"] .streak-fire {
     color: #ff5f6d;
-    animation: flamePulse 0.8s ease infinite alternate, rainbowHue 3s linear infinite;
+    animation: rainbowHue 8s linear infinite;
     filter: drop-shadow(0 0 4px rgba(255, 100, 200, 0.5));
 }
 @keyframes rainbowHue {

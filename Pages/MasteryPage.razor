@@ -24,7 +24,7 @@ else if (state == MState.Intro)
 {
     <div class="mastery-intro">
         <div class="mastery-tier-display">
-            <div class="mastery-current-badge" style="background: @GetTierColor(currentTier)">
+            <div class="mastery-current-badge" style="--tier: @GetTierColor(currentTier); color: @GetTierInk(currentTier)">
                 <Icon Name="@GetTierIcon(currentTier)" Size="28" />
             </div>
             <div class="mastery-tier-label">@GetTierName(currentTier)</div>
@@ -38,7 +38,7 @@ else if (state == MState.Intro)
                 var achieved = currentTier >= tier;
                 var isCurrent = currentTier == tier - 1;
                 <div class="mastery-tier-row @(achieved ? "achieved" : "") @(isCurrent ? "current-target" : "")">
-                    <div class="tier-badge-sm" style="background: @(achieved ? GetTierColor(tier) : "var(--bg-surface)")">
+                    <div class="tier-badge-sm" style="background: @(achieved ? GetTierColor(tier) : "var(--bg-surface)"); color: @(achieved ? GetTierInk(tier) : "var(--text-muted)")">
                         <Icon Name="@GetTierIcon(tier)" Size="16" />
                     </div>
                     <div class="tier-info">
@@ -73,7 +73,7 @@ else if (state == MState.Quiz)
 {
     <div class="mastery-quiz">
         <div class="mastery-quiz-header">
-            <span class="mastery-quiz-tier" style="color: @GetTierColor(targetTier)">
+            <span class="mastery-quiz-tier" style="color: color-mix(in srgb, @GetTierColor(targetTier) 60%, var(--text-primary))">
                 <Icon Name="@GetTierIcon(targetTier)" Size="16" /> @GetTierName(targetTier) Challenge
             </span>
             <span class="quiz-progress">@(currentQ + 1) / @quizQuestions.Count</span>
@@ -167,14 +167,14 @@ else if (state == MState.Result)
     <div class="mastery-result card count-up">
         @if (passed)
         {
-            <div class="mastery-result-badge" style="background: @GetTierColor(targetTier)">
+            <div class="mastery-result-badge" style="background: @GetTierColor(targetTier); color: @GetTierInk(targetTier)">
                 <Icon Name="@GetTierIcon(targetTier)" Size="28" />
             </div>
             <h2>@GetTierName(targetTier) Achieved!</h2>
         }
         else
         {
-            <div class="mastery-result-badge" style="background: var(--bg-surface)"><Icon Name="muscle" Size="28" /></div>
+            <div class="mastery-result-badge" style="background: var(--bg-surface); color: var(--text-muted)"><Icon Name="muscle" Size="28" /></div>
             <h2>Not Quite</h2>
         }
 
@@ -187,7 +187,7 @@ else if (state == MState.Result)
                 <span class="stat-number">@score%</span>
                 <span class="stat-label">Score</span>
             </div>
-            <div class="stat-card" style="background: rgba(240,160,48,0.1); color: var(--accent);">
+            <div class="stat-card" style="background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">
                 <span class="stat-number count-up">@GetTierThreshold(targetTier)%</span>
                 <span class="stat-label">Needed</span>
             </div>
@@ -376,7 +376,8 @@ else if (state == MState.Result)
     private int GetTierQuestionCount(int tier) => tier switch { 1 => 8, 2 => 10, 3 => 12, 4 => 15, _ => 8 };
     private string GetTierName(int tier) => tier switch { 0 => "Unranked", 1 => "Apprentice", 2 => "Adept", 3 => "Master", 4 => "Grandmaster", _ => "" };
     private string GetTierIcon(int tier) => tier switch { 0 => "sword", 1 => "bronze", 2 => "silver", 3 => "gold", 4 => "crown", _ => "sword" };
-    private string GetTierColor(int tier) => tier switch { 1 => "#CD7F32", 2 => "#C0C0C0", 3 => "#FFD700", 4 => "linear-gradient(135deg, #FFD700, #FF6B35)", _ => "var(--bg-surface)" };
+    private string GetTierColor(int tier) => tier switch { 1 => "#A06542", 2 => "#807A6E", 3 => "#C4813A", 4 => "var(--primary)", _ => "var(--bg-surface)" };
+    private string GetTierInk(int tier) => tier > 0 ? "white" : "var(--text-muted)";
 }
 
 <style>
@@ -391,8 +392,9 @@ else if (state == MState.Result)
     .mastery-current-badge {
         width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 2.2rem; color: white;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+        font-size: 2.2rem;
+        background: var(--tier);
+        box-shadow: 0 2px 10px var(--shadow);
         position: relative;
     }
     .mastery-current-badge::after {
@@ -400,8 +402,8 @@ else if (state == MState.Result)
         position: absolute;
         inset: -4px;
         border-radius: 50%;
-        border: 2px solid currentColor;
-        opacity: 0.25;
+        border: 2px solid var(--tier);
+        opacity: 0.35;
     }
     .mastery-tier-label { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.02em; }
 
@@ -419,8 +421,8 @@ else if (state == MState.Result)
     .mastery-tier-row.achieved { opacity: 1; }
     .mastery-tier-row.current-target {
         opacity: 1;
-        background: rgba(91, 106, 191, 0.06);
-        border: 1px solid rgba(91, 106, 191, 0.2);
+        background: color-mix(in srgb, var(--primary) 6%, transparent);
+        border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
         border-radius: var(--radius-sm);
     }
 
@@ -456,7 +458,7 @@ else if (state == MState.Result)
     .mastery-result-badge {
         width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 12px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.8rem; animation: countPop 0.5s ease;
+        font-size: 1.8rem; animation: settleIn 0.35s var(--ease-out) backwards;
     }
 
     .results-stats { display: flex; justify-content: center; gap: 16px; margin: 16px 0; }
@@ -464,12 +466,12 @@ else if (state == MState.Result)
         display: flex; flex-direction: column; align-items: center;
         padding: 12px 20px; border-radius: var(--radius-md); min-width: 70px;
     }
-    .correct-stat { background: rgba(76,175,80,0.1); color: var(--success); }
+    .correct-stat { background: color-mix(in srgb, var(--success) 10%, transparent); color: var(--success); }
     .score-stat { background: var(--bg-surface); color: var(--text-primary); }
     .stat-number { font-size: 1.5rem; font-weight: 700; }
     .stat-label { font-size: 0.8rem; opacity: 0.8; }
 
-    .mastery-maxed { text-align: center; padding: 24px; margin-top: 16px; border-color: #FFD700; }
+    .mastery-maxed { text-align: center; padding: 24px; margin-top: 16px; border-color: var(--accent); }
     .mastery-maxed:hover { transform: none; }
     .mastery-maxed-icon { font-size: 3rem; margin-bottom: 8px; }
     .mastery-maxed p { color: var(--text-muted); margin: 8px 0 0; }

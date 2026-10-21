@@ -454,13 +454,13 @@ else if (showNoMatch)
             "CO<sub>2</sub> + H<sub>2</sub>O &rlhar; H<sub>2</sub>CO<sub>3</sub>",
             "Carbonic acid",
             "Acid formation",
-            "Dissolved CO<sub>2</sub> forms a weak acid - the chemistry of fizzy drinks and ocean acidification.",
+            "Dissolved CO<sub>2</sub> forms a weak acid, the chemistry of fizzy drinks and ocean acidification.",
             "none"),
         new(new[] { "CO2", "NaOH" },
             "CO<sub>2</sub> + 2 NaOH &rarr; Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O",
             "Sodium carbonate and water",
             "Acid-base",
-            "Carbon dioxide is absorbed by sodium hydroxide solution - a classic CO<sub>2</sub> scrubber.",
+            "Carbon dioxide is absorbed by sodium hydroxide solution, a classic CO<sub>2</sub> scrubber.",
             "none"),
 
         // Rusting / corrosion (3 reagents)
@@ -484,7 +484,7 @@ else if (showNoMatch)
             "NaCl(s) &rarr; Na<sup>+</sup>(aq) + Cl<sup>&minus;</sup>(aq)",
             "Sodium and chloride ions in solution",
             "Dissolution",
-            "Salt dissociates into hydrated ions in water - no chemical bonds are broken in the salt itself.",
+            "Salt dissociates into hydrated ions in water; no chemical bonds are broken in the salt itself.",
             "none"),
 
         // Glucose + yeast-style fermentation analog (no enzymes listed but okay)
@@ -492,7 +492,7 @@ else if (showNoMatch)
             "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> &rarr; 2 C<sub>2</sub>H<sub>5</sub>OH + 2 CO<sub>2</sub>",
             "Ethanol and carbon dioxide",
             "Fermentation",
-            "Yeasts convert glucose dissolved in water into ethanol and CO<sub>2</sub> - the basis of brewing.",
+            "Yeasts convert glucose dissolved in water into ethanol and CO<sub>2</sub>, the basis of brewing.",
             "gas"),
 
         // Cu + AgNO3 single replacement
@@ -540,7 +540,7 @@ else if (showNoMatch)
         -webkit-tap-highlight-color: transparent; min-height: 60px;
     }
     .reagent-chip:active { transform: scale(0.96); }
-    .reagent-chip.chip-active { background: rgba(74,95,224,0.10); border-color: var(--primary); box-shadow: 0 0 0 2px rgba(74,95,224,0.18); }
+    .reagent-chip.chip-active { background: color-mix(in srgb, var(--primary) 10%, transparent); border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent); }
     .reagent-chip.chip-disabled { opacity: 0.45; cursor: not-allowed; }
     .reagent-formula { font-weight: 700; color: var(--text-primary); font-size: 0.95rem; }
     .reagent-name { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; text-align: center; }
@@ -562,13 +562,19 @@ else if (showNoMatch)
     .rb-result-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .rb-type-badge {
         font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
-        padding: 4px 10px; border-radius: 999px; background: rgba(74,95,224,0.10); color: var(--primary);
+        padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary);
     }
-    .rb-type-badge.type-combustion { background: rgba(255,140,40,0.12); color: #ff8c28; }
-    .rb-type-badge.type-precipitation { background: rgba(120,90,220,0.12); color: #785adc; }
-    .rb-type-badge.type-redox { background: rgba(220,80,120,0.12); color: #dc5078; }
-    .rb-type-badge.type-corrosion { background: rgba(160,82,45,0.15); color: #a0522d; }
-    .rb-type-badge.type-electrolysis { background: rgba(60,170,200,0.15); color: #3caac8; }
+    /* mixing the hue with --text-primary keeps each badge legible on light and dark themes */
+    .rb-type-badge.type-combustion { --rb-hue: #B4552F; }
+    .rb-type-badge.type-precipitation { --rb-hue: #7A3E5E; }
+    .rb-type-badge.type-redox { --rb-hue: #9C3B4A; }
+    .rb-type-badge.type-corrosion { --rb-hue: #9A6B2A; }
+    .rb-type-badge.type-electrolysis { --rb-hue: #2F6B66; }
+    .rb-type-badge.type-combustion, .rb-type-badge.type-precipitation, .rb-type-badge.type-redox,
+    .rb-type-badge.type-corrosion, .rb-type-badge.type-electrolysis {
+        background: color-mix(in srgb, var(--rb-hue) 13%, transparent);
+        color: color-mix(in srgb, var(--rb-hue) 75%, var(--text-primary));
+    }
 
     .rb-viz {
         background: var(--bg-surface); border-radius: var(--radius-sm);
@@ -581,7 +587,6 @@ else if (showNoMatch)
         width: 100%; max-width: 280px; height: 110px; border-radius: var(--radius-sm);
         display: flex; align-items: center; justify-content: center;
         color: white; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-        animation: colorPulse 2.5s ease-in-out infinite;
     }
     .rb-none-box { color: var(--text-muted); font-style: italic; }
 
@@ -596,7 +601,7 @@ else if (showNoMatch)
 
     .rb-mystery-prompt {
         display: flex; align-items: center; gap: 8px;
-        padding: 12px; background: rgba(74,95,224,0.08); border-radius: var(--radius-sm);
+        padding: 12px; background: color-mix(in srgb, var(--primary) 8%, transparent); border-radius: var(--radius-sm);
         color: var(--text-secondary); font-size: 0.9rem;
     }
 
@@ -605,7 +610,7 @@ else if (showNoMatch)
 
     /* SVG animations */
     .bubble {
-        animation: bubbleRise 1.6s ease-in infinite;
+        animation: bubbleRise 2.6s ease-in infinite;
         transform-origin: center;
     }
     @@keyframes bubbleRise {
@@ -615,7 +620,7 @@ else if (showNoMatch)
     }
 
     .precip {
-        animation: precipFall 1.4s ease-in infinite;
+        animation: precipFall 2.6s ease-in infinite;
     }
     @@keyframes precipFall {
         0% { transform: translateY(0); opacity: 0; }
@@ -625,16 +630,16 @@ else if (showNoMatch)
 
     .flame, .flame-inner {
         transform-origin: 100px 100px;
-        animation: flicker 0.45s ease-in-out infinite alternate;
+        animation: flicker 2.2s ease-in-out infinite alternate;
     }
-    .flame-inner { animation-duration: 0.3s; }
+    .flame-inner { animation-duration: 1.7s; }
     @@keyframes flicker {
-        from { transform: scale(1, 1); opacity: 0.95; }
-        to { transform: scale(1.05, 0.92); opacity: 1; }
+        from { transform: scale(1, 1); }
+        to { transform: scale(1.02, 0.97); }
     }
 
     .heat-wave {
-        animation: heatRise 1.8s ease-in-out infinite;
+        animation: heatRise 3s ease-in-out infinite;
     }
     @@keyframes heatRise {
         0% { opacity: 0; transform: translateY(10px); }
@@ -642,15 +647,15 @@ else if (showNoMatch)
         100% { opacity: 0; transform: translateY(-10px); }
     }
 
-    .rust-fade { animation: rustGrow 3s ease-in-out infinite alternate; }
+    .rust-fade { opacity: 0.85; animation: rustGrow 3s ease-out both; }
     @@keyframes rustGrow {
         from { opacity: 0; }
         to { opacity: 0.85; }
     }
 
-    .split-core { animation: splitPulse 2s ease-in-out infinite; transform-origin: 100px 60px; }
-    .split-left { animation: splitLeft 2s ease-in-out infinite; }
-    .split-right { animation: splitRight 2s ease-in-out infinite; }
+    .split-core { animation: splitPulse 3.6s ease-in-out infinite; transform-origin: 100px 60px; }
+    .split-left { animation: splitLeft 3.6s ease-in-out infinite; }
+    .split-right { animation: splitRight 3.6s ease-in-out infinite; }
     @@keyframes splitPulse {
         0%, 100% { transform: scale(1); opacity: 1; }
         50% { transform: scale(0.4); opacity: 0.4; }
@@ -666,13 +671,14 @@ else if (showNoMatch)
         100% { transform: translateX(0); opacity: 1; }
     }
 
-    @@keyframes colorPulse {
-        0%, 100% { filter: brightness(1); }
-        50% { filter: brightness(1.2); }
-    }
-
     @@keyframes rbFade {
         from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .rb-result, .bubble, .precip, .flame, .flame-inner, .heat-wave, .rust-fade,
+        .split-core, .split-left, .split-right { animation: none; }
+        .reagent-chip { transition: none; }
     }
 </style>

@@ -13,7 +13,7 @@
 @if (!Leaderboard.IsConfigured)
 {
     <div class="demo-banner card">
-        <small>Demo data — connect a leaderboard service to see real scores</small>
+        <small>Demo data. Connect a leaderboard service to see real scores.</small>
     </div>
 }
 
@@ -125,7 +125,7 @@ else
         <div class="card my-rank-card">
             <div class="my-rank-grid">
                 <div class="my-rank-cell">
-                    <span class="my-rank-val">@(myRank > 0 ? $"#{myRank}" : "—")</span>
+                    <span class="my-rank-val">@(myRank > 0 ? $"#{myRank}" : "-")</span>
                     <span class="my-rank-label">Your rank</span>
                 </div>
                 <div class="my-rank-cell">
@@ -133,11 +133,11 @@ else
                     <span class="my-rank-label">Your XP</span>
                 </div>
                 <div class="my-rank-cell">
-                    <span class="my-rank-val">@(percentile >= 0 ? $"top {percentile}%" : "—")</span>
+                    <span class="my-rank-val">@(percentile >= 0 ? $"top {percentile}%" : "-")</span>
                     <span class="my-rank-label">Percentile</span>
                 </div>
                 <div class="my-rank-cell">
-                    <span class="my-rank-val">@(xpToNext > 0 ? $"+{xpToNext:N0}" : "—")</span>
+                    <span class="my-rank-val">@(xpToNext > 0 ? $"+{xpToNext:N0}" : "-")</span>
                     <span class="my-rank-label">to rank @(myRank > 1 ? myRank - 1 : 1)</span>
                 </div>
             </div>
@@ -352,10 +352,10 @@ else
 
     private string GetAvatarColor(int rank) => rank switch
     {
-        1 => "linear-gradient(135deg, #FFD700, #FFA000)",
-        2 => "linear-gradient(135deg, #C0C0C0, #909090)",
-        3 => "linear-gradient(135deg, #CD7F32, #A0522D)",
-        _ => "linear-gradient(135deg, var(--primary), var(--primary-light))"
+        1 => "#C4813A",
+        2 => "#807A6E",
+        3 => "#A06542",
+        _ => "var(--primary)"
     };
 }
 
@@ -363,7 +363,7 @@ else
     .demo-banner {
         text-align: center;
         padding: 8px;
-        background: rgba(240, 160, 48, 0.1);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
         border-color: var(--accent);
         margin-bottom: 12px;
     }
@@ -371,9 +371,7 @@ else
 
     /* ── Top-3 Plinths (parchment / scholarly theme) ── */
     .podium-wrap {
-        background:
-            radial-gradient(ellipse at top, rgba(196, 129, 58, 0.08), transparent 70%),
-            var(--bg-card);
+        background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius-md);
         padding: 14px 12px 4px;
@@ -388,8 +386,8 @@ else
     }
     .podium-banner-rule {
         flex: 1; height: 1px;
-        background: linear-gradient(90deg, transparent, var(--accent), transparent);
-        opacity: 0.6;
+        background: var(--accent);
+        opacity: 0.4;
     }
     .podium-banner-text {
         font-size: 0.72rem; font-weight: 800; letter-spacing: 2.5px;
@@ -451,9 +449,9 @@ else
         margin-top: 4px;
     }
     .plinth.first .plinth-avatar { width: 54px; height: 54px; font-size: 1.4rem; }
-    .plinth-avatar.gold   { background: linear-gradient(135deg, #C4813A, #8B5A2B); }
-    .plinth-avatar.silver { background: linear-gradient(135deg, #807A6E, #524E47); }
-    .plinth-avatar.bronze { background: linear-gradient(135deg, #A06542, #6B3F20); }
+    .plinth-avatar.gold   { background: #C4813A; }
+    .plinth-avatar.silver { background: #807A6E; }
+    .plinth-avatar.bronze { background: #A06542; }
 
     .plinth-name {
         font-family: Georgia, 'Times New Roman', serif;
@@ -481,30 +479,27 @@ else
         width: 80%; height: 3px; background: var(--bg-surface);
         border-radius: 2px; overflow: hidden; margin-top: 4px;
     }
-    .plinth-progress-fill { height: 100%; transition: width 0.8s ease; }
-    .gold-fill   { background: linear-gradient(90deg, #C4813A, #E0A96C); }
-    .silver-fill { background: linear-gradient(90deg, #807A6E, #B0AAA0); }
-    .bronze-fill { background: linear-gradient(90deg, #A06542, #C18867); }
+    .plinth-progress-fill { height: 100%; transition: width 0.25s var(--ease-out); }
+    .gold-fill   { background: #C4813A; }
+    .silver-fill { background: #807A6E; }
+    .bronze-fill { background: #A06542; }
 
-    /* Plinth bar — engraved stone tablet, no metallic shine */
+    /* Plinth bar: flat block, tinted per rank */
     .plinth-bar {
         width: 100%; min-height: 32px;
         margin-top: 6px;
         border-radius: 4px 4px 0 0;
         position: relative;
-        background-image:
-            repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 6px),
-            linear-gradient(180deg, var(--bg-surface), var(--border));
+        background: var(--bg-surface);
         border: 1px solid var(--border);
         border-bottom: none;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
     }
     .plinth.first  .plinth-bar { min-height: 56px; }
     .plinth.second .plinth-bar { min-height: 42px; }
     .plinth.third  .plinth-bar { min-height: 28px; }
-    .gold-bar   { background-image: repeating-linear-gradient(0deg, rgba(139,90,43,0.06) 0 1px, transparent 1px 7px), linear-gradient(180deg, #E8D9C2, #C9B294); border-color: #B89472; }
-    .silver-bar { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 6px), linear-gradient(180deg, #DDD9D0, #B8B2A6); border-color: #A8A296; }
-    .bronze-bar { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 6px), linear-gradient(180deg, #C5A483, #9E7B5C); border-color: #8B6B4D; }
+    .gold-bar   { background: color-mix(in srgb, #C4813A 22%, var(--bg-surface)); border-color: color-mix(in srgb, #C4813A 45%, var(--border)); }
+    .silver-bar { background: color-mix(in srgb, #807A6E 22%, var(--bg-surface)); border-color: color-mix(in srgb, #807A6E 45%, var(--border)); }
+    .bronze-bar { background: color-mix(in srgb, #A06542 22%, var(--bg-surface)); border-color: color-mix(in srgb, #A06542 45%, var(--border)); }
 
     /* ── My Rank card ── */
     .my-rank-card { padding: 14px 16px; margin-bottom: 12px; border-color: var(--primary); }
@@ -528,7 +523,7 @@ else
         position: absolute; top: 50%; transform: translate(-50%, -50%);
         width: 14px; height: 14px; border-radius: 50%;
         background: var(--accent); border: 2px solid var(--bg-card);
-        box-shadow: 0 0 0 2px var(--accent), 0 0 8px rgba(240, 160, 48, 0.5);
+        box-shadow: 0 0 0 2px var(--accent);
         z-index: 2;
     }
     .rank-track-labels { display: flex; justify-content: space-between; padding: 6px 4px 0; }
@@ -562,7 +557,7 @@ else
     }
     @@keyframes barIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
     .bar-row.you {
-        background: rgba(91, 106, 191, 0.08);
+        background: color-mix(in srgb, var(--primary) 8%, transparent);
         box-shadow: inset 2px 0 0 var(--primary);
     }
     .bar-rank {
@@ -592,13 +587,12 @@ else
     }
     .bar-fill {
         height: 100%; border-radius: 8px 0 0 8px;
-        background: linear-gradient(90deg, var(--primary), var(--primary-light));
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
-        transition: width 0.7s var(--ease-spring, ease);
+        background: var(--primary);
+        transition: width 0.25s var(--ease-out);
     }
-    .bar-fill.r1 { background: linear-gradient(90deg, #C4813A, #E0A96C); }
-    .bar-fill.r2 { background: linear-gradient(90deg, #807A6E, #B0AAA0); }
-    .bar-fill.r3 { background: linear-gradient(90deg, #A06542, #C18867); }
+    .bar-fill.r1 { background: #C4813A; }
+    .bar-fill.r2 { background: #807A6E; }
+    .bar-fill.r3 { background: #A06542; }
     .bar-val-inline {
         position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
         font-family: Georgia, 'Times New Roman', serif;
@@ -632,7 +626,7 @@ else
     .lb-avatar {
         width: 32px; height: 32px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+        color: var(--bg-card); font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
     }
     .lb-name-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     .lb-name-col strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; }

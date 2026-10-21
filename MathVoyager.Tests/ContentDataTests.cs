@@ -129,6 +129,19 @@ public class ContentDataTests
             Assert.DoesNotContain(shop, i => i.UnlockData.TryGetValue("feature", out var f) && "/" + f == sim.Route);
     }
 
+    [Fact]
+    public void LessonIndex_MatchesLessonFiles()
+    {
+        var index = Load<Dictionary<string, List<string>>>("lesson-index.json");
+        foreach (var topic in Topics)
+        {
+            var expected = Lessons(topic.Id).OrderBy(l => l.Order).Select(l => l.Id).ToList();
+            if (expected.Count == 0) continue;
+            Assert.True(index.TryGetValue(topic.Id, out var ids), $"{topic.Id} missing; run resources/gen-lesson-index.py");
+            Assert.True(expected.SequenceEqual(ids!), $"{topic.Id} is stale; run resources/gen-lesson-index.py");
+        }
+    }
+
     private record Cookie(int Id, string Text, string Category);
 
     [Fact]

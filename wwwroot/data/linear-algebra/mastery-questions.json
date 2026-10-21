@@ -50,7 +50,7 @@
       { "left": "Cholesky (A = LL^T)", "right": "Only for symmetric positive definite matrices, numerically stable" }
     ],
     "correctAnswer": null,
-    "explanation": "Each decomposition has specific existence conditions and applications. SVD is the most general -- it exists for any m x n matrix and is the workhorse of data science (PCA, pseudoinverse, image compression). Eigendecomposition requires diagonalizability but is the simplest for computing matrix powers. QR exists for any matrix and is used in the QR algorithm for finding eigenvalues. Jordan form always exists over C and is the theoretical canonical form for classifying matrices up to similarity. Cholesky requires the strongest hypothesis (SPD) but is the fastest and most stable decomposition when applicable.",
+    "explanation": "Each decomposition has specific existence conditions and applications. SVD is the most general: it exists for any m x n matrix and is the workhorse of data science (PCA, pseudoinverse, image compression). Eigendecomposition requires diagonalizability but is the simplest for computing matrix powers. QR exists for any matrix and is used in the QR algorithm for finding eigenvalues. Jordan form always exists over C and is the theoretical canonical form for classifying matrices up to similarity. Cholesky requires the strongest hypothesis (SPD) but is the fastest and most stable decomposition when applicable.",
     "xpReward": 40
   },
   {
@@ -67,7 +67,7 @@
       "Contradiction for n >= 2"
     ],
     "correctAnswer": "2",
-    "explanation": "The error is in Step 2. The determinant is NOT linear in the matrix as a whole. The determinant is multilinear in the ROWS (or columns) individually, not additive over matrix addition. That is, det is linear in each row separately while holding other rows fixed, but det(A + B) != det(A) + det(B) in general. The example in steps 3-5 actually proves this: det(2I) = 2^n != 2 = 1 + 1 for n >= 2. This is one of the most common misconceptions in linear algebra -- confusing multilinearity (linear in each argument of a multilinear map) with linearity of the whole function.",
+    "explanation": "The error is in Step 2. The determinant is NOT linear in the matrix as a whole. The determinant is multilinear in the ROWS (or columns) individually, not additive over matrix addition. That is, det is linear in each row separately while holding other rows fixed, but det(A + B) != det(A) + det(B) in general. The example in steps 3-5 actually proves this: det(2I) = 2^n != 2 = 1 + 1 for n >= 2. This is one of the most common misconceptions in linear algebra, confusing multilinearity (linear in each argument of a multilinear map) with linearity of the whole function.",
     "xpReward": 50
   },
   {
@@ -100,7 +100,7 @@
       "V* is always infinite-dimensional"
     ],
     "correctAnswer": "V and V* have the same dimension but are not canonically isomorphic",
-    "explanation": "For a finite-dimensional vector space V, its dual V* = Hom(V, F) has the same dimension as V (each basis {e_i} of V yields a dual basis {e_i*} of V*). However, the isomorphism V -> V* depends on the choice of basis -- there is no canonical (basis-free) isomorphism. In contrast, V and V** (the double dual) ARE canonically isomorphic via the evaluation map v -> (f -> f(v)). An inner product on V does provide a canonical isomorphism V -> V* via v -> <v, -> (the Riesz representation theorem), which is why options get confused. But the inner product is additional structure, not intrinsic to V.",
+    "explanation": "For a finite-dimensional vector space V, its dual V* = Hom(V, F) has the same dimension as V (each basis {e_i} of V yields a dual basis {e_i*} of V*). However, the isomorphism V -> V* depends on the choice of basis: there is no canonical (basis-free) isomorphism. In contrast, V and V** (the double dual) ARE canonically isomorphic via the evaluation map v -> (f -> f(v)). An inner product on V does provide a canonical isomorphism V -> V* via v -> <v, -> (the Riesz representation theorem), which is why options get confused. But the inner product is additional structure, not intrinsic to V.",
     "xpReward": 40
   },
   {
@@ -171,7 +171,7 @@
       "So rank(AB) is either 2 or 3, meaning AB is always invertible"
     ],
     "correctAnswer": "6",
-    "explanation": "The error is in Step 6. From the inequalities 2 <= rank(AB) <= 3, we know AB is a 3x3 matrix with rank at least 2. But rank 2 does NOT make a 3x3 matrix invertible -- invertibility requires rank exactly 3 (full rank). The conclusion should be: AB might or might not be invertible. It could have rank 2 (singular) or rank 3 (invertible). A concrete example where rank(AB) = 2: let A = [I_3 | 0] (3x4) and B = [0; I_3] with a zero row inserted (4x3, rank 3). Both have rank 3 but AB can fail to be full rank depending on the specific matrices.",
+    "explanation": "The error is in Step 6. From the inequalities 2 <= rank(AB) <= 3, we know AB is a 3x3 matrix with rank at least 2. But rank 2 does NOT make a 3x3 matrix invertible: invertibility requires rank exactly 3 (full rank). The conclusion should be: AB might or might not be invertible. It could have rank 2 (singular) or rank 3 (invertible). A concrete example where rank(AB) = 2: let A = [I_3 | 0] (3x4) and B = [0; I_3] with a zero row inserted (4x3, rank 3). Both have rank 3 but AB can fail to be full rank depending on the specific matrices.",
     "xpReward": 50
   },
   {

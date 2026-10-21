@@ -79,7 +79,7 @@
         @foreach (var d in domains)
         {
             <div class="legend-item">
-                <span class="legend-dot" style="background: @DomainHue(d.Id)"></span>
+                <span class="legend-dot" style="background: @SubjectHues.For(d.Id)"></span>
                 <span class="legend-label">@d.Name</span>
             </div>
         }
@@ -117,28 +117,6 @@
         .Take(4)
         .Select(e => (e.From == id ? e.To : e.From, e))
         .ToList();
-
-    // Domain → representative colour, matching DomainsPage
-    private static string DomainHue(string id) => id switch
-    {
-        "math" => "#5B6ABF",
-        "philosophy" => "#8E63B5",
-        "physics" => "#4A90D9",
-        "biology" => "#2ECC71",
-        "chemistry" => "#E91E63",
-        "geology" => "#8D6E63",
-        "materials" => "#607D8B",
-        "history" => "#C4813A",
-        "linguistics" => "#FF7043",
-        "cs" => "#26A69A",
-        "misc" => "#5E35B1",
-        "economics" => "#16A085",
-        "politics" => "#3949AB",
-        "media" => "#0277BD",
-        "literature" => "#8E2C40",
-        "religion" => "#A23B72",
-        _ => "#5B6ABF"
-    };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -255,6 +233,12 @@
 }
 
 <style>
+    .graph-header .back-btn {
+        display: grid; place-items: center; min-width: 44px; min-height: 44px;
+        background: none; border: none; border-radius: var(--radius-sm);
+        color: var(--text-secondary); cursor: pointer;
+    }
+    .graph-header .back-btn:hover { background: var(--bg-surface); }
     .tooltip-links { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 40vh; overflow-y: auto; }
     .tooltip-link {
         text-align: left; background: var(--bg-surface); border: 1px solid var(--border);
@@ -299,7 +283,7 @@
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        background: var(--primary);
         color: white;
     }
 
@@ -453,7 +437,7 @@
         border-radius: 1px;
     }
 
-    .legend-line.prereq { background: rgba(100,150,255,0.7); }
+    .legend-line.prereq { background: var(--primary); }
     .legend-line.related { background: rgba(180,180,180,0.5); border-top: 1px dashed rgba(180,180,180,0.5); height: 0; }
 
     .legend-node {

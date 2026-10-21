@@ -145,7 +145,11 @@ else
                 if (c.HasValue)
                 {
                     <g transform="translate(@c.Value.x.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),@c.Value.y.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))">
-                        <circle r="6" fill="@r.Color" stroke="#fff7e0" stroke-width="1.5" class="@(isSelected ? "capital-pulse" : "")" />
+                        @if (isSelected)
+                        {
+                            <circle r="9.5" fill="none" stroke="#fff7e0" stroke-width="1.2" stroke-opacity="0.85" />
+                        }
+                        <circle r="6" fill="@r.Color" stroke="#fff7e0" stroke-width="1.5" />
                         <path d="M -3,-2 L 0,-5 L 3,-2 L 2,2 L -2,2 Z" fill="#fff7e0" stroke="#000" stroke-width="0.3" stroke-opacity="0.4" />
                     </g>
                 }
@@ -392,7 +396,7 @@ else
 
     private List<Era> eras = new()
     {
-        new Era("3000 BC", "3000BC", "Bronze Age dawn -- the first cities and kingdoms",
+        new Era("3000 BC", "3000BC", "Bronze Age dawn: the first cities and kingdoms",
             new()
             {
                 new("Sumer", C_SUMER, "Ur / Uruk", "c. 3500 - 1900 BC",
@@ -405,7 +409,7 @@ else
                     "A vast urban civilization stretching across modern Pakistan and northwest India. Cities had grid plans, drainage, and standardized weights. Their script remains undeciphered.",
                     "705,235 740,245 745,275 720,290 700,275"),
                 new("Yangshao / Longshan (China)", C_CHINA, "Anyang region", "c. 5000 - 2000 BC",
-                    "Neolithic farming cultures along the Yellow River. Painted pottery, millet agriculture, silk, and the first walled towns -- the seedbed of later Chinese civilization.",
+                    "Neolithic farming cultures along the Yellow River. Painted pottery, millet agriculture, silk, and the first walled towns, the seedbed of later Chinese civilization.",
                     "800,180 855,180 870,210 850,235 805,225"),
                 new("Norte Chico", C_OLMEC, "Caral", "c. 3000 - 1800 BC",
                     "The earliest urban culture in the Americas, on the coast of modern Peru. Monumental platform mounds and sunken plazas at Caral predate Egyptian pyramids.",
@@ -435,14 +439,14 @@ else
                     "215,275 245,275 250,300 230,315 215,300"),
             }),
 
-        new Era("500 BC", "500BC", "The Axial Age -- Persia, Greece, the Buddha and Confucius",
+        new Era("500 BC", "500BC", "The Axial Age: Persia, Greece, the Buddha and Confucius",
             new()
             {
                 new("Achaemenid Persia", C_PERSIA, "Persepolis", "550 - 330 BC",
                     "The largest empire the world had yet seen, founded by Cyrus the Great. Stretched from the Indus to Libya. Built the Royal Road, used satraps, and tolerated local religions.",
                     "590,160 700,170 760,200 760,250 660,250 605,225 595,190"),
                 new("Greek City-States", C_GREECE, "Athens / Sparta", "c. 800 - 323 BC",
-                    "Independent poleis -- Athens, Sparta, Corinth, Thebes -- shared a language and culture. The Persian Wars forged a Greek identity. Birthplace of philosophy, drama, and democracy.",
+                    "Independent poleis (Athens, Sparta, Corinth, Thebes) shared a language and culture. The Persian Wars forged a Greek identity. Birthplace of philosophy, drama, and democracy.",
                     "535,150 575,150 580,170 555,180 535,170"),
                 new("Zhou China (Warring States)", C_CHINA, "Luoyang", "1046 - 256 BC",
                     "The Zhou dynasty fragmented into rival kingdoms during the Warring States period. Iron tools spread; Confucius, Laozi, Mozi, and Sun Tzu all lived in this turbulent age.",
@@ -478,7 +482,7 @@ else
                     "750,90 880,80 890,140 800,150 760,130"),
             }),
 
-        new Era("117 AD", "117AD", "Pax Romana and the Han -- two empires at their peaks",
+        new Era("117 AD", "117AD", "Pax Romana and the Han: two empires at their peaks",
             new()
             {
                 new("Roman Empire (Trajan)", C_ROME, "Rome", "27 BC - 476 AD",
@@ -498,7 +502,7 @@ else
                     "210,275 245,275 252,300 230,315 212,300"),
             }),
 
-        new Era("600 AD", "600AD", "Late antiquity -- Byzantium, Sassanids, Tang, and the Maya",
+        new Era("600 AD", "600AD", "Late antiquity: Byzantium, Sassanids, Tang, and the Maya",
             new()
             {
                 new("Byzantine Empire", C_BYZANTINE, "Constantinople", "330 - 1453",
@@ -540,11 +544,11 @@ else
                     "The Heian capital had just been founded in 794. Aristocratic court culture; a century later Murasaki Shikibu would write The Tale of Genji, often called the world's first novel.",
                     "900,170 922,170 925,210 905,222"),
                 new("Byzantine Empire", C_BYZANTINE, "Constantinople", "330 - 1453",
-                    "Recovering after the Iconoclast crises. Held Anatolia and the Balkans against Bulgars, Arabs, and Slavs. Empress Irene was on the throne in 800 -- the only sole female ruler so far.",
+                    "Recovering after the Iconoclast crises. Held Anatolia and the Balkans against Bulgars, Arabs, and Slavs. Empress Irene was on the throne in 800, the only sole female ruler so far.",
                     "525,140 600,140 630,165 605,205 555,210 525,175"),
             }),
 
-        new Era("1200 AD", "1200AD", "Genghis Khan rises -- the world about to be reordered",
+        new Era("1200 AD", "1200AD", "Genghis Khan rises: the world about to be reordered",
             new()
             {
                 new("Song China", C_SONG, "Hangzhou", "960 - 1279",
@@ -580,7 +584,7 @@ else
                     "Tenochtitlan, Texcoco, and Tlacopan had just formed the Triple Alliance. Within decades they would dominate central Mexico, demanding tribute and sacrificial captives from subject peoples.",
                     "210,275 245,275 252,300 230,318 212,302"),
                 new("Inca Empire (Tawantinsuyu)", C_INCA, "Cuzco", "c. 1438 - 1533",
-                    "Pachacuti had just begun the Inca expansion. By 1500 Tawantinsuyu would stretch 4,000 km along the Andes -- the largest empire ever in the pre-Columbian Americas.",
+                    "Pachacuti had just begun the Inca expansion. By 1500 Tawantinsuyu would stretch 4,000 km along the Andes, the largest empire ever in the pre-Columbian Americas.",
                     "270,360 305,360 315,420 290,460 270,440 260,395"),
                 new("Songhai Empire", C_SONGHAI, "Gao / Timbuktu", "c. 1464 - 1591",
                     "About to displace Mali as the dominant West African empire under Sunni Ali. Controlled the Niger bend, the gold trade, and the great learning city of Timbuktu.",
@@ -603,7 +607,7 @@ else
                     "The Ming were entering crisis: silver inflation, peasant revolts, Manchu pressure. They would fall in 1644 to the Manchu-led Qing. Still the world's largest economy in 1600.",
                     "770,170 890,165 910,210 880,255 795,255 770,210"),
                 new("Spanish Empire", C_SPAIN, "Madrid", "1492 - 1898",
-                    "Under Philip III. Vast holdings in the Americas (Mexico, Peru, the Philippines), much of Italy, the Low Countries (in revolt), and -- since 1580 -- Portugal and its global empire.",
+                    "Under Philip III. Vast holdings in the Americas (Mexico, Peru, the Philippines), much of Italy, the Low Countries (in revolt) and, since 1580, Portugal and its global empire.",
                     "150,280 200,260 220,295 240,330 270,330 290,400 270,460 240,455 210,400 175,330 160,300"),
                 new("Russia (early Romanov)", C_RUSSIA, "Moscow", "1547 - 1917",
                     "Just emerging from the Time of Troubles. Michael Romanov would be elected tsar in 1613. Cossacks were already pushing east; Siberia would be reached within a generation.",
@@ -665,7 +669,7 @@ else
                     "895,170 925,170 928,215 905,225"),
             }),
 
-        new Era("1945 AD", "1945AD", "End of WWII -- Cold War borders take shape",
+        new Era("1945 AD", "1945AD", "End of WWII: Cold War borders take shape",
             new()
             {
                 new("Soviet Union", C_USSR, "Moscow", "1922 - 1991",
@@ -678,7 +682,7 @@ else
                     "Bankrupt and exhausted by war. India would be independent in 1947, Palestine abandoned in 1948. Within two decades almost the entire empire would be gone.",
                     "455,100 510,95 540,115 530,140 490,150 460,135"),
                 new("French Empire (declining)", C_FRANCE, "Paris", "1830 - 1962",
-                    "Liberated from German occupation. Trying to reassert control in Indochina and Algeria -- both would explode into wars of independence within a few years.",
+                    "Liberated from German occupation. Trying to reassert control in Indochina and Algeria; both would explode into wars of independence within a few years.",
                     "455,135 525,130 540,160 510,180 475,180 455,160"),
                 new("Republic of China (collapsing)", C_ROC, "Nanjing", "1912 - 1949",
                     "Chiang Kai-shek's KMT had just won the war against Japan but was about to lose the civil war to Mao's communists. By 1949 the KMT would retreat to Taiwan.",
@@ -783,15 +787,6 @@ else
         fill-opacity: 0.45;
         pointer-events: none;
     }
-    .capital-pulse {
-        animation: capPulse 1.4s ease-in-out infinite;
-        transform-origin: center;
-        transform-box: fill-box;
-    }
-    @@keyframes capPulse {
-        0%, 100% { transform: scale(1); }
-        50%      { transform: scale(1.35); }
-    }
     .cap-label {
         font-size: 11px; font-weight: 700; fill: #fff7e0;
         font-family: 'Cinzel', Georgia, serif;
@@ -833,7 +828,7 @@ else
     .legend-item:active { transform: scale(0.97); }
     .legend-item.legend-active {
         border-color: var(--primary);
-        background: rgba(74,95,224,0.08);
+        background: color-mix(in srgb, var(--primary) 8%, transparent);
     }
     .legend-swatch {
         width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
@@ -883,7 +878,7 @@ else
     .era-slider {
         flex: 1; appearance: none; -webkit-appearance: none;
         height: 6px; border-radius: 3px;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
+        background: color-mix(in srgb, var(--primary) 30%, var(--bg-surface));
         outline: none;
     }
     .era-slider::-webkit-slider-thumb {
@@ -926,5 +921,10 @@ else
     @@keyframes slideDown {
         from { opacity: 0; transform: translateY(-8px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .info-panel { animation: none; }
+        .era-region-group, .era-region-fill, .era-region-glow { transition: none; }
     }
 </style>

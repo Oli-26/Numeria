@@ -7,7 +7,7 @@
     "prompt": "Why is a context switch between threads in the same process generally faster than between threads in different processes?",
     "options": ["Same-process switches use fewer registers", "Same-process switches don't flush the TLB or change page tables", "Same-process switches are atomic", "Same-process switches use less power"],
     "correctAnswer": "Same-process switches don't flush the TLB or change page tables",
-    "explanation": "Threads in one process share the same address space, so the TLB stays valid across the switch. Switching to a different process requires changing page tables and flushing TLB entries — significantly more expensive.",
+    "explanation": "Threads in one process share the same address space, so the TLB stays valid across the switch. Switching to a different process requires changing page tables and flushing TLB entries: significantly more expensive.",
     "xpReward": 40
   },
   {
@@ -73,7 +73,7 @@
       "ARM has different memory ordering, so I just need a stronger compiler flag"
     ],
     "correctAnswer": "3",
-    "explanation": "Step 3 is the foundational error. In C/C++, 'volatile' does NOT provide thread safety — it only prevents some compiler optimizations. You need atomic operations and explicit memory ordering (or mutexes). Volatile was for memory-mapped hardware registers, not concurrent shared variables.",
+    "explanation": "Step 3 is the foundational error. In C/C++, 'volatile' does NOT provide thread safety: it only prevents some compiler optimizations. You need atomic operations and explicit memory ordering (or mutexes). Volatile was for memory-mapped hardware registers, not concurrent shared variables.",
     "xpReward": 50
   },
   {
@@ -83,7 +83,7 @@
     "difficulty": 3,
     "prompt": "On Linux, copy-on-write makes fork() cheap because pages are only duplicated when actually written.",
     "correctAnswer": "True",
-    "explanation": "After fork, parent and child share read-only mappings of the same physical pages. The kernel duplicates a page only when one of them writes to it. Without COW, fork would have to copy the entire address space — prohibitively slow.",
+    "explanation": "After fork, parent and child share read-only mappings of the same physical pages. The kernel duplicates a page only when one of them writes to it. Without COW, fork would have to copy the entire address space: prohibitively slow.",
     "xpReward": 40
   },
   {

@@ -26,17 +26,17 @@ public class VisualizationService : IVisualizationService
         await _js.InvokeVoidAsync("MathCanvas.drawAxes", canvasId, new { scaleX, scaleY });
     }
 
-    public async Task DrawFunctionAsync(string canvasId, double[][] points, string color = "#4A5FE0", double lineWidth = 2.5)
+    public async Task DrawFunctionAsync(string canvasId, double[][] points, string color = "var(--primary)", double lineWidth = 2.5)
     {
         await _js.InvokeVoidAsync("MathCanvas.drawFunction", canvasId, points, color, lineWidth);
     }
 
-    public async Task DrawVectorAsync(string canvasId, double originX, double originY, double endX, double endY, string color = "#4A5FE0", string? label = null)
+    public async Task DrawVectorAsync(string canvasId, double originX, double originY, double endX, double endY, string color = "var(--primary)", string? label = null)
     {
         await _js.InvokeVoidAsync("MathCanvas.drawVector", canvasId, originX, originY, endX, endY, color, label);
     }
 
-    public async Task DrawPointAsync(string canvasId, double x, double y, double radius = 5, string color = "#EF5350", string? label = null)
+    public async Task DrawPointAsync(string canvasId, double x, double y, double radius = 5, string color = "var(--primary)", string? label = null)
     {
         await _js.InvokeVoidAsync("MathCanvas.drawPoint", canvasId, x, y, radius, color, label);
     }
@@ -46,7 +46,7 @@ public class VisualizationService : IVisualizationService
         await _js.InvokeVoidAsync("MathCanvas.drawRect", canvasId, x, y, w, h, fillColor, strokeColor);
     }
 
-    public async Task DrawTextAsync(string canvasId, string text, double x, double y, string color = "#1A1A2E", int fontSize = 14, string align = "center")
+    public async Task DrawTextAsync(string canvasId, string text, double x, double y, string color = "var(--text-primary)", int fontSize = 14, string align = "center")
     {
         await _js.InvokeVoidAsync("MathCanvas.drawText", canvasId, text, x, y, color, fontSize, align);
     }

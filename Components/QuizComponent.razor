@@ -100,7 +100,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
             </div>
             @if (NeedsSymbolHint(q))
             {
-                <p class="symbol-hint">Tip: spell out symbols — e.g. <code>pi</code> for π, <code>sqrt</code> for √, <code>theta</code> for θ, <code>hbar</code> for ℏ, <code>alpha</code> for α.</p>
+                <p class="symbol-hint">Tip: spell out symbols, e.g. <code>pi</code> for π, <code>sqrt</code> for √, <code>theta</code> for θ, <code>hbar</code> for ℏ, <code>alpha</code> for α.</p>
             }
         }
         else if (q.Type == QuestionType.NumericInput)
@@ -1035,7 +1035,7 @@ else if (quizState == QuizState.Complete)
     .ms-section .options-grid { display: flex; flex-direction: column; gap: 8px; }
     .ms-hint { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 8px; }
     .ms-option { display: flex; align-items: center; gap: 10px; text-align: left; }
-    .ms-option.active { border-color: var(--primary); background: rgba(91, 106, 191, 0.08); }
+    .ms-option.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
     .ms-checkbox {
         display: inline-flex; align-items: center; justify-content: center;
         width: 20px; height: 20px; border: 2px solid var(--border);
@@ -1150,8 +1150,8 @@ else if (quizState == QuizState.Complete)
     }
 
     .order-item:hover { border-color: var(--primary-light); }
-    .order-item.correct { border-color: var(--success); background: rgba(76, 175, 80, 0.08); }
-    .order-item.incorrect { border-color: var(--error); background: rgba(239, 83, 80, 0.08); }
+    .order-item.correct { border-color: var(--success); background: color-mix(in srgb, var(--success) 8%, transparent); }
+    .order-item.incorrect { border-color: var(--error); background: color-mix(in srgb, var(--error) 8%, transparent); }
 
     .order-num {
         width: 24px;
@@ -1221,11 +1221,11 @@ else if (quizState == QuizState.Complete)
     }
 
     .match-row.correct {
-        background: rgba(76, 175, 80, 0.08);
+        background: color-mix(in srgb, var(--success) 8%, transparent);
     }
 
     .match-row.incorrect {
-        background: rgba(239, 83, 80, 0.08);
+        background: color-mix(in srgb, var(--error) 8%, transparent);
     }
 
     .match-item {
@@ -1246,8 +1246,8 @@ else if (quizState == QuizState.Complete)
 
     .match-item.left.active {
         border-color: var(--primary);
-        background: rgba(74, 95, 224, 0.08);
-        box-shadow: 0 0 0 2px rgba(74, 95, 224, 0.2);
+        background: color-mix(in srgb, var(--primary) 8%, transparent);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
     }
 
     .match-item.left.matched {
@@ -1257,7 +1257,7 @@ else if (quizState == QuizState.Complete)
 
     .match-item.right.matched {
         border-color: var(--primary-light);
-        background: rgba(74, 95, 224, 0.05);
+        background: color-mix(in srgb, var(--primary) 5%, transparent);
         cursor: pointer;
     }
 
@@ -1305,11 +1305,11 @@ else if (quizState == QuizState.Complete)
 
     .match-option-btn.available {
         border-color: var(--primary-light);
-        background: rgba(74, 95, 224, 0.05);
+        background: color-mix(in srgb, var(--primary) 5%, transparent);
     }
 
     .match-option-btn.available:hover {
-        background: rgba(74, 95, 224, 0.12);
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
     }
 
     .match-option-btn.used {
@@ -1345,8 +1345,8 @@ else if (quizState == QuizState.Complete)
         flex-wrap: wrap;
     }
 
-    .correct-stat { background: rgba(76, 175, 80, 0.1); color: var(--success); }
-    .wrong-stat { background: rgba(239, 83, 80, 0.1); color: var(--error); }
+    .correct-stat { background: color-mix(in srgb, var(--success) 10%, transparent); color: var(--success); }
+    .wrong-stat { background: color-mix(in srgb, var(--error) 10%, transparent); color: var(--error); }
     .score-stat { background: var(--bg-surface); color: var(--text-primary); }
 
     .stat-number {
@@ -1401,7 +1401,7 @@ else if (quizState == QuizState.Complete)
         -webkit-tap-highlight-color: transparent; color: var(--text-primary);
     }
     .error-step:hover { border-color: var(--primary-light); }
-    .error-step.selected { border-color: var(--warning); background: rgba(255, 152, 0, 0.08); }
+    .error-step.selected { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, transparent); }
     .error-step.correct { border-color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); }
     .error-step.incorrect { border-color: var(--error); background: color-mix(in srgb, var(--error) 12%, transparent); }
     .error-step-num {
@@ -1428,7 +1428,7 @@ else if (quizState == QuizState.Complete)
         min-height: 44px;
         border: 2px solid var(--accent);
         border-radius: var(--radius-sm);
-        background: rgba(196, 129, 58, 0.1);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
         color: var(--accent);
         font-size: 0.9rem;
         font-weight: 700;
@@ -1437,13 +1437,13 @@ else if (quizState == QuizState.Complete)
         transition: background var(--dur-normal) var(--ease-out), transform var(--dur-fast) var(--ease-out);
         -webkit-tap-highlight-color: transparent;
     }
-    .hint-btn:hover { background: rgba(196, 129, 58, 0.18); }
+    .hint-btn:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
     .hint-btn:active { transform: scale(0.97); }
 
     .hint-reveal {
         margin-top: 6px;
         padding: 8px 12px;
-        background: rgba(240, 160, 48, 0.1);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
         border: 1px solid var(--accent);
         border-radius: var(--radius-sm);
         font-size: 0.9rem;

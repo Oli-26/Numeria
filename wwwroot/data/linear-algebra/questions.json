@@ -8,7 +8,7 @@
     "mathExpression": "\\begin{pmatrix} 2 \\\\ 3 \\end{pmatrix} + \\begin{pmatrix} 1 \\\\ -1 \\end{pmatrix} = ?",
     "correctAnswer": "(3, 2)",
     "acceptableAnswers": ["(3, 2)", "(3,2)", "3,2", "(3, 2)"],
-    "explanation": "Vector addition works component by component: add the first components together (2 + 1 = 3), then the second components (3 + (-1) = 2), giving the result (3, 2). Geometrically, place the tail of the second vector at the head of the first -- the result points from the origin to where you end up. This 'tip-to-tail' method is the parallelogram rule of vector addition.",
+    "explanation": "Vector addition works component by component: add the first components together (2 + 1 = 3), then the second components (3 + (-1) = 2), giving the result (3, 2). Geometrically, place the tail of the second vector at the head of the first: the result points from the origin to where you end up. This 'tip-to-tail' method is the parallelogram rule of vector addition.",
     "xpReward": 20
   },
   {
@@ -42,7 +42,7 @@
     "prompt": "Two non-parallel vectors in 2D span:",
     "options": ["A line", "A point", "All of 2D space", "A cube"],
     "correctAnswer": "All of 2D space",
-    "explanation": "Two non-parallel (linearly independent) vectors in 2D span all of 2D space because any point in the plane can be reached by some combination a*v1 + b*v2. Why the wrong answers are wrong: 'A line' would only result from one vector or two parallel vectors; 'A point' would mean no vectors at all; 'A cube' is a 3D object and irrelevant to 2D. Analogy: think of the two vectors as compass directions -- if they point in genuinely different directions, you can navigate to any location on the 2D map by combining steps along each direction.",
+    "explanation": "Two non-parallel (linearly independent) vectors in 2D span all of 2D space because any point in the plane can be reached by some combination a*v1 + b*v2. Why the wrong answers are wrong: 'A line' would only result from one vector or two parallel vectors; 'A point' would mean no vectors at all; 'A cube' is a 3D object and irrelevant to 2D. Analogy: think of the two vectors as compass directions, if they point in genuinely different directions, you can navigate to any location on the 2D map by combining steps along each direction.",
     "xpReward": 25
   },
   {
@@ -57,7 +57,7 @@
       { "left": "Span", "right": "All reachable combinations" }
     ],
     "correctAnswer": null,
-    "explanation": "These are the foundational concepts of vector spaces. A Vector has both magnitude (how long) and direction (which way) -- like an arrow. A Basis is the smallest set of vectors that can build every vector in the space through linear combinations -- it's the 'coordinate system.' The Span of a set of vectors is the collection of all vectors you can reach by scaling and adding them. Mnemonic: vectors are arrows, a basis is a minimal toolkit, and the span is everything you can build with that toolkit.",
+    "explanation": "These are the foundational concepts of vector spaces. A Vector has both magnitude (how long) and direction (which way), like an arrow. A Basis is the smallest set of vectors that can build every vector in the space through linear combinations: it's the 'coordinate system.' The Span of a set of vectors is the collection of all vectors you can reach by scaling and adding them. Mnemonic: vectors are arrows, a basis is a minimal toolkit, and the span is everything you can build with that toolkit.",
     "xpReward": 30
   },
   {
@@ -68,7 +68,7 @@
     "prompt": "A 2\u00d72 matrix represents a transformation that takes:",
     "options": ["Numbers to numbers", "2D vectors to 2D vectors", "3D vectors to 2D vectors", "Matrices to matrices"],
     "correctAnswer": "2D vectors to 2D vectors",
-    "explanation": "A 2x2 matrix takes a 2D vector as input and produces a 2D vector as output, so it represents a linear transformation from 2D to 2D. Why the wrong answers are wrong: 'Numbers to numbers' would be a 1x1 matrix (just a scalar); '3D to 2D' would require a 2x3 matrix; 'Matrices to matrices' would need a higher-order operation. Analogy: think of a 2x2 matrix as a machine with a 2-slot input and a 2-slot output -- it transforms 2D space into 2D space.",
+    "explanation": "A 2x2 matrix takes a 2D vector as input and produces a 2D vector as output, so it represents a linear transformation from 2D to 2D. Why the wrong answers are wrong: 'Numbers to numbers' would be a 1x1 matrix (just a scalar); '3D to 2D' would require a 2x3 matrix; 'Matrices to matrices' would need a higher-order operation. Analogy: think of a 2x2 matrix as a machine with a 2-slot input and a 2-slot output; it transforms 2D space into 2D space.",
     "xpReward": 20
   },
   {
@@ -91,7 +91,7 @@
     "prompt": "Is matrix multiplication commutative (AB = BA)?",
     "options": ["Always", "Never", "Generally no", "Only for square matrices"],
     "correctAnswer": "Generally no",
-    "explanation": "Matrix multiplication is generally not commutative: AB != BA for most pairs of matrices. Why the wrong answers are wrong: 'Always' is false -- take A = [[1,1],[0,0]] and B = [[0,0],[1,1]], then AB != BA; 'Never' is too strong -- diagonal matrices do commute, and any matrix commutes with the identity; 'Only for square matrices' is wrong because even most square matrices don't commute. The key insight: AB means 'first apply B, then A,' while BA means 'first apply A, then B' -- order of transformations matters, just like rotating then reflecting differs from reflecting then rotating.",
+    "explanation": "Matrix multiplication is generally not commutative: AB != BA for most pairs of matrices. Why the wrong answers are wrong: 'Always' is false; take A = [[1,1],[0,0]] and B = [[0,0],[1,1]], then AB != BA; 'Never' is too strong: diagonal matrices do commute, and any matrix commutes with the identity; 'Only for square matrices' is wrong because even most square matrices don't commute. The key insight: AB means 'first apply B, then A,' while BA means 'first apply A, then B'; order of transformations matters, just like rotating then reflecting differs from reflecting then rotating.",
     "xpReward": 20
   },
   {
@@ -780,7 +780,7 @@
     "prompt": "In the transformer attention mechanism, what operation computes the similarity between queries and keys?",
     "correctAnswer": "matrix multiplication",
     "acceptableAnswers": ["matrix multiplication", "dot product", "QK^T", "Q K^T", "matmul", "dot products"],
-    "explanation": "Attention computes QK^T -- the matrix of pairwise dot products between query and key vectors -- to determine how much each position attends to each other position.",
+    "explanation": "Attention computes QK^T, the matrix of pairwise dot products between query and key vectors, to determine how much each position attends to each other position.",
     "xpReward": 30
   },
   {
@@ -813,7 +813,7 @@
       { "left": "Transformer attention", "right": "Softmax of QK^T times V" }
     ],
     "correctAnswer": null,
-    "explanation": "Modern machine learning is built on linear algebra -- matrices and their operations are the fundamental computational primitives.",
+    "explanation": "Modern machine learning is built on linear algebra: matrices and their operations are the fundamental computational primitives.",
     "xpReward": 40
   },
 

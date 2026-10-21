@@ -14,10 +14,6 @@
     <base href="/" />
     <link rel="stylesheet" href="css/site.css" />
     <link id="theme-css" rel="stylesheet" href="css/themes/nous.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="nous-icon.svg" />
     <style>#blazor-error-ui { display: none !important; }</style>
     <script src="js/errorLog.js"></script>
@@ -100,7 +96,6 @@
         <a class="dismiss">&#x1F5D9;</a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="js/mathCanvas.js"></script>
     <script src="js/drawPad.js"></script>
     <script src="js/sounds.js"></script>
@@ -369,8 +364,27 @@
             });
         }
 
-        // KaTeX rendering
-        function renderMath(elementId, expression, displayMode) {
+        // KaTeX is bundled and fetched on the first formula, so startup never waits on it (or on the network).
+        var katexReady = null;
+        function loadKatex() {
+            if (window.katex) return Promise.resolve();
+            if (katexReady) return katexReady;
+            var css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = 'lib/katex/katex.min.css';
+            document.head.appendChild(css);
+            katexReady = new Promise(function(resolve, reject) {
+                var s = document.createElement('script');
+                s.src = 'lib/katex/katex.min.js';
+                s.onload = resolve;
+                s.onerror = function() { katexReady = null; reject(); };
+                document.head.appendChild(s);
+            });
+            return katexReady;
+        }
+
+        async function renderMath(elementId, expression, displayMode) {
+            await loadKatex();
             var el = document.getElementById(elementId);
             if (el) {
                 katex.render(expression, el, {

@@ -2,6 +2,78 @@
 window.MathCanvas = {
     canvases: {},
 
+    // Diagram colors may be theme tokens ("var(--primary)", "rgba(var(--domain-rgb), 0.3)",
+    // "color-mix(in srgb, <color> N%, transparent)"). Canvas parses none of these, so they are
+    // resolved here against the live theme; plain colors pass straight through.
+    _tokenFallbacks: {
+        '--primary': '#B4552F', '--primary-dark': '#8F4224', '--accent': '#BC8434',
+        '--text-primary': '#2A211B', '--text-secondary': '#5A4D42', '--text-muted': '#6B5E50',
+        '--border': '#DDD3C4', '--bg-card': '#FBF8F2', '--success': '#5B8A3C', '--error': '#B3402F'
+    },
+    // Secondary series hues as [on light card, on dark card]; a theme may define its own --viz-* to override.
+    _vizHues: {
+        '--viz-slate': ['#4A6F8F', '#7C9CBA'],
+        '--viz-teal': ['#357A6E', '#6AAEA1'],
+        '--viz-olive': ['#66762B', '#98A85A'],
+        '--viz-plum': ['#83557C', '#B48AAD'],
+        '--viz-ochre': ['#94661C', '#CF9A4E']
+    },
+
+    _cssVar: function (c, name, inlineFallback) {
+        var v = '';
+        try {
+            if (c && !c._style) c._style = getComputedStyle(c.canvas.isConnected ? c.canvas : document.documentElement);
+            v = (c ? c._style : getComputedStyle(document.documentElement)).getPropertyValue(name).trim();
+        } catch (e) { }
+        if (v) return v;
+        if (inlineFallback) return inlineFallback.trim();
+        var hue = this._vizHues[name];
+        if (hue) return hue[this._onDarkCard(c) ? 1 : 0];
+        return this._tokenFallbacks[name] || '#888888';
+    },
+
+    _rgbaOf: function (color) {
+        var p = this._probe;
+        if (!p) {
+            var pc = document.createElement('canvas');
+            pc.width = pc.height = 1;
+            p = this._probe = pc.getContext('2d', { willReadFrequently: true });
+        }
+        p.clearRect(0, 0, 1, 1);
+        p.fillStyle = '#000';
+        p.fillStyle = color;
+        p.fillRect(0, 0, 1, 1);
+        var d = p.getImageData(0, 0, 1, 1).data;
+        return [d[0], d[1], d[2], d[3] / 255];
+    },
+
+    _onDarkCard: function (c) {
+        var cache = c ? (c._colors || (c._colors = {})) : {};
+        if (cache.__dark === undefined) {
+            var rgb = this._rgbaOf(this._cssVar(c, '--bg-card'));
+            cache.__dark = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) < 110;
+        }
+        return cache.__dark;
+    },
+
+    _color: function (c, value, fallback) {
+        if (!value) value = fallback;
+        if (typeof value !== 'string' || (value.indexOf('var(') < 0 && value.indexOf('color-mix(') < 0)) return value;
+        var cache = c ? (c._colors || (c._colors = {})) : {};
+        if (cache[value] !== undefined) return cache[value];
+        var self = this;
+        var out = value.replace(/var\(\s*(--[\w-]+)\s*(?:,([^()]*(?:\([^()]*\)[^()]*)*))?\)/g, function (_, name, fb) {
+            return self._cssVar(c, name, fb);
+        });
+        var mix = /^color-mix\(\s*in\s+srgb\s*,\s*(.+?)\s+([\d.]+)%\s*,\s*transparent\s*\)$/i.exec(out.trim());
+        if (mix) {
+            var rgba = this._rgbaOf(mix[1]);
+            out = 'rgba(' + rgba[0] + ', ' + rgba[1] + ', ' + rgba[2] + ', ' + +(rgba[3] * parseFloat(mix[2]) / 100).toFixed(3) + ')';
+        }
+        cache[value] = out;
+        return out;
+    },
+
     init: function (canvasId, width, height) {
         var canvas = document.getElementById(canvasId);
         if (!canvas) return;
@@ -41,6 +113,7 @@ window.MathCanvas = {
         var c = this.canvases[canvasId];
         if (!c) return;
         c.ctx.clearRect(0, 0, c.width, c.height);
+        c._colors = null; // re-read theme colors on each redraw
     },
 
     drawAxes: function (canvasId, config) {
@@ -53,7 +126,7 @@ window.MathCanvas = {
         var scaleY = config.scaleY || 40;
 
         // Grid lines
-        ctx.strokeStyle = 'rgba(74, 95, 224, 0.10)';
+        ctx.strokeStyle = this._color(c, 'var(--border)');
         ctx.lineWidth = 1.2;
         for (var x = cx % scaleX; x < c.width; x += scaleX) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke();
@@ -63,13 +136,13 @@ window.MathCanvas = {
         }
 
         // Axes
-        ctx.strokeStyle = 'rgba(26, 26, 46, 0.4)';
+        ctx.strokeStyle = this._color(c, 'color-mix(in srgb, var(--text-primary) 40%, transparent)');
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(c.width, cy); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, c.height); ctx.stroke();
 
         // Labels
-        ctx.fillStyle = 'rgba(26, 26, 46, 0.6)';
+        ctx.fillStyle = this._color(c, 'var(--text-muted)');
         ctx.font = '600 13px system-ui';
         ctx.textAlign = 'center';
         var range = Math.floor(c.width / 2 / scaleX);
@@ -90,7 +163,7 @@ window.MathCanvas = {
         if (!c) return;
         var ctx = c.ctx;
 
-        ctx.strokeStyle = color || '#4A5FE0';
+        ctx.strokeStyle = this._color(c, color, 'var(--primary)');
         ctx.lineWidth = lineWidth || 2.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -112,8 +185,7 @@ window.MathCanvas = {
         if (!c) return;
         var ctx = c.ctx;
 
-        ctx.strokeStyle = color || '#4A5FE0';
-        ctx.fillStyle = color || '#4A5FE0';
+        ctx.strokeStyle = ctx.fillStyle = this._color(c, color, 'var(--primary)');
         ctx.lineWidth = 2.5;
 
         // Line
@@ -145,7 +217,7 @@ window.MathCanvas = {
         if (!c) return;
         var ctx = c.ctx;
 
-        ctx.fillStyle = color || '#EF5350';
+        ctx.fillStyle = this._color(c, color, 'var(--primary)');
         ctx.beginPath();
         ctx.arc(x, y, radius || 5, 0, Math.PI * 2);
         ctx.fill();
@@ -163,11 +235,11 @@ window.MathCanvas = {
         var ctx = c.ctx;
 
         if (fillColor) {
-            ctx.fillStyle = fillColor;
+            ctx.fillStyle = this._color(c, fillColor);
             ctx.fillRect(x, y, w, h);
         }
         if (strokeColor) {
-            ctx.strokeStyle = strokeColor;
+            ctx.strokeStyle = this._color(c, strokeColor);
             ctx.lineWidth = 1;
             ctx.strokeRect(x, y, w, h);
         }
@@ -177,7 +249,7 @@ window.MathCanvas = {
         var c = this.canvases[canvasId];
         if (!c) return;
         var ctx = c.ctx;
-        ctx.fillStyle = color || '#1A1A2E';
+        ctx.fillStyle = this._color(c, color, 'var(--text-primary)');
         ctx.font = '500 ' + (fontSize || 14) + 'px system-ui';
         ctx.textAlign = align || 'center';
         ctx.fillText(text, x, y);
@@ -196,8 +268,8 @@ window.MathCanvas = {
         }
         ctx.closePath();
 
-        if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
-        if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth || 2; ctx.stroke(); }
+        if (fillColor) { ctx.fillStyle = this._color(c, fillColor); ctx.fill(); }
+        if (strokeColor) { ctx.strokeStyle = this._color(c, strokeColor); ctx.lineWidth = lineWidth || 2; ctx.stroke(); }
     },
 
     drawGlowPath: function (canvasId, points, color, lineWidth, glowRadius, glowAlpha) {
@@ -215,7 +287,7 @@ window.MathCanvas = {
         ];
         for (var p = 0; p < passes.length; p++) {
             ctx.globalAlpha = Math.min(passes[p].a, 1);
-            ctx.strokeStyle = color || '#4A5FE0';
+            ctx.strokeStyle = this._color(c, color, 'var(--primary)');
             ctx.lineWidth = passes[p].w;
             ctx.beginPath();
             var first = true;
@@ -237,7 +309,7 @@ window.MathCanvas = {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         if (fillColor) {
-            ctx.fillStyle = fillColor;
+            ctx.fillStyle = this._color(c, fillColor);
             ctx.beginPath();
             ctx.moveTo(points[0][0], points[0][1]);
             for (var i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
@@ -252,7 +324,7 @@ window.MathCanvas = {
             ];
             for (var p = 0; p < passes.length; p++) {
                 ctx.globalAlpha = Math.min(passes[p].a, 1);
-                ctx.strokeStyle = strokeColor;
+                ctx.strokeStyle = this._color(c, strokeColor);
                 ctx.lineWidth = passes[p].w;
                 ctx.beginPath();
                 ctx.moveTo(points[0][0], points[0][1]);
@@ -270,7 +342,7 @@ window.MathCanvas = {
         var ctx = c.ctx;
         ctx.save();
         var g = ctx.createRadialGradient(x, y, Math.max(innerR, 0), x, y, Math.max(outerR, innerR + 1));
-        g.addColorStop(0, color);
+        g.addColorStop(0, this._color(c, color));
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.globalAlpha = alpha == null ? 1 : alpha;
         ctx.fillStyle = g;
@@ -286,7 +358,7 @@ window.MathCanvas = {
         var ctx = c.ctx;
         ctx.save();
         var g = ctx.createLinearGradient(x0, y0, x1, y1);
-        for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+        for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], this._color(c, stops[i][1]));
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.moveTo(points[0][0], points[0][1]);
@@ -303,13 +375,13 @@ window.MathCanvas = {
         ctx.save();
         var gr = glowRadius || radius * 3;
         var g = ctx.createRadialGradient(x, y, 0, x, y, gr);
-        g.addColorStop(0, glowColor || color);
+        g.addColorStop(0, this._color(c, glowColor || color));
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(x, y, gr, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = color;
+        ctx.fillStyle = this._color(c, color);
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
@@ -337,8 +409,8 @@ window.MathCanvas = {
         ctx.lineTo(x, y + rad);
         ctx.quadraticCurveTo(x, y, x + rad, y);
         ctx.closePath();
-        if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
-        if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
+        if (fillColor) { ctx.fillStyle = this._color(c, fillColor); ctx.fill(); }
+        if (strokeColor) { ctx.strokeStyle = this._color(c, strokeColor); ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
         ctx.restore();
     },
 
@@ -348,7 +420,7 @@ window.MathCanvas = {
         var ctx = c.ctx;
         ctx.save();
         var g = ctx.createLinearGradient(0, 0, 0, c.height);
-        for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+        for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], this._color(c, stops[i][1]));
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, c.width, c.height);
         ctx.restore();
@@ -380,7 +452,7 @@ window.MathCanvas = {
         var ctx = c.ctx;
         ctx.save();
         ctx.setLineDash([dashOn || 4, dashOff || 4]);
-        ctx.strokeStyle = color || '#888';
+        ctx.strokeStyle = this._color(c, color, 'var(--text-muted)');
         ctx.lineWidth = lineWidth || 1;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -395,7 +467,7 @@ window.MathCanvas = {
         if (!c) return;
         var ctx = c.ctx;
         ctx.save();
-        ctx.strokeStyle = color || '#888';
+        ctx.strokeStyle = this._color(c, color, 'var(--text-muted)');
         ctx.lineWidth = lineWidth || 1;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -411,8 +483,8 @@ window.MathCanvas = {
         ctx.save();
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
-        if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
+        if (fillColor) { ctx.fillStyle = this._color(c, fillColor); ctx.fill(); }
+        if (strokeColor) { ctx.strokeStyle = this._color(c, strokeColor); ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
         ctx.restore();
     },
 
@@ -1151,8 +1223,8 @@ window.MathInteractive['cell-anatomy'] = function (c, cfg) {
     var parts = [
         { id: 'membrane', label: 'Cell Membrane', desc: 'Phospholipid bilayer; selective barrier.', shape: 'border' },
         { id: 'nucleus', label: 'Nucleus', desc: 'Houses DNA; controls gene expression.', x: 0.55, y: 0.5, r: 35 },
-        { id: 'mito', label: 'Mitochondrion', desc: 'Powerhouse — makes ATP via respiration.', x: 0.25, y: 0.35, r: 18 },
-        { id: 'mito2', label: 'Mitochondrion', desc: 'Powerhouse — makes ATP via respiration.', x: 0.75, y: 0.7, r: 18 },
+        { id: 'mito', label: 'Mitochondrion', desc: 'Powerhouse: makes ATP via respiration.', x: 0.25, y: 0.35, r: 18 },
+        { id: 'mito2', label: 'Mitochondrion', desc: 'Powerhouse: makes ATP via respiration.', x: 0.75, y: 0.7, r: 18 },
         { id: 'er', label: 'Endoplasmic Reticulum', desc: 'Folds proteins (rough) and lipids (smooth).', x: 0.4, y: 0.3, r: 14 },
         { id: 'golgi', label: 'Golgi Apparatus', desc: 'Sorts and packages proteins for export.', x: 0.3, y: 0.7, r: 14 },
         { id: 'ribo', label: 'Ribosome', desc: 'Synthesizes proteins from mRNA.', x: 0.65, y: 0.25, r: 6 },
@@ -2592,7 +2664,7 @@ window.MathInteractive['sn1-sn2'] = function (c, cfg) {
         }
         // Title
         ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'left';
-        ctx.fillText(s.mode === 'sn2' ? 'SN2 — concerted, bimolecular' : 'SN1 — stepwise, unimolecular', 8, 16);
+        ctx.fillText(s.mode === 'sn2' ? 'SN2: concerted, bimolecular' : 'SN1: stepwise, unimolecular', 8, 16);
         // Buttons
         var modes = ['sn2', 'sn1'];
         var labels = ['SN2', 'SN1'];
@@ -3092,7 +3164,7 @@ window.MathInteractive['antibody-binding'] = function (c, cfg) {
         ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'left';
         ctx.fillText('Antibody-antigen specificity', 8, 16);
         ctx.font = '10px system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.fillText('Drag antigens to the binding sites — only matching shapes lock in.', 8, 32);
+        ctx.fillText('Drag antigens to the binding sites. Only matching shapes lock in.', 8, 32);
         ctx.fillText('bound: ' + s.bindCount + '/2', 8, H - 12);
     });
 };
@@ -3186,7 +3258,7 @@ window.MathInteractive['french-flag'] = function (c, cfg) {
         ctx.fillText('θ₂ = ' + s.t2.toFixed(2), fieldR - 4, y2 - 4);
         // Title
         ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'left';
-        ctx.fillText('Morphogen gradient — French flag model', 8, 16);
+        ctx.fillText('Morphogen gradient: French flag model', 8, 16);
         ctx.font = '10px system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
         ctx.fillText('drag thresholds to reshape fate map', 8, H - 12);
         // Region key
@@ -3258,7 +3330,7 @@ window.MathInteractive['tectonic-boundaries'] = function (c, cfg) {
             drawArrow(ctx, midX + sep / 2 + 30, groundY - 15, midX + sep / 2 + 50, groundY - 15, '#ffd166');
             // Title
             ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center';
-            ctx.fillText('Divergent — mid-ocean ridge / rift valley', W / 2, 24);
+            ctx.fillText('Divergent: mid-ocean ridge / rift valley', W / 2, 24);
             ctx.font = '11px system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.65)';
             ctx.fillText('Plates pull apart; magma rises and creates new crust.', W / 2, 42);
         } else if (s.mode === 'convergent') {
@@ -3301,9 +3373,9 @@ window.MathInteractive['tectonic-boundaries'] = function (c, cfg) {
             drawArrow(ctx, 30, groundY - 15, 50, groundY - 15, '#ffd166');
             drawArrow(ctx, W - 30, groundY - 15, W - 50, groundY - 15, '#ffd166');
             ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center';
-            ctx.fillText('Convergent — subduction zone / mountain belt', W / 2, 24);
+            ctx.fillText('Convergent: subduction zone / mountain belt', W / 2, 24);
             ctx.font = '11px system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.65)';
-            ctx.fillText('Plates collide; one dives below — trench, volcanoes, mountains.', W / 2, 42);
+            ctx.fillText('Plates collide; one dives below (trench, volcanoes, mountains).', W / 2, 42);
         } else {
             // Transform: plates slide past, fault between
             var slide = s.t * 30;
@@ -3321,9 +3393,9 @@ window.MathInteractive['tectonic-boundaries'] = function (c, cfg) {
             drawArrow(ctx, midX, groundY - 50, midX - 30, groundY - 50, '#ffd166');
             drawArrow(ctx, midX, groundY - 12, midX + 30, groundY - 12, '#ffd166');
             ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center';
-            ctx.fillText('Transform — strike-slip fault', W / 2, 24);
+            ctx.fillText('Transform: strike-slip fault', W / 2, 24);
             ctx.font = '11px system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.65)';
-            ctx.fillText('Plates slide past each other (e.g. San Andreas) — earthquakes.', W / 2, 42);
+            ctx.fillText('Plates slide past each other (e.g. San Andreas), causing quakes.', W / 2, 42);
         }
         // Buttons
         var modes = ['divergent', 'convergent', 'transform'];

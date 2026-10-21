@@ -78,6 +78,19 @@ public class ContentRepository : IContentRepository
         }
     }
 
+    private Dictionary<string, List<string>>? _lessonIndex;
+
+    // A small id index, so progress can be counted without downloading and parsing every lessons.json.
+    public async Task<List<string>> GetLessonIdsAsync(string topicId)
+    {
+        if (_lessonIndex == null)
+        {
+            try { _lessonIndex = await _http.GetFromJsonAsync<Dictionary<string, List<string>>>("data/lesson-index.json") ?? new(); }
+            catch { _lessonIndex = new(); }
+        }
+        return _lessonIndex.TryGetValue(topicId, out var ids) ? ids : (await GetLessonsAsync(topicId)).Select(l => l.Id).ToList();
+    }
+
     public async Task<List<Lesson>> GetLessonsAsync(string topicId)
     {
         if (!_lessons.ContainsKey(topicId))

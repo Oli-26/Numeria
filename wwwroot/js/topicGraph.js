@@ -49,6 +49,13 @@
       this._onTouchEnd = this._onTouchEnd.bind(this);
       this._onResize = this._onResize.bind(this);
       this._loop = this._loop.bind(this);
+
+      // Any input marks the canvas for a redraw; see _loop.
+      this._dirty = true;
+      ['_onMouseDown', '_onMouseMove', '_onMouseUp', '_onWheel', '_onTouchStart', '_onTouchMove', '_onTouchEnd', '_onResize'].forEach(k => {
+        var handler = this[k];
+        this[k] = e => { this._dirty = true; return handler(e); };
+      });
     }
 
     // ─── Public API (called from Blazor) ───────────────────────────────────────
@@ -424,6 +431,8 @@
       var css = getComputedStyle(this.canvas);
       var labelColor = css.getPropertyValue('--text-primary').trim() || '#fff';
       var haloColor = css.getPropertyValue('--bg-main').trim() || '#000';
+      var edgeColor = css.getPropertyValue('--primary').trim() || '#B4552F';
+      var mutedColor = css.getPropertyValue('--text-muted').trim() || '#888';
 
       ctx.save();
       ctx.translate(this.camX, this.camY);
@@ -437,12 +446,12 @@
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = e.type === 'prereq'
-          ? 'rgba(100,150,255,0.35)'
-          : 'rgba(180,180,180,0.2)';
+        ctx.strokeStyle = e.type === 'prereq' ? edgeColor : mutedColor;
+        ctx.globalAlpha = e.type === 'prereq' ? 0.4 : 0.22;
         ctx.lineWidth = e.type === 'prereq' ? 1.5 * e.strength + 0.5 : 1;
         ctx.stroke();
       }
+      ctx.globalAlpha = 1;
 
       // Nodes
       for (var n of this.nodes) {
@@ -508,8 +517,13 @@
 
     _loop() {
       if (!this.running) return;
-      this._simulate();
-      this._render();
+      var settling = this.layout === 'force' && (this.simSteps < this.maxSimSteps || this.dragging);
+      if (settling) this._simulate();
+      // Once the layout has settled, redraw only after input or an API call instead of every frame.
+      if (settling || this._dirty) {
+        this._render();
+        this._dirty = false;
+      }
       this.animFrameId = requestAnimationFrame(this._loop);
     }
 
@@ -716,6 +730,8 @@
   // Singleton instance
   var _instance = null;
 
+  function touch() { if (_instance) _instance._dirty = true; }
+
   window.TopicGraph = {
     init: function (canvasId, graphData, completedIds, dotNetRef) {
       if (_instance) _instance.destroy();
@@ -724,15 +740,19 @@
     },
     setColors: function (colorMap) {
       if (_instance) _instance.setColors(colorMap);
+      touch();
     },
     updateCompleted: function (completedIds) {
       if (_instance) _instance.updateCompleted(completedIds);
+      touch();
     },
     filterDomain: function (domain) {
       if (_instance) _instance.filterDomain(domain);
+      touch();
     },
     setLayout: function (mode) {
       if (_instance) _instance.setLayout(mode);
+      touch();
     },
     destroy: function () {
       if (_instance) { _instance.destroy(); _instance = null; }

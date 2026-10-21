@@ -160,11 +160,11 @@ public class ProgressService : IProgressService
     public async Task<double> GetTopicProgressAsync(string topicId)
     {
         var profile = await GetProfileAsync();
-        var lessons = await _contentRepo.GetLessonsAsync(topicId);
-        if (lessons.Count == 0) return 0;
+        var lessonIds = await _contentRepo.GetLessonIdsAsync(topicId);
+        if (lessonIds.Count == 0) return 0;
 
-        var completed = lessons.Count(l => profile.LessonsCompleted.Contains(l.Id));
-        return (double)completed / lessons.Count * 100;
+        var completed = lessonIds.Count(profile.LessonsCompleted.Contains);
+        return (double)completed / lessonIds.Count * 100;
     }
 
     public async Task UpdateStreakAsync()

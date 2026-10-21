@@ -56,7 +56,7 @@ else
             @{ var trace = ApplySteps(input ?? "", selectedLaw); }
             <div class="ss-step ss-step-start">
                 <span class="ss-tag">Input</span>
-                <strong>@(string.IsNullOrWhiteSpace(input) ? "—" : input)</strong>
+                <strong>@(string.IsNullOrWhiteSpace(input) ? "-" : input)</strong>
             </div>
             @foreach (var s in trace)
             {
@@ -174,7 +174,7 @@ else
 
     .ss-steps { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
     .ss-step { background: var(--bg-surface); border-radius: var(--radius-sm); padding: 10px 12px; }
-    .ss-step-start { background: rgba(74,95,224,0.08); }
+    .ss-step-start { background: color-mix(in srgb, var(--primary) 8%, transparent); }
     .ss-step-noop { opacity: 0.7; }
     .ss-tag { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
     .ss-step strong { display: block; font-size: 1.1rem; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--text-primary); }

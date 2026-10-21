@@ -15,8 +15,8 @@
       {"number": 6, "text": "Since a = b, substitute", "mathExpression": "b + b = b \\implies 2b = b \\implies 2 = 1"}
     ],
     "errorStep": 5,
-    "errorExplanation": "Since a = b, we have a - b = 0. Step 5 divides both sides by (a - b) = 0, which is division by zero — the cardinal sin of algebra! Everything after this step is invalid.",
-    "correctReasoning": "When a = b, the equation (a+b)(a-b) = b(a-b) becomes (2b)(0) = b(0), which is just 0 = 0 — true but uninteresting. You cannot cancel the zero factor.",
+    "errorExplanation": "Since a = b, we have a - b = 0. Step 5 divides both sides by (a - b) = 0, which is division by zero: the cardinal sin of algebra! Everything after this step is invalid.",
+    "correctReasoning": "When a = b, the equation (a+b)(a-b) = b(a-b) becomes (2b)(0) = b(0), which is just 0 = 0: true but uninteresting. You cannot cancel the zero factor.",
     "xpReward": 30
   },
   {
@@ -36,7 +36,7 @@
       {"number": 7, "text": "By induction, all horses in any finite set are the same color.", "mathExpression": null}
     ],
     "errorStep": 6,
-    "errorExplanation": "The overlap argument fails when k = 1! For k+1 = 2 horses {h₁, h₂}, the 'first k' is {h₁} and the 'last k' is {h₂}. These sets DON'T overlap — there are no shared horses. The inductive step from k=1 to k=2 is broken.",
+    "errorExplanation": "The overlap argument fails when k = 1! For k+1 = 2 horses {h₁, h₂}, the 'first k' is {h₁} and the 'last k' is {h₂}. These sets DON'T overlap: there are no shared horses. The inductive step from k=1 to k=2 is broken.",
     "correctReasoning": "The base case to inductive step transition requires the two subsets to overlap, which needs k ≥ 2. The induction works for k ≥ 2 → k+1, but the gap between k=1 and k=2 is never bridged. This is a famous example of a subtle induction error.",
     "xpReward": 40
   },
@@ -55,7 +55,7 @@
       {"number": 5, "text": "So 2n = n, which gives n = 0.", "mathExpression": "2n = n \\implies n = 0"}
     ],
     "errorStep": 4,
-    "errorExplanation": "The right side isn't just 'n added n times' — the NUMBER of terms is also a function of n! When you differentiate, you must account for the changing number of terms using the product rule or chain rule. You can't differentiate term-by-term when the number of terms varies.",
+    "errorExplanation": "The right side isn't just 'n added n times': the NUMBER of terms is also a function of n! When you differentiate, you must account for the changing number of terms using the product rule or chain rule. You can't differentiate term-by-term when the number of terms varies.",
     "correctReasoning": "Write f(n) = n · n = n². The expression 'n added n times' conflates the summand and the count. Properly, d/dn(n · n) = n · 1 + 1 · n = 2n by the product rule. The flaw is treating the number of terms as constant during differentiation.",
     "xpReward": 30
   },
@@ -153,7 +153,7 @@
       {"number": 6, "text": "Therefore A = PIP⁻¹ = I. But A ≠ I. Contradiction?", "mathExpression": null}
     ],
     "errorStep": 4,
-    "errorExplanation": "A double eigenvalue does NOT guarantee two independent eigenvectors! The eigenspace for λ=1 is only 1-dimensional (spanned by (1,0)). This matrix is NOT diagonalizable — it's a Jordan block. The algebraic multiplicity (2) exceeds the geometric multiplicity (1).",
+    "errorExplanation": "A double eigenvalue does NOT guarantee two independent eigenvectors! The eigenspace for λ=1 is only 1-dimensional (spanned by (1,0)). This matrix is NOT diagonalizable: it's a Jordan block. The algebraic multiplicity (2) exceeds the geometric multiplicity (1).",
     "correctReasoning": "A matrix is diagonalizable iff for every eigenvalue, the geometric multiplicity (eigenspace dimension) equals the algebraic multiplicity (root multiplicity in the characteristic polynomial). Here algebraic = 2 but geometric = 1. The Jordan normal form handles such cases.",
     "xpReward": 40
   },
@@ -173,7 +173,7 @@
       {"number": 6, "text": "But from the original formula at x = 1: 1/(1-1) = 1/0, which is undefined, not -1/2. So -1/2 = undefined = 0, giving 0 = 1 after rearranging.", "mathExpression": "0 = 1"}
     ],
     "errorStep": 4,
-    "errorExplanation": "You cannot swap the limit and an infinite sum unless uniform convergence holds. The geometric series does NOT converge uniformly on [0, 1) — it converges pointwise but the convergence deteriorates as x → 1. Interchanging limit and summation requires justification (e.g., dominated convergence or uniform convergence), which fails here.",
+    "errorExplanation": "You cannot swap the limit and an infinite sum unless uniform convergence holds. The geometric series does NOT converge uniformly on [0, 1): it converges pointwise but the convergence deteriorates as x → 1. Interchanging limit and summation requires justification (e.g., dominated convergence or uniform convergence), which fails here.",
     "correctReasoning": "The geometric series 1/(1-x) has radius of convergence 1. At the boundary x = 1, the series diverges. The interchange of limit and summation is invalid without uniform convergence. Steps 5-6 compound the error by mixing divergent series regularization with ordinary arithmetic, which is not permitted.",
     "xpReward": 35
   },
@@ -192,8 +192,8 @@
       {"number": 5, "text": "A dense set of points where the derivative exists means f is differentiable everywhere.", "mathExpression": null}
     ],
     "errorStep": 1,
-    "errorExplanation": "The Mean Value Theorem REQUIRES that f is differentiable on (a, b) as a hypothesis — not just continuous! The student is assuming what they are trying to prove. MVT states: if f is continuous on [a,b] AND differentiable on (a,b), THEN there exists c with f'(c) = (f(b)-f(a))/(b-a). You cannot apply MVT without first knowing differentiability.",
-    "correctReasoning": "Continuity does not imply differentiability. The Weierstrass function is continuous everywhere but differentiable nowhere. The MVT cannot be applied without the differentiability hypothesis. Step 5 is also wrong: having a derivative on a dense set does not imply differentiability everywhere (consider |x| near 0 — it's differentiable on a dense set but not at x = 0).",
+    "errorExplanation": "The Mean Value Theorem REQUIRES that f is differentiable on (a, b) as a hypothesis, not just continuous! The student is assuming what they are trying to prove. MVT states: if f is continuous on [a,b] AND differentiable on (a,b), THEN there exists c with f'(c) = (f(b)-f(a))/(b-a). You cannot apply MVT without first knowing differentiability.",
+    "correctReasoning": "Continuity does not imply differentiability. The Weierstrass function is continuous everywhere but differentiable nowhere. The MVT cannot be applied without the differentiability hypothesis. Step 5 is also wrong: having a derivative on a dense set does not imply differentiability everywhere (consider |x| near 0, it's differentiable on a dense set but not at x = 0).",
     "xpReward": 35
   },
   {
@@ -250,7 +250,7 @@
       {"number": 6, "text": "This gives ba = ab. Since a, b were arbitrary, G is abelian.", "mathExpression": "ba = ab"}
     ],
     "errorStep": 4,
-    "errorExplanation": "The 'rule' (ab)² = a²b² is ONLY valid if ab = ba already! Expanding (ab)² properly gives abab, not aabb. To get from abab to aabb, you need to swap the middle b and a, which requires commutativity — the very thing being 'proved.' This is a textbook case of circular reasoning.",
+    "errorExplanation": "The 'rule' (ab)² = a²b² is ONLY valid if ab = ba already! Expanding (ab)² properly gives abab, not aabb. To get from abab to aabb, you need to swap the middle b and a, which requires commutativity: the very thing being 'proved.' This is a textbook case of circular reasoning.",
     "correctReasoning": "In a non-abelian group, (ab)² = abab ≠ a²b² in general. For example, in S₃ (the symmetric group on 3 elements), take two non-commuting permutations: (ab)² ≠ a²b². The exponent 'distributes' over a product only in abelian groups. Groups like S₃, D₃, and GL(n) for n ≥ 2 are standard non-abelian counterexamples.",
     "xpReward": 35
   },
@@ -269,7 +269,7 @@
       {"number": 5, "text": "Since ln(N) grows slower than N, the partial sums grow slowly enough to converge.", "mathExpression": "\\ln N \\ll N \\implies \\sum \\frac{1}{n} < \\infty"}
     ],
     "errorStep": 5,
-    "errorExplanation": "Growing 'slowly' does NOT mean converging! The bound S_N ≤ 1 + ln(N) shows the partial sums grow like ln(N), which still goes to infinity — just slowly. The integral test actually tells us the series DIVERGES because the integral diverges. A bound that itself diverges proves nothing about convergence.",
+    "errorExplanation": "Growing 'slowly' does NOT mean converging! The bound S_N ≤ 1 + ln(N) shows the partial sums grow like ln(N), which still goes to infinity, just slowly. The integral test actually tells us the series DIVERGES because the integral diverges. A bound that itself diverges proves nothing about convergence.",
     "correctReasoning": "The integral test states: if f is positive and decreasing, then the sum of f(n) and the integral of f(x) either BOTH converge or BOTH diverge. Since ∫₁^∞ 1/x dx = ∞, the harmonic series also diverges. The partial sums grow as ln(N) + γ (where γ ≈ 0.5772 is the Euler-Mascheroni constant), which diverges, just very slowly.",
     "xpReward": 35
   },
@@ -326,7 +326,7 @@
       {"number": 5, "text": "Therefore every vertex has even degree, and by Euler's Theorem, every connected graph has an Euler circuit.", "mathExpression": null}
     ],
     "errorStep": 4,
-    "errorExplanation": "Having an EVEN NUMBER of odd-degree vertices does NOT mean every vertex has even degree! It just means you can't have, say, exactly 1 or 3 odd-degree vertices. A triangle with a pendant edge has vertices of degrees 1, 2, 2, 3 — that's two odd-degree vertices (an even count), but the graph has no Euler circuit because not all degrees are even. 'Pairing up' odd degrees is meaningless.",
+    "errorExplanation": "Having an EVEN NUMBER of odd-degree vertices does NOT mean every vertex has even degree! It just means you can't have, say, exactly 1 or 3 odd-degree vertices. A triangle with a pendant edge has vertices of degrees 1, 2, 2, 3: that's two odd-degree vertices (an even count), but the graph has no Euler circuit because not all degrees are even. 'Pairing up' odd degrees is meaningless.",
     "correctReasoning": "The Handshaking Lemma only constrains the parity of the COUNT of odd-degree vertices, not the degrees themselves. Many connected graphs have odd-degree vertices (e.g., a path graph has two degree-1 vertices). The complete graph K₃ does have an Euler circuit (all degrees 2), but K₄ does not (all degrees 3). Connectivity plus all-even-degrees is both necessary AND sufficient.",
     "xpReward": 35
   },
@@ -347,7 +347,7 @@
     ],
     "errorStep": 4,
     "errorExplanation": "The countability of the test PROCEDURE says nothing about the cardinality of the set of parameters passing the test! Each c ∈ C is tested independently with its own countable orbit. The parameter space C is uncountable, and uncountably many values of c can pass a countable test. By analogy, 'x² ≤ 1' is a finite test, but {x : x² ≤ 1} = [-1, 1] is uncountable.",
-    "correctReasoning": "The Mandelbrot set is a closed, bounded (compact) subset of C with nonempty interior — it contains open disks, so it is uncountable with positive area. Its area is approximately 1.5065. The confusion is between the complexity of the defining criterion and the cardinality of the solution set. A simple equation can have uncountably many solutions, just as a countable iterative test can be passed by uncountably many parameters.",
+    "correctReasoning": "The Mandelbrot set is a closed, bounded (compact) subset of C with nonempty interior: it contains open disks, so it is uncountable with positive area. Its area is approximately 1.5065. The confusion is between the complexity of the defining criterion and the cardinality of the solution set. A simple equation can have uncountably many solutions, just as a countable iterative test can be passed by uncountably many parameters.",
     "xpReward": 45
   }
 ]
