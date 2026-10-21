@@ -5,12 +5,16 @@
 @inject IJSRuntime JS
 
 <div class="onboarding">
+    @if (step < 5)
+    {
+        <button class="ob-skip" @onclick="SkipSetup">Skip</button>
+    }
     @if (step == 1)
     {
         <div class="ob-step ob-fade-in">
-            <div class="ob-icon"><Icon Name="rocket" Size="40" /></div>
-            <h1>Welcome to Nous!</h1>
-            <p class="ob-tagline">Your personal journey through the world of mathematics. Learn concepts, solve problems, and level up your skills.</p>
+            <img class="ob-mark" src="nous-mark.svg" alt="" />
+            <h1 class="ob-welcome-title">Stories the textbooks skip</h1>
+            <p class="ob-tagline">Short, accurate lessons on the strange side of history, religion, science and philosophy. Free, and no account needed.</p>
             <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep2">Get Started</button>
         </div>
     }
@@ -94,7 +98,7 @@
         <div class="ob-step ob-fade-in">
             <div class="ob-icon"><Icon Name="gift" Size="40" /></div>
             <h1>You're all set, @userName!</h1>
-            <p class="ob-tagline">Your adventure begins now. Earn XP, unlock achievements, and master mathematics at your own pace.</p>
+            <p class="ob-tagline">Earn XP, keep a streak going, and follow whatever catches your interest. Every subject is open to explore.</p>
             <button class="btn btn-primary btn-lg ob-btn" @onclick="StartLearning">Start Learning</button>
         </div>
     }
@@ -182,7 +186,23 @@
         if (e.Key == "Enter") await GoToStep3();
     }
 
+    // Keeps whatever was already chosen; otherwise starts on History, the subject the welcome pitch leads with.
+    private async Task SkipSetup()
+    {
+        if (string.IsNullOrWhiteSpace(userName)) userName = "Explorer";
+        if (selectedTopicId == null && selectedDomainId == null) selectedDomainId = "history";
+        await SaveChoices();
+        Nav.NavigateTo("/");
+    }
+
     private async Task StartLearning()
+    {
+        await SaveChoices();
+        await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
+        Nav.NavigateTo("/");
+    }
+
+    private async Task SaveChoices()
     {
         var profile = await Progress.GetProfileAsync();
         profile.DisplayName = userName.Trim();
@@ -203,8 +223,6 @@
             await JS.TryInvokeVoidAsync("applyDomain", selectedDomainId);
         }
         await Progress.SaveProfileAsync(profile);
-        await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
-        Nav.NavigateTo("/");
     }
 
     private static int DomainOrder(string id) => id switch
@@ -260,6 +278,14 @@
         text-align: center;
     }
 
+    .ob-skip {
+        position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 8px; z-index: 5;
+        min-width: 44px; min-height: 44px; padding: 0 14px;
+        background: none; border: none; border-radius: var(--radius-sm);
+        font: inherit; font-size: 0.95rem; color: var(--text-muted); cursor: pointer;
+    }
+    .ob-skip:hover { color: var(--text-primary); background: var(--bg-surface); }
+
     .ob-step {
         display: flex;
         flex-direction: column;
@@ -277,6 +303,9 @@
         font-size: 3.5rem;
         margin-bottom: 8px;
     }
+
+    .ob-mark { height: 84px; margin-bottom: 8px; }
+    .ob-step h1.ob-welcome-title { font-family: Georgia, 'Noto Serif', serif; font-size: 1.85rem; line-height: 1.2; text-wrap: balance; }
 
     .ob-step h1 {
         font-size: 1.6rem;
