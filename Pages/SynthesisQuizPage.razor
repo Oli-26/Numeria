@@ -139,15 +139,15 @@ else
             {
                 <div class="tf-section">
                     <div class="tf-buttons">
-                        <button class="tf-btn true-btn @(answerSubmitted && q.CorrectAnswer == "True" ? "correct" : answerSubmitted && q.CorrectAnswer != "True" ? "incorrect" : "")"
+                        <button class="tf-btn true-btn @GetOptionClass("True")"
                                 @onclick='() => SelectOption("True")'
                                 disabled="@answerSubmitted">
-                            <Icon Name="check" Size="18" /> True
+                            True
                         </button>
-                        <button class="tf-btn false-btn @(answerSubmitted && q.CorrectAnswer == "False" ? "correct" : answerSubmitted && q.CorrectAnswer != "False" ? "incorrect" : "")"
+                        <button class="tf-btn false-btn @GetOptionClass("False")"
                                 @onclick='() => SelectOption("False")'
                                 disabled="@answerSubmitted">
-                            <Icon Name="x-mark" Size="18" /> False
+                            False
                         </button>
                     </div>
                 </div>
@@ -286,7 +286,7 @@ else
                 <div class="new-achievements">
                     @foreach (var a in gamificationEvent.NewAchievements)
                     {
-                        <div class="achievement-unlock achievement-pop">@a.Name — @a.Description</div>
+                        <div class="achievement-unlock achievement-pop">@a.Name: @a.Description</div>
                     }
                 </div>
             }
@@ -589,8 +589,8 @@ else
         gap: 14px;
         padding: 16px;
         margin-bottom: 16px;
-        background: linear-gradient(135deg, rgba(74,95,224,0.06), rgba(180,140,255,0.06));
-        border: 1px solid rgba(74,95,224,0.18);
+        background: color-mix(in srgb, var(--primary) 6%, transparent);
+        border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
     }
 
     .synthesis-intro-icon {
@@ -788,12 +788,10 @@ else
         -webkit-tap-highlight-color: transparent;
     }
     .tf-btn:active:not(:disabled) { transform: scale(0.96); }
-    .true-btn { border-color: rgba(76, 175, 80, 0.3); }
-    .true-btn:hover:not(:disabled) { background: rgba(76,175,80,0.08); border-color: var(--success); }
-    .false-btn { border-color: rgba(239, 83, 80, 0.3); }
-    .false-btn:hover:not(:disabled) { background: rgba(239,83,80,0.08); border-color: var(--error); }
-    .tf-btn.correct { background: rgba(76,175,80,0.15); border-color: var(--success); color: var(--success); }
-    .tf-btn.incorrect { background: rgba(239,83,80,0.15); border-color: var(--error); color: var(--error); }
+    .tf-btn:hover:not(:disabled) { border-color: var(--primary-light); }
+    .tf-btn:disabled:not(.correct):not(.incorrect) { opacity: 0.5; }
+    .tf-btn.correct { background: color-mix(in srgb, var(--success) 14%, transparent); border-color: var(--success); color: var(--success); }
+    .tf-btn.incorrect { background: color-mix(in srgb, var(--error) 14%, transparent); border-color: var(--error); color: var(--error); }
 
     /* Matching (reuse styles from QuizComponent) */
     .matching-section { display: flex; flex-direction: column; gap: 12px; }
@@ -862,19 +860,19 @@ else
     }
     .correct-stat { background: rgba(76,175,80,0.1); color: var(--success); }
     .wrong-stat { background: rgba(239,83,80,0.1); color: var(--error); }
-    .score-stat { background: rgba(74,95,224,0.1); color: var(--primary); }
+    .score-stat { background: var(--bg-surface); color: var(--text-primary); }
     .stat-number { font-size: 1.5rem; font-weight: 700; }
     .stat-label { font-size: 0.8rem; opacity: 0.8; }
     .xp-earned { margin: 16px 0; }
     .synthesis-bonus-note { display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
     .level-up-banner {
-        background: linear-gradient(135deg, var(--success), #2E7D32);
-        color: white; padding: 12px; border-radius: var(--radius-sm);
+        background: color-mix(in srgb, var(--success) 12%, transparent);
+        color: var(--success); padding: 12px; border-radius: var(--radius-sm);
         font-weight: 600; margin: 12px 0;
     }
     .new-achievements { margin: 12px 0; }
     .achievement-unlock {
-        background: rgba(74,95,224,0.08); padding: 10px; border-radius: var(--radius-sm);
+        background: color-mix(in srgb, var(--primary) 8%, transparent); padding: 10px; border-radius: var(--radius-sm);
         margin: 6px 0; font-weight: 500; color: var(--primary);
     }
 </style>

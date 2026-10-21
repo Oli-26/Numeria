@@ -299,15 +299,15 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
         {
             <div class="tf-section">
                 <div class="tf-buttons">
-                    <button class="tf-btn true-btn @(answerSubmitted && q.CorrectAnswer == "True" ? "correct" : answerSubmitted && q.CorrectAnswer != "True" ? "incorrect" : "")"
+                    <button class="tf-btn true-btn @GetOptionClass("True")"
                             @onclick='() => SelectOption("True")'
                             disabled="@answerSubmitted">
-                        <Icon Name="check" Size="18" /> True
+                        True
                     </button>
-                    <button class="tf-btn false-btn @(answerSubmitted && q.CorrectAnswer == "False" ? "correct" : answerSubmitted && q.CorrectAnswer != "False" ? "incorrect" : "")"
+                    <button class="tf-btn false-btn @GetOptionClass("False")"
                             @onclick='() => SelectOption("False")'
                             disabled="@answerSubmitted">
-                        <Icon Name="x-mark" Size="18" /> False
+                        False
                     </button>
                 </div>
             </div>
@@ -315,7 +315,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
         else if (q.Type == QuestionType.FindTheError)
         {
             <div class="find-error-section">
-                <p class="error-hint">Find the first mistake — later steps will be wrong too. Tap the step where the error first appears:</p>
+                <p class="error-hint">One of these steps is wrong. Tap it:</p>
                 @if (q.Steps != null)
                 {
                     @for (int i = 0; i < q.Steps.Count; i++)
@@ -325,7 +325,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
                         var isSelected = errorSelectedStep == idx;
                         var showResult = answerSubmitted;
                         var isTheError = q.CorrectAnswer == stepNum.ToString();
-                        <div class="error-step @(isSelected && !showResult ? "selected" : "") @(showResult && isTheError ? "error-found" : "") @(showResult && isSelected && !isTheError ? "wrong-pick" : "")"
+                        <div class="error-step @(isSelected && !showResult ? "selected" : "") @(showResult && isTheError ? "correct" : "") @(showResult && isSelected && !isTheError ? "incorrect" : "")"
                              @onclick="() => SelectErrorStep(idx)">
                             <span class="error-step-num">@stepNum</span>
                             <span>@q.Steps[idx]</span>
@@ -348,7 +348,7 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
                 <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
                 @if (!lastCorrect && q.CorrectAnswer != null)
                 {
-                    <span class="correct-answer">Answer: @q.CorrectAnswer</span>
+                    <span class="correct-answer">Answer: @(q.Type == QuestionType.FindTheError ? $"step {q.CorrectAnswer}" : q.CorrectAnswer)</span>
                 }
             </div>
             @if (q.Explanation != null)
@@ -410,7 +410,7 @@ else if (quizState == QuizState.Complete)
                 @foreach (var a in quizEvent.NewAchievements)
                 {
                     <div class="achievement-unlock achievement-pop">
-                        @a.Name -- @a.Description
+                        @a.Name: @a.Description
                     </div>
                 }
             </div>
@@ -1347,7 +1347,7 @@ else if (quizState == QuizState.Complete)
 
     .correct-stat { background: rgba(76, 175, 80, 0.1); color: var(--success); }
     .wrong-stat { background: rgba(239, 83, 80, 0.1); color: var(--error); }
-    .score-stat { background: rgba(74, 95, 224, 0.1); color: var(--primary); }
+    .score-stat { background: var(--bg-surface); color: var(--text-primary); }
 
     .stat-number {
         font-size: 1.5rem;
@@ -1364,8 +1364,8 @@ else if (quizState == QuizState.Complete)
     }
 
     .level-up-banner {
-        background: linear-gradient(135deg, var(--success), #2E7D32);
-        color: white;
+        background: color-mix(in srgb, var(--success) 12%, transparent);
+        color: var(--success);
         padding: 12px;
         border-radius: var(--radius-sm);
         font-weight: 600;
@@ -1386,12 +1386,10 @@ else if (quizState == QuizState.Complete)
         -webkit-tap-highlight-color: transparent;
     }
     .tf-btn:active:not(:disabled) { transform: scale(0.96); }
-    .true-btn { border-color: rgba(76, 175, 80, 0.3); }
-    .true-btn:hover:not(:disabled) { background: rgba(76, 175, 80, 0.08); border-color: var(--success); }
-    .false-btn { border-color: rgba(239, 83, 80, 0.3); }
-    .false-btn:hover:not(:disabled) { background: rgba(239, 83, 80, 0.08); border-color: var(--error); }
-    .tf-btn.correct { background: rgba(76, 175, 80, 0.15); border-color: var(--success); color: var(--success); }
-    .tf-btn.incorrect { background: rgba(239, 83, 80, 0.15); border-color: var(--error); color: var(--error); }
+    .tf-btn:hover:not(:disabled) { border-color: var(--primary-light); }
+    .tf-btn:disabled:not(.correct):not(.incorrect) { opacity: 0.5; }
+    .tf-btn.correct { background: color-mix(in srgb, var(--success) 14%, transparent); border-color: var(--success); color: var(--success); }
+    .tf-btn.incorrect { background: color-mix(in srgb, var(--error) 14%, transparent); border-color: var(--error); color: var(--error); }
 
     /* Find the Error */
     .find-error-section { display: flex; flex-direction: column; gap: 8px; }
@@ -1404,15 +1402,16 @@ else if (quizState == QuizState.Complete)
     }
     .error-step:hover { border-color: var(--primary-light); }
     .error-step.selected { border-color: var(--warning); background: rgba(255, 152, 0, 0.08); }
-    .error-step.error-found { border-color: var(--error); background: rgba(239, 83, 80, 0.12); }
-    .error-step.wrong-pick { border-color: var(--text-muted); opacity: 0.6; }
+    .error-step.correct { border-color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); }
+    .error-step.incorrect { border-color: var(--error); background: color-mix(in srgb, var(--error) 12%, transparent); }
     .error-step-num {
         width: 24px; height: 24px; border-radius: 50%; background: var(--bg-surface);
         color: var(--text-muted); display: flex; align-items: center; justify-content: center;
         font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
     }
     .error-step.selected .error-step-num { background: var(--warning); color: white; }
-    .error-step.error-found .error-step-num { background: var(--error); color: white; }
+    .error-step.correct .error-step-num { background: var(--success); color: white; }
+    .error-step.incorrect .error-step-num { background: var(--error); color: white; }
 
     .review-concept-btn {
         width: 100%;
@@ -1452,7 +1451,7 @@ else if (quizState == QuizState.Complete)
     }
 
     .achievement-unlock {
-        background: rgba(74, 95, 224, 0.08);
+        background: color-mix(in srgb, var(--primary) 8%, transparent);
         padding: 10px;
         border-radius: var(--radius-sm);
         margin: 6px 0;
