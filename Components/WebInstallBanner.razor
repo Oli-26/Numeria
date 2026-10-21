@@ -1,0 +1,60 @@
+@inject IJSRuntime JS
+
+@* Only the web build shows this: Android visitors get the Play link, iPhone visitors the home-screen steps. *@
+@if (!dismissed && platform is "android" or "ios" or "desktop")
+{
+    <div class="web-banner">
+        @if (platform == "ios")
+        {
+            <span class="web-banner-text">Keep Nous one tap away: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</span>
+        }
+        else
+        {
+            <span class="web-banner-text">@(platform == "android" ? "Get the app for offline lessons and daily reminders." : "Nous is also an Android app.")</span>
+            <a class="btn btn-sm btn-primary web-banner-cta" href="@PlayUrl" target="_blank" rel="noopener">Google Play</a>
+        }
+        <button class="web-banner-close" aria-label="Dismiss" @onclick="Dismiss"><Icon Name="x-mark" Size="16" /></button>
+    </div>
+}
+
+@code {
+    private const string PlayUrl = "https://play.google.com/store/apps/details?id=com.mathvoyager.app&referrer=utm_source%3Dweb%26utm_medium%3Dbanner";
+    private string platform = "native";
+    private bool dismissed = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            platform = await JS.InvokeAsync<string>("nousPlatform");
+            dismissed = await JS.InvokeAsync<string?>("localStorage.getItem", "nous-web-banner-dismissed") != null;
+        }
+        catch
+        {
+            dismissed = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task Dismiss()
+    {
+        dismissed = true;
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "nous-web-banner-dismissed", "1"); }
+        catch { }
+    }
+}
+
+<style>
+    .web-banner {
+        display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 8px 10px 14px;
+        background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+        font-size: 0.88rem; color: var(--text-secondary);
+    }
+    .web-banner-text { flex: 1; line-height: 1.4; }
+    .web-banner-cta { white-space: nowrap; text-decoration: none; }
+    .web-banner-close {
+        display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0;
+        background: none; border: none; border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
+    }
+</style>
