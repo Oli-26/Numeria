@@ -88,7 +88,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // Achievement unlock — magical ascending shimmer
+    // Achievement unlock: magical ascending shimmer
     playAchievement() {
         try {
             var ctx = this.getCtx();
@@ -118,7 +118,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // Shop purchase — satisfying cha-ching
+    // Shop purchase: satisfying cha-ching
     playPurchase() {
         try {
             var ctx = this.getCtx();
@@ -138,7 +138,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // Navigation tap — soft pop
+    // Navigation tap: soft pop
     playNav() {
         try {
             var ctx = this.getCtx();
@@ -156,7 +156,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // Streak milestone — warm ascending chord
+    // Streak milestone: warm ascending chord
     playStreak() {
         try {
             var ctx = this.getCtx();
@@ -175,7 +175,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // Quiz complete — triumphant fanfare
+    // Quiz complete: triumphant fanfare
     playComplete() {
         try {
             var ctx = this.getCtx();
@@ -195,7 +195,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // Card reveal — soft whoosh
+    // Card reveal: soft whoosh
     playReveal() {
         try {
             var ctx = this.getCtx();
@@ -213,7 +213,7 @@ window.Sounds = {
         } catch (e) { }
     },
 
-    // XP tick — quick ascending pip (for count-up animations)
+    // XP tick: quick ascending pip (for count-up animations)
     playXpTick() {
         try {
             var ctx = this.getCtx();

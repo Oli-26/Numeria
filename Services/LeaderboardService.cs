@@ -25,7 +25,7 @@ public class LeaderboardService : ILeaderboardService
         {
             var safeName = SanitizeName(name);
 
-            // Check existing score — only update if new score is higher
+            // Check existing score: only update if new score is higher
             var existing = await GetPlayerScoreAsync(name);
             if (existing != null && score <= existing.Score)
                 return true;

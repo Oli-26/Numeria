@@ -469,7 +469,7 @@ else if (quizState == QuizState.Complete)
     // Ordering state
     private List<string> orderedSteps = new();
 
-    // Restoration guard — prevents re-deducting hints on restore
+    // Restoration guard: prevents re-deducting hints on restore
     private bool _restoring;
 
     // MultipleSelect state
@@ -880,7 +880,7 @@ else if (quizState == QuizState.Complete)
         else wrongCount++;
         await Progress.RecordQuestionAnsweredAsync(TopicId, result.IsCorrect);
 
-        // Feed into spaced repetition — every quiz answer, including mixed quizzes
+        // Feed into spaced repetition: every quiz answer, including mixed quizzes
         // where TopicId is null but each question still knows its own topic.
         var reviewTopicId = result.Question.TopicId ?? TopicId;
         if (reviewTopicId != null)

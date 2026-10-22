@@ -394,7 +394,7 @@
             ttsRate = profile.TtsRate > 0 ? profile.TtsRate : 1.0;
             ttsVoice = profile.TtsVoice ?? "";
             ttsAutoAdvance = profile.TtsAutoAdvance;
-            // Load voices (async — fires after first render is complete)
+            // Load voices (async: fires after first render is complete)
             try { ttsVoices = await TtsService.GetVoicesAsync(); }
             catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.GetVoices", ex); }
             try

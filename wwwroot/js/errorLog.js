@@ -14,7 +14,7 @@
     function write(entries) {
         try {
             localStorage.setItem(KEY, JSON.stringify(entries));
-        } catch (e) { /* quota — drop */ }
+        } catch (e) { /* quota: drop */ }
     }
 
     function add(source, message, stack) {

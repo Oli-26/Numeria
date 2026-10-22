@@ -78,7 +78,7 @@ window.MathCanvas = {
         var canvas = document.getElementById(canvasId);
         if (!canvas) return;
 
-        // Logical drawing space stays (width × height) — all existing draw code
+        // Logical drawing space stays (width × height): all existing draw code
         // still uses these as coordinates. The bitmap is sized from the canvas's
         // actual CSS box at devicePixelRatio (with mild supersampling), and the
         // 2D context is transformed so logical → physical pixels stays crisp.
@@ -1916,7 +1916,7 @@ window.MathInteractive['clt-dice'] = function (c, cfg) {
 };
 
 // 15. BFS / DFS animation
-// 16. Time dilation — two light clocks (rest vs moving), v/c slider
+// 16. Time dilation: two light clocks (rest vs moving), v/c slider
 window.MathInteractive['time-dilation'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -1973,7 +1973,7 @@ window.MathInteractive['time-dilation'] = function (c, cfg) {
         s.tickRest = s.t;
         s.tickMove = s.t / gamma;
         drawClock(leftX, phaseR, 'rest frame', s.tickRest);
-        // Moving clock — also slanted photon path visualization
+        // Moving clock: also slanted photon path visualization
         ctx.save();
         var slant = s.beta * 30;
         ctx.strokeStyle = 'rgba(126,180,255,0.5)'; ctx.lineWidth = 2;
@@ -2005,7 +2005,7 @@ window.MathInteractive['time-dilation'] = function (c, cfg) {
     });
 };
 
-// 17. Length contraction — ruler shrinks with v/c slider
+// 17. Length contraction: ruler shrinks with v/c slider
 window.MathInteractive['length-contraction'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2046,7 +2046,7 @@ window.MathInteractive['length-contraction'] = function (c, cfg) {
         }
         ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '11px system-ui'; ctx.textAlign = 'center';
         ctx.fillText('rest frame  L₀ = 1.00', W / 2, topY - 6);
-        // Contracted ruler (bottom) — moving
+        // Contracted ruler (bottom): moving
         var Lc = L0 / gamma;
         var botY = topY + 90;
         // Position animates moving across screen
@@ -2080,7 +2080,7 @@ window.MathInteractive['length-contraction'] = function (c, cfg) {
     });
 };
 
-// 18. EM wave propagation — E and B oscillating perpendicular
+// 18. EM wave propagation: E and B oscillating perpendicular
 window.MathInteractive['em-wave'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2162,7 +2162,7 @@ window.MathInteractive['em-wave'] = function (c, cfg) {
     });
 };
 
-// 19. HR diagram — clickable stars on luminosity vs temperature
+// 19. HR diagram: clickable stars on luminosity vs temperature
 window.MathInteractive['hr-diagram'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2279,7 +2279,7 @@ window.MathInteractive['hr-diagram'] = function (c, cfg) {
     });
 };
 
-// 20. Reynolds flow — flow past cylinder; Re slider
+// 20. Reynolds flow: flow past cylinder; Re slider
 window.MathInteractive['reynolds-flow'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2339,7 +2339,7 @@ window.MathInteractive['reynolds-flow'] = function (c, cfg) {
                 u = u0 * (1 - a2 * (dx * dx - dy * dy) / (r2 * r2));
                 v = -u0 * 2 * a2 * dx * dy / (r2 * r2);
             } else {
-                // Inside — push out
+                // Inside: push out
                 u = 0; v = 0;
                 p.x = cyl.x - cyl.r - 4;
             }
@@ -2395,7 +2395,7 @@ window.MathInteractive['reynolds-flow'] = function (c, cfg) {
     });
 };
 
-// 21. Carnot cycle — PV diagram with animated piston
+// 21. Carnot cycle: PV diagram with animated piston
 window.MathInteractive['carnot-cycle'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2539,7 +2539,7 @@ window.MathInteractive['carnot-cycle'] = function (c, cfg) {
     });
 };
 
-// 22. SN1 vs SN2 — toggle mechanism, animate nucleophile attack
+// 22. SN1 vs SN2: toggle mechanism, animate nucleophile attack
 window.MathInteractive['sn1-sn2'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2599,7 +2599,7 @@ window.MathInteractive['sn1-sn2'] = function (c, cfg) {
             ctx.beginPath(); ctx.arc(nuX, cy, 12, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#0c0e1a'; ctx.font = 'bold 11px system-ui';
             ctx.fillText('Nu', nuX, cy + 3);
-            // Bond Nu—C if close
+            // Bond Nu-C if close
             if (Math.abs(nuX - cx) < 30) {
                 ctx.strokeStyle = '#76d7c4'; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(nuX + 12, cy); ctx.lineTo(cx - 16, cy); ctx.stroke();
@@ -2609,7 +2609,7 @@ window.MathInteractive['sn1-sn2'] = function (c, cfg) {
             ctx.beginPath(); ctx.arc(lgX, cy, 11, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#0c0e1a'; ctx.font = 'bold 10px system-ui';
             ctx.fillText('LG', lgX, cy + 3);
-            // C—LG bond if close
+            // C-LG bond if close
             if (lgX - cx < 60) {
                 ctx.strokeStyle = 'rgba(255,142,198,' + Math.max(0.2, 1 - s.t * 1.5) + ')';
                 ctx.lineWidth = 2;
@@ -2642,13 +2642,13 @@ window.MathInteractive['sn1-sn2'] = function (c, cfg) {
                 ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '11px system-ui';
                 ctx.fillText('Step 1: leaving group departs (slow, rate-determining)', W / 2, H - 44);
             } else if (step === 1) {
-                // Carbocation — flat
+                // Carbocation: flat
                 ctx.fillStyle = '#ffd166'; ctx.font = 'bold 14px system-ui'; ctx.textAlign = 'center';
                 ctx.fillText('+', cx + 18, cy - 12);
                 ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '11px system-ui';
                 ctx.fillText('Carbocation intermediate (planar, sp²)', W / 2, H - 44);
             } else {
-                // Nu attacks from either side equally — show two products
+                // Nu attacks from either side equally: show two products
                 var sub = (s.t - 0.55) / 0.45;
                 var nuTopX = cx - 80 + sub * 80, nuTopY = cy - 80 + sub * 80;
                 var nuBotX = cx + 80 - sub * 80, nuBotY = cy + 80 - sub * 80;
@@ -2679,7 +2679,7 @@ window.MathInteractive['sn1-sn2'] = function (c, cfg) {
     });
 };
 
-// 23. Michaelis-Menten — slider for [S], M-M curve, inhibitor toggle
+// 23. Michaelis-Menten: slider for [S], M-M curve, inhibitor toggle
 window.MathInteractive['michaelis-menten'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2797,7 +2797,7 @@ window.MathInteractive['michaelis-menten'] = function (c, cfg) {
     });
 };
 
-// 24. Reaction rate — bar chart [A], [B] over time, k slider, order toggle
+// 24. Reaction rate: bar chart [A], [B] over time, k slider, order toggle
 window.MathInteractive['reaction-rate'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -2911,7 +2911,7 @@ window.MathInteractive['reaction-rate'] = function (c, cfg) {
     });
 };
 
-// 25. Central dogma — DNA → RNA → protein animation
+// 25. Central dogma: DNA → RNA → protein animation
 window.MathInteractive['central-dogma'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -3042,7 +3042,7 @@ window.MathInteractive['central-dogma'] = function (c, cfg) {
     });
 };
 
-// 26. Antibody binding — drag antigen to Y-shaped antibody, lock-key fit
+// 26. Antibody binding: drag antigen to Y-shaped antibody, lock-key fit
 window.MathInteractive['antibody-binding'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -3082,7 +3082,7 @@ window.MathInteractive['antibody-binding'] = function (c, cfg) {
         if (s.dragIdx === undefined) return;
         var a = s.antigens[s.dragIdx];
         a.dragging = false;
-        // Check binding sites — top of arms
+        // Check binding sites: top of arms
         var sites = [{ x: ab.x - 30, y: ab.y - 24 }, { x: ab.x + 30, y: ab.y - 24 }];
         for (var k = 0; k < sites.length; k++) {
             var site = sites[k];
@@ -3169,7 +3169,7 @@ window.MathInteractive['antibody-binding'] = function (c, cfg) {
     });
 };
 
-// 27. French flag morphogen — Wolpert gradient with thresholds
+// 27. French flag morphogen: Wolpert gradient with thresholds
 window.MathInteractive['french-flag'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -3274,7 +3274,7 @@ window.MathInteractive['french-flag'] = function (c, cfg) {
     });
 };
 
-// 28. Tectonic boundaries — toggle divergent/convergent/transform
+// 28. Tectonic boundaries: toggle divergent/convergent/transform
 window.MathInteractive['tectonic-boundaries'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -3421,7 +3421,7 @@ window.MathInteractive['tectonic-boundaries'] = function (c, cfg) {
     }
 };
 
-// 29. Eruption styles — viscosity & gas sliders, magma cross-section
+// 29. Eruption styles: viscosity & gas sliders, magma cross-section
 window.MathInteractive['eruption-styles'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;
@@ -3515,7 +3515,7 @@ window.MathInteractive['eruption-styles'] = function (c, cfg) {
                 ctx.beginPath(); ctx.arc(pj.x, pj.y, 2.5, 0, Math.PI * 2); ctx.fill();
             }
         }
-        // For low explosivity — lava flow on side
+        // For low explosivity: lava flow on side
         if (explosivity < 0.4) {
             ctx.strokeStyle = '#ff8ec6'; ctx.lineWidth = 6; ctx.lineCap = 'round';
             ctx.beginPath();
@@ -3554,7 +3554,7 @@ window.MathInteractive['eruption-styles'] = function (c, cfg) {
     });
 };
 
-// 30. Truth tables — interactive operator selection
+// 30. Truth tables: interactive operator selection
 window.MathInteractive['truth-tables'] = function (c, cfg) {
     var ctx = c.ctx, W = c.width, H = c.height;
     var s = c.interactive.state;

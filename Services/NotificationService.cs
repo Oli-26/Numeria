@@ -46,7 +46,7 @@ public class NotificationService : INotificationService
                 "/"
             );
         }
-        catch { /* bridge unavailable or permission denied — fail silently */ }
+        catch { /* bridge unavailable or permission denied: fail silently */ }
     }
 
     public async Task ScheduleReviewReminderAsync()
@@ -59,7 +59,7 @@ public class NotificationService : INotificationService
             var dueCount = await _review.GetDueCountAsync();
             if (dueCount <= 0) return;
 
-            // Schedule for this evening (19:00) unless we're already past 18:00 —
+            // Schedule for this evening (19:00) unless we're already past 18:00
             // in that case fire in 30 minutes so the user sees it soon.
             var now = DateTime.Now;
             var target = now.Date.AddHours(19);

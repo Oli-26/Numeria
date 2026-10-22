@@ -28,7 +28,7 @@ public class TtsService : ITtsService
     {
         try
         {
-            // TTS.getVoices() returns a Promise<Array<{name,lang}>> — Blazor JS interop
+            // TTS.getVoices() returns a Promise<Array<{name,lang}>>: Blazor JS interop
             // awaits Promise-returning functions automatically.
             var voices = await _js.InvokeAsync<TtsVoice[]>("TTS.getVoices");
             return voices?.ToList() ?? new List<TtsVoice>();
@@ -81,7 +81,7 @@ public class TtsService : ITtsService
         }
         catch
         {
-            // Degrade gracefully — TTS unavailable or blocked
+            // Degrade gracefully: TTS unavailable or blocked
         }
     }
 

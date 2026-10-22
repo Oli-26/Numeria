@@ -154,7 +154,7 @@ public class ContentDataTests
             Assert.True(cookies.Count >= 30, $"{domain.Id}: {cookies.Count} cookies");
             Assert.Equal(Enumerable.Range(1, cookies.Count), cookies.Select(c => c.Id));
             Assert.All(cookies, c => Assert.Contains(c.Category, categories));
-            Assert.All(cookies, c => Assert.DoesNotContain('—', c.Text));
+            Assert.All(cookies, c => Assert.DoesNotContain('\u2014', c.Text));
         }
     }
 }

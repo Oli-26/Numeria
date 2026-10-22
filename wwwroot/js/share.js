@@ -1,5 +1,5 @@
 /**
- * share.js — native share for the share-progress canvas.
+ * share.js: native share for the share-progress canvas.
  *
  * Tries Web Share API with files (Android Chrome / WebView 89+, iOS Safari 15+).
  * Falls back to clipboard image. Final fallback: clipboard text.
@@ -102,7 +102,7 @@
                         });
                         return 'shared';
                     } catch (e) {
-                        // AbortError when user cancels the sheet — not a failure.
+                        // AbortError when user cancels the sheet: not a failure.
                         if (e && e.name === 'AbortError') return 'cancelled';
                         // fall through to clipboard
                     }

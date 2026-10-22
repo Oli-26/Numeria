@@ -47,7 +47,7 @@ public class RunState
     public List<string> ArtifactIds { get; set; } = new();
 
     // Per-run consumable flags
-    public bool RetryUsed { get; set; }       // Noether's Symmetry — once per run
+    public bool RetryUsed { get; set; }       // Noether's Symmetry, once per run
     public int FloorHintFreebiesUsed { get; set; } // Tracks per-encounter, reset on new node
     public bool DiagonalUsedThisFloor { get; set; }
 

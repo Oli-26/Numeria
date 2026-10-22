@@ -1,5 +1,5 @@
 /**
- * TopicGraph — force-directed knowledge graph renderer
+ * TopicGraph: force-directed knowledge graph renderer
  * Uses HTML5 Canvas for 60fps rendering with touch/mouse support.
  * Exposed as window.TopicGraph for Blazor JSInterop.
  */

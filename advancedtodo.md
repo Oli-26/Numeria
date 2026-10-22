@@ -16,15 +16,15 @@ Carry-over from the curated 20-topic plan after pausing mid-build. **9 done, 11 
 | 8 | `chem-single-molecule-spec` | 4 | chemistry |
 | 9 | `math-operator-algebras` | 4 | math |
 
-## Remaining — Tier 4 (3)
+## Remaining: Tier 4 (3)
 
 | Topic | Domain | Prereqs | Notes |
 |-------|--------|---------|-------|
 | `mat-topological-materials` | materials | `mat-structure`, `physics-condensed-matter`, `physics-topological-phases` | Topological insulators, Weyl/Dirac semimetals, k-theory classification, real materials (Bi₂Se₃, HgTe, TaAs) |
 | `philosophy-formal-epistemology` | philosophy | `philosophy-epistemology`, `philosophy-logic`, `probability` | Bayesian epistemology, dynamic epistemic logic, peer disagreement, modeling rational belief |
-| `bio-comp-neuro-deep` | biology | `bio-neuroscience`, `bio-comp-neuro` (Tier 3, doesn't exist yet — substitute `cs-deep-learning` or `differential-equations`) | Hodgkin-Huxley deep, spiking nets, NEST/Brian2, attractor networks, predictive processing |
+| `bio-comp-neuro-deep` | biology | `bio-neuroscience`, `bio-comp-neuro` (Tier 3, doesn't exist yet: substitute `cs-deep-learning` or `differential-equations`) | Hodgkin-Huxley deep, spiking nets, NEST/Brian2, attractor networks, predictive processing |
 
-## Remaining — Tier 5 (8)
+## Remaining: Tier 5 (8)
 
 Tier 5 = open-problem tours. More essay-shape than skill-shape; lessons can be 4-6 of pure exposition + question types skewed to ConceptMatch/FillIn over MultipleChoice.
 
@@ -32,9 +32,9 @@ Tier 5 = open-problem tours. More essay-shape than skill-shape; lessons can be 4
 |-------|--------|------------------|
 | `math-riemann-hypothesis` | math | Where do non-trivial zeros of ζ(s) lie? Most-wanted unsolved. |
 | `math-p-vs-np` | math | Is finding answers fundamentally harder than checking them? Barriers themselves are theorems. |
-| `physics-quantum-gravity-approaches` | physics | Strings vs LQG vs Causal Sets vs Asymptotic Safety — comparative tour. |
-| `physics-foundations-of-qm` | physics | Many-Worlds, Bohmian, QBism, GRW, Copenhagen — same predictions, different ontology. |
-| `bio-consciousness-substrate` | biology | IIT vs GWT vs HOT — adversarial collaborations slowly distinguishing them. |
+| `physics-quantum-gravity-approaches` | physics | Strings vs LQG vs Causal Sets vs Asymptotic Safety: comparative tour. |
+| `physics-foundations-of-qm` | physics | Many-Worlds, Bohmian, QBism, GRW, Copenhagen: same predictions, different ontology. |
+| `bio-consciousness-substrate` | biology | IIT vs GWT vs HOT: adversarial collaborations slowly distinguishing them. |
 | `cs-agi-alignment` | cs | Subproblems: interpretability, scalable oversight, deception detection. Empirical and conceptual. |
 | `philosophy-hard-problem-consciousness` | philosophy | Why is there *something it is like* to see red? Even a perfect brain map doesn't obviously explain it. |
 | `geo-ocean-worlds-biosignatures` | geology | Europa Clipper era. What chemical pattern would actually count as evidence? |
@@ -54,7 +54,7 @@ For each remaining topic, the agent prompt template that worked is:
 
 ## How to resume
 
-Spawn one agent per topic (the proven low-burn pattern). Prereqs must reference existing graph nodes — check `topic-graph.json` before declaring; substitute or skip dangling ones.
+Spawn one agent per topic (the proven low-burn pattern). Prereqs must reference existing graph nodes: check `topic-graph.json` before declaring; substitute or skip dangling ones.
 
 After each agent returns, integrate via Python script:
 ```python

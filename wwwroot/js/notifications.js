@@ -1,5 +1,5 @@
 /**
- * notifications.js — Capacitor LocalNotifications bridge for Nous.
+ * notifications.js: Capacitor LocalNotifications bridge for Nous.
  *
  * Exposes window.Notifications with a consistent API.
  * Falls back gracefully:
@@ -14,7 +14,7 @@
     var STREAK_NOTIFICATION_ID = 1001;
     var REVIEW_NOTIFICATION_BASE_ID = 2001;
 
-    // Branded notification channel — registered once per install.
+    // Branded notification channel: registered once per install.
     var CHANNEL_ID = 'nous_reminders';
     var CHANNEL_NAME = 'Nous reminders';
     var CHANNEL_DESC = 'Daily streak nudges and review reminders.';
@@ -32,7 +32,7 @@
     // ------------------------------------------------------------------ //
     //  Capacitor implementation
     // ------------------------------------------------------------------ //
-    // Deep-link bridge — when the user taps a notification, Capacitor fires
+    // Deep-link bridge: when the user taps a notification, Capacitor fires
     // localNotificationActionPerformed with the original notification's `extra`
     // payload. We stash the target route in sessionStorage so the Blazor app
     // can navigate on cold start, and dispatch a 'nous:deeplink' event for
@@ -106,7 +106,7 @@
                 });
                 this._actionsEnsured = true;
             } catch (e) {
-                // Older plugin or platform without registerActionTypes — ignore.
+                // Older plugin or platform without registerActionTypes: ignore.
                 this._actionsEnsured = true;
             }
         },
@@ -127,7 +127,7 @@
                             if (extra.snoozeKind === 'review') {
                                 await self.scheduleReviewReminder(60, notif.title, notif.body, route);
                             } else if (extra.snoozeKind === 'streak') {
-                                // Streak fires daily on a clock — reschedule 1h ahead today.
+                                // Streak fires daily on a clock: reschedule 1h ahead today.
                                 var soon = new Date(Date.now() + 60 * 60 * 1000);
                                 await self.scheduleDailyReminder(soon.getHours(), soon.getMinutes(), notif.title, notif.body, route);
                             }
@@ -135,7 +135,7 @@
                         return;
                     }
 
-                    // Tap or "open"/"review now" — route to the target screen.
+                    // Tap or "open"/"review now": route to the target screen.
                     if (route) _stashRoute(route);
                 });
                 this._listenerAttached = true;
@@ -151,7 +151,7 @@
                     id: CHANNEL_ID,
                     name: CHANNEL_NAME,
                     description: CHANNEL_DESC,
-                    importance: 4,           // HIGH — heads-up banner on lock screen
+                    importance: 4,           // HIGH: heads-up banner on lock screen
                     visibility: 1,           // PUBLIC
                     lights: true,
                     lightColor: BRAND_COLOR,
@@ -293,7 +293,7 @@
         },
 
         scheduleDailyReminder: async function (hourOfDay, minuteOfDay, title, body, _route) {
-            // Web can only show immediate notifications — schedule for "today at time"
+            // Web can only show immediate notifications: schedule for "today at time"
             // if in the future, else skip (no persistent scheduling in browser).
             if (!('Notification' in window) || Notification.permission !== 'granted') return;
             var now = new Date();
@@ -333,7 +333,7 @@
     };
 
     // ------------------------------------------------------------------ //
-    //  Public API — select implementation lazily on first call
+    //  Public API: select implementation lazily on first call
     // ------------------------------------------------------------------ //
     var _impl = null;
 

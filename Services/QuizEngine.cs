@@ -190,7 +190,7 @@ public class QuizEngine : IQuizEngine
 
     private bool IsCategorizeCorrect(Question q, string userAnswer)
     {
-        // userAnswer is "item=>bucket;item=>bucket;..." — must equal q.CategoryItems exactly.
+        // userAnswer is "item=>bucket;item=>bucket;...": must equal q.CategoryItems exactly.
         if (q.CategoryItems == null) return false;
         var pairs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var part in (userAnswer ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries))

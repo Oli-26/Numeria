@@ -1,4 +1,4 @@
-// tts.js — Web Speech API wrapper for Nous
+// tts.js: Web Speech API wrapper for Nous
 // Exposes window.TTS with: getVoices, speak, pause, resume, stop, isSpeaking
 
 (function () {
@@ -238,7 +238,7 @@
                 utterance.onend = function () { _currentUtterance = null; resolve(); };
                 utterance.onerror = function (e) {
                     _currentUtterance = null;
-                    // "interrupted" is not a real error — caller cancelled
+                    // "interrupted" is not a real error: caller cancelled
                     if (e.error === 'interrupted' || e.error === 'canceled') {
                         resolve();
                     } else {

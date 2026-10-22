@@ -115,7 +115,7 @@
     <script src="js/tts.js"></script>
     <script src="js/notepadDrag.js"></script>
     <script>
-        // Capacitor native polish — runs once if Capacitor is present.
+        // Capacitor native polish: runs once if Capacitor is present.
         (function () {
             if (!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) return;
 
@@ -125,7 +125,7 @@
                 if (sb && sb.setOverlaysWebView) sb.setOverlaysWebView({ overlay: false }).catch(function () { });
             } catch (e) { }
 
-            // Hardware back — pop history; minimize on root.
+            // Hardware back: pop history; minimize on root.
             try {
                 var app = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
                 if (app && app.addListener) {
@@ -142,7 +142,7 @@
                 }
             } catch (e) { }
 
-            // nous:// deep links — fired by long-press shortcuts and external
+            // nous:// deep links: fired by long-press shortcuts and external
             // intents. Translate nous://review -> /review, stash for cold-start
             // consumption, dispatch event for warm taps.
             function _handleNousUrl(url) {
@@ -360,7 +360,7 @@
                             });
                         }
                     } catch (e) {
-                        // User cancelled share sheet — not an error.
+                        // User cancelled share sheet: not an error.
                     }
                     return;
                 }
@@ -376,7 +376,7 @@
             URL.revokeObjectURL(url);
         }
 
-        // File upload helper — returns a Promise<string>
+        // File upload helper: returns a Promise<string>
         function pickAndReadFile() {
             return new Promise(function(resolve, reject) {
                 var input = document.createElement('input');

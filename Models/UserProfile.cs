@@ -77,7 +77,7 @@ public class UserProfile
     public Dictionary<string, int> TopicMastery { get; set; } = new();
     // 0 = not started, 1 = Apprentice, 2 = Adept, 3 = Master, 4 = Grandmaster
 
-    // Roguelike runs — set of topic IDs where a Run boss has been defeated at least once
+    // Roguelike runs: set of topic IDs where a Run boss has been defeated at least once
     public List<string> RunSeals { get; set; } = new();
     public int RunsAttempted { get; set; }
     public int RunsWon { get; set; }

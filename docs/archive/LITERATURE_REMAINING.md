@@ -1,4 +1,4 @@
-# Literature Domain — Remaining Lessons
+# Literature Domain: Remaining Lessons
 
 **Status:** 103 / 103 lessons written. **All concepts complete.**
 

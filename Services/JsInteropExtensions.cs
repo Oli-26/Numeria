@@ -35,7 +35,7 @@ public static class JsInteropExtensions
         {
             await js.InvokeVoidAsync("NousErrorLog.add", source, ex.Message, ex.ToString());
         }
-        catch { /* logger itself broken — give up */ }
+        catch { /* logger itself broken: give up */ }
     }
 
     private static async ValueTask LogAsync(IJSRuntime js, string identifier, Exception ex)
@@ -44,6 +44,6 @@ public static class JsInteropExtensions
         {
             await js.InvokeVoidAsync("NousErrorLog.add", $"js:{identifier}", ex.Message, ex.ToString());
         }
-        catch { /* logger itself broken — give up */ }
+        catch { /* logger itself broken: give up */ }
     }
 }
