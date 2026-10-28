@@ -1,7 +1,7 @@
 # Privacy Policy for Nous
 
 **Effective date:** 2026-04-27
-**Last updated:** 2026-04-27
+**Last updated:** 2026-10-28
 
 This Privacy Policy describes how the Nous mobile application ("Nous",
 "the app", "we", "us") handles information when you use it.
@@ -81,4 +81,4 @@ an app update.
 
 For questions about this Privacy Policy, contact:
 
-**Email:** olivermholder@gmail.com
+**Email:** flirpgames@gmail.com
