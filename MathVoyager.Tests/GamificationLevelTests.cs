@@ -58,6 +58,17 @@ public class GamificationLevelTests
         Assert.Equal(expected, NewService().GetStreakMultiplier(streak), 3);
     }
 
+    // The bar's denominator is the span of the current level, so it fills to 100% exactly at the next threshold.
+    [Theory]
+    [InlineData(0, 1, 0, 50)]
+    [InlineData(82, 2, 32, 150)]
+    [InlineData(199, 2, 149, 150)]
+    [InlineData(200, 3, 0, 250)]
+    public void GetLevelProgress_UsesSpanOfCurrentLevel(int xp, int level, int inLevel, int needed)
+    {
+        Assert.Equal(new LevelProgress(level, inLevel, needed), NewService().GetLevelProgress(xp));
+    }
+
     [Fact]
     public void Level_NeverNegativeOrZero()
     {

@@ -69,6 +69,7 @@ public class UserProfile
     // Daily challenge
     public string? DailyChallengeDate { get; set; }
     public bool DailyChallengeCompleted { get; set; }
+    public bool DailyChallengeDoneOn(DateTime day) => DailyChallengeCompleted && DailyChallengeDate == day.ToString("yyyy-MM-dd");
 
     // Completion cards
     public List<CompletionCard> CompletionCards { get; set; } = new();

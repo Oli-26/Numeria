@@ -384,10 +384,8 @@ else
             foreach (var topic in topics)
                 topicProgress[topic.Id] = await Progress.GetTopicProgressAsync(topic.Id);
 
-            level = Gamification.GetLevel(profile.TotalXp);
-            xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
-            xpNeeded = Gamification.GetXpForNextLevel(level);
-            xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
+            var lp = Gamification.GetLevelProgress(profile.TotalXp);
+            (level, xpInLevel, xpNeeded, xpPct) = (lp.Level, lp.XpInLevel, lp.XpNeeded, lp.Percent);
             overallAccuracy = profile.TotalQuestionsAnswered > 0
                 ? profile.TotalCorrectAnswers * 100 / profile.TotalQuestionsAnswered : 0;
             achievementPct = allAchievements.Count > 0

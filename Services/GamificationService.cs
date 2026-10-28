@@ -31,6 +31,13 @@ public class GamificationService : IGamificationService
         return totalXp - xpForCurrentLevel;
     }
 
+    public LevelProgress GetLevelProgress(int totalXp)
+    {
+        var level = GetLevel(totalXp);
+        var levelStart = (level - 1) * (level - 1) * 50;
+        return new LevelProgress(level, totalXp - levelStart, GetXpForNextLevel(level) - levelStart);
+    }
+
     public double GetStreakMultiplier(int streak)
     {
         return 1.0 + Math.Min(streak * 0.1, 1.0);

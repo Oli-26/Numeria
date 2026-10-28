@@ -68,9 +68,7 @@ else
         if (firstRender)
         {
             var profile = await Progress.GetProfileAsync();
-            var today = DateTime.Now.ToString("yyyy-MM-dd");
-
-            alreadyDone = profile.DailyChallengeDate == today && profile.DailyChallengeCompleted;
+            alreadyDone = profile.DailyChallengeDoneOn(DateTime.Now);
 
             // Check if user has any completed lessons
             ready = profile.LessonsCompleted.Count > 0;
