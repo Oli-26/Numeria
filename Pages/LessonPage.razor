@@ -119,6 +119,7 @@
                             }
                         }
                     </div>
+                    <a class="report-link" href="@ReportMailto(concept)"><Icon Name="message" Size="13" /> Report a mistake</a>
                     }
 
                     <!-- TTS control bar (only when TTS is enabled and supported) -->
@@ -328,6 +329,16 @@ else
         "deep" => c.ContentHtmlDeep ?? c.ContentHtml,
         _ => c.ContentHtml
     };
+
+    private const string ReportEmail = "flirpgames@gmail.com";
+
+    // Ids in the subject and body trace a report straight back to the lessons.json entry.
+    private string ReportMailto(Concept c)
+    {
+        var subject = $"Nous mistake report: {c.Id}";
+        var body = $"Lesson: {lesson?.Title} ({LessonId})\nSection: {c.Title} ({c.Id})\nReading level: {depth}\n\nWhat's wrong?\n\n";
+        return $"mailto:{ReportEmail}?subject={Uri.EscapeDataString(subject)}&body={Uri.EscapeDataString(body)}";
+    }
 
     // ── TTS state ────────────────────────────────────────────────────────────
     private bool ttsEnabled;
@@ -756,6 +767,7 @@ else
     .try-it-text span { font-size: 0.8rem; color: var(--text-secondary); }
 
     .explain-back { margin-top: 14px; }
+    .report-link { display: flex; align-items: center; gap: 5px; width: fit-content; margin-top: 12px; color: var(--text-muted); font-size: 0.78rem; text-decoration: none; }
     .explain-toggle { background: none; border: none; padding: 0; color: var(--primary); font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
     .explain-input {
         width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
