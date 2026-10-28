@@ -1,439 +1,503 @@
 @page "/evolution-sim"
-@inject IProgressService Progress
+@using System.Globalization
 @inject NavigationManager Nav
-@inject IJSRuntime JS
+@implements IDisposable
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Evolution Simulator</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Evolution Simulator" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Evolution Simulator</h1>
-    </div>
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Evolution Simulator</h1>
+</div>
 
-    <p class="evo-intro">Tweak selection pressures, then step generations. Survivors reproduce with mutation.</p>
+<p class="evo-intro">Each generation, selection decides who survives, chance decides which survivors leave the most offspring, and mutation adds small random changes. Pick a preset or set the pressures yourself.</p>
 
-    <div class="evo-presets">
-        <button class="preset-btn" @onclick='() => ApplyPreset("moth")'>
-            <Icon Name="fire" Size="16" />
-            <span>Peppered Moth</span>
-        </button>
-        <button class="preset-btn" @onclick='() => ApplyPreset("beak")'>
-            <Icon Name="target" Size="16" />
-            <span>Beak Size</span>
-        </button>
-        <button class="preset-btn" @onclick='() => ApplyPreset("antibiotic")'>
-            <Icon Name="zap" Size="16" />
-            <span>Antibiotic Resistance</span>
-        </button>
-    </div>
-
-    <div class="card evo-card">
-        <div class="evo-meta">
-            <div class="evo-meta-row">
-                <span class="meta-label">Generation</span>
-                <strong>@generation</strong>
-            </div>
-            <div class="evo-meta-row">
-                <span class="meta-label">Pop</span>
-                <strong>@population.Count</strong>
-            </div>
-            <div class="evo-meta-row">
-                <span class="meta-label">Avg hue</span>
-                <strong>@AvgHue.ToString("F0")</strong>
-            </div>
-            <div class="evo-meta-row">
-                <span class="meta-label">Avg size</span>
-                <strong>@AvgSizeLabel</strong>
-            </div>
-            <div class="evo-meta-row">
-                <span class="meta-label">Avg speed</span>
-                <strong>@AvgSpeedLabel</strong>
-            </div>
-        </div>
-
-        <div class="evo-canvas-wrap">
-            <svg viewBox="0 0 300 300" class="evo-canvas" xmlns="http://www.w3.org/2000/svg">
-                <rect x="0" y="0" width="300" height="300" fill="var(--bg-surface)" />
-                @foreach (var c in population)
-                {
-                    <circle cx="@c.X.ToString("F1")" cy="@c.Y.ToString("F1")"
-                            r="@SizeRadius(c.Size).ToString("F1")"
-                            fill="@HueToColor(c.Hue)"
-                            stroke="rgba(0,0,0,0.25)" stroke-width="0.5" />
-                }
-                @if (population.Count == 0)
-                {
-                    <g><text x="150" y="150" text-anchor="middle" fill="var(--text-muted)" font-size="14">extinct</text></g>
-                }
-            </svg>
-        </div>
-
-        <div class="histo-wrap">
-            <div class="histo-block">
-                <div class="histo-title">Hue distribution</div>
-                <svg viewBox="0 0 160 60" class="histo-svg" xmlns="http://www.w3.org/2000/svg">
-                    @{
-                        var hueBins = HueBins();
-                        var hueMax = hueBins.Max();
-                        if (hueMax == 0) hueMax = 1;
-                    }
-                    @for (int i = 0; i < 8; i++)
-                    {
-                        var binIdx = i;
-                        var h = (int)(hueBins[binIdx] * 50.0 / hueMax);
-                        var hueCenter = (binIdx * 45) + 22;
-                        <rect x="@(binIdx * 20 + 2)" y="@(55 - h)" width="16" height="@h"
-                              fill="@HueToColor(hueCenter)" />
-                    }
-                    <line x1="0" y1="55" x2="160" y2="55" stroke="var(--border)" stroke-width="1" />
-                </svg>
-            </div>
-
-            <div class="histo-block">
-                <div class="histo-title">Size distribution</div>
-                <svg viewBox="0 0 160 60" class="histo-svg" xmlns="http://www.w3.org/2000/svg">
-                    @{
-                        var sizeBins = SizeBins();
-                        var sizeMax = sizeBins.Max();
-                        if (sizeMax == 0) sizeMax = 1;
-                        string[] sizeLabels = { "S", "M", "L" };
-                    }
-                    @for (int i = 0; i < 3; i++)
-                    {
-                        var sIdx = i;
-                        var h = (int)(sizeBins[sIdx] * 45.0 / sizeMax);
-                        <g>
-                            <rect x="@(sIdx * 50 + 10)" y="@(50 - h)" width="40" height="@h"
-                                  fill="var(--primary)" />
-                            <text x="@(sIdx * 50 + 30)" y="58" text-anchor="middle" fill="var(--text-muted)"
-                                  font-size="9">@sizeLabels[sIdx]</text>
-                        </g>
-                    }
-                </svg>
-            </div>
-
-            <div class="histo-block">
-                <div class="histo-title">Speed distribution</div>
-                <svg viewBox="0 0 160 60" class="histo-svg" xmlns="http://www.w3.org/2000/svg">
-                    @{
-                        var spdBins = SpeedBins();
-                        var spdMax = spdBins.Max();
-                        if (spdMax == 0) spdMax = 1;
-                        string[] spdLabels = { "Slow", "Med", "Fast" };
-                    }
-                    @for (int i = 0; i < 3; i++)
-                    {
-                        var sIdx = i;
-                        var h = (int)(spdBins[sIdx] * 45.0 / spdMax);
-                        <g>
-                            <rect x="@(sIdx * 50 + 10)" y="@(50 - h)" width="40" height="@h"
-                                  fill="var(--accent)" />
-                            <text x="@(sIdx * 50 + 30)" y="58" text-anchor="middle" fill="var(--text-muted)"
-                                  font-size="9">@spdLabels[sIdx]</text>
-                        </g>
-                    }
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="card evo-controls">
-        <h3 class="ctrl-title"><Icon Name="brain" Size="16" /> Selection pressures</h3>
-
-        <div class="ctrl-row">
-            <label>
-                <span>Predator color preference (hue): <strong>@predatorHue</strong></span>
-                <input type="range" min="0" max="360" step="5" @bind="predatorHue" @bind:event="oninput" />
-                <div class="hue-bar"></div>
-            </label>
-        </div>
-
-        <div class="ctrl-row">
-            <label>
-                <span>Prey size predators favor</span>
-                <select @bind="favoredSize">
-                    <option value="0">Small</option>
-                    <option value="1">Medium</option>
-                    <option value="2">Large</option>
-                </select>
-            </label>
-        </div>
-
-        <div class="ctrl-row">
-            <label>
-                <span>Speed required to escape</span>
-                <select @bind="requiredSpeed">
-                    <option value="0">Slow (none)</option>
-                    <option value="1">Medium</option>
-                    <option value="2">Fast</option>
-                </select>
-            </label>
-        </div>
-
-        <div class="ctrl-row">
-            <label>
-                <span>Selection strength: <strong>@selectionStrength.ToString("F2")</strong></span>
-                <input type="range" min="0.1" max="1.0" step="0.05" @bind="selectionStrength" @bind:event="oninput" />
-            </label>
-        </div>
-    </div>
-
-    <div class="evo-buttons">
-        <button class="btn btn-primary" @onclick="StepGeneration">
-            <Icon Name="trending-up" Size="16" /> Step Generation
-        </button>
-        <button class="btn btn-accent" @onclick="RunTen">
-            <Icon Name="rocket" Size="16" /> Run 10 Generations
-        </button>
-        <button class="btn btn-outline" @onclick="ResetSim">
-            <Icon Name="dice" Size="16" /> Reset
-        </button>
-    </div>
-
-    @if (lastEvent != null)
+<div class="evo-presets">
+    @foreach (var p in Presets)
     {
-        <div class="evo-event">@lastEvent</div>
+        var preset = p;
+        <button class="preset-btn @(presetKey == preset.Key ? "on" : "")" aria-pressed="@Pressed(presetKey == preset.Key)" @onclick="() => ApplyPreset(preset.Key)">
+            <Icon Name="@preset.Icon" Size="16" />
+            <span>@preset.Label</span>
+        </button>
     }
+</div>
+
+@if (CurrentPreset is { } cp)
+{
+    <div class="card evo-note">
+        <div class="evo-note-title">@cp.Title</div>
+        <p>@cp.Note</p>
+    </div>
 }
+
+<div class="card evo-card">
+    <div class="evo-meta">
+        <div class="evo-meta-row">
+            <span class="meta-label">Gen</span>
+            <strong>@model.Generation</strong>
+        </div>
+        <div class="evo-meta-row">
+            <span class="meta-label">Survived</span>
+            <strong>@(model.LastSurvivors?.ToString() ?? "-")/@(model.LastSurvivors is null ? model.Population.Count : model.LastCount)</strong>
+        </div>
+        @for (int t = 0; t < EvolutionModel.TraitCount; t++)
+        {
+            var trait = (EvoTrait)t;
+            <div class="evo-meta-row">
+                <span class="meta-label">@TraitNames[t]</span>
+                <strong>@(model.Extinct ? "-" : model.Mean(trait).ToString("F2"))</strong>
+            </div>
+        }
+    </div>
+
+    <div class="evo-canvas-wrap">
+        <svg viewBox="0 0 300 300" class="evo-canvas" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="@($"{model.Population.Count} individuals on bark of lightness {model.Background:F2}")">
+            <rect x="0" y="0" width="300" height="300" fill="@BarkColor(model.Background)" />
+            @foreach (var c in model.Casualties)
+            {
+                <circle cx="@F(c.X)" cy="@F(c.Y)" r="@F(Radius(c))" fill="none"
+                        stroke="var(--error)" stroke-width="1" opacity="0.55" />
+            }
+            @foreach (var c in model.Population)
+            {
+                <circle cx="@F(c.X)" cy="@F(c.Y)" r="@F(Radius(c))" fill="@BodyColor(c[EvoTrait.Lightness])"
+                        stroke="rgba(128,128,128,0.45)" stroke-width="0.6" />
+            }
+            @if (model.Extinct)
+            {
+                <g><text x="150" y="150" text-anchor="middle" fill="var(--error)" font-size="16" font-weight="700">Extinct</text></g>
+            }
+        </svg>
+    </div>
+    <p class="field-legend">Dots are the living generation, shaded by lightness and sized by size. Red rings mark those that died in the last round of selection; offspring appear near their parent.</p>
+
+    <div class="bark-row">
+        <label>
+            <span>Bark lightness: <strong>@model.Background.ToString("F2")</strong></span>
+            <input type="range" min="0" max="1" step="0.05" @bind="model.Background" @bind:event="oninput" />
+            <div class="bark-bar"></div>
+        </label>
+        <div class="bark-quick">
+            <button class="btn btn-outline btn-sm" @onclick="() => model.Background = 0.15">Sooty bark</button>
+            <button class="btn btn-outline btn-sm" @onclick="() => model.Background = 0.85">Clean bark</button>
+        </div>
+    </div>
+</div>
+
+<div class="evo-buttons">
+    <button class="btn btn-primary" @onclick="StepOnce" disabled="@(running || !CanStep)">
+        <Icon Name="skip-forward" Size="16" /> <span>Step</span>
+    </button>
+    <button class="btn btn-accent" @onclick="ToggleRun" disabled="@(!running && !CanStep)">
+        @if (running)
+        {
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor" /><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor" /></svg>
+            <span>Pause</span>
+        }
+        else
+        {
+            <Icon Name="play" Size="16" /> <span>Run</span>
+        }
+    </button>
+    <button class="btn btn-outline" @onclick="NewReplicate">
+        <Icon Name="stack" Size="16" /> <span>New replicate</span>
+    </button>
+    <button class="btn btn-outline" @onclick="ResetAll">
+        <Icon Name="rotate" Size="16" /> <span>Reset</span>
+    </button>
+</div>
+
+@if (lastEvent != null)
+{
+    <div class="evo-event">@lastEvent</div>
+}
+
+<div class="card evo-card">
+    <div class="chart-head">
+        <span class="histo-title">Mean @TraitNames[(int)chartTrait].ToLowerInvariant() by generation</span>
+        <div class="seg" role="group" aria-label="Trait to chart">
+            @for (int t = 0; t < EvolutionModel.TraitCount; t++)
+            {
+                var trait = (EvoTrait)t;
+                <button class="@(chartTrait == trait ? "on" : "")" aria-pressed="@Pressed(chartTrait == trait)" @onclick="() => chartTrait = trait">@TraitNames[t]</button>
+            }
+        </div>
+    </div>
+    @{
+        int ct = (int)chartTrait;
+        int maxGen = ChartMaxGen;
+        string targetPath = TargetPath(model.History, ct, maxGen);
+    }
+    <svg viewBox="0 0 320 134" class="evo-chart" xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="@ChartLabel">
+        @foreach (var v in new[] { 0.0, 0.5, 1.0 })
+        {
+            <g>
+                <line x1="@F(CL)" x2="@F(CR)" y1="@F(Cy(v))" y2="@F(Cy(v))" stroke="var(--border)" stroke-width="0.6" />
+                <text x="@F(CL - 4)" y="@F(Cy(v) + 3)" text-anchor="end" font-size="8" fill="var(--text-muted)">@v.ToString("0.#", CultureInfo.InvariantCulture)</text>
+            </g>
+        }
+        @foreach (var g in new[] { 0, maxGen / 2, maxGen })
+        {
+            <g><text x="@F(Cx(g, maxGen))" y="128" text-anchor="middle" font-size="8" fill="var(--text-muted)">@g</text></g>
+        }
+        @foreach (var run in pastRuns)
+        {
+            <polyline points="@Points(run, ct, maxGen)" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+                      stroke-linejoin="round" opacity="0.5"><title>Earlier replicate</title></polyline>
+        }
+        @if (targetPath.Length > 0)
+        {
+            <path d="@targetPath" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"><title>Target</title></path>
+        }
+        <polyline points="@Points(model.History, ct, maxGen)" fill="none" stroke="var(--primary)" stroke-width="2"
+                  stroke-linejoin="round" stroke-linecap="round"><title>This run</title></polyline>
+    </svg>
+    <div class="chart-legend">
+        <span><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke="var(--primary)" stroke-width="2" /></svg>This run</span>
+        @if (pastRuns.Count > 0)
+        {
+            <span><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.6" /></svg>Earlier replicates (@pastRuns.Count)</span>
+        }
+        @if (targetPath.Length > 0)
+        {
+            <span><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3" /></svg>Target</span>
+        }
+        <span class="chart-scale">0 = @Low[ct], 1 = @High[ct]</span>
+    </div>
+
+    <div class="histo-wrap">
+        @for (int t = 0; t < EvolutionModel.TraitCount; t++)
+        {
+            var trait = (EvoTrait)t;
+            var bins = Bins(trait);
+            var binMax = Math.Max(1, bins.Max());
+            <div class="histo-block">
+                <div class="histo-title">@TraitNames[t]</div>
+                <svg viewBox="0 0 100 56" class="histo-svg" xmlns="http://www.w3.org/2000/svg" role="img"
+                     aria-label="@($"{TraitNames[t]} distribution")">
+                    @for (int i = 0; i < Bins10; i++)
+                    {
+                        var h = bins[i] * 40.0 / binMax;
+                        <rect x="@F(i * 10 + 0.5)" y="@F(44 - h)" width="9" height="@F(h)" rx="1"
+                              fill="@BarFill(trait, i)" stroke="var(--border)" stroke-width="@(trait == EvoTrait.Lightness ? "0.5" : "0")" />
+                    }
+                    <line x1="0" y1="44" x2="100" y2="44" stroke="var(--border)" stroke-width="1" />
+                    @if (model.IsSelected(trait))
+                    {
+                        var tx = model.TargetOf(trait) * 100;
+                        <line x1="@F(tx)" x2="@F(tx)" y1="2" y2="44" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 2" />
+                    }
+                    <text x="0" y="54" font-size="8" fill="var(--text-muted)">@Low[t]</text>
+                    <text x="100" y="54" font-size="8" text-anchor="end" fill="var(--text-muted)">@High[t]</text>
+                </svg>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card evo-controls">
+    <h3 class="ctrl-title"><Icon Name="target" Size="16" /> Selection pressures</h3>
+
+    @for (int t = 0; t < EvolutionModel.TraitCount; t++)
+    {
+        var trait = (EvoTrait)t;
+        var sel = model.Selection[t];
+        <div class="trait-block">
+            <div class="trait-head">
+                <span class="trait-name">@TraitNames[t]</span>
+                <div class="seg" role="group" aria-label="@($"{TraitNames[t]} selection")">
+                    <button class="@(sel.Selected ? "" : "on")" aria-pressed="@Pressed(!sel.Selected)" @onclick="() => sel.Selected = false">Neutral</button>
+                    <button class="@(sel.Selected ? "on" : "")" aria-pressed="@Pressed(sel.Selected)" @onclick="() => sel.Selected = true">Selected</button>
+                </div>
+            </div>
+            <p class="trait-hint">@TraitHints[t]</p>
+            @if (sel.Selected)
+            {
+                if (trait == EvoTrait.Lightness)
+                {
+                    <p class="trait-hint">Target: match the bark (@model.Background.ToString("F2")).</p>
+                }
+                else
+                {
+                    <div class="ctrl-row">
+                        <label>
+                            <span>Favoured @TraitNames[t].ToLowerInvariant(): <strong>@sel.Target.ToString("F2")</strong></span>
+                            <input type="range" min="0" max="1" step="0.05" @bind="sel.Target" @bind:event="oninput" />
+                        </label>
+                    </div>
+                }
+                <div class="ctrl-row">
+                    <label>
+                        <span>Strength s: <strong>@sel.Strength.ToString("F2")</strong></span>
+                        <input type="range" min="0" max="@F(EvolutionModel.MaxStrength)" step="0.05" @bind="sel.Strength" @bind:event="oninput" />
+                    </label>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="card evo-controls">
+    <h3 class="ctrl-title"><Icon Name="dice" Size="16" /> Population and mutation</h3>
+    <div class="ctrl-row">
+        <label>
+            <span>Population size N: <strong>@model.PopulationSize</strong></span>
+            <input type="range" min="@EvolutionModel.MinPopulation" max="@EvolutionModel.MaxPopulation" step="10" @bind="PopN" @bind:event="oninput" />
+        </label>
+        <p class="trait-hint">Mid-run changes apply from the next generation.</p>
+    </div>
+    <div class="ctrl-row">
+        <label>
+            <span>Mutation size: <strong>@model.MutationSd.ToString("F3")</strong></span>
+            <input type="range" min="0" max="0.1" step="0.005" @bind="model.MutationSd" @bind:event="oninput" />
+        </label>
+        <p class="trait-hint">Typical random change per offspring, per trait, as likely up as down.</p>
+    </div>
+</div>
+
+<div class="card evo-controls evo-how">
+    <h3 class="ctrl-title"><Icon Name="help" Size="16" /> How the model works</h3>
+    <ol>
+        <li><strong>Selection.</strong> Each individual survives with probability @EvolutionModel.BaseSurvival.ToString("0.##", CultureInfo.InvariantCulture) × (1 − s × mismatch) for every selected trait, where mismatch is its distance from the target (0 to 1). Neutral traits never affect survival, and nor does a selected trait with s = 0.</li>
+        <li><strong>Reproduction.</strong> N offspring are made, each copying one survivor picked at random, with replacement. Some survivors leave several offspring and some leave none: that luck is genetic drift, and it is strongest when N is small.</li>
+        <li><strong>Mutation.</strong> Each offspring's traits shift by a small random amount, as likely up as down. Mutation supplies variation without a direction; selection supplies the direction.</li>
+    </ol>
+    <p class="trait-hint">Simplified: every trait is fully inherited, each offspring has one parent, and traits do not trade off against each other.</p>
+</div>
 
 @code {
-    private bool unlocked;
-    private int seed = 42;
-    private Random rng = new(42);
-    private int generation = 0;
+    private sealed record Preset(string Key, string Label, string Icon, string Title, string Note);
 
-    // selection pressure params
-    private int predatorHue = 200;
-    private int favoredSize = 1; // 0=small,1=med,2=large : the size predators target (so creatures of THIS size suffer)
-    private int requiredSpeed = 1; // creatures slower than this die more
-    private double selectionStrength = 0.6;
-
-    private string? lastEvent;
-    private const int PopSize = 30;
-
-    private List<Creature> population = new();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private static readonly Preset[] Presets =
     {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            if (unlocked && population.Count == 0)
-            {
-                ResetSim();
-            }
-            StateHasChanged();
-        }
-    }
-
-    private void ResetSim()
-    {
-        rng = new Random(seed);
-        generation = 0;
-        lastEvent = null;
-        population = Enumerable.Range(0, PopSize).Select(_ => RandomCreature()).ToList();
-    }
-
-    private Creature RandomCreature() => new Creature
-    {
-        Hue = rng.Next(0, 360),
-        Size = rng.Next(0, 3),
-        Speed = rng.Next(0, 3),
-        X = rng.NextDouble() * 280 + 10,
-        Y = rng.NextDouble() * 280 + 10
+        new("moth", "Peppered moth", "moon", "Peppered moth (Biston betularia)",
+            "In industrial Britain, air pollution killed the pale lichens on trees and soot blackened the bark. Birds hunting by sight found pale moths more easily on dark trunks, and the black carbonaria form rose from rare to common near cities during the 1800s. Run it and watch mean lightness fall. Then tap Clean bark, as happened after clean-air laws cut smoke from the 1950s, and watch the pale form return. Kettlewell's release-recapture experiments in the 1950s pointed to bird predation, and Michael Majerus's large field study in the 2000s confirmed it. In the real moth a single gene switches between pale and black forms; here lightness varies smoothly."),
+        new("finch", "Finch beaks", "leaf", "Medium ground finch on Daphne Major (Geospiza fortis)",
+            "In the 1977 drought on this Galápagos island, plants set few seeds. The small, soft seeds were eaten first, leaving mostly large, hard ones such as caltrop (Tribulus) that only birds with big, deep beaks could crack. Most of the finches died, and the survivors had larger beaks on average. Beak size is strongly inherited, so the next generation's beaks were measurably deeper, as Peter and Rosemary Grant's team recorded. Here size stands for beak depth. Step once to see one round of selection; keep going and the drought never ends, unlike on the real island. Years later, after very wet seasons left plenty of small seeds, selection swung back toward smaller beaks: drag Favoured size down to try it."),
+        new("drift", "Genetic drift", "dice", "Genetic drift",
+            "Every trait is neutral, so who survives is pure luck, and the population is small (N = 20). Each offspring copies a random survivor, so some lineages leave many young and others none, and the trait means wander with no direction. Press Run, then New replicate a few times: identical settings, different random histories, and the lines spread apart. Watch the histograms too: variation drains away as lineages die out, and only mutation slowly restores it. Raise N to 300 and each generation's random change is far smaller, so the lines spread more slowly."),
+        new("escape", "Predator escape", "zap", "Predator escape",
+            "Predators catch slow prey more often than fast ones, so faster individuals are more likely to survive and breed, and because speed is inherited the mean climbs generation after generation. Selection can only act on variation that exists: set Mutation size to 0 and the climb stalls once variation runs out. Real prey also pay for speed, in energy and other costs, which this model leaves out, so here speed rises until mutation and the top of the range hold it back."),
     };
 
-    private void StepGeneration()
+    private static readonly string[] TraitNames = { "Lightness", "Size", "Speed" };
+    private static readonly string[] Low = { "dark", "small", "slow" };
+    private static readonly string[] High = { "pale", "large", "fast" };
+    private static readonly string[] TraitHints =
     {
-        if (population.Count == 0) return;
+        "Birds hunting by sight catch individuals that contrast with the bark.",
+        "Food sets the best size: hard seeds favour big, deep beaks.",
+        "Predators catch the slowest prey first.",
+    };
 
-        // compute survival probabilities
-        var probs = population.Select(c => SurvivalProbability(c)).ToList();
-        var survivors = new List<Creature>();
-        for (int i = 0; i < population.Count; i++)
+    private const int MaxGenerations = 200;
+    private const int MaxReplicates = 6;
+    private const int Bins10 = 10;
+    private const double CL = 26, CR = 314, CT = 6, CB = 116;
+
+    private readonly EvolutionModel model = new();
+    private readonly List<List<GenStats>> pastRuns = new();
+    private EvoTrait chartTrait = EvoTrait.Lightness;
+    private string? presetKey;
+    private string? lastEvent;
+    private bool running;
+    private int runToken;
+
+    private Preset? CurrentPreset => Presets.FirstOrDefault(p => p.Key == presetKey);
+    private bool CanStep => !model.Extinct && model.Generation < MaxGenerations;
+
+    private int PopN
+    {
+        get => model.PopulationSize;
+        set
         {
-            if (rng.NextDouble() < probs[i])
-                survivors.Add(population[i]);
+            model.PopulationSize = value;
+            if (model.Generation == 0) model.Reset(model.Seed);
         }
-
-        if (survivors.Count == 0)
-        {
-            population = new List<Creature>();
-            generation++;
-            lastEvent = $"Gen {generation}: extinction.";
-            return;
-        }
-
-        // resample to PopSize, with mutation
-        var next = new List<Creature>(PopSize);
-        for (int i = 0; i < PopSize; i++)
-        {
-            var parent = survivors[rng.Next(survivors.Count)];
-            next.Add(Mutate(parent));
-        }
-        population = next;
-        generation++;
-        lastEvent = $"Gen {generation}: {survivors.Count}/{PopSize} survived, reseeded with mutation.";
     }
 
-    private void RunTen()
+    protected override void OnInitialized() => ApplyPreset("moth");
+
+    public void Dispose()
     {
-        for (int i = 0; i < 10 && population.Count > 0; i++)
-            StepGeneration();
+        running = false;
+        runToken++;
     }
 
-    private double SurvivalProbability(Creature c)
-    {
-        // hue fit: closer to predatorHue means MORE likely to be eaten -> lower survival.
-        // distance is shortest arc on 360 wheel.
-        double hueDist = Math.Min(Math.Abs(c.Hue - predatorHue), 360 - Math.Abs(c.Hue - predatorHue));
-        double hueFit = hueDist / 180.0; // 0..1, higher is safer
-
-        // size fit: matching favoredSize is bad (predators target it). distance is good.
-        double sizeFit = Math.Abs(c.Size - favoredSize) / 2.0; // 0..1
-
-        // speed fit: must be >= requiredSpeed; if slower, suffer.
-        double speedFit;
-        if (c.Speed >= requiredSpeed) speedFit = 1.0;
-        else speedFit = Math.Max(0.0, 1.0 - (requiredSpeed - c.Speed) * 0.5);
-
-        // combined fitness in [0,1]
-        double fit = hueFit * sizeFit * speedFit;
-
-        // baseline survival + selection pull
-        double baseline = 1.0 - selectionStrength;
-        return Math.Clamp(baseline + selectionStrength * fit, 0.02, 0.98);
-    }
-
-    private Creature Mutate(Creature parent)
-    {
-        int hue = parent.Hue + (int)Math.Round((rng.NextDouble() - 0.5) * 30);
-        if (hue < 0) hue += 360;
-        if (hue >= 360) hue -= 360;
-
-        int size = parent.Size;
-        if (rng.NextDouble() < 0.15) size += rng.Next(2) == 0 ? -1 : 1;
-        size = Math.Clamp(size, 0, 2);
-
-        int speed = parent.Speed;
-        if (rng.NextDouble() < 0.15) speed += rng.Next(2) == 0 ? -1 : 1;
-        speed = Math.Clamp(speed, 0, 2);
-
-        return new Creature
-        {
-            Hue = hue,
-            Size = size,
-            Speed = speed,
-            X = rng.NextDouble() * 280 + 10,
-            Y = rng.NextDouble() * 280 + 10
-        };
-    }
+    private static int NewSeed() => Random.Shared.Next();
 
     private void ApplyPreset(string key)
     {
+        StopRunning();
+        foreach (var sel in model.Selection)
+        {
+            sel.Selected = false;
+            sel.Target = 1.0;
+            sel.Strength = 0.6;
+        }
+        Array.Fill(model.StartMean, 0.5);
+        model.StartSd = 0.15;
+        model.PopulationSize = 150;
+        model.MutationSd = 0.02;
+        model.Background = 0.5;
+
         switch (key)
         {
             case "moth":
-                // dark moths survive in polluted forests. predator targets light moths.
-                // hue irrelevant in real moth case; we model "lightness" via hue ~ yellow (60).
-                predatorHue = 60;       // predators eat yellow/light
-                favoredSize = 1;        // size neutral
-                requiredSpeed = 0;      // moths don't need to be fast
-                selectionStrength = 0.7;
-                lastEvent = "Preset: Peppered Moth. Pollution favors dark forms.";
+                model.Background = 0.15;
+                model.MutationSd = 0.03;
+                model.StartMean[(int)EvoTrait.Lightness] = 0.8;
+                Select(EvoTrait.Lightness, 0, 0.7);
+                chartTrait = EvoTrait.Lightness;
                 break;
-            case "beak":
-                // drought favors larger beaks (large seeds). predator targets small beaks.
-                predatorHue = 30;       // mild preference
-                favoredSize = 0;        // small beaks targeted
-                requiredSpeed = 0;
-                selectionStrength = 0.6;
-                lastEvent = "Preset: Beak Size. Drought favors larger beaks.";
+            case "finch":
+                model.StartMean[(int)EvoTrait.Size] = 0.4;
+                Select(EvoTrait.Size, 1.0, 0.6);
+                chartTrait = EvoTrait.Size;
                 break;
-            case "antibiotic":
-                // drug kills slow reproducers; fast survives.
-                predatorHue = 0;
-                favoredSize = 1;
-                requiredSpeed = 2;      // must be fast to survive
-                selectionStrength = 0.85;
-                lastEvent = "Preset: Antibiotic Resistance. Only the fast survive.";
+            case "drift":
+                model.PopulationSize = 20;
+                model.MutationSd = 0.01;
+                model.StartSd = 0.2;
+                chartTrait = EvoTrait.Lightness;
+                break;
+            case "escape":
+                model.StartMean[(int)EvoTrait.Speed] = 0.35;
+                Select(EvoTrait.Speed, 1.0, 0.6);
+                chartTrait = EvoTrait.Speed;
                 break;
         }
-        seed = rng.Next(0, 9999);
-        ResetSim();
+
+        presetKey = key;
+        pastRuns.Clear();
+        model.Reset(NewSeed());
+        lastEvent = null;
     }
 
-    private int[] HueBins()
+    private void Select(EvoTrait t, double target, double strength)
     {
-        var bins = new int[8];
-        foreach (var c in population)
+        var sel = model.Selection[(int)t];
+        sel.Selected = true;
+        sel.Target = target;
+        sel.Strength = strength;
+    }
+
+    private void StepOnce()
+    {
+        if (!CanStep) return;
+        model.Step();
+        if (model.Extinct)
         {
-            int idx = Math.Min(7, c.Hue / 45);
-            bins[idx]++;
+            lastEvent = $"Generation {model.Generation}: none of {model.LastCount} survived, so the population is extinct. Selection was harsher than a population this size could absorb. Press Reset.";
+            return;
         }
-        return bins;
+        lastEvent = $"Generation {model.Generation}: {model.LastSurvivors} of {model.LastCount} survived and left {model.Population.Count} offspring.";
+        if (model.Generation >= MaxGenerations)
+            lastEvent += $" That is the {MaxGenerations}-generation limit: press New replicate or Reset.";
     }
 
-    private int[] SizeBins()
+    private async Task ToggleRun()
     {
-        var bins = new int[3];
-        foreach (var c in population) bins[c.Size]++;
-        return bins;
+        if (running)
+        {
+            StopRunning();
+            return;
+        }
+        var token = ++runToken;
+        running = true;
+        while (running && token == runToken && CanStep)
+        {
+            StepOnce();
+            StateHasChanged();
+            await Task.Delay(140);
+        }
+        if (token == runToken) running = false;
     }
 
-    private int[] SpeedBins()
+    private void StopRunning()
     {
-        var bins = new int[3];
-        foreach (var c in population) bins[c.Speed]++;
+        running = false;
+        runToken++;
+    }
+
+    private void NewReplicate()
+    {
+        if (model.History.Count > 1)
+        {
+            pastRuns.Add(model.History);
+            if (pastRuns.Count > MaxReplicates) pastRuns.RemoveAt(0);
+        }
+        model.Reset(NewSeed());
+        lastEvent = $"Replicate {pastRuns.Count + 1}: same settings, new random seed. Earlier runs stay on the chart as grey lines.";
+    }
+
+    private void ResetAll()
+    {
+        StopRunning();
+        pastRuns.Clear();
+        model.Reset(NewSeed());
+        lastEvent = null;
+    }
+
+    private int[] Bins(EvoTrait t)
+    {
+        var bins = new int[Bins10];
+        foreach (var o in model.Population)
+            bins[Math.Min(Bins10 - 1, (int)(o[t] * Bins10))]++;
         return bins;
     }
 
-    private double AvgHue => population.Count == 0 ? 0 : population.Average(c => (double)c.Hue);
-    private string AvgSizeLabel
+    private int ChartMaxGen
     {
         get
         {
-            if (population.Count == 0) return "-";
-            double avg = population.Average(c => (double)c.Size);
-            return avg < 0.66 ? "Small" : avg < 1.34 ? "Medium" : "Large";
+            int longest = pastRuns.Select(r => r.Count - 1).Append(model.History.Count - 1).Max();
+            return Math.Max(20, (longest + 9) / 10 * 10);
         }
     }
-    private string AvgSpeedLabel
+
+    private static double Cx(int g, int maxGen) => CL + (CR - CL) * g / (double)maxGen;
+    private static double Cy(double v) => CB - (CB - CT) * v;
+
+    private static string Points(List<GenStats> history, int t, int maxGen) =>
+        string.Join(" ", history.Select((s, g) => $"{F(Cx(g, maxGen))},{F(Cy(s.Mean[t]))}"));
+
+    private static string TargetPath(List<GenStats> history, int t, int maxGen)
     {
-        get
+        var sb = new System.Text.StringBuilder();
+        bool pen = false;
+        for (int g = 0; g < history.Count; g++)
         {
-            if (population.Count == 0) return "-";
-            double avg = population.Average(c => (double)c.Speed);
-            return avg < 0.66 ? "Slow" : avg < 1.34 ? "Med" : "Fast";
+            if (history[g].Target[t] is double v)
+            {
+                sb.Append(pen ? " L" : " M").Append(F(Cx(g, maxGen))).Append(' ').Append(F(Cy(v)));
+                pen = true;
+            }
+            else pen = false;
         }
+        return sb.ToString().TrimStart();
     }
 
-    private static double SizeRadius(int size) => size switch { 0 => 4.0, 1 => 7.0, 2 => 10.0, _ => 6.0 };
+    private string ChartLabel => model.Extinct
+        ? $"Mean {TraitNames[(int)chartTrait]} over {model.Generation} generations; the population went extinct"
+        : $"Mean {TraitNames[(int)chartTrait]} over {model.Generation} generations, now {model.Mean(chartTrait):F2}";
 
-    private static string HueToColor(int hue) => $"hsl({hue}, 70%, 55%)";
-
-    private class Creature
+    private static string BarFill(EvoTrait t, int bin) => t switch
     {
-        public int Hue { get; set; }
-        public int Size { get; set; }
-        public int Speed { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-    }
+        EvoTrait.Lightness => BodyColor((bin + 0.5) / Bins10),
+        EvoTrait.Size => "var(--primary)",
+        _ => "var(--accent)",
+    };
+
+    private static double Radius(Organism o) => 2.5 + 5.5 * o[EvoTrait.Size];
+
+    private static string BarkColor(double lightness) => $"hsl(30, 12%, {F(10 + 78 * lightness)}%)";
+    private static string BodyColor(double lightness) => $"hsl(35, 8%, {F(10 + 78 * lightness)}%)";
+
+    private static string Pressed(bool on) => on ? "true" : "false";
+
+    private static string F(double v) => v.ToString("0.#", CultureInfo.InvariantCulture);
 }
 
 <style>
@@ -446,29 +510,47 @@ else
 
     .evo-presets {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 6px;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
     }
     .preset-btn {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
-        padding: 10px 6px;
+        padding: 10px 4px;
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
         color: var(--text-primary);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.15s ease;
         -webkit-tap-highlight-color: transparent;
     }
     .preset-btn:active { transform: scale(0.97); }
-    .preset-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .preset-btn:hover, .preset-btn.on { border-color: var(--primary); color: var(--primary); }
     .preset-btn span { line-height: 1.2; text-align: center; }
+
+    .evo-note {
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        border-left: 3px solid var(--primary);
+    }
+    .evo-note-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+    .evo-note p {
+        margin: 0;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: var(--text-secondary);
+    }
 
     .evo-card {
         padding: 14px;
@@ -487,24 +569,26 @@ else
         align-items: center;
         background: var(--bg-surface);
         border-radius: var(--radius-sm);
-        padding: 6px 4px;
+        padding: 6px 2px;
+        min-width: 0;
     }
     .meta-label {
-        font-size: 0.7rem;
+        font-size: 0.62rem;
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.3px;
     }
     .evo-meta-row strong {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         color: var(--text-primary);
         margin-top: 2px;
+        font-variant-numeric: tabular-nums;
     }
 
     .evo-canvas-wrap {
         display: flex;
         justify-content: center;
-        margin-bottom: 14px;
+        margin-bottom: 6px;
     }
     .evo-canvas {
         width: 100%;
@@ -513,8 +597,81 @@ else
         aspect-ratio: 1 / 1;
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
-        background: var(--bg-surface);
     }
+    .field-legend {
+        margin: 0 0 10px;
+        font-size: 0.74rem;
+        line-height: 1.4;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .bark-row label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    .bark-row strong { color: var(--text-primary); }
+    .bark-row input[type="range"] {
+        width: 100%;
+        accent-color: var(--primary);
+    }
+    .bark-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(to right, hsl(30, 12%, 10%), hsl(30, 12%, 88%));
+    }
+    .bark-quick {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .bark-quick .btn { flex: 1; }
+
+    .chart-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+    }
+    .chart-head .histo-title { margin: 0; text-align: left; }
+    .evo-chart {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        margin: 4px 0 12px;
+    }
+    .chart-legend span { display: inline-flex; align-items: center; gap: 4px; }
+    .chart-legend .chart-scale { color: var(--text-muted); }
+
+    .seg {
+        display: inline-flex;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+    .seg button {
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        border: none;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .seg button + button { border-left: 1px solid var(--border); }
+    .seg button.on { background: var(--primary); color: #fff; }
 
     .histo-wrap {
         display: grid;
@@ -524,7 +681,7 @@ else
     .histo-block {
         background: var(--bg-surface);
         border-radius: var(--radius-sm);
-        padding: 8px;
+        padding: 8px 6px;
     }
     .histo-title {
         font-size: 0.7rem;
@@ -551,10 +708,31 @@ else
         font-size: 0.95rem;
         color: var(--text-primary);
     }
-    .ctrl-row {
-        margin-bottom: 12px;
+    .trait-block {
+        padding: 10px 0;
+        border-top: 1px solid var(--border);
     }
-    .ctrl-row:last-child { margin-bottom: 0; }
+    .trait-block:first-of-type { border-top: none; padding-top: 0; }
+    .trait-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .trait-name {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: var(--text-primary);
+    }
+    .trait-hint {
+        margin: 6px 0 0;
+        font-size: 0.78rem;
+        line-height: 1.4;
+        color: var(--text-muted);
+    }
+    .ctrl-row {
+        margin-top: 10px;
+    }
     .ctrl-row label {
         display: flex;
         flex-direction: column;
@@ -566,50 +744,44 @@ else
         width: 100%;
         accent-color: var(--primary);
     }
-    .ctrl-row select {
-        padding: 8px 10px;
-        background: var(--bg-card);
-        color: var(--text-primary);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        font-size: 0.85rem;
-    }
     .ctrl-row strong { color: var(--text-primary); }
 
-    .hue-bar {
-        height: 8px;
-        border-radius: 4px;
-        background: linear-gradient(to right,
-            hsl(0,70%,55%), hsl(60,70%,55%), hsl(120,70%,55%),
-            hsl(180,70%,55%), hsl(240,70%,55%), hsl(300,70%,55%), hsl(360,70%,55%));
-    }
-
     .evo-buttons {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 8px;
-        flex-wrap: wrap;
         margin-bottom: 12px;
     }
     .evo-buttons .btn {
-        flex: 1;
-        min-width: 120px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
     }
+    .evo-buttons .btn:disabled { opacity: 0.5; cursor: default; }
 
     .evo-event {
         background: var(--bg-surface);
         border-left: 3px solid var(--accent);
         border-radius: var(--radius-sm);
         padding: 10px 12px;
+        margin-bottom: 14px;
         font-size: 0.82rem;
         color: var(--text-secondary);
     }
 
+    .evo-how ol {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: var(--text-secondary);
+    }
+    .evo-how li + li { margin-top: 6px; }
+    .evo-how strong { color: var(--text-primary); }
+
     @@media (max-width: 380px) {
+        .evo-presets { grid-template-columns: repeat(2, 1fr); }
         .evo-meta { grid-template-columns: repeat(3, 1fr); }
-        .preset-btn { font-size: 0.7rem; }
     }
 </style>
