@@ -1,198 +1,501 @@
 @page "/market-sim"
-@inject IProgressService Progress
+@using System.Globalization
 @inject NavigationManager Nav
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Market Sim</h1>
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Market Sim</h1>
+</div>
+
+<div class="card ms-intro">
+    <Icon Name="coin" Size="22" Stroke="var(--accent)" />
+    <p>Slide supply and demand to find the equilibrium. Then add a price ceiling, a price floor, a per-unit tax or a quota, and watch the surplus areas shift and the deadweight loss appear.</p>
+</div>
+
+<div class="card ms-controls">
+    <div class="ms-row">
+        <label for="ms-da">Demand intercept</label>
+        <input id="ms-da" type="range" min="60" max="160" step="2" @bind="demandIntercept" @bind:event="oninput" />
+        <span>@demandIntercept</span>
     </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Market Sim" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    <div class="ms-row">
+        <label for="ms-db">Demand slope</label>
+        <input id="ms-db" type="range" min="0.4" max="2.5" step="0.1" @bind="demandSlope" @bind:event="oninput" />
+        <span>@demandSlope.ToString("0.0")</span>
     </div>
+    <div class="ms-row">
+        <label for="ms-sa">Supply intercept</label>
+        <input id="ms-sa" type="range" min="0" max="50" step="2" @bind="supplyIntercept" @bind:event="oninput" />
+        <span>@supplyIntercept</span>
+    </div>
+    <div class="ms-row">
+        <label for="ms-sb">Supply slope</label>
+        <input id="ms-sb" type="range" min="0.4" max="2.5" step="0.1" @bind="supplySlope" @bind:event="oninput" />
+        <span>@supplySlope.ToString("0.0")</span>
+    </div>
+    <div class="ms-row">
+        <label for="ms-kind">Intervention</label>
+        <select id="ms-kind" @bind="Kind">
+            <option value="@MarketIntervention.None">None</option>
+            <option value="@MarketIntervention.Ceiling">Price ceiling</option>
+            <option value="@MarketIntervention.Floor">Price floor</option>
+            <option value="@MarketIntervention.Tax">Per-unit tax</option>
+            <option value="@MarketIntervention.Quota">Quota</option>
+        </select>
+    </div>
+    @if (kind != MarketIntervention.None)
+    {
+        var spec = LevelSpec(kind);
+        <div class="ms-row" @key="kind">
+            <label for="ms-level">@spec.Label</label>
+            <input id="ms-level" type="range" min="@spec.Min" max="@spec.Max" step="1" @bind="level" @bind:event="oninput" />
+            <span>@(kind == MarketIntervention.Quota ? Num(level) : Pr(level))</span>
+        </div>
+    }
+</div>
+
+@{
+    var r = MarketModel.Solve(Curves, kind, level);
+    Fit(r);
+    var m = Curves;
+    var q = r.Quantity;
+    var priceLevel = kind is MarketIntervention.Ceiling or MarketIntervention.Floor;
+    var wedgeShown = r.Binding && r.Trades && kind is MarketIntervention.Tax or MarketIntervention.Quota;
+    var otherQ = q + r.Shortage + r.Excess;
+    var (xKeys, yKeys) = KeyLabels(r);
+    var demand = Clip(m.A, -m.B);
+    var supply = Clip(m.C, m.D);
+    var taxed = kind == MarketIntervention.Tax && level > 0 ? Clip(m.C + level, m.D) : null;
+    var (title, body) = Explain(r);
 }
-else
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Market Sim</h1>
-    </div>
+<div class="card ms-chart-card">
+    <svg viewBox="0 0 320 232" class="ms-svg" role="img" aria-label="Supply and demand diagram with shaded surplus areas">
+        <defs>
+            <pattern id="ms-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="5" stroke="var(--text-secondary)" stroke-width="1.2" />
+            </pattern>
+        </defs>
 
-    <div class="card ms-intro">
-        <Icon Name="coin" Size="22" Stroke="var(--accent)" />
-        <p>Slide supply and demand. Find equilibrium. Apply a price ceiling, a tax, or a quota, then watch the deadweight loss appear.</p>
-    </div>
-
-    <div class="card ms-controls">
-        <div class="ms-row">
-            <label>Demand intercept</label>
-            <input type="range" min="60" max="160" step="2" @bind="demandIntercept" @bind:event="oninput" />
-            <span>@demandIntercept</span>
-        </div>
-        <div class="ms-row">
-            <label>Demand slope</label>
-            <input type="range" min="0.4" max="2.5" step="0.1" @bind="demandSlope" @bind:event="oninput" />
-            <span>@demandSlope.ToString("0.0")</span>
-        </div>
-        <div class="ms-row">
-            <label>Supply intercept</label>
-            <input type="range" min="0" max="60" step="2" @bind="supplyIntercept" @bind:event="oninput" />
-            <span>@supplyIntercept</span>
-        </div>
-        <div class="ms-row">
-            <label>Supply slope</label>
-            <input type="range" min="0.4" max="2.5" step="0.1" @bind="supplySlope" @bind:event="oninput" />
-            <span>@supplySlope.ToString("0.0")</span>
-        </div>
-        <div class="ms-row">
-            <label>Intervention</label>
-            <select @bind="intervention">
-                <option value="none">None</option>
-                <option value="ceiling">Price ceiling</option>
-                <option value="floor">Price floor</option>
-                <option value="tax">Per-unit tax</option>
-            </select>
-        </div>
-        @if (intervention != "none")
+        @for (var v = pStep; v <= pMax + 1e-9; v += pStep)
         {
-            <div class="ms-row">
-                <label>Level</label>
-                <input type="range" min="5" max="160" step="2" @bind="interventionLevel" @bind:event="oninput" />
-                <span>@interventionLevel</span>
-            </div>
+            var y = Y(v);
+            var hide = yKeys.Any(k => Math.Abs(k.At - y) < 10);
+            <g>
+                <line x1="@N(L)" y1="@N(y)" x2="@N(R)" y2="@N(y)" stroke="var(--border)" stroke-width="0.6" />
+                <text x="@N(L - 4)" y="@N(y + 3)" font-size="9" fill="var(--text-muted)" text-anchor="end" display="@(hide ? "none" : null)">@Num(v)</text>
+            </g>
+        }
+        @for (var v = qStep; v <= qMax + 1e-9; v += qStep)
+        {
+            var x = X(v);
+            var hide = xKeys.Any(k => Math.Abs(k.At - x) < 20);
+            <g>
+                <line x1="@N(x)" y1="@N(B)" x2="@N(x)" y2="@N(B + 3)" stroke="var(--text-muted)" stroke-width="0.8" />
+                <text x="@N(x)" y="@N(B + 13)" font-size="9" fill="var(--text-muted)" text-anchor="middle" display="@(hide ? "none" : null)">@Num(v)</text>
+            </g>
+        }
+
+        @if (r.Trades)
+        {
+            <polygon points="@Pts((0, m.A), (q, m.DemandPrice(q)), (q, r.BuyerPrice), (0, r.BuyerPrice))" fill="@CsColor" fill-opacity="0.28">
+                <title>Consumer surplus @Ar(r.ConsumerSurplus)</title>
+            </polygon>
+            <polygon points="@Pts((0, m.C), (q, m.SupplyPrice(q)), (q, r.SellerPrice), (0, r.SellerPrice))" fill="@PsColor" fill-opacity="0.26">
+                <title>Producer surplus @Ar(r.ProducerSurplus)</title>
+            </polygon>
+        }
+        @if (wedgeShown)
+        {
+            <polygon points="@Pts((0, r.SellerPrice), (q, r.SellerPrice), (q, r.BuyerPrice), (0, r.BuyerPrice))" fill="@WedgeColor" fill-opacity="0.32">
+                <title>@WedgeName @Ar(r.TaxRevenue + r.QuotaRent)</title>
+            </polygon>
+        }
+        @if (r.DeadweightLoss > 1e-9)
+        {
+            <polygon points="@Pts((q, m.DemandPrice(q)), (r.EquilibriumQuantity, r.EquilibriumPrice), (q, m.SupplyPrice(q)))" fill="url(#ms-hatch)" stroke="var(--text-secondary)" stroke-width="0.8">
+                <title>Deadweight loss @Ar(r.DeadweightLoss)</title>
+            </polygon>
+        }
+
+        @if (!r.Binding)
+        {
+            <polyline points="@Pts((0, r.EquilibriumPrice), (q, r.EquilibriumPrice), (q, 0))" class="ms-guide" />
+        }
+        else
+        {
+            @if (r.Trades)
+            {
+                <line x1="@N(X(q))" y1="@N(B)" x2="@N(X(q))" y2="@N(Y(Math.Max(r.BuyerPrice, m.DemandPrice(q))))" class="ms-guide" />
+            }
+            @if (wedgeShown)
+            {
+                <polyline points="@Pts((0, r.BuyerPrice), (q, r.BuyerPrice))" class="ms-guide" />
+                <polyline points="@Pts((0, r.SellerPrice), (q, r.SellerPrice))" class="ms-guide" />
+            }
+            @if (priceLevel && otherQ <= qMax)
+            {
+                <line x1="@N(X(otherQ))" y1="@N(B)" x2="@N(X(otherQ))" y2="@N(Y(level))" class="ms-guide" />
+            }
+        }
+
+        @if (demand is { } d)
+        {
+            var lbl = EndLabel(d.Q2, d.P2);
+            <g>
+                <line x1="@N(X(d.Q1))" y1="@N(Y(d.P1))" x2="@N(X(d.Q2))" y2="@N(Y(d.P2))" stroke="@CsColor" stroke-width="2.5" stroke-linecap="round" />
+                <text x="@N(lbl.X)" y="@N(lbl.Y)" text-anchor="@lbl.Anchor" class="ms-curve-label">D</text>
+            </g>
+        }
+        @if (supply is { } s)
+        {
+            var lbl = EndLabel(s.Q2, s.P2);
+            <g>
+                <line x1="@N(X(s.Q1))" y1="@N(Y(s.P1))" x2="@N(X(s.Q2))" y2="@N(Y(s.P2))" stroke="@PsColor" stroke-width="2.5" stroke-linecap="round" />
+                <text x="@N(lbl.X)" y="@N(lbl.Y)" text-anchor="@lbl.Anchor" class="ms-curve-label">S</text>
+            </g>
+        }
+        @if (taxed is { } st)
+        {
+            var exitsRight = X(st.Q2) >= R - 0.5;
+            <g>
+                <line x1="@N(X(st.Q1))" y1="@N(Y(st.P1))" x2="@N(X(st.Q2))" y2="@N(Y(st.P2))" stroke="@PsColor" stroke-width="2" stroke-dasharray="5,3" />
+                <text x="@N(exitsRight ? R - 2 : X(st.Q2) - 3)" y="@N(exitsRight ? Y(st.P2) - 5 : T - 3)" text-anchor="end" class="ms-curve-label">S + tax</text>
+            </g>
+        }
+
+        @if (priceLevel)
+        {
+            var y = Y(level);
+            var ceiling = kind == MarketIntervention.Ceiling;
+            var showGap = r.Binding && otherQ > q;
+            var x1 = X(q);
+            var x2 = X(Math.Min(otherQ, qMax));
+            var nearAxis = y > B - 15;
+            <g>
+                <line x1="@N(L)" y1="@N(y)" x2="@N(R)" y2="@N(y)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,3" />
+                <text x="@N(R - 2)" y="@N(ceiling || nearAxis ? y - 4 : y + 11)" text-anchor="end" class="ms-note">@(ceiling ? "Ceiling" : "Floor")</text>
+                @if (showGap)
+                {
+                    <line x1="@N(x1)" y1="@N(y)" x2="@N(x2)" y2="@N(y)" stroke="var(--warning)" stroke-width="3" stroke-linecap="round" />
+                }
+                <text x="@N((x1 + x2) / 2)" y="@N(ceiling && !nearAxis ? y + 12 : y - 5)" text-anchor="middle" class="ms-note" display="@(showGap ? null : "none")">@(ceiling ? "Shortage" : "Excess supply") @Num(otherQ - q)</text>
+            </g>
+        }
+        @if (kind == MarketIntervention.Quota && level <= qMax)
+        {
+            var x = X(level);
+            var flip = x > R - 40;
+            <g>
+                <line x1="@N(x)" y1="@N(T)" x2="@N(x)" y2="@N(B)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,3" />
+                <text x="@N(flip ? x - 3 : x + 3)" y="@N(T + 9)" text-anchor="@(flip ? "end" : "start")" class="ms-note">Quota</text>
+            </g>
+        }
+
+        <line x1="@N(L)" y1="@N(T)" x2="@N(L)" y2="@N(B)" stroke="var(--text-muted)" stroke-width="1" />
+        <line x1="@N(L)" y1="@N(B)" x2="@N(R)" y2="@N(B)" stroke="var(--text-muted)" stroke-width="1" />
+        <text x="@N(L - 4)" y="@N(B + 13)" font-size="9" fill="var(--text-muted)" text-anchor="end" display="@(OriginCrowded(xKeys, yKeys) ? "none" : null)">0</text>
+
+        <circle cx="@N(X(r.EquilibriumQuantity))" cy="@N(Y(r.EquilibriumPrice))" r="4.5"
+                fill="@(r.Binding ? "var(--bg-card)" : "var(--text-primary)")" stroke="@(r.Binding ? "var(--text-primary)" : "var(--bg-card)")" stroke-width="@(r.Binding ? "1.5" : "2")" />
+        @if (r.Binding && r.Trades)
+        {
+            <circle cx="@N(X(q))" cy="@N(Y(r.BuyerPrice))" r="3.5" fill="var(--text-primary)" stroke="var(--bg-card)" stroke-width="1.5" />
+            <circle cx="@N(X(q))" cy="@N(Y(r.SellerPrice))" r="3.5" fill="var(--text-primary)" stroke="var(--bg-card)" stroke-width="1.5" />
+        }
+
+        <text class="ms-key-label" text-anchor="end">
+            @foreach (var k in yKeys)
+            {
+                <tspan x="@N(L - 4)" y="@N(k.At + 3)">@k.Text</tspan>
+            }
+        </text>
+        <text class="ms-key-label" text-anchor="middle">
+            @foreach (var k in xKeys)
+            {
+                <tspan x="@N(k.At)" y="@N(B + 13)">@k.Text</tspan>
+            }
+        </text>
+        <text transform="rotate(-90)" x="@N(-(T + B) / 2)" y="9" font-size="9" fill="var(--text-muted)" text-anchor="middle">Price ($)</text>
+        <text x="@N((L + R) / 2)" y="228" font-size="9" fill="var(--text-muted)" text-anchor="middle">Quantity</text>
+    </svg>
+
+    <div class="ms-legend">
+        <div class="ms-key"><i class="ms-sw" style="background: @CsColor"></i><span>Consumer surplus</span><strong>@Ar(r.ConsumerSurplus)</strong></div>
+        <div class="ms-key"><i class="ms-sw" style="background: @PsColor"></i><span>Producer surplus</span><strong>@Ar(r.ProducerSurplus)</strong></div>
+        @if (kind is MarketIntervention.Tax or MarketIntervention.Quota && r.Binding)
+        {
+            <div class="ms-key"><i class="ms-sw" style="background: @WedgeColor"></i><span>@WedgeName</span><strong>@Ar(r.TaxRevenue + r.QuotaRent)</strong></div>
+        }
+        @if (r.Binding)
+        {
+            <div class="ms-key ms-key-loss"><i class="ms-sw ms-sw-hatch"></i><span>Deadweight loss</span><strong>@Ar(r.DeadweightLoss)</strong></div>
+        }
+        <p class="ms-total">
+            @if (r.Binding)
+            {
+                <text>Total surplus @Ar(r.TotalSurplus) of a possible @Ar(r.MaxSurplus).</text>
+            }
+            else
+            {
+                <text>Total surplus @Ar(r.MaxSurplus), the most this market can produce.</text>
+            }
+        </p>
+    </div>
+
+    <div class="ms-readouts">
+        @foreach (var stat in Stats(r))
+        {
+            <div class="ms-stat @(stat.Warn ? "ms-stat-warn" : "")"><span>@stat.Label</span><strong>@stat.Value</strong></div>
         }
     </div>
 
-    <div class="card ms-chart-card">
-        @{
-            var (eqQ, eqP) = Equilibrium();
-            var dwl = DeadweightLoss();
-        }
-        <svg viewBox="0 0 320 240" class="ms-svg">
-            <line x1="40" y1="20" x2="40" y2="200" stroke="var(--text-muted)" stroke-width="1"/>
-            <line x1="40" y1="200" x2="300" y2="200" stroke="var(--text-muted)" stroke-width="1"/>
-
-            @{
-                var demandTopY = 200 - Math.Min(180, demandIntercept * 1.0);
-                var demandRightY = 200 - Math.Max(0, (demandIntercept - demandSlope * 100) * 1.0);
-                var supplyLeftY = 200 - Math.Min(180, supplyIntercept * 1.0);
-                var supplyRightY = 200 - Math.Min(180, (supplyIntercept + supplySlope * 100) * 1.0);
-            }
-            <line x1="40" y1="@demandTopY.ToString(System.Globalization.CultureInfo.InvariantCulture)" x2="300" y2="@demandRightY.ToString(System.Globalization.CultureInfo.InvariantCulture)" stroke="#4A90D9" stroke-width="2.5"/>
-            <line x1="40" y1="@supplyLeftY.ToString(System.Globalization.CultureInfo.InvariantCulture)" x2="300" y2="@supplyRightY.ToString(System.Globalization.CultureInfo.InvariantCulture)" stroke="#E74C3C" stroke-width="2.5"/>
-
-            @if (intervention == "ceiling" || intervention == "floor")
-            {
-                var y = 200 - Math.Min(180, interventionLevel);
-                <g>
-                    <line x1="40" y1="@y.ToString(System.Globalization.CultureInfo.InvariantCulture)" x2="300" y2="@y.ToString(System.Globalization.CultureInfo.InvariantCulture)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,3"/>
-                    <text x="295" y="@((y - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))" font-size="9" fill="var(--accent)" text-anchor="end">@(intervention == "ceiling" ? "Ceiling" : "Floor") = @interventionLevel</text>
-                </g>
-            }
-
-            @{
-                var eqX = 40 + Math.Min(260, eqQ * 2.6);
-                var eqY = 200 - Math.Min(180, eqP);
-            }
-            <circle cx="@eqX.ToString(System.Globalization.CultureInfo.InvariantCulture)" cy="@eqY.ToString(System.Globalization.CultureInfo.InvariantCulture)" r="5" fill="#2ECC71" stroke="white" stroke-width="2"/>
-
-            <text x="295" y="@((demandRightY - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))" text-anchor="end" font-size="10" fill="#4A90D9">D</text>
-            <text x="295" y="@((supplyRightY - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))" text-anchor="end" font-size="10" fill="#E74C3C">S</text>
-            <text x="38" y="14" font-size="9" fill="var(--text-muted)" text-anchor="end">Price</text>
-            <text x="298" y="218" font-size="9" fill="var(--text-muted)" text-anchor="end">Quantity</text>
-        </svg>
-
-        <div class="ms-readouts">
-            <div class="ms-stat"><span>Equilibrium price</span><strong>$@eqP.ToString("0.0")</strong></div>
-            <div class="ms-stat"><span>Equilibrium quantity</span><strong>@eqQ.ToString("0.#")</strong></div>
-            @if (intervention != "none")
-            {
-                <div class="ms-stat ms-stat-warn"><span>Deadweight loss</span><strong>$@dwl.ToString("0.#")</strong></div>
-            }
-        </div>
-
-        <div class="ms-blurb">
-            @((MarkupString)Blurb())
-        </div>
-    </div>
-}
+    <div class="ms-blurb"><strong>@title</strong> @body</div>
+</div>
 
 @code {
-    private bool unlocked;
+    private const string CsColor = "#4A90D9";
+    private const string PsColor = "#E74C3C";
+    private const string WedgeColor = "#1FA67A";
+    private const double L = 36, R = 292, T = 14, B = 204;
+    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
     private double demandIntercept = 120;
     private double demandSlope = 1.0;
     private double supplyIntercept = 20;
     private double supplySlope = 1.0;
-    private string intervention = "none";
-    private double interventionLevel = 60;
+    private MarketIntervention kind = MarketIntervention.None;
+    private double level;
+    private double qMax = 1, qStep = 1, pMax = 1, pStep = 1;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private MarketCurves Curves => new(demandIntercept, demandSlope, supplyIntercept, supplySlope);
+
+    private MarketIntervention Kind
     {
-        if (firstRender)
+        get => kind;
+        set
         {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
+            kind = value;
+            level = DefaultLevel(value);
         }
     }
 
-    private (double Q, double P) Equilibrium()
+    private string WedgeName => kind == MarketIntervention.Tax ? "Tax revenue" : "Quota rent";
+
+    private static (string Label, int Min, int Max) LevelSpec(MarketIntervention k) => k switch
     {
-        var taxAdj = intervention == "tax" ? interventionLevel : 0;
-        var q = (demandIntercept - supplyIntercept - taxAdj) / (demandSlope + supplySlope);
-        var p = demandIntercept - demandSlope * q;
-        if (q < 0) q = 0;
-        return (q, p);
+        MarketIntervention.Ceiling => ("Ceiling price", 0, 160),
+        MarketIntervention.Floor => ("Floor price", 0, 160),
+        MarketIntervention.Tax => ("Tax per unit", 0, 160),
+        _ => ("Quota (units)", 0, 200),
+    };
+
+    // Defaults start each intervention clearly binding: 40% of the way from equilibrium to the
+    // relevant intercept, a tax of a fifth of the intercept gap, a quota at 60% of Q*.
+    private double DefaultLevel(MarketIntervention k)
+    {
+        var m = Curves;
+        var free = MarketModel.Solve(m, MarketIntervention.None, 0);
+        var p = free.EquilibriumPrice;
+        var v = k switch
+        {
+            MarketIntervention.Ceiling => Math.Floor(p - 0.4 * (p - m.C) + 1e-9),
+            MarketIntervention.Floor => Math.Ceiling(p + 0.4 * (m.A - p) - 1e-9),
+            MarketIntervention.Tax => Math.Max(1, Math.Round(0.2 * (m.A - m.C))),
+            MarketIntervention.Quota => Math.Floor(0.6 * free.EquilibriumQuantity + 1e-9),
+            _ => 0,
+        };
+        var spec = LevelSpec(k);
+        return Math.Clamp(v, spec.Min, spec.Max);
     }
 
-    private double DeadweightLoss()
+    private void Fit(MarketOutcome r)
     {
-        if (intervention == "none") return 0;
-        var (eqQ, eqP) = Equilibrium();
-        if (intervention == "ceiling" && interventionLevel < eqP)
-        {
-            var qSupplied = (interventionLevel - supplyIntercept) / supplySlope;
-            if (qSupplied < 0) qSupplied = 0;
-            var qDemanded = (demandIntercept - interventionLevel) / demandSlope;
-            return 0.5 * (eqQ - qSupplied) * Math.Max(0, qDemanded - qSupplied) * 0.5;
-        }
-        if (intervention == "floor" && interventionLevel > eqP)
-        {
-            var qDemanded = (demandIntercept - interventionLevel) / demandSlope;
-            if (qDemanded < 0) qDemanded = 0;
-            return 0.5 * (eqQ - qDemanded) * (interventionLevel - eqP);
-        }
-        if (intervention == "tax")
-        {
-            var qWithTax = (demandIntercept - supplyIntercept - interventionLevel) / (demandSlope + supplySlope);
-            if (qWithTax < 0) qWithTax = 0;
-            var qNoTax = (demandIntercept - supplyIntercept) / (demandSlope + supplySlope);
-            return 0.5 * (qNoTax - qWithTax) * interventionLevel;
-        }
-        return 0;
+        var qWant = 1.5 * r.EquilibriumQuantity;
+        if (r.Binding && kind is MarketIntervention.Ceiling or MarketIntervention.Floor)
+            qWant = Math.Max(qWant, 1.1 * Math.Min(r.Quantity + r.Shortage + r.Excess, 3 * r.EquilibriumQuantity));
+        var pWant = Curves.A;
+        if (kind is MarketIntervention.Ceiling or MarketIntervention.Floor) pWant = Math.Max(pWant, level);
+        if (kind == MarketIntervention.Tax) pWant = Math.Max(pWant, Curves.C + level);
+        (qStep, qMax) = Nice(qWant);
+        (pStep, pMax) = Nice(1.08 * pWant);
     }
 
-    private string Blurb()
+    // Round step that gives 3 to 6 ticks with the least empty space above x.
+    private static (double Step, double Max) Nice(double x)
     {
-        var (eqQ, eqP) = Equilibrium();
-        switch (intervention)
+        x = Math.Max(x, 1);
+        var mag = Math.Pow(10, Math.Floor(Math.Log10(x)));
+        (double Step, double Max) best = (mag, double.MaxValue);
+        foreach (var scale in new[] { 0.1, 1 })
+            foreach (var f in new[] { 1, 2, 2.5, 5 })
+            {
+                var step = f * scale * mag;
+                var ticks = Math.Ceiling(x / step - 1e-9);
+                if (ticks >= 3 && ticks <= 6 && ticks * step < best.Max) best = (step, ticks * step);
+            }
+        return best;
+    }
+
+    private double X(double q) => L + q / qMax * (R - L);
+    private double Y(double p) => B - p / pMax * (B - T);
+
+    // Part of the line P = p0 + slope*Q that lies inside the plot box.
+    private (double Q1, double P1, double Q2, double P2)? Clip(double p0, double slope)
+    {
+        var qAtZero = -p0 / slope;
+        var qAtTop = (pMax - p0) / slope;
+        var lo = Math.Max(0, Math.Min(qAtZero, qAtTop));
+        var hi = Math.Min(qMax, Math.Max(qAtZero, qAtTop));
+        if (hi - lo < 1e-9) return null;
+        return (lo, p0 + slope * lo, hi, p0 + slope * hi);
+    }
+
+    private (double X, double Y, string Anchor) EndLabel(double q, double p)
+    {
+        var x = X(q);
+        var y = Y(p);
+        if (x >= R - 0.5) return (R + 3, y + 3, "start");
+        if (y <= T + 0.5) return (x, T - 3, "middle");
+        return (x + 3, y - 3, "start");
+    }
+
+    private (List<(double At, string Text)> Xs, List<(double At, string Text)> Ys) KeyLabels(MarketOutcome r)
+    {
+        var xs = new List<(double At, string Text)>();
+        var ys = new List<(double At, string Text)>();
+        if (!r.Binding)
         {
-            case "ceiling":
-                return interventionLevel < eqP
-                    ? "<strong>Binding ceiling.</strong> Below market price -> shortage, queues, black market. Rent control debate lives here."
-                    : "<strong>Non-binding ceiling.</strong> Set above equilibrium, the ceiling does nothing.";
-            case "floor":
-                return interventionLevel > eqP
-                    ? "<strong>Binding floor.</strong> Above market price -> surplus. Minimum wage debates: surplus = unemployment."
-                    : "<strong>Non-binding floor.</strong> Set below equilibrium, the floor is symbolic.";
-            case "tax":
-                return "<strong>Per-unit tax.</strong> Wedge between buyer and seller price. Loss split by elasticity: the steeper curve eats more.";
+            xs.Add((X(r.EquilibriumQuantity), Num(r.EquilibriumQuantity)));
+            ys.Add((Y(r.EquilibriumPrice), Num(r.EquilibriumPrice)));
+        }
+        else
+        {
+            if (r.Trades) xs.Add((X(r.Quantity), Num(r.Quantity)));
+            if (kind is MarketIntervention.Ceiling or MarketIntervention.Floor)
+            {
+                ys.Add((Y(level), Num(level)));
+                var other = r.Quantity + r.Shortage + r.Excess;
+                if (other <= qMax) xs.Add((X(other), Num(other)));
+            }
+            else if (r.Trades)
+            {
+                ys.Add((Y(r.BuyerPrice), Num(r.BuyerPrice)));
+                ys.Add((Y(r.SellerPrice), Num(r.SellerPrice)));
+            }
+        }
+        return (Spread(xs, 20), Spread(ys, 10));
+    }
+
+    private static bool OriginCrowded(List<(double At, string Text)> xs, List<(double At, string Text)> ys) =>
+        xs.Any(k => k.At < L + 14) || ys.Any(k => k.At > B - 12);
+
+    private static List<(double At, string Text)> Spread(List<(double At, string Text)> keys, double gap)
+    {
+        var sorted = keys.OrderBy(k => k.At).ToList();
+        for (var i = 1; i < sorted.Count; i++)
+            if (sorted[i].At - sorted[i - 1].At < gap)
+                sorted[i] = (sorted[i - 1].At + gap, sorted[i].Text);
+        return sorted;
+    }
+
+    private string Pts(params (double Q, double P)[] pts) =>
+        string.Join(" ", pts.Select(v => $"{N(X(v.Q))},{N(Y(v.P))}"));
+
+    private static string N(double v) => v.ToString("0.##", Inv);
+    private static string Num(double v) => (Math.Abs(v) < 0.05 ? 0 : v).ToString("0.#", Inv);
+    private static string Pr(double v) => "$" + Num(v);
+    private static string Ar(double v) => "$" + Math.Max(0, v).ToString(v < 100 ? "0.#" : "#,0", Inv);
+
+    private static double BuyerShare(MarketOutcome r, double tax) => (r.BuyerPrice - r.EquilibriumPrice) / tax;
+
+    private List<(string Label, string Value, bool Warn)> Stats(MarketOutcome r)
+    {
+        if (!r.Binding)
+            return new() { ("Equilibrium price", Pr(r.EquilibriumPrice), false), ("Equilibrium quantity", Num(r.EquilibriumQuantity), false) };
+
+        var stats = new List<(string Label, string Value, bool Warn)>
+        {
+            ("Free-market price", Pr(r.EquilibriumPrice), false),
+            ("Free-market quantity", Num(r.EquilibriumQuantity), false),
+        };
+        var traded = ("Quantity traded", Num(r.Quantity), false);
+        switch (kind)
+        {
+            case MarketIntervention.Ceiling:
+                stats.Add(("Ceiling price", Pr(level), false));
+                stats.Add(traded);
+                stats.Add(("Quantity demanded", Num(r.Quantity + r.Shortage), false));
+                stats.Add(("Shortage", Num(r.Shortage), true));
+                break;
+            case MarketIntervention.Floor:
+                stats.Add(("Floor price", Pr(level), false));
+                stats.Add(traded);
+                stats.Add(("Quantity supplied", Num(r.Quantity + r.Excess), false));
+                stats.Add(("Excess supply", Num(r.Excess), true));
+                break;
+            case MarketIntervention.Tax:
+                stats.Add(("Buyers pay", r.Trades ? Pr(r.BuyerPrice) : "No trade", false));
+                stats.Add(("Sellers keep", r.Trades ? Pr(r.SellerPrice) : "No trade", false));
+                stats.Add(traded);
+                stats.Add(("Buyers' share of tax", r.Trades ? (100 * BuyerShare(r, level)).ToString("0", Inv) + "%" : "None", false));
+                break;
+            case MarketIntervention.Quota:
+                stats.Add(("Buyers pay", r.Trades ? Pr(r.BuyerPrice) : "No trade", false));
+                stats.Add(("Cost of last unit", r.Trades ? Pr(r.SellerPrice) : "No trade", false));
+                stats.Add(traded);
+                stats.Add(("Rent per unit", r.Trades ? Pr(r.BuyerPrice - r.SellerPrice) : "None", false));
+                break;
+        }
+        return stats;
+    }
+
+    private (string Title, string Body) Explain(MarketOutcome r)
+    {
+        var m = Curves;
+        var q = Num(r.Quantity);
+        var lost = Ar(r.DeadweightLoss);
+        var all = Ar(r.MaxSurplus);
+        switch (kind)
+        {
+            case MarketIntervention.Ceiling when !r.Binding:
+                return ("Ceiling not binding.", $"A ceiling of {Pr(level)} is at or above the market price of {Pr(r.EquilibriumPrice)}, so trade carries on as before.");
+            case MarketIntervention.Ceiling when !r.Trades:
+                return ("Binding ceiling.", $"At {Pr(level)} no seller will supply at all, so nothing is traded and all {all} of surplus is lost.");
+            case MarketIntervention.Ceiling:
+                return ("Binding ceiling.", $"At {Pr(level)} sellers offer only {q} units but buyers want {Num(r.Quantity + r.Shortage)}: a shortage of {Num(r.Shortage)}. "
+                    + $"Only {q} units change hands, so {lost} of value from the missing trades is lost. "
+                    + "This assumes the scarce units reach the buyers who value them most; queues or random rationing waste more.");
+            case MarketIntervention.Floor when !r.Binding:
+                return ("Floor not binding.", $"A floor of {Pr(level)} is at or below the market price of {Pr(r.EquilibriumPrice)}, so trade carries on as before.");
+            case MarketIntervention.Floor when !r.Trades:
+                return ("Binding floor.", $"No buyer will pay {Pr(level)}, so nothing is traded and all {all} of surplus is lost.");
+            case MarketIntervention.Floor:
+                return ("Binding floor.", $"At {Pr(level)} buyers take only {q} units though sellers would like to sell {Num(r.Quantity + r.Excess)}: an excess supply of {Num(r.Excess)}. "
+                    + $"Trade falls to {q} units and {lost} is lost. "
+                    + "This assumes only the lowest-cost sellers produce; if the unsold units get made anyway, the waste is larger.");
+            case MarketIntervention.Tax when !r.Binding:
+                return ("No tax yet.", "Raise the tax above zero to drive a wedge between what buyers pay and what sellers keep.");
+            case MarketIntervention.Tax when !r.Trades:
+                return ("Market shut down.", $"A {Pr(level)} tax is at least the {Pr(m.A - m.C)} gap between the most any buyer will pay ({Pr(m.A)}) and the least any seller will accept ({Pr(m.C)}). "
+                    + $"Trade stops, the tax raises nothing and all {all} of surplus is lost.");
+            case MarketIntervention.Tax:
+            {
+                var share = BuyerShare(r, level);
+                return ("Per-unit tax.", $"Buyers now pay {Pr(r.BuyerPrice)} and sellers keep {Pr(r.SellerPrice)}, so buyers bear {(100 * share).ToString("0", Inv)}% of the {Pr(level)} tax and sellers {(100 * (1 - share)).ToString("0", Inv)}%. "
+                    + "The side with the steeper curve, less willing to change how much it trades, bears more, whichever side hands the money over. "
+                    + $"Trade falls from {Num(r.EquilibriumQuantity)} to {q} units: the government collects {Ar(r.TaxRevenue)} and {lost} is lost.");
+            }
+            case MarketIntervention.Quota when !r.Binding:
+                return ("Quota not binding.", $"A quota of {Num(level)} units is at or above the {Num(r.EquilibriumQuantity)} the market would trade anyway, so nothing changes.");
+            case MarketIntervention.Quota when !r.Trades:
+                return ("Trade banned.", $"A quota of zero stops all trade, so all {all} of surplus is lost.");
+            case MarketIntervention.Quota:
+                return ("Binding quota.", $"Only {q} units may be sold. Buyers bid the price up to {Pr(r.BuyerPrice)} while the last unit costs sellers just {Pr(r.SellerPrice)}. "
+                    + $"That gap times {q} is quota rent ({Ar(r.QuotaRent)}), which goes to whoever holds the licences, often the existing sellers. {lost} is lost on the trades the quota blocks.");
             default:
-                return "<strong>No intervention.</strong> Curves cross. Marshall called this the most useful diagram in economics.";
+                return ("Free market.", $"Buyers and sellers settle on {Pr(r.EquilibriumPrice)} for {Num(r.EquilibriumQuantity)} units. "
+                    + "Consumer surplus (blue) is the extra buyers would have been willing to pay above that price; producer surplus (red) is what sellers receive above their costs. "
+                    + $"Together they make {all}, the most this market can produce.");
         }
     }
 }
@@ -203,13 +506,26 @@ else
 
     .ms-controls { padding: 14px; }
     .ms-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.8rem; }
-    .ms-row label { width: 130px; color: var(--text-muted); font-weight: 600; }
-    .ms-row input[type=range] { flex: 1; accent-color: var(--primary); }
+    .ms-row label { width: 120px; flex-shrink: 0; color: var(--text-muted); font-weight: 600; }
+    .ms-row input[type=range] { flex: 1; min-width: 0; accent-color: var(--primary); }
     .ms-row select { flex: 1; padding: 4px 8px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); }
-    .ms-row span { width: 36px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+    .ms-row span { width: 40px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 
     .ms-chart-card { padding: 14px; }
-    .ms-svg { width: 100%; height: auto; max-height: 280px; display: block; }
+    .ms-svg { width: 100%; height: auto; max-height: 300px; display: block; }
+    .ms-guide { fill: none; stroke: var(--text-muted); stroke-width: 0.8; stroke-dasharray: 2,2; }
+    .ms-curve-label { font-size: 10px; font-weight: 700; fill: var(--text-secondary); }
+    .ms-note { font-size: 9px; fill: var(--text-secondary); }
+    .ms-key-label { font-size: 9px; font-weight: 700; fill: var(--text-primary); }
+
+    .ms-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-top: 10px; font-size: 0.75rem; }
+    .ms-key { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+    .ms-key span { flex: 1; }
+    .ms-key strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .ms-key-loss strong { color: var(--error); }
+    .ms-sw { width: 12px; height: 12px; border-radius: 3px; opacity: 0.6; flex-shrink: 0; }
+    .ms-sw-hatch { opacity: 1; border: 1px solid var(--text-secondary); background: repeating-linear-gradient(45deg, var(--text-secondary) 0 1px, transparent 1px 4px); }
+    .ms-total { grid-column: 1 / -1; margin: 2px 0 0; color: var(--text-muted); }
 
     .ms-readouts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
     .ms-stat { background: var(--bg-surface); padding: 8px 10px; border-radius: var(--radius-sm); }
