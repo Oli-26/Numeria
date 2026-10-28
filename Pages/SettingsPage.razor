@@ -280,20 +280,7 @@
         }
     </div>
 
-    <div class="card settings-item dev-item">
-        <div class="settings-row">
-            <div class="settings-icon"><Icon Name="zap" Size="24" Stroke="var(--accent)" /></div>
-            <div class="settings-info">
-                <h3>Dev Mode</h3>
-                <p>@(devMode ? "Active: everything unlocked" : "Unlock all features, items, and give max points")</p>
-            </div>
-            <button class="toggle-btn @(devMode ? "on" : "")" aria-label="@(devMode ? "Disable dev mode" : "Enable dev mode")" @onclick="ToggleDevMode">
-                <span class="toggle-knob"></span>
-            </button>
-        </div>
-    </div>
-
-    @if (devMode)
+    @if (devTools)
     {
         <div class="card settings-item dev-item">
             <div class="settings-row" @onclick="ToggleErrorLog" style="cursor: pointer">
@@ -356,7 +343,8 @@
     private string currentName = "";
     private string newName = "";
     private bool editingName;
-    private bool devMode;
+    // Dev Mode was removed from release builds; profiles that turned it on earlier keep the error log viewer.
+    private bool devTools;
     private bool showErrorLog;
     private List<ErrorLogEntry> errorLog = new();
     private bool showHints;
@@ -373,7 +361,6 @@
     private bool ttsAutoAdvance;
     private List<TtsVoice> ttsVoices = new();
 
-    [Inject] private IShopRepository ShopRepo { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -383,7 +370,7 @@
             var profile = await Progress.GetProfileAsync();
             currentName = profile.DisplayName;
             newName = currentName;
-            devMode = profile.ShopPurchases.Contains("__dev_mode__");
+            devTools = profile.ShopPurchases.Contains("__dev_mode__");
             showHints = profile.ShowHintsByDefault;
             fontSize = profile.FontSize ?? "medium";
             notificationsEnabled = profile.NotificationsEnabled;
@@ -403,42 +390,8 @@
                 soundEnabled = muted != "true";
             }
             catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.readMuted", ex); }
-            if (devMode) await RefreshErrorLog();
+            if (devTools) await RefreshErrorLog();
             StateHasChanged();
-        }
-    }
-
-    private async Task ToggleDevMode()
-    {
-        devMode = !devMode;
-        var profile = await Progress.GetProfileAsync();
-
-        if (devMode)
-        {
-            // Grant max points
-            profile.Points = 99999;
-
-            // Add dev mode marker
-            if (!profile.ShopPurchases.Contains("__dev_mode__"))
-                profile.ShopPurchases.Add("__dev_mode__");
-
-            // Unlock ALL shop items (current and future-proof: grab everything from shop data)
-            var allItems = await ShopRepo.GetShopItemsAsync();
-            foreach (var item in allItems)
-            {
-                if (!profile.ShopPurchases.Contains(item.Id))
-                    profile.ShopPurchases.Add(item.Id);
-            }
-
-            await Progress.SaveProfileAsync(profile);
-            await JS.InvokeVoidAsync("showToast", "Dev mode ON: everything unlocked!", "");
-            await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
-        }
-        else
-        {
-            profile.ShopPurchases.Remove("__dev_mode__");
-            await Progress.SaveProfileAsync(profile);
-            await JS.InvokeVoidAsync("showToast", "Dev mode OFF", "");
         }
     }
 
