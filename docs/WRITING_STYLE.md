@@ -16,6 +16,8 @@ Nous sounds like a warm friend who has just learned something and wants to tell 
 6. **Accuracy beats excitement.** No superlatives, "firsts" or "most important ever" claims unless a source backs them. Don't add a fact to make a passage livelier unless you can source it.
 7. **Let the material set the shape.** Paragraph counts and list lengths follow the content, not a template.
 
+The rewriting brief, with concrete moves and five worked examples across subjects, is [VOICE_BRIEF.md](VOICE_BRIEF.md).
+
 ### Voice examples
 
 Technical topic. Before:
