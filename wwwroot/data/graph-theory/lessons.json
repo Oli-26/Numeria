@@ -10,7 +10,7 @@
       {
         "id": "gt-01-c1",
         "title": "What is a Graph?",
-        "contentHtml": "<p>A <strong>graph</strong> is a set of <strong>vertices</strong> (points) connected by <strong>edges</strong> (lines). That's it!</p><p>Graphs model relationships: people connected by friendships, cities connected by roads, web pages connected by links.</p><p>Key vocabulary:</p><p>\u2022 <strong>Degree</strong> of a vertex: number of edges touching it<br>\u2022 <strong>Path</strong>: a sequence of edges connecting two vertices<br>\u2022 <strong>Connected</strong>: every pair of vertices has a path between them</p>",
+        "contentHtml": "<p>A <strong>graph</strong> is a set of vertices (points) connected by edges (lines).</p><p>Graphs model relationships, such as people connected by friendships, cities connected by roads, or web pages connected by links.</p><p>A few terms you will need:<br>\u2022 The <em>degree</em> of a vertex is the number of edges touching it<br>\u2022 A <em>path</em> is a sequence of edges connecting two vertices<br>\u2022 A graph is <em>connected</em> if every pair of vertices has a path between them</p>",
         "mathExpressions": ["G = (V, E), \\quad \\sum_{v \\in V} \\deg(v) = 2|E|"],
         "visualizationType": "graph-basic",
         "visualizationConfig": {}
@@ -18,7 +18,7 @@
       {
         "id": "gt-01-c2",
         "title": "The Handshaking Lemma",
-        "contentHtml": "<p>The <strong>Handshaking Lemma</strong>: the sum of all vertex degrees equals twice the number of edges.</p><p>Why? Each edge contributes 1 to the degree of each of its two endpoints.</p><p>Consequence: the number of vertices with <strong>odd degree</strong> must be even. (Try it! You can't draw a graph where exactly 3 vertices have odd degree.)</p><p>This simple observation is surprisingly powerful for proving impossibility results.</p>",
+        "contentHtml": "<p>The <strong>Handshaking Lemma</strong> says the sum of all vertex degrees equals twice the number of edges.</p><p>The reason is that each edge contributes 1 to the degree of each of its two endpoints.</p><p>It follows that the number of vertices with odd degree must be even. Try it: you can't draw a graph where exactly 3 vertices have odd degree.</p><p>Arguments like this prove that certain graphs cannot exist at all.</p>",
         "mathExpressions": ["\\sum_{v \\in V} \\deg(v) = 2|E|"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -26,7 +26,7 @@
       {
         "id": "gt-01-c3",
         "title": "Special Graphs",
-        "contentHtml": "<p><strong>Complete graph K\u2099:</strong> every pair of vertices is connected. K\u2083 is a triangle, K\u2084 has 6 edges, K\u2085 has 10.</p><p><strong>Bipartite graph:</strong> vertices split into two groups, edges only between groups. Think of matching students to projects.</p><p><strong>Tree:</strong> a connected graph with no cycles. n vertices, n-1 edges. Trees are the \"most efficient\" connected graphs.</p><p><strong>Planar graph:</strong> can be drawn on a plane without edges crossing.</p>",
+        "contentHtml": "<p>A <em>complete graph</em> K\u2099 connects every pair of vertices. K\u2083 is a triangle, K\u2084 has 6 edges and K\u2085 has 10.</p><p>A <em>bipartite graph</em> splits its vertices into two groups, with edges only between groups. Think of matching students to projects.</p><p>A <em>tree</em> is a connected graph with no cycles, so n vertices have n-1 edges. Trees are the \"most efficient\" connected graphs.</p><p>A <em>planar graph</em> can be drawn on a plane without edges crossing.</p>",
         "mathExpressions": ["|E(K_n)| = \\binom{n}{2} = \\frac{n(n-1)}{2}"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -54,7 +54,7 @@
       {
         "id": "gt-02-c2",
         "title": "Hamiltonian Paths",
-        "contentHtml": "<p>A <strong>Hamiltonian path</strong> visits every <em>vertex</em> exactly once. A <strong>Hamiltonian cycle</strong> does so and returns to the start.</p><p>Unlike Euler paths, there is <strong>no simple criterion</strong> for when Hamiltonian paths exist. Checking is NP-complete \u2014 one of the hardest problems in computer science!</p><p>The <strong>Travelling Salesman Problem (TSP)</strong>: find the shortest Hamiltonian cycle through a set of cities. It's NP-hard, and billions of dollars depend on approximate solutions (logistics, chip design, DNA sequencing).</p>",
+        "contentHtml": "<p>A <strong>Hamiltonian path</strong> visits every <em>vertex</em> exactly once. A <strong>Hamiltonian cycle</strong> does so and returns to the start.</p><p>Unlike Euler paths, there is <strong>no simple criterion</strong> for when Hamiltonian paths exist. Checking is NP-complete.</p><p>The <strong>Travelling Salesman Problem (TSP)</strong>: find the shortest Hamiltonian cycle through a set of cities. It's NP-hard, and billions of dollars depend on approximate solutions (logistics, chip design, DNA sequencing).</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
@@ -62,7 +62,7 @@
       {
         "id": "gt-02-c3",
         "title": "Euler vs Hamilton Comparison",
-        "contentHtml": "<p>A useful comparison:</p><p><strong>Eulerian:</strong> Visit every <em>edge</em> once. Easy to check (degree condition). Polynomial-time algorithm.</p><p><strong>Hamiltonian:</strong> Visit every <em>vertex</em> once. Hard to check. NP-complete.</p><p>The gap between these two similar-sounding problems is one of the great mysteries of computer science. It's closely related to the P vs NP problem \u2014 another Millennium Prize question!</p>",
+        "contentHtml": "<p>A useful comparison:</p><p><strong>Eulerian:</strong> Visit every <em>edge</em> once. Easy to check (degree condition). Polynomial-time algorithm.</p><p><strong>Hamiltonian:</strong> Visit every <em>vertex</em> once. Hard to check. NP-complete.</p><p>The gap between these two similar-sounding problems is closely tied to the open P vs NP problem, a Millennium Prize question.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
@@ -98,7 +98,7 @@
       {
         "id": "gt-03-c3",
         "title": "Chromatic Polynomials",
-        "contentHtml": "<p>The <strong>chromatic polynomial</strong> P(G, k) counts the number of proper colorings using at most k colors.</p><p>For a complete graph: P(K\u2099, k) = k(k-1)(k-2)...(k-n+1).</p><p>For a tree with n vertices: P(T, k) = k(k-1)\u207f\u207b\u00b9.</p><p>These polynomials encode deep structural information about the graph and connect graph theory to algebra.</p>",
+        "contentHtml": "<p>The <strong>chromatic polynomial</strong> P(G, k) counts the number of proper colorings using at most k colors.</p><p>For a complete graph: P(K\u2099, k) = k(k-1)(k-2)...(k-n+1).</p><p>For a tree with n vertices: P(T, k) = k(k-1)\u207f\u207b\u00b9.</p><p>By recording the number of colorings for every k, these polynomials connect graph theory to algebra.</p>",
         "mathExpressions": ["P(K_3, k) = k(k-1)(k-2)"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -162,7 +162,7 @@
       {
         "id": "gt-05-c2",
         "title": "Max-Flow Min-Cut Theorem",
-        "contentHtml": "<p>A <strong>cut</strong> in a flow network is a partition of vertices into two sets S and T, with s \u2208 S and t \u2208 T. The <strong>capacity</strong> of the cut is the total capacity of edges crossing from S to T.</p><p>The <strong>Max-Flow Min-Cut Theorem</strong> (Ford & Fulkerson, 1956): The maximum flow from s to t equals the minimum capacity of any s-t cut.</p><p>This is a profound duality: the bottleneck limiting flow is always a specific cut. Think of it as finding the weakest link in a chain of pipes. The theorem connects optimization (max flow) with structure (min cut) and has deep connections to linear programming duality.</p>",
+        "contentHtml": "<p>A <strong>cut</strong> in a flow network is a partition of vertices into two sets S and T, with s \u2208 S and t \u2208 T. The <strong>capacity</strong> of the cut is the total capacity of edges crossing from S to T.</p><p>The <strong>Max-Flow Min-Cut Theorem</strong> (Ford & Fulkerson, 1956): The maximum flow from s to t equals the minimum capacity of any s-t cut.</p><p>The bottleneck limiting flow is always a specific cut. Think of it as finding the weakest link in a chain of pipes. The theorem connects optimization (max flow) with structure (min cut) and is related to linear programming duality.</p>",
         "mathExpressions": ["\\max_{f} |f| = \\min_{\\text{cut } (S,T)} c(S,T)"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -190,7 +190,7 @@
       {
         "id": "gt-06-c1",
         "title": "Adjacency and Laplacian Matrices",
-        "contentHtml": "<p>Every graph has associated matrices that encode its structure:</p><p>The <strong>adjacency matrix</strong> A has A\u1d62\u2c7c = 1 if vertices i and j are connected, 0 otherwise. For weighted graphs, A\u1d62\u2c7c equals the edge weight.</p><p>The <strong>degree matrix</strong> D is diagonal with D\u1d62\u1d62 = deg(i).</p><p>The <strong>Laplacian matrix</strong> L = D - A combines both. It's always positive semidefinite and its eigenvalues reveal deep properties of the graph.</p><p>This transforms graph theory into linear algebra \u2014 we can study combinatorial objects using continuous mathematics!</p>",
+        "contentHtml": "<p>Every graph has associated matrices that encode its structure:</p><p>The <strong>adjacency matrix</strong> A has A\u1d62\u2c7c = 1 if vertices i and j are connected, 0 otherwise. For weighted graphs, A\u1d62\u2c7c equals the edge weight.</p><p>The <strong>degree matrix</strong> D is diagonal with D\u1d62\u1d62 = deg(i).</p><p>The <strong>Laplacian matrix</strong> L = D - A combines both. It's always positive semidefinite and its eigenvalues reveal properties of the graph, such as how many connected components it has.</p><p>This lets us study combinatorial objects with linear algebra.</p>",
         "mathExpressions": ["L = D - A, \\quad L_{ij} = \\begin{cases} \\deg(i) & i = j \\\\ -1 & (i,j) \\in E \\\\ 0 & \\text{otherwise} \\end{cases}"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -198,7 +198,7 @@
       {
         "id": "gt-06-c2",
         "title": "Eigenvalues and Graph Structure",
-        "contentHtml": "<p>The eigenvalues of graph matrices encode surprising structural information:</p><p>\u2022 The <strong>smallest eigenvalue</strong> of L is always 0. Its <strong>multiplicity</strong> equals the number of connected components.<br>\u2022 The <strong>second-smallest eigenvalue</strong> \u03bb\u2082 (the <strong>algebraic connectivity</strong> or Fiedler value) measures how well-connected the graph is. \u03bb\u2082 > 0 iff the graph is connected.<br>\u2022 A graph is <strong>bipartite</strong> iff the spectrum of A is symmetric about 0.</p><p>Remarkably, you can often \"hear the shape\" of a graph from its eigenvalues alone, though non-isomorphic graphs can share the same spectrum (they're called <strong>cospectral</strong>).</p>",
+        "contentHtml": "<p>The eigenvalues of graph matrices encode structural information about the graph:</p><p>\u2022 The <strong>smallest eigenvalue</strong> of L is always 0. Its <strong>multiplicity</strong> equals the number of connected components.<br>\u2022 The <strong>second-smallest eigenvalue</strong> \u03bb\u2082 (the <strong>algebraic connectivity</strong> or Fiedler value) measures how well-connected the graph is. \u03bb\u2082 > 0 iff the graph is connected.<br>\u2022 A graph is <strong>bipartite</strong> iff the spectrum of A is symmetric about 0.</p><p>You can often \"hear the shape\" of a graph from its eigenvalues alone, though non-isomorphic graphs can share the same spectrum (they're called <strong>cospectral</strong>).</p>",
         "mathExpressions": ["0 = \\lambda_1 \\leq \\lambda_2 \\leq \\cdots \\leq \\lambda_n"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -206,7 +206,7 @@
       {
         "id": "gt-06-c3",
         "title": "Cheeger's Inequality and Spectral Clustering",
-        "contentHtml": "<p><strong>Cheeger's inequality</strong> connects the algebraic connectivity \u03bb\u2082 to the combinatorial notion of the <strong>Cheeger constant</strong> h(G) (how easy it is to \"cut\" the graph into two balanced parts):</p><p>\u03bb\u2082/2 \u2264 h(G) \u2264 \u221a(2\u03bb\u2082)</p><p>This bridges the continuous (eigenvalues) and discrete (cuts) perspectives.</p><p><strong>Spectral clustering</strong> uses the eigenvectors of L to partition data into clusters. Compute the Fiedler vector (eigenvector for \u03bb\u2082), then split vertices by the sign of their components. This is the foundation of modern data science techniques for community detection in social networks, image segmentation, and unsupervised learning.</p>",
+        "contentHtml": "<p><strong>Cheeger's inequality</strong> connects the algebraic connectivity \u03bb\u2082 to the combinatorial notion of the <strong>Cheeger constant</strong> h(G) (how easy it is to \"cut\" the graph into two balanced parts):</p><p>\u03bb\u2082/2 \u2264 h(G) \u2264 \u221a(2\u03bb\u2082)</p><p><strong>Spectral clustering</strong> uses the eigenvectors of L to partition data into clusters. Compute the Fiedler vector (eigenvector for \u03bb\u2082), then split vertices by the sign of their components. It is used for community detection in social networks, image segmentation, and unsupervised learning.</p>",
         "mathExpressions": ["\\frac{\\lambda_2}{2} \\leq h(G) \\leq \\sqrt{2\\lambda_2}"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -226,7 +226,7 @@
       {
         "id": "gt-07-c1",
         "title": "The Erd\u0151s\u2013R\u00e9nyi Model",
-        "contentHtml": "<p>The <strong>Erd\u0151s\u2013R\u00e9nyi model</strong> G(n, p) generates a random graph on n vertices where each possible edge is included independently with probability p.</p><p>When p is small, the graph is sparse and fragmented. When p is large, the graph is dense and connected. The magic is what happens in between.</p><p>Key results for G(n, p):<br>\u2022 Expected number of edges: p \u00d7 C(n,2)<br>\u2022 Expected degree of each vertex: p(n-1)<br>\u2022 For constant p, the graph is almost surely connected when n is large</p><p>This model, introduced in 1959, launched the field of random graph theory and remains one of the most studied probabilistic models in mathematics.</p>",
+        "contentHtml": "<p>The <strong>Erd\u0151s\u2013R\u00e9nyi model</strong> G(n, p) generates a random graph on n vertices where each possible edge is included independently with probability p.</p><p>When p is small, the graph is sparse and fragmented. When p is large, the graph is dense and connected. In between, the graph shifts from fragmented to connected.</p><p>Key results for G(n, p):<br>\u2022 Expected number of edges: p \u00d7 C(n,2)<br>\u2022 Expected degree of each vertex: p(n-1)<br>\u2022 For constant p, the graph is almost surely connected when n is large</p><p>This model, introduced in 1959, launched the field of random graph theory and remains one of the most studied probabilistic models in mathematics.</p>",
         "mathExpressions": ["G(n, p): \\quad \\mathbb{E}[|E|] = p\\binom{n}{2}, \\quad \\mathbb{E}[\\deg(v)] = p(n-1)"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -234,7 +234,7 @@
       {
         "id": "gt-07-c2",
         "title": "Phase Transitions",
-        "contentHtml": "<p>Random graphs exhibit dramatic <strong>phase transitions</strong> \u2014 sudden qualitative changes as p crosses a threshold.</p><p>The most famous: the <strong>giant component</strong>. When p < 1/n, all components are small (logarithmic in n). When p > 1/n, a single giant component emerges containing a constant fraction of all vertices.</p><p>At exactly p = 1/n, the transition is sharp \u2014 like water freezing at 0\u00b0C. Other thresholds:<br>\u2022 p \u2248 ln(n)/n: graph becomes connected<br>\u2022 p \u2248 ln(n)/n: every vertex has degree \u2265 1 (no isolated vertices)</p><p>These phase transitions mirror phenomena in physics (percolation theory) and explain why real networks behave the way they do.</p>",
+        "contentHtml": "<p>Random graphs exhibit dramatic <strong>phase transitions</strong>, which are sudden qualitative changes as p crosses a threshold.</p><p>The most famous: the <strong>giant component</strong>. When p < 1/n, all components are small (logarithmic in n). When p > 1/n, a single giant component emerges containing a constant fraction of all vertices.</p><p>At exactly p = 1/n, the transition is sharp, like water freezing at 0\u00b0C. Other thresholds:<br>\u2022 p \u2248 ln(n)/n: graph becomes connected<br>\u2022 p \u2248 ln(n)/n: every vertex has degree \u2265 1 (no isolated vertices)</p><p>These phase transitions mirror phenomena in physics (percolation theory).</p>",
         "mathExpressions": ["p = \\frac{1}{n}: \\text{ giant component emerges}, \\quad p = \\frac{\\ln n}{n}: \\text{ graph becomes connected}"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -242,7 +242,7 @@
       {
         "id": "gt-07-c3",
         "title": "Small-World and Scale-Free Networks",
-        "contentHtml": "<p>Real networks (social, biological, technological) don't look like Erd\u0151s\u2013R\u00e9nyi graphs. Two important models capture what's different:</p><p><strong>Watts-Strogatz (1998):</strong> Start with a regular lattice, then randomly rewire edges. This produces <strong>small-world networks</strong> with high clustering (your friends know each other) and short path lengths (six degrees of separation).</p><p><strong>Barab\u00e1si-Albert (1999):</strong> Grow the network by <strong>preferential attachment</strong> \u2014 new nodes connect preferentially to high-degree nodes (\"the rich get richer\"). This produces <strong>scale-free networks</strong> with power-law degree distributions: P(deg = k) \u223c k\u207b\u00b3.</p><p>The Internet, citation networks, protein interactions, and social media all exhibit scale-free properties. These models revolutionized network science.</p>",
+        "contentHtml": "<p>Real networks (social, biological, technological) don't look like Erd\u0151s\u2013R\u00e9nyi graphs. Two models capture what's different:</p><p><strong>Watts-Strogatz (1998):</strong> Start with a regular lattice, then randomly rewire edges. This produces <strong>small-world networks</strong> with high clustering (your friends know each other) and short path lengths (six degrees of separation).</p><p><strong>Barab\u00e1si-Albert (1999):</strong> Grow the network by <strong>preferential attachment</strong>, where new nodes connect preferentially to high-degree nodes (\"the rich get richer\"). This produces <strong>scale-free networks</strong> with power-law degree distributions: P(deg = k) \u223c k\u207b\u00b3.</p><p>The Internet, citation networks, protein interactions, and social media all exhibit scale-free properties.</p>",
         "mathExpressions": ["P(\\deg = k) \\sim k^{-\\gamma}, \\quad \\gamma \\approx 3 \\;\\text{(Barab\\'{a}si-Albert)}"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -262,7 +262,7 @@
       {
         "id": "gt-08-c1",
         "title": "Tur\u00e1n's Theorem",
-        "contentHtml": "<p><strong>Tur\u00e1n's theorem</strong> (1941) answers a fundamental question: what is the maximum number of edges a graph on n vertices can have without containing a complete subgraph K\u1d63?</p><p>The answer is the <strong>Tur\u00e1n graph</strong> T(n, r-1): partition the vertices into r-1 groups as equally as possible and connect every pair of vertices in different groups.</p><p>For example, the maximum number of edges in a triangle-free graph (no K\u2083) on n vertices is \u230an\u00b2/4\u230b, achieved by the complete bipartite graph K_{\u230an/2\u230b, \u2308n/2\u2309}.</p><p>Tur\u00e1n's theorem launched <strong>extremal graph theory</strong> \u2014 the study of how local constraints (forbidden subgraphs) limit global structure (number of edges).</p>",
+        "contentHtml": "<p><strong>Tur\u00e1n's theorem</strong> (1941) gives the maximum number of edges a graph on n vertices can have without containing a complete subgraph K\u1d63.</p><p>The answer is the <strong>Tur\u00e1n graph</strong> T(n, r-1): partition the vertices into r-1 groups as equally as possible and connect every pair of vertices in different groups.</p><p>For example, the maximum number of edges in a triangle-free graph (no K\u2083) on n vertices is \u230an\u00b2/4\u230b, achieved by the complete bipartite graph K_{\u230an/2\u230b, \u2308n/2\u2309}.</p><p>Tur\u00e1n's theorem launched <strong>extremal graph theory</strong>, the study of how local constraints (forbidden subgraphs) limit global structure (number of edges).</p>",
         "mathExpressions": ["\\text{ex}(n, K_r) = \\left(1 - \\frac{1}{r-1}\\right)\\frac{n^2}{2} + O(n)"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -270,7 +270,7 @@
       {
         "id": "gt-08-c2",
         "title": "Ramsey Theory",
-        "contentHtml": "<p><strong>Ramsey theory</strong> studies the principle that <em>complete disorder is impossible</em>: any sufficiently large structure must contain an ordered substructure.</p><p>The <strong>Ramsey number</strong> R(s, t) is the smallest n such that any 2-coloring of K\u2099's edges contains a red K\u209b or a blue K\u209c.</p><p><strong>R(3, 3) = 6:</strong> Among any 6 people, there are always 3 mutual friends or 3 mutual strangers. This can be proved elegantly by the pigeonhole principle.</p><p>Ramsey numbers grow astronomically fast. R(5, 5) is unknown but lies between 43 and 46. Erd\u0151s famously said: if aliens demanded R(5, 5), we should try to compute it; if they demanded R(6, 6), we should attack the aliens.</p>",
+        "contentHtml": "<p><strong>Ramsey theory</strong> studies the principle that <em>complete disorder is impossible</em>: any sufficiently large structure must contain an ordered substructure.</p><p>The <strong>Ramsey number</strong> R(s, t) is the smallest n such that any 2-coloring of K\u2099's edges contains a red K\u209b or a blue K\u209c.</p><p><strong>R(3, 3) = 6:</strong> Among any 6 people, there are always 3 mutual friends or 3 mutual strangers. The pigeonhole principle proves it.</p><p>Ramsey numbers grow astronomically fast. R(5, 5) is unknown but lies between 43 and 46. Erd\u0151s famously said: if aliens demanded R(5, 5), we should try to compute it; if they demanded R(6, 6), we should attack the aliens.</p>",
         "mathExpressions": ["R(3,3) = 6, \\quad R(s,t) \\leq \\binom{s+t-2}{s-1}"],
         "visualizationType": null,
         "visualizationConfig": null
@@ -278,7 +278,7 @@
       {
         "id": "gt-08-c3",
         "title": "The Tutte Polynomial",
-        "contentHtml": "<p>The <strong>Tutte polynomial</strong> T(G; x, y) is a two-variable polynomial that encodes an astonishing amount of information about a graph:</p><p>\u2022 T(G; 1, 1) = number of spanning trees<br>\u2022 T(G; 2, 1) = number of spanning forests<br>\u2022 T(G; 1, 2) = number of spanning connected subgraphs<br>\u2022 T(G; 2, 0) = number of acyclic orientations<br>\u2022 The chromatic polynomial is P(G, k) = (-1)^{|V|-c} k^c T(G; 1-k, 0)</p><p>The Tutte polynomial connects to <strong>knot theory</strong> through the Jones polynomial: certain graph invariants translate directly to knot invariants. This unexpected bridge between topology and combinatorics is one of the deepest connections in modern mathematics.</p>",
+        "contentHtml": "<p>The <strong>Tutte polynomial</strong> T(G; x, y) is a two-variable polynomial that encodes several counts for a graph:</p><p>\u2022 T(G; 1, 1) = number of spanning trees<br>\u2022 T(G; 2, 1) = number of spanning forests<br>\u2022 T(G; 1, 2) = number of spanning connected subgraphs<br>\u2022 T(G; 2, 0) = number of acyclic orientations<br>\u2022 The chromatic polynomial is P(G, k) = (-1)^{|V|-c} k^c T(G; 1-k, 0)</p><p>The Tutte polynomial connects to <strong>knot theory</strong> through the Jones polynomial: certain graph invariants translate directly to knot invariants.</p>",
         "mathExpressions": ["T(G; x, y) = \\sum_{A \\subseteq E} (x-1)^{c(A)-c(E)} (y-1)^{c(A)+|A|-|V|}"],
         "visualizationType": null,
         "visualizationConfig": null
