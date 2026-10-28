@@ -21,6 +21,18 @@ public class Concept
 
     // Overrides the simulator derived from the topic mapping.
     public string? SimulatorRoute { get; set; }
+
+    // Loaded from the topic's citations.json; ContentHtml marks each cited claim with <sup class="cite" data-cite="Id">.
+    public List<Citation> Citations { get; set; } = new();
+}
+
+public class Citation
+{
+    public string Id { get; set; } = "";
+    public string Text { get; set; } = "";
+    public string? Url { get; set; }
+    // The sentence from the source that supports the claim, shown so readers can see what was checked.
+    public string? Quote { get; set; }
 }
 
 public class ConceptExtra

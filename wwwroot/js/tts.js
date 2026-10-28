@@ -93,6 +93,7 @@
     function htmlToText(html) {
         // Insert pause markers at block boundaries to preserve sentence flow
         var result = html
+            .replace(/<sup class="cite"[^>]*>[\s\S]*?<\/sup>/gi, '')   // citation numbers aren't read aloud
             .replace(/<\/p>/gi, ' . ')
             .replace(/<br\s*\/?>/gi, ' . ')
             .replace(/<\/li>/gi, ' . ')

@@ -121,6 +121,25 @@ public class ContentExtrasTests
         Assert.Equal("l1", c.Discovery!.LessonId);
         Assert.Equal("c1", c.Discovery.ConceptId);
     }
+
+    [Fact]
+    public void ApplyCitations_AttachesOnlyToMatchingConcepts()
+    {
+        var lesson = new Lesson
+        {
+            Id = "l1",
+            Concepts = new() { new Concept { Id = "c1" }, new Concept { Id = "c2" } }
+        };
+        var citations = new Dictionary<string, List<Citation>>
+        {
+            ["c1"] = new() { new Citation { Id = "1", Text = "Source", Url = "https://example.org" } }
+        };
+
+        ContentRepository.ApplyCitations(new[] { lesson }, citations);
+
+        Assert.Equal("Source", Assert.Single(lesson.Concepts[0].Citations).Text);
+        Assert.Empty(lesson.Concepts[1].Citations);
+    }
 }
 
 public class SimulatorCatalogTests

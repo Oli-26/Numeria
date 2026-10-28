@@ -78,6 +78,20 @@ public class ContentRepository : IContentRepository
         }
     }
 
+    // Only topics whose lessons carry citation markers have a citations.json, so others never request one.
+    private async Task<Dictionary<string, List<Citation>>> GetCitationsAsync(string topicId, List<Lesson> lessons)
+    {
+        if (!lessons.Any(l => l.Concepts.Any(c => c.ContentHtml.Contains("class=\"cite\"")))) return new();
+        try { return await _http.GetFromJsonAsync<Dictionary<string, List<Citation>>>($"data/{topicId}/citations.json") ?? new(); }
+        catch { return new(); }
+    }
+
+    public static void ApplyCitations(IEnumerable<Lesson> lessons, IReadOnlyDictionary<string, List<Citation>> citations)
+    {
+        foreach (var c in lessons.SelectMany(l => l.Concepts))
+            if (citations.TryGetValue(c.Id, out var list)) c.Citations = list;
+    }
+
     private Dictionary<string, List<string>>? _lessonIndex;
 
     // A small id index, so progress can be counted without downloading and parsing every lessons.json.
@@ -99,6 +113,7 @@ public class ContentRepository : IContentRepository
             {
                 var lessons = await _http.GetFromJsonAsync<List<Lesson>>($"data/{topicId}/lessons.json") ?? new();
                 ApplyExtras(lessons, await GetConceptExtrasAsync());
+                ApplyCitations(lessons, await GetCitationsAsync(topicId, lessons));
                 ShuffleOptionsInPlace(lessons.SelectMany(l => l.Concepts).Where(c => c.Discovery != null).Select(c => c.Discovery!));
                 _lessons[topicId] = lessons.OrderBy(l => l.Order).ToList();
             }

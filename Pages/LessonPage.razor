@@ -119,6 +119,28 @@
                             }
                         }
                     </div>
+                    @if (concept.Citations.Count > 0)
+                    {
+                        <details class="sources">
+                            <summary>Sources (@concept.Citations.Count)</summary>
+                            <ol>
+                                @foreach (var cite in concept.Citations)
+                                {
+                                    <li id="cite-@concept.Id-@cite.Id" value="@cite.Id">
+                                        <span class="source-text">@cite.Text</span>
+                                        @if (!string.IsNullOrEmpty(cite.Quote))
+                                        {
+                                            <q class="source-quote">@cite.Quote</q>
+                                        }
+                                        @if (!string.IsNullOrEmpty(cite.Url))
+                                        {
+                                            <a class="source-link" href="@cite.Url" target="_blank" rel="noopener">Open source</a>
+                                        }
+                                    </li>
+                                }
+                            </ol>
+                        </details>
+                    }
                     <a class="report-link" href="@ReportMailto(concept)"><Icon Name="message" Size="13" /> Report a mistake</a>
                     }
 
@@ -768,6 +790,12 @@ else
     .try-it-text span { font-size: 0.8rem; color: var(--text-secondary); }
 
     .explain-back { margin-top: 14px; }
+    .concept-content sup.cite { position: relative; padding: 0 2px; font-size: 0.68em; font-weight: 700; line-height: 0; color: var(--primary); cursor: pointer; }
+    /* The number is tiny, so widen what counts as a tap on it. */
+    .concept-content sup.cite::after { content: ''; position: absolute; inset: -12px -8px; }
+    .sources { margin-top: 14px; font-size: 0.82rem; color: var(--text-secondary); }
+    .sources summary { width: fit-content; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+    .sources ol { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 0; padding-left: 22px; }
     .report-link { display: flex; align-items: center; gap: 5px; width: fit-content; margin-top: 12px; color: var(--text-muted); font-size: 0.78rem; text-decoration: none; }
     .explain-toggle { background: none; border: none; padding: 0; color: var(--primary); font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
     .explain-input {

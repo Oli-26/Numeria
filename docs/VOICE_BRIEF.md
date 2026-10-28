@@ -24,6 +24,7 @@ The 5.0 pass removed the tells (colons in lesson 1s fell from 2.23 to 0.52 per 1
 - **Facts are fixed.** Keep every number, name, date, term and example. Add none, even true ones. Reordering, merging, splitting and cutting filler are fine.
 - **Framing must not widen a claim.** "Put the reader in it" is where facts slip. The trial turned "DNA stores hereditary information in all known life" into "Every cell in your body stores its hereditary information as DNA", which is false (mature red blood cells have none). Say "your cells", not "every cell in your body", unless the original already makes the universal claim.
 - Keep every `<figure>` block, maths expression, entity, link and attribute exactly as it is.
+- Keep every citation marker (`<sup class="cite" data-cite="…">`) attached to the claim it supports. If a sentence moves or splits, the marker moves with its claim.
 - No em dashes, no exclamation marks (factorials such as n! are fine), at most one colon per paragraph.
 - No hype words, no "Here's…", "Let's…", "Fun fact", and no question that the next sentence answers.
 
