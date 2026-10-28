@@ -1,0 +1,345 @@
+@implements IAsyncDisposable
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject IContentRepository Content
+@inject IReviewService ReviewService
+@inject IConnectionsService Connections
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@if (visible)
+{
+    <div class="hub-backdrop @(closing ? "closing" : "")" @onclick="RequestClose"></div>
+    <div class="hub-sheet @(closing ? "closing" : "")" role="dialog" aria-modal="true" aria-label="Today" @ref="sheetEl">
+        <div class="hub-grabber"></div>
+
+        @if (profile != null)
+        {
+            var level = Gamification.GetLevel(profile.TotalXp);
+            var xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
+            var xpNeeded = Gamification.GetXpForNextLevel(level);
+            var pct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
+
+            <div class="hub-top">
+                <span class="hub-stat"><span style="color: var(--warning)"><Icon Name="fire" Size="16" /></span><strong>@(profile.CurrentStreak)-day</strong> streak</span>
+                <span class="hub-stat"><strong>Level @level</strong></span>
+                <a class="hub-shop" href="/shop" @onclick:preventDefault @onclick='() => Go("/shop")'>
+                    <Icon Name="phi" Size="15" />
+                    <strong>@profile.Points</strong>
+                    <span>Shop</span>
+                </a>
+            </div>
+            <div class="hub-level">
+                <div class="hub-level-bar"><div style="width: @pct.ToString("F0")%"></div></div>
+                <small>@xpInLevel / @xpNeeded XP</small>
+            </div>
+
+            @if (dailyPick != null)
+            {
+                var pickUrl = $"/topic/{dailyPick.Topic.Id}/lesson/{dailyPick.Lesson.Id}";
+                <a class="hub-pick" href="@pickUrl" @onclick:preventDefault @onclick="() => Go(pickUrl)">
+                    <span class="hub-pick-text">
+                        <small><span style="color: @dailyPick.Topic.Color">Today's pick</span> · @dailyPick.Topic.Name</small>
+                        <strong>@dailyPick.Hook</strong>
+                    </span>
+                    <span class="hub-chevron"><Icon Name="chevron-right" Size="18" /></span>
+                </a>
+            }
+
+            <div class="hub-tiles">
+                @if (!dailyDone)
+                {
+                    <button class="hub-tile" @onclick='() => Go("/daily")'>
+                        <span class="hub-tile-icon" style="color: var(--accent)"><Icon Name="star-filled" Size="22" Fill="currentColor" /></span>
+                        <span>Daily</span>
+                    </button>
+                }
+                else
+                {
+                    <div class="hub-tile hub-tile-done">
+                        <span class="hub-tile-icon"><Icon Name="checkmark-circle" Size="22" /></span>
+                        <span>Done</span>
+                    </div>
+                }
+                <button class="hub-tile" @onclick='() => Go("/quiz/mixed/all")'>
+                    <span class="hub-tile-icon" style="color: var(--primary)"><Icon Name="zap" Size="22" /></span>
+                    <span>Quick quiz</span>
+                </button>
+                @if (reviewDueCount > 0)
+                {
+                    <button class="hub-tile" @onclick='() => Go("/review")'>
+                        <span class="hub-tile-icon" style="color: var(--success)">
+                            <Icon Name="brain" Size="22" />
+                            <span class="hub-badge">@reviewDueCount</span>
+                        </span>
+                        <span>Review</span>
+                    </button>
+                }
+                <button class="hub-tile" @onclick='() => Go("/synthesis")'>
+                    <span class="hub-tile-icon" style="color: var(--primary)"><Icon Name="network" Size="22" /></span>
+                    <span>Mixed quiz</span>
+                </button>
+            </div>
+
+            @if (upNext.Count > 0)
+            {
+                <h3 class="hub-label">Up next</h3>
+                <div class="hub-list">
+                    @foreach (var row in upNext)
+                    {
+                        var url = $"/topic/{row.Topic.Id}";
+                        <a class="hub-row" href="@url" @onclick:preventDefault @onclick="() => Go(url)">
+                            <span class="hub-dot" style="background: @row.Topic.Color"></span>
+                            <span class="hub-row-text">
+                                <strong>@row.Topic.Name</strong>
+                                <small>@row.Detail</small>
+                            </span>
+                            <span class="hub-chevron"><Icon Name="chevron-right" Size="16" /></span>
+                        </a>
+                    }
+                </div>
+            }
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    // Matches the hubDown animation so the sheet leaves the DOM once it has slid away.
+    private const int CloseMs = 200;
+
+    private bool visible;
+    private bool closing;
+    private bool jsBound;
+    private ElementReference sheetEl;
+    private DotNetObjectReference<HubSheet>? selfRef;
+
+    private sealed record UpNextRow(Topic Topic, string Detail);
+
+    private UserProfile? profile;
+    private int reviewDueCount;
+    private bool dailyDone;
+    private DailyPick? dailyPick;
+    private List<UpNextRow> upNext = new();
+    private List<Domain> allDomains = new();
+
+    private string DomainName(string id) => allDomains.FirstOrDefault(d => d.Id == id)?.Name ?? id;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Open && (!visible || closing))
+        {
+            visible = true;
+            closing = false;
+            await LoadAsync();
+        }
+        else if (!Open && visible && !closing)
+        {
+            closing = true;
+            jsBound = false;
+            await JS.TryInvokeVoidAsync("NousSheet.close");
+            StateHasChanged();
+            await Task.Delay(CloseMs);
+            if (!Open)
+            {
+                visible = false;
+                closing = false;
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (visible && !closing && !jsBound)
+        {
+            jsBound = true;
+            selfRef ??= DotNetObjectReference.Create(this);
+            await JS.TryInvokeVoidAsync("NousSheet.open", selfRef, sheetEl);
+        }
+    }
+
+    // Reloaded on every open so XP, streak and due reviews reflect what just happened elsewhere in the app.
+    private async Task LoadAsync()
+    {
+        profile = await Progress.GetProfileAsync();
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        dailyDone = profile.DailyChallengeDate == today && profile.DailyChallengeCompleted;
+        reviewDueCount = await ReviewService.GetDueCountAsync();
+        StateHasChanged();
+
+        try
+        {
+            var all = await Content.GetTopicsAsync();
+            allDomains = await Content.GetDomainsAsync();
+            var edges = (await Connections.GetGraphAsync()).Edges;
+
+            // One short list: what's in progress first, then same-subject neighbours, then one cross-subject link.
+            upNext = Recommender.Continue(all, profile, take: 2)
+                .Select(t => new UpNextRow(t, $"Continue · {DomainName(t.Domain)}"))
+                .Concat(Recommender.NextSteps(all, edges, profile, otherFields: false, take: 2)
+                    .Select(s => new UpNextRow(s.Topic, s.Reason)))
+                .Concat(Recommender.NextSteps(all, edges, profile, otherFields: true, take: 1)
+                    .Select(s => new UpNextRow(s.Topic, $"{DomainName(s.Topic.Domain)} · {s.Reason}")))
+                .DistinctBy(r => r.Topic.Id)
+                .Take(4)
+                .ToList();
+            dailyPick = await Connections.GetDailyPickAsync(profile, DateTime.Now);
+        }
+        catch
+        {
+            // Recommendations are a nicety; the sheet works without them.
+        }
+    }
+
+    [JSInvokable]
+    public Task RequestClose() => OnClose.InvokeAsync();
+
+    private async Task Go(string url)
+    {
+        await OnClose.InvokeAsync();
+        Nav.NavigateTo(url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (jsBound) await JS.TryInvokeVoidAsync("NousSheet.close");
+        selfRef?.Dispose();
+    }
+}
+
+<style>
+    /* Sits under the bottom bar (z-index 100) so the bar stays tappable and the sheet appears to rise out of it. */
+    .hub-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        background: rgba(20, 18, 15, 0.38);
+        animation: hubFadeIn 0.2s ease;
+    }
+
+    .hub-backdrop.closing { animation: hubFadeOut 0.2s ease forwards; }
+
+    .hub-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 95;
+        max-width: 640px;
+        max-height: 82vh;
+        max-height: 82dvh;
+        margin: 0 auto;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        background: var(--bg-main);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        box-shadow: 0 -8px 30px var(--shadow);
+        padding: 8px 20px calc(104px + env(safe-area-inset-bottom));
+        transition: transform 0.2s ease;
+        animation: hubUp 0.28s var(--ease-spring);
+    }
+
+    .hub-sheet.closing { animation: hubDown 0.2s ease forwards; }
+
+    @@keyframes hubUp { from { transform: translateY(100%); } }
+    @@keyframes hubDown {
+        from { transform: translateY(var(--hub-drag, 0px)); }
+        to { transform: translateY(100%); }
+    }
+    @@keyframes hubFadeIn { from { opacity: 0; } }
+    @@keyframes hubFadeOut { to { opacity: 0; } }
+
+    .hub-grabber {
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border);
+        margin: 0 auto 18px;
+    }
+
+    .hub-sheet a, .hub-sheet button { color: inherit; text-decoration: none; font: inherit; -webkit-tap-highlight-color: transparent; }
+    .hub-sheet button { background: none; border: 0; padding: 0; cursor: pointer; }
+
+    .hub-top { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; color: var(--text-secondary); font-size: 0.9rem; }
+    .hub-stat { display: inline-flex; align-items: center; gap: 5px; }
+    .hub-stat > span { display: flex; }
+    .hub-stat strong { color: var(--text-primary); }
+    .hub-shop {
+        display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 5px 11px 5px 9px;
+        border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); font-size: 0.85rem;
+    }
+    .hub-sheet .hub-shop { color: var(--primary); }
+    .hub-shop strong { color: var(--text-primary); }
+
+    .hub-level { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .hub-level-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--bg-surface); overflow: hidden; }
+    .hub-level-bar > div { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.5s ease; }
+    .hub-level small { color: var(--text-muted); font-size: 0.78rem; white-space: nowrap; }
+
+    .hub-pick {
+        display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; margin-bottom: 12px;
+        border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .hub-pick:active, .hub-row:active, .hub-tile:active { background: var(--bg-surface); }
+    .hub-pick-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .hub-pick-text small { color: var(--text-muted); font-size: 0.75rem; font-weight: 600; }
+    .hub-pick-text strong {
+        font-family: Georgia, 'Noto Serif', serif; font-size: 1rem; line-height: 1.35; color: var(--text-primary);
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .hub-chevron { display: flex; flex-shrink: 0; color: var(--text-muted); }
+
+    .hub-tiles { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; margin-bottom: 24px; }
+    .hub-sheet .hub-tile {
+        display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px 10px;
+        border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border);
+        color: var(--text-secondary); font-size: 0.78rem; font-weight: 600; text-align: center;
+        transition: transform 0.15s ease;
+    }
+    .hub-tile:active { transform: scale(0.96); }
+    .hub-tile-icon { position: relative; display: flex; }
+    .hub-tile-done { opacity: 0.5; color: var(--text-muted); }
+    .hub-badge {
+        position: absolute; top: -6px; right: -11px; min-width: 17px; height: 17px; padding: 0 4px;
+        border-radius: 9px; background: var(--success); color: white;
+        font-size: 0.68rem; font-weight: 700; line-height: 17px; text-align: center;
+    }
+
+    .hub-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin: 0 0 8px 2px; }
+    .hub-list { border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border); overflow: hidden; }
+    .hub-row { display: flex; align-items: center; gap: 12px; padding: 11px 12px 11px 14px; }
+    .hub-row + .hub-row { border-top: 1px solid var(--border); }
+    .hub-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .hub-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .hub-row-text strong { font-size: 0.9rem; color: var(--text-primary); }
+    .hub-row-text small { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Desktop has a sidebar instead of a bottom bar, so the sheet becomes a dialog centred over the content. */
+    @@media (min-width: 1024px) {
+        .hub-backdrop { z-index: 110; }
+
+        .hub-sheet {
+            z-index: 120;
+            top: 50%;
+            left: calc(50% + 110px);
+            right: auto;
+            bottom: auto;
+            width: min(560px, calc(100vw - 260px));
+            max-height: 80vh;
+            margin: 0;
+            border-radius: var(--radius-lg);
+            padding: 24px 28px 28px;
+            transform: translate(-50%, -50%);
+            animation: hubPop 0.22s var(--ease-spring);
+        }
+
+        .hub-sheet.closing { animation: hubPopOut 0.2s ease forwards; }
+        .hub-grabber { display: none; }
+        .hub-pick:hover, .hub-row:hover, .hub-tile:hover { background: var(--bg-surface); }
+
+        @@keyframes hubPop { from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); } }
+        @@keyframes hubPopOut { to { opacity: 0; transform: translate(-50%, -48%) scale(0.97); } }
+    }
+</style>

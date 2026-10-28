@@ -2,6 +2,7 @@
 @inject NavigationManager Nav
 @inject IGamificationService Gamification
 @inject IProgressService Progress
+@inject IReviewService ReviewService
 @inject IJSRuntime JS
 
 <nav class="bottom-nav">
@@ -26,17 +27,27 @@
         <span class="nav-icon"><Icon Name="book" Size="22" /></span>
         <span class="nav-label">Subjects</span>
     </a>
+    <button class="nav-item nav-hub @(hubOpen ? "open" : "")" aria-expanded="@(hubOpen ? "true" : "false")" @onclick="ToggleHub">
+        <span class="nav-hub-disc">
+            <Icon Name="@(hubOpen ? "x-mark" : "sparkles")" Size="22" />
+            @if (hubDot && !hubOpen)
+            {
+                <span class="nav-hub-dot"></span>
+            }
+        </span>
+        <span class="nav-label">Today</span>
+    </button>
     <a class="nav-item @(IsActive("/leaderboard") ? "active" : "")" href="/leaderboard" @onclick:preventDefault @onclick='() => Navigate("/leaderboard")'>
         <span class="nav-icon"><Icon Name="trophy" Size="22" /></span>
         <span class="nav-label">Ranks</span>
     </a>
-    <a class="nav-item @(IsActive("/shop") ? "active" : "")" href="/shop" @onclick:preventDefault @onclick='() => Navigate("/shop")'>
-        <span class="nav-icon"><Icon Name="phi" Size="22" /></span>
-        <span class="nav-label">Shop</span>
-    </a>
     <a class="nav-item @(IsActive("/profile") ? "active" : "")" href="/profile" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
         <span class="nav-icon"><Icon Name="user" Size="22" /></span>
         <span class="nav-label">Profile</span>
+    </a>
+    <a class="nav-item nav-item-wide @(IsActive("/shop") ? "active" : "")" href="/shop" @onclick:preventDefault @onclick='() => Navigate("/shop")'>
+        <span class="nav-icon"><Icon Name="phi" Size="22" /></span>
+        <span class="nav-label">Shop</span>
     </a>
     <a class="nav-item nav-item-wide @(IsActive("/settings") ? "active" : "")" href="/settings" @onclick:preventDefault @onclick='() => Navigate("/settings")'>
         <span class="nav-icon"><Icon Name="settings" Size="22" /></span>
@@ -44,10 +55,28 @@
     </a>
 </nav>
 
+<HubSheet Open="hubOpen" OnClose="CloseHub" />
+
+@if (IsActive("/") && level > 0)
+{
+    var ringLabel = $"Level {level}, {xpInLevel} of {xpNeeded} XP to level {level + 1}";
+    <a class="level-ring" href="/profile" aria-label="@ringLabel" title="@ringLabel" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
+        <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
+            <circle class="level-ring-track" cx="21" cy="21" r="18" />
+            <circle class="level-ring-fill" cx="21" cy="21" r="18" pathLength="100" stroke-dasharray="@xpPct.ToString("F0") 100" transform="rotate(-90 21 21)" />
+        </svg>
+        <span class="level-ring-text"><small>LVL</small><strong>@level</strong></span>
+    </a>
+}
+
 @code {
     private string currentUri = "";
     private int level;
+    private int xpInLevel;
+    private int xpNeeded;
     private double xpPct;
+    private bool hubOpen;
+    private bool hubDot;
     private EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs>? _locationChangedHandler;
 
     protected override void OnInitialized()
@@ -70,15 +99,28 @@
     {
         var profile = await Progress.GetProfileAsync();
         level = Gamification.GetLevel(profile.TotalXp);
-        var xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
-        var xpNeeded = Gamification.GetXpForNextLevel(level);
+        xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
+        xpNeeded = Gamification.GetXpForNextLevel(level);
         xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
+
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        var dailyDone = profile.DailyChallengeDate == today && profile.DailyChallengeCompleted;
+        hubDot = !dailyDone || await ReviewService.GetDueCountAsync() > 0;
     }
+
+    private async Task ToggleHub()
+    {
+        await JS.TryInvokeVoidAsync("Haptics.select");
+        hubOpen = !hubOpen;
+    }
+
+    private void CloseHub() => hubOpen = false;
 
     private async Task OnLocationChanged(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         try
         {
+            hubOpen = false;
             currentUri = Nav.ToBaseRelativePath(Nav.Uri);
             await LoadStats();
             await InvokeAsync(StateHasChanged);
@@ -164,6 +206,73 @@
         font-weight: 500;
     }
 
+    /* Bottom-aligned so its label lines up with the other tabs whatever the raised disc's height. */
+    .nav-hub {
+        justify-content: flex-end;
+        background: none;
+        border: 0;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .nav-hub.open { color: var(--primary); }
+
+    .nav-hub-disc {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        margin: -28px 0 4px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 35%, transparent), 0 0 0 4px var(--bg-card);
+        transition: transform 0.2s var(--ease-spring), background 0.2s ease;
+    }
+
+    .nav-hub:active .nav-hub-disc { transform: scale(0.92); }
+    .nav-hub.open .nav-hub-disc { background: var(--text-primary); }
+
+    .nav-hub-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--accent-light);
+        border: 2px solid var(--primary);
+    }
+
+    /* Home only, pinned like the bottom bar; desktop shows level in the sidebar brand instead. */
+    .level-ring {
+        position: fixed;
+        top: calc(8px + env(safe-area-inset-top));
+        right: 12px;
+        z-index: 80;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        box-shadow: 0 2px 10px var(--shadow);
+        text-decoration: none;
+        transition: transform 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .level-ring:active { transform: scale(0.92); }
+    .level-ring svg { position: absolute; inset: 3px; }
+    .level-ring-track { fill: none; stroke: var(--bg-surface); stroke-width: 4; }
+    .level-ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray 0.5s ease; }
+    .level-ring-text { position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1; }
+    .level-ring-text small { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); }
+    .level-ring-text strong { font-size: 0.95rem; color: var(--text-primary); }
+
     /* Brand - hidden on mobile */
     .nav-brand { display: none; }
 
@@ -186,6 +295,7 @@
         }
 
         .nav-item-wide { display: flex; }
+        .level-ring { display: none; }
 
         .nav-brand {
             display: flex;
@@ -262,6 +372,26 @@
         .nav-icon {
             font-size: 1.3rem;
             margin-bottom: 0;
+        }
+
+        .nav-hub-disc {
+            width: auto;
+            height: auto;
+            margin: 0;
+            background: none;
+            color: inherit;
+            box-shadow: none;
+        }
+
+        .nav-hub.open .nav-hub-disc { background: none; }
+
+        .nav-hub-dot {
+            top: -2px;
+            right: -4px;
+            width: 8px;
+            height: 8px;
+            border: 0;
+            background: var(--primary);
         }
     }
 </style>

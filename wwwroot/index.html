@@ -114,6 +114,7 @@
     <script src="js/share.js"></script>
     <script src="js/tts.js"></script>
     <script src="js/notepadDrag.js"></script>
+    <script src="js/sheet.js"></script>
     <script>
         // Capacitor native polish: runs once if Capacitor is present.
         (function () {
@@ -130,6 +131,10 @@
                 var app = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
                 if (app && app.addListener) {
                     app.addListener('backButton', function () {
+                        if (window.NousSheet && window.NousSheet.isOpen) {
+                            window.NousSheet.requestClose();
+                            return;
+                        }
                         var atRoot = window.location.pathname === '/' || window.location.pathname === '';
                         if (!atRoot && window.history.length > 1) {
                             window.history.back();
