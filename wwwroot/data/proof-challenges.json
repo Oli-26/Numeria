@@ -49,7 +49,7 @@
       },
       {
         "id": "p01-x2",
-        "text": "Substitute n = 0 to get 0 = 0, confirming the base case.",
+        "text": "Check the formula for n = 1, 2, 3 and 4; since it holds each time, it holds for every n.",
         "type": "distractor"
       }
     ],
@@ -169,7 +169,8 @@
       {
         "id": "p03-d",
         "text": "For any prime pᵢ in our list, N divided by pᵢ leaves remainder 1.",
-        "type": "step"
+        "type": "step",
+        "after": ["p03-b"]
       },
       {
         "id": "p03-e",
@@ -179,7 +180,8 @@
       {
         "id": "p03-f",
         "text": "But N must have a prime factor, which is not in our list.",
-        "type": "step"
+        "type": "step",
+        "after": ["p03-c", "p03-e"]
       },
       {
         "id": "p03-g",
@@ -238,12 +240,14 @@
       {
         "id": "p04-d",
         "text": "Case 2: If x ∈ C, then x ∈ A and x ∈ C, so x ∈ A ∩ C.",
-        "type": "step"
+        "type": "step",
+        "after": ["p04-b"]
       },
       {
         "id": "p04-e",
         "text": "In either case, x ∈ (A ∩ B) ∪ (A ∩ C). So A ∩ (B ∪ C) ⊆ (A ∩ B) ∪ (A ∩ C).",
-        "type": "step"
+        "type": "step",
+        "after": ["p04-c", "p04-d"]
       },
       {
         "id": "p04-f",
@@ -303,12 +307,14 @@
       {
         "id": "p05-c",
         "text": "For n ≤ N, there are only finitely many terms: a₁, a₂, ..., a_N.",
-        "type": "step"
+        "type": "step",
+        "after": ["p05-a"]
       },
       {
         "id": "p05-d",
         "text": "Let M = max{|a₁|, |a₂|, ..., |a_N|, 1 + |L|}.",
-        "type": "step"
+        "type": "step",
+        "after": ["p05-b", "p05-c"]
       },
       {
         "id": "p05-e",
@@ -344,8 +350,8 @@
     "title": "Subgroup Test",
     "topicId": "group-theory",
     "difficulty": 2,
-    "goal": "A non-empty subset H of a group G is a subgroup if and only if ab⁻¹ ∈ H for all a, b ∈ H",
-    "goalMath": "H \\le G \\iff (\\forall a,b \\in H : ab^{-1} \\in H)",
+    "goal": "If H is a non-empty subset of a group G and ab⁻¹ ∈ H for all a, b ∈ H, then H is a subgroup",
+    "goalMath": "(\\forall a,b \\in H : ab^{-1} \\in H) \\implies H \\le G",
     "availableBlocks": [
       {
         "id": "p06-a",
@@ -369,13 +375,15 @@
       },
       {
         "id": "p06-e",
-        "text": "H has the identity, is closed under the group operation and inverses. So H is a subgroup.",
-        "type": "conclusion"
+        "text": "H is closed under the group operation, is associative, has the identity, and contains inverses. So H is a subgroup.",
+        "type": "conclusion",
+        "after": ["p06-d", "p06-f"]
       },
       {
-        "id": "p06-x1",
-        "text": "Since H ⊆ G and G is a group, H automatically inherits associativity.",
-        "type": "distractor"
+        "id": "p06-f",
+        "text": "Associativity: the operation on H is the one from G, which is associative, so it is associative on H.",
+        "type": "step",
+        "after": ["p06-a"]
       },
       {
         "id": "p06-x2",
@@ -388,12 +396,13 @@
       "p06-b",
       "p06-c",
       "p06-d",
+      "p06-f",
       "p06-e"
     ],
     "givenIds": [
       "p06-a"
     ],
-    "explanation": "The one-step subgroup test is elegant: a single condition (ab⁻¹ ∈ H) implies identity, inverses, and closure. Note the distractor about Lagrange's theorem is circular: Lagrange assumes H is already a subgroup.",
+    "explanation": "The one-step subgroup test is elegant: a single condition (ab⁻¹ ∈ H) implies identity, inverses, and closure, while associativity is simply inherited from G. (The converse is easy: a subgroup obviously satisfies the condition.) Note the distractor about Lagrange's theorem is circular: Lagrange assumes H is already a subgroup.",
     "xpReward": 45
   },
   {
@@ -416,12 +425,12 @@
       },
       {
         "id": "p07-c",
-        "text": "Each new edge we add is not in the tree, so it creates exactly one new cycle.",
+        "text": "Each new edge is drawn inside a single face of the current plane graph, joining two vertices on that face's boundary.",
         "type": "step"
       },
       {
         "id": "p07-d",
-        "text": "This new cycle divides an existing face into two, so F increases by 1.",
+        "text": "The new edge splits that face into two, so F increases by 1.",
         "type": "step"
       },
       {
@@ -491,7 +500,8 @@
       {
         "id": "p08-e",
         "text": "Independence: If c₁T(u₁) + ... + cₘT(uₘ) = 0, then T(c₁u₁ + ... + cₘuₘ) = 0.",
-        "type": "step"
+        "type": "step",
+        "after": ["p08-b"]
       },
       {
         "id": "p08-f",
@@ -506,7 +516,8 @@
       {
         "id": "p08-h",
         "text": "So dim(im T) = m and dim(ker T) = k, giving k + m = dim V.",
-        "type": "conclusion"
+        "type": "conclusion",
+        "after": ["p08-d", "p08-g"]
       },
       {
         "id": "p08-x1",
@@ -681,17 +692,20 @@
       {
         "id": "p11-d",
         "text": "Ask: is d ∈ D? Suppose d ∈ D. By definition of D, d ∉ f(d) = D. Contradiction.",
-        "type": "step"
+        "type": "step",
+        "after": ["p11-c"]
       },
       {
         "id": "p11-e",
         "text": "Suppose d ∉ D. By definition of D, d ∈ f(d) = D. Contradiction.",
-        "type": "step"
+        "type": "step",
+        "after": ["p11-c"]
       },
       {
         "id": "p11-f",
         "text": "Both cases lead to contradiction, so no surjection f: S → P(S) can exist.",
-        "type": "step"
+        "type": "step",
+        "after": ["p11-d", "p11-e"]
       },
       {
         "id": "p11-g",
@@ -759,7 +773,7 @@
       },
       {
         "id": "p12-x1",
-        "text": "By Jensen's inequality applied to f(x) = ln(x), the result follows immediately.",
+        "text": "Check the case a = b, where both means equal a; the inequality then holds for all a and b.",
         "type": "distractor"
       },
       {
@@ -807,12 +821,14 @@
       {
         "id": "p13-d",
         "text": "The identity e satisfies e² = e, so e is one self-paired element.",
-        "type": "step"
+        "type": "step",
+        "after": ["p13-b"]
       },
       {
         "id": "p13-e",
         "text": "Let S = { g ∈ G : g² = e }. The non-self-paired elements pair off, so |G| − |S| is even.",
-        "type": "step"
+        "type": "step",
+        "after": ["p13-b", "p13-c"]
       },
       {
         "id": "p13-f",
@@ -822,7 +838,8 @@
       {
         "id": "p13-g",
         "text": "Since e ∈ S, we have |S| ≥ 1. But |S| is even, so |S| ≥ 2. Hence there exists g ≠ e with g² = e.",
-        "type": "conclusion"
+        "type": "conclusion",
+        "after": ["p13-d", "p13-f"]
       },
       {
         "id": "p13-x1",
@@ -1027,7 +1044,7 @@
       },
       {
         "id": "p16-x2",
-        "text": "By Cantor's diagonal argument, we can show Q⁺ is uncountable: wait, that applies to R, not Q.",
+        "text": "The grid has infinitely many rows and infinitely many columns, so it has uncountably many cells and Q⁺ is uncountable.",
         "type": "distractor"
       }
     ],
@@ -1060,7 +1077,7 @@
       },
       {
         "id": "p17-b",
-        "text": "For any real scalar t, consider ⟨u − tv, u − tv⟩ ≥ 0 (inner products are non-negative).",
+        "text": "For any real scalar t, consider ⟨u − tv, u − tv⟩ ≥ 0 (since ⟨w,w⟩ ≥ 0 for every vector w).",
         "type": "step"
       },
       {
@@ -1277,12 +1294,14 @@
       {
         "id": "p20-e",
         "text": "Build a subsequence: pick n₁ so aₙ₁ ∈ [L₁, R₁], then n₂ > n₁ with aₙ₂ ∈ [L₂, R₂], and so on.",
-        "type": "step"
+        "type": "step",
+        "after": ["p20-c"]
       },
       {
         "id": "p20-f",
         "text": "For each k, |aₙₖ − c| ≤ Rₖ − Lₖ = (R−L)/2ᵏ → 0 as k → ∞.",
-        "type": "step"
+        "type": "step",
+        "after": ["p20-d", "p20-e"]
       },
       {
         "id": "p20-g",
@@ -1341,17 +1360,20 @@
       {
         "id": "p21-d",
         "text": "Case 1: Suppose D(D) halts. Then H(D, D) must have said 'loops' (since D halts only when H says 'loops'). But H is supposed to be correct: contradiction, since D(D) actually halts.",
-        "type": "step"
+        "type": "step",
+        "after": ["p21-c"]
       },
       {
         "id": "p21-e",
         "text": "Case 2: Suppose D(D) loops forever. Then H(D, D) must have said 'halts' (since D loops only when H says 'halts'). But H is supposed to be correct: contradiction, since D(D) actually loops.",
-        "type": "step"
+        "type": "step",
+        "after": ["p21-c"]
       },
       {
         "id": "p21-f",
         "text": "In both cases we reach a contradiction. D(D) can neither halt nor loop, which is impossible for any program.",
-        "type": "step"
+        "type": "step",
+        "after": ["p21-d", "p21-e"]
       },
       {
         "id": "p21-g",

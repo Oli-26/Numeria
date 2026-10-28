@@ -6,7 +6,10 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
-@if (!unlocked)
+@if (!loaded)
+{
+}
+else if (!unlocked)
 {
     <div class="page-header">
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -28,7 +31,7 @@ else if (activeChallenge == null)
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>Proof Builder</h1>
     </div>
-    <p class="pb-subtitle">Drag-and-drop proof blocks into the correct logical order. Distractors are included, so not every block belongs!</p>
+    <p class="pb-subtitle">Tap proof blocks to add them, and use the arrows to reorder them into a valid logical order. Distractors are included, so not every block belongs!</p>
 
     @if (challenges != null)
     {
@@ -85,6 +88,10 @@ else
         <!-- Proof workspace -->
         <div class="pb-workspace">
             <h3>Your Proof</h3>
+            @if (revealed)
+            {
+                <div class="pb-hint">You have seen the solution, so this run will not earn XP. Start the proof again from the list for a fresh attempt.</div>
+            }
             <div class="pb-proof-area">
                 @if (proofSlots.Count == 0)
                 {
@@ -143,10 +150,16 @@ else
             <div class="pb-result-icon">@if (isCorrect) { <Icon Name="check" Size="14" /> } else { <Icon Name="x-mark" Size="14" /> }</div>
             <h2>@(isCorrect ? "Proof Complete!" : "Not Quite Right")</h2>
 
-            @if (isCorrect)
+            @if (isCorrect && earnedXp)
             {
                 <div class="xp-earned pulse">
                     <span class="xp-badge" style="font-size: 1rem; padding: 6px 14px">+@activeChallenge.XpReward XP</span>
+                </div>
+            }
+            else if (isCorrect)
+            {
+                <div class="pb-hint">
+                    @(revealed ? "No XP this time because you had already seen the solution. Start the proof again from the list for a fresh attempt." : "Already completed, so no extra XP.")
                 </div>
             }
             else
@@ -203,6 +216,9 @@ else
     private bool submitted;
     private bool isCorrect;
     private bool unlocked;
+    private bool loaded;
+    private bool revealed;
+    private bool earnedXp;
     private int givenCount;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -211,7 +227,7 @@ else
         {
             var profile = await Progress.GetProfileAsync();
             unlocked = profile.ShopPurchases.Contains("unlock-proofs");
-            if (!unlocked) { StateHasChanged(); return; }
+            if (!unlocked) { loaded = true; StateHasChanged(); return; }
 
             challenges = await ChallengeRepo.GetProofChallengesAsync();
             completedIds = profile.ChallengesCompleted.ToHashSet();
@@ -222,6 +238,7 @@ else
                 if (c != null) InitChallenge(c);
             }
 
+            loaded = true;
             StateHasChanged();
         }
 
@@ -233,6 +250,7 @@ else
 
     private void StartChallenge(ProofChallenge c)
     {
+        revealed = false;
         InitChallenge(c);
     }
 
@@ -241,6 +259,7 @@ else
         activeChallenge = c;
         submitted = false;
         isCorrect = false;
+        earnedXp = false;
         proofSlots = new List<string>(c.GivenIds);
         givenCount = c.GivenIds.Count;
         var rng = new Random();
@@ -278,16 +297,18 @@ else
 
     private async Task SubmitProof()
     {
+        if (activeChallenge == null) return;
         submitted = true;
-        isCorrect = proofSlots.SequenceEqual(activeChallenge!.CorrectOrder);
+        isCorrect = ProofGrader.IsCorrect(activeChallenge, proofSlots);
 
         if (isCorrect)
         {
             await JS.TryInvokeVoidAsync("Sounds.playCorrect");
             await JS.TryInvokeVoidAsync("Confetti.launch", 50);
 
-            if (!completedIds.Contains(activeChallenge.Id))
+            if (!revealed && !completedIds.Contains(activeChallenge.Id))
             {
+                earnedXp = true;
                 completedIds.Add(activeChallenge.Id);
                 await Gamification.AwardXpAsync(activeChallenge.XpReward);
                 var profile = await Progress.GetProfileAsync();
@@ -300,6 +321,7 @@ else
         }
         else
         {
+            revealed = true;
             await JS.TryInvokeVoidAsync("Sounds.playWrong");
         }
     }

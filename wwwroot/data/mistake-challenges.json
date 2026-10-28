@@ -128,9 +128,9 @@
       {"number": 1, "text": "Start with the alternating harmonic series: ln 2 = 1 - 1/2 + 1/3 - 1/4 + 1/5 - 1/6 + ...", "mathExpression": null},
       {"number": 2, "text": "Rearrange: take one positive, two negatives: (1 - 1/2 - 1/4) + (1/3 - 1/6 - 1/8) + ...", "mathExpression": null},
       {"number": 3, "text": "Each group simplifies: (1/2 - 1/4) + (1/6 - 1/8) + ... = 1/4 + 1/24 + ...", "mathExpression": null},
-      {"number": 4, "text": "Factor 1/2 from each term: = (1/2)(1/2 - 1/4 + 1/6 - 1/8 + ...)", "mathExpression": null},
-      {"number": 5, "text": "The series in parentheses is (1/2)(1 - 1/2 + 1/3 - 1/4 + ...) = (1/2) ln 2", "mathExpression": null},
-      {"number": 6, "text": "So ln 2 = (1/2)(1/2) ln 2 = ln 2 / 2. Therefore 1 = 1/2.", "mathExpression": null}
+      {"number": 4, "text": "Remove the brackets and factor out 1/2: 1/2 - 1/4 + 1/6 - 1/8 + ... = (1/2)(1 - 1/2 + 1/3 - 1/4 + ...)", "mathExpression": null},
+      {"number": 5, "text": "The series in parentheses is ln 2, so the rearranged series sums to (1/2) ln 2: 1/2 - 1/4 + 1/6 - 1/8 + ... = (1/2) ln 2", "mathExpression": null},
+      {"number": 6, "text": "The rearranged series has exactly the same terms as the original, so ln 2 = (1/2) ln 2. Therefore 1 = 1/2.", "mathExpression": null}
     ],
     "errorStep": 2,
     "errorExplanation": "You CANNOT freely rearrange a conditionally convergent series! The Riemann rearrangement theorem says a conditionally convergent series can be rearranged to sum to ANY value. The alternating harmonic series converges conditionally, so rearranging changes the sum.",
@@ -172,9 +172,9 @@
       {"number": 5, "text": "The right side diverges to +∞. So 1 + 1 + 1 + ... = +∞. Now apply zeta regularization: ζ(0) = -1/2, so 'assign' the sum the value -1/2.", "mathExpression": "1 + 1 + 1 + \\cdots = \\zeta(0) = -\\frac{1}{2}"},
       {"number": 6, "text": "But from the original formula at x = 1: 1/(1-1) = 1/0, which is undefined, not -1/2. So -1/2 = undefined = 0, giving 0 = 1 after rearranging.", "mathExpression": "0 = 1"}
     ],
-    "errorStep": 4,
-    "errorExplanation": "You cannot swap the limit and an infinite sum unless uniform convergence holds. The geometric series does NOT converge uniformly on [0, 1): it converges pointwise but the convergence deteriorates as x → 1. Interchanging limit and summation requires justification (e.g., dominated convergence or uniform convergence), which fails here.",
-    "correctReasoning": "The geometric series 1/(1-x) has radius of convergence 1. At the boundary x = 1, the series diverges. The interchange of limit and summation is invalid without uniform convergence. Steps 5-6 compound the error by mixing divergent series regularization with ordinary arithmetic, which is not permitted.",
+    "errorStep": 5,
+    "errorExplanation": "Step 4 is actually fine here: the terms x^n are non-negative and increase with x, so the monotone convergence theorem lets you swap the limit and the sum, and both sides are +∞. The first real error is step 5: ζ(0) = -1/2 is the value of the analytic continuation of the zeta function, not the sum of 1 + 1 + 1 + .... That series diverges to +∞, and assigning it -1/2 is not ordinary arithmetic.",
+    "correctReasoning": "Both sides tend to +∞ as x → 1⁻, which is perfectly consistent, so nothing is contradicted so far. Step 6 then mixes a regularized value (-1/2) with the undefined expression 1/0 and 'rearranges' to get 0 = 1, which is not a meaningful chain of equalities. A divergent series has no ordinary sum; regularization assigns a value by a different, explicitly stated procedure that cannot be mixed into ordinary algebra.",
     "xpReward": 35
   },
   {
@@ -231,7 +231,7 @@
     ],
     "errorStep": 3,
     "errorExplanation": "R × R is NOT the power set of R! The Cartesian product and the power set are completely different constructions. Cantor's theorem says |P(R)| > |R|, but |R × R| = |R| · |R| = |R| by cardinal arithmetic for infinite sets. The student incorrectly analogized the Cartesian product to the power set.",
-    "correctReasoning": "Cantor proved in 1878 that |R²| = |R| by constructing an explicit bijection (interleaving decimal digits). For infinite cardinals κ, we have κ × κ = κ. More visually, space-filling curves (Peano, Hilbert) give continuous surjections from R onto R². Dimension is a topological concept, not a cardinality concept.",
+    "correctReasoning": "Cantor showed in the 1870s that |R²| = |R|, i.e. a bijection exists. A standard textbook construction interleaves the decimal digits of x and y (with care over expansions ending in all 9s). For infinite cardinals κ, we have κ × κ = κ. More visually, space-filling curves (Peano, Hilbert) give continuous surjections from R onto R². Dimension is a topological concept, not a cardinality concept.",
     "xpReward": 45
   },
   {

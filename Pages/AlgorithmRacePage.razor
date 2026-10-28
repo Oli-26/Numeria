@@ -1,119 +1,115 @@
 @page "/algorithm-race"
-@inject IProgressService Progress
 @inject NavigationManager Nav
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Algorithm Race</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Algorithm Race" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Algorithm Race</h1>
-    </div>
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Algorithm Race</h1>
+</div>
 
-    <div class="card ar-intro">
-        <Icon Name="trending-up" Size="22" Stroke="var(--accent)" />
-        <p>Race two sorting algorithms on the same input. Comparisons and swaps update live. Watch how O(n^2) drowns under data while O(n log n) cruises.</p>
-    </div>
+<div class="card ar-intro">
+    <Icon Name="trending-up" Size="22" Stroke="var(--accent)" />
+    <p>Two sorts, one input. Every comparison and every array write costs one step, for every algorithm. Sorts that need about n^2 steps fall far behind those that need about n log n as the array grows, but input order matters: insertion sort loves nearly sorted data, and a careless quicksort pivot turns reversed data into its worst case.</p>
+</div>
 
-    <div class="card ar-controls">
-        <div class="ar-row">
-            <label>Size</label>
-            <select @bind="size">
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="100">100</option>
-            </select>
-        </div>
-        <div class="ar-row">
-            <label>Distribution</label>
-            <select @bind="distribution">
-                <option value="random">Random</option>
-                <option value="reversed">Reversed</option>
-                <option value="nearly-sorted">Nearly sorted</option>
-                <option value="few-unique">Few unique</option>
-            </select>
-        </div>
-        <div class="ar-row">
-            <label>Speed (ms/step)</label>
-            <input type="range" min="1" max="80" step="1" @bind="speedMs" @bind:event="oninput" />
-            <span>@speedMs</span>
-        </div>
-        <div class="ar-actions">
-            <button class="btn btn-primary" disabled="@running" @onclick="StartRace">@(running ? "Running..." : "Start race")</button>
-            <button class="btn btn-outline" disabled="@(!running)" @onclick="() => running = false">Stop</button>
-            <button class="btn btn-outline" @onclick="Reset">Reset</button>
-        </div>
+<div class="card ar-controls">
+    <div class="ar-row">
+        <label>Size</label>
+        <select @bind="size" @bind:after="NewInput">
+            <option value="16">16</option>
+            <option value="32">32</option>
+            <option value="64">64</option>
+            <option value="100">100</option>
+        </select>
     </div>
+    <div class="ar-row">
+        <label>Distribution</label>
+        <select @bind="distribution" @bind:after="NewInput">
+            <option value="random">Random</option>
+            <option value="reversed">Reversed</option>
+            <option value="nearly-sorted">Nearly sorted</option>
+            <option value="few-unique">Few unique</option>
+        </select>
+    </div>
+    <div class="ar-row">
+        <label>Speed (ms/step)</label>
+        <input type="range" min="1" max="80" step="1" @bind="speedMs" @bind:event="oninput" />
+        <span>@speedMs</span>
+    </div>
+    <div class="ar-actions">
+        <button class="btn btn-primary" disabled="@running" @onclick="StartRace">@(running ? "Running..." : "Start race")</button>
+        <button class="btn btn-outline" disabled="@(!running)" @onclick="() => running = false">Stop</button>
+        <button class="btn btn-outline" @onclick="NewInput">New array</button>
+    </div>
+</div>
 
-    <div class="ar-grid">
-        @foreach (var racer in racers)
-        {
-            var r = racer;
-            <div class="card ar-racer">
-                <div class="ar-racer-head">
-                    <strong>@r.Name</strong>
-                    <small>@r.Big <span class="ar-pill">@(r.Done ? "DONE" : (running ? "..." : "ready"))</span></small>
-                </div>
-                <div class="ar-bars">
-                    @for (int i = 0; i < r.Data.Length; i++)
+<div class="ar-grid">
+    @for (int lane = 0; lane < racers.Count; lane++)
+    {
+        var r = racers[lane];
+        var li = lane;
+        <div class="card ar-racer">
+            <div class="ar-racer-head">
+                <select class="ar-pick" aria-label="@($"Algorithm for lane {li + 1}")" value="@laneKeys[li]" @onchange="e => ChangeLane(li, e.Value?.ToString())">
+                    @foreach (var a in Catalog)
                     {
-                        var h = (int)(r.Data[i] * 100.0 / Math.Max(1, r.Max));
-                        var col = (i == r.Cursor || i == r.Cursor2) ? "var(--accent)" : (i < r.SortedUpTo ? "var(--success)" : "var(--primary)");
-                        <span class="ar-bar" style="@($"height:{h}%;background:{col}")"></span>
+                        <option value="@a.Key">@a.Name</option>
                     }
-                </div>
-                <div class="ar-stats">
-                    <span>cmp <strong>@r.Comparisons</strong></span>
-                    <span>swap <strong>@r.Swaps</strong></span>
-                    <span>steps <strong>@r.Steps</strong></span>
-                </div>
+                </select>
+                <span class="ar-pill">@(r.Done ? "DONE" : (running ? "..." : "ready"))</span>
             </div>
-        }
-    </div>
-}
+            <small class="ar-big">best @r.Algo.Best · avg @r.Algo.Avg · worst @r.Algo.Worst</small>
+            <div class="ar-bars">
+                @for (int i = 0; i < r.Data.Length; i++)
+                {
+                    var h = (int)(r.Data[i] * 100.0 / Math.Max(1, r.Max));
+                    var col = (i == r.Cursor || i == r.Cursor2) ? "var(--accent)" : (r.Final[i] ? "var(--success)" : "var(--primary)");
+                    <span class="ar-bar" style="@($"height:{h}%;background:{col}")"></span>
+                }
+            </div>
+            <div class="ar-stats">
+                <span>cmp <strong>@r.Comparisons</strong></span>
+                <span>writes <strong>@r.Writes</strong></span>
+                <span>steps <strong>@r.Steps</strong></span>
+            </div>
+        </div>
+    }
+</div>
+<p class="ar-note">Green marks elements already in their final place (for insertion sort, the sorted prefix so far). Merge sort writes are counted into the main array only.</p>
 
 @code {
-    private bool unlocked;
     private int size = 32;
     private string distribution = "random";
     private int speedMs = 25;
     private bool running;
+    private int runId;
+    private int[] baseline = Array.Empty<int>();
+    private string[] laneKeys = { "bubble", "quick" };
     private List<Racer> racers = new();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            if (unlocked && racers.Count == 0) Reset();
-            StateHasChanged();
-        }
-    }
+    private record Algo(string Key, string Name, string Best, string Avg, string Worst, Func<Racer, IEnumerable<int>> Run);
 
-    private int[] BuildData()
+    private static readonly Algo[] Catalog =
     {
-        var rng = new Random(42);
-        var arr = Enumerable.Range(1, size).Select(i => i).ToArray();
+        new("bubble", "Bubble Sort", "O(n)", "O(n^2)", "O(n^2)", BubbleSort),
+        new("insertion", "Insertion Sort", "O(n)", "O(n^2)", "O(n^2)", InsertionSort),
+        new("selection", "Selection Sort", "O(n^2)", "O(n^2)", "O(n^2)", SelectionSort),
+        new("merge", "Merge Sort", "O(n log n)", "O(n log n)", "O(n log n)", MergeSort),
+        new("heap", "Heap Sort", "O(n log n)", "O(n log n)", "O(n log n)", HeapSort),
+        new("quick", "Quicksort (median of 3)", "O(n log n)", "O(n log n)", "O(n^2)", QuickSort),
+    };
+
+    protected override void OnInitialized() => NewInput();
+
+    private static int[] BuildData(int size, string distribution)
+    {
+        var rng = new Random();
+        var arr = Enumerable.Range(1, size).ToArray();
         switch (distribution)
         {
             case "random": for (int i = arr.Length - 1; i > 0; i--) { var j = rng.Next(i + 1); (arr[i], arr[j]) = (arr[j], arr[i]); } break;
             case "reversed": Array.Reverse(arr); break;
             case "nearly-sorted":
-                for (int k = 0; k < arr.Length / 8; k++) { var a = rng.Next(arr.Length); var b = rng.Next(arr.Length); (arr[a], arr[b]) = (arr[b], arr[a]); }
+                for (int k = 0; k < Math.Max(1, arr.Length / 8); k++) { var a = rng.Next(arr.Length); var b = rng.Next(arr.Length); (arr[a], arr[b]) = (arr[b], arr[a]); }
                 break;
             case "few-unique":
                 arr = Enumerable.Range(0, size).Select(_ => rng.Next(1, 5) * (size / 4)).ToArray();
@@ -122,110 +118,251 @@ else
         return arr;
     }
 
-    private void Reset()
+    // Fresh array; both lanes share it.
+    private void NewInput()
+    {
+        baseline = BuildData(size, distribution);
+        Rebuild();
+    }
+
+    private void Rebuild()
     {
         running = false;
-        var data = BuildData();
-        racers = new()
-        {
-            new("Bubble Sort", "O(n^2)", (int[])data.Clone(), data.Max(), BubbleSort),
-            new("Quicksort", "O(n log n)", (int[])data.Clone(), data.Max(), Quicksort)
-        };
-        StateHasChanged();
+        runId++;
+        var max = baseline.Max();
+        racers = laneKeys.Select(k => new Racer(Catalog.First(a => a.Key == k), (int[])baseline.Clone(), max)).ToList();
+    }
+
+    private void ChangeLane(int lane, string? key)
+    {
+        if (key is null) return;
+        laneKeys[lane] = key;
+        Rebuild();
     }
 
     private async Task StartRace()
     {
         if (running) return;
-        Reset();
+        Rebuild();
         running = true;
-        StateHasChanged();
-        var tasks = racers.Select(r => RunRacer(r)).ToArray();
-        await Task.WhenAll(tasks);
-        running = false;
-        StateHasChanged();
+        var id = runId;
+        await Task.WhenAll(racers.Select(r => RunRacer(r, id)).ToArray());
+        if (id == runId) { running = false; StateHasChanged(); }
     }
 
-    private async Task RunRacer(Racer r)
+    private async Task RunRacer(Racer r, int id)
     {
-        await foreach (var _ in r.Algorithm(r))
+        var last = 0;
+        foreach (var _ in r.Algo.Run(r))
         {
-            if (!running) return;
+            if (!running || id != runId) return;
             StateHasChanged();
-            await Task.Delay(speedMs);
+            await Task.Delay(Math.Max(1, speedMs * Math.Max(1, r.Steps - last)));
+            last = r.Steps;
         }
+        if (id != runId) return;
         r.Done = true;
         r.Cursor = -1; r.Cursor2 = -1;
-        r.SortedUpTo = r.Data.Length;
+        Array.Fill(r.Final, true);
         StateHasChanged();
     }
 
-    private static async IAsyncEnumerable<int> BubbleSort(Racer r)
+    private static IEnumerable<int> BubbleSort(Racer r)
     {
         var n = r.Data.Length;
         for (int i = 0; i < n - 1; i++)
         {
+            var swapped = false;
             for (int j = 0; j < n - i - 1; j++)
             {
-                r.Cursor = j; r.Cursor2 = j + 1; r.Steps++; r.Comparisons++;
-                if (r.Data[j] > r.Data[j + 1])
-                {
-                    (r.Data[j], r.Data[j + 1]) = (r.Data[j + 1], r.Data[j]);
-                    r.Swaps++;
-                }
+                var c = r.Cmp(j + 1, j);
                 yield return 0;
+                if (c < 0) { r.Swap(j, j + 1); swapped = true; yield return 0; }
             }
-            r.SortedUpTo = n - 1 - i;
+            r.Final[n - 1 - i] = true;
+            if (!swapped) { for (int k = 0; k < n - 1 - i; k++) r.Final[k] = true; yield break; }
         }
-        await Task.CompletedTask;
     }
 
-    private static async IAsyncEnumerable<int> Quicksort(Racer r)
+    private static IEnumerable<int> InsertionSort(Racer r)
     {
-        await foreach (var _ in QuicksortRange(r, 0, r.Data.Length - 1)) yield return 0;
+        var n = r.Data.Length;
+        if (n > 0) r.Final[0] = true;
+        for (int i = 1; i < n; i++)
+        {
+            var key = r.Data[i];
+            int j = i - 1;
+            while (j >= 0)
+            {
+                var c = r.CmpVal(j, key);
+                yield return 0;
+                if (c <= 0) break;
+                r.Set(j + 1, r.Data[j]);
+                yield return 0;
+                j--;
+            }
+            if (j + 1 != i) { r.Set(j + 1, key); yield return 0; }
+            for (int k = 0; k <= i; k++) r.Final[k] = true;
+        }
     }
 
-    private static async IAsyncEnumerable<int> QuicksortRange(Racer r, int lo, int hi)
+    private static IEnumerable<int> SelectionSort(Racer r)
+    {
+        var n = r.Data.Length;
+        for (int i = 0; i < n - 1; i++)
+        {
+            int min = i;
+            for (int j = i + 1; j < n; j++)
+            {
+                var c = r.Cmp(j, min);
+                yield return 0;
+                if (c < 0) min = j;
+            }
+            if (min != i) { r.Swap(i, min); yield return 0; }
+            r.Final[i] = true;
+        }
+    }
+
+    private static IEnumerable<int> MergeSort(Racer r)
+    {
+        foreach (var _ in MergeRange(r, 0, r.Data.Length - 1)) yield return 0;
+    }
+
+    private static IEnumerable<int> MergeRange(Racer r, int lo, int hi)
     {
         if (lo >= hi) yield break;
-        var pivot = r.Data[hi];
-        int i = lo - 1;
-        for (int j = lo; j < hi; j++)
+        var mid = lo + (hi - lo) / 2;
+        foreach (var _ in MergeRange(r, lo, mid)) yield return 0;
+        foreach (var _ in MergeRange(r, mid + 1, hi)) yield return 0;
+
+        var last = lo == 0 && hi == r.Data.Length - 1;
+        var tmp = r.Data[lo..(hi + 1)];
+        int i = lo, j = mid + 1, k = lo;
+        while (i <= mid && j <= hi)
         {
-            r.Cursor = j; r.Cursor2 = hi; r.Steps++; r.Comparisons++;
+            var a = tmp[i - lo]; var b = tmp[j - lo];
+            r.CmpAt(i, j);
             yield return 0;
-            if (r.Data[j] <= pivot)
-            {
-                i++;
-                (r.Data[i], r.Data[j]) = (r.Data[j], r.Data[i]);
-                r.Swaps++;
-                yield return 0;
-            }
+            if (a <= b) { r.Set(k++, a, last); i++; } else { r.Set(k++, b, last); j++; }
+            yield return 0;
         }
-        (r.Data[i + 1], r.Data[hi]) = (r.Data[hi], r.Data[i + 1]);
-        r.Swaps++;
-        await foreach (var _ in QuicksortRange(r, lo, i)) yield return 0;
-        await foreach (var _ in QuicksortRange(r, i + 2, hi)) yield return 0;
+        while (i <= mid) { r.Set(k++, tmp[i - lo], last); i++; yield return 0; }
+        while (j <= hi) { r.Set(k++, tmp[j - lo], last); j++; yield return 0; }
+    }
+
+    private static IEnumerable<int> HeapSort(Racer r)
+    {
+        var n = r.Data.Length;
+        for (int s = n / 2 - 1; s >= 0; s--)
+            foreach (var _ in SiftDown(r, s, n)) yield return 0;
+        for (int end = n - 1; end > 0; end--)
+        {
+            r.Swap(0, end);
+            r.Final[end] = true;
+            yield return 0;
+            foreach (var _ in SiftDown(r, 0, end)) yield return 0;
+        }
+        if (n > 0) r.Final[0] = true;
+    }
+
+    private static IEnumerable<int> SiftDown(Racer r, int root, int end)
+    {
+        while (2 * root + 1 < end)
+        {
+            var child = 2 * root + 1;
+            if (child + 1 < end)
+            {
+                var cc = r.Cmp(child, child + 1);
+                yield return 0;
+                if (cc < 0) child++;
+            }
+            var c = r.Cmp(root, child);
+            yield return 0;
+            if (c >= 0) yield break;
+            r.Swap(root, child);
+            yield return 0;
+            root = child;
+        }
+    }
+
+    private static IEnumerable<int> QuickSort(Racer r)
+    {
+        foreach (var _ in QuickRange(r, 0, r.Data.Length - 1)) yield return 0;
+    }
+
+    // Median-of-three: sort lo/mid/hi, park the median at hi-1 as pivot, partition lo+1..hi-2.
+    private static IEnumerable<int> QuickRange(Racer r, int lo, int hi)
+    {
+        if (lo > hi) yield break;
+        if (lo == hi) { r.Final[lo] = true; yield break; }
+        if (hi - lo == 1)
+        {
+            var c2 = r.Cmp(hi, lo);
+            yield return 0;
+            if (c2 < 0) { r.Swap(hi, lo); yield return 0; }
+            r.Final[lo] = r.Final[hi] = true;
+            yield break;
+        }
+
+        var mid = lo + (hi - lo) / 2;
+        var c = r.Cmp(mid, lo); yield return 0;
+        if (c < 0) { r.Swap(mid, lo); yield return 0; }
+        c = r.Cmp(hi, lo); yield return 0;
+        if (c < 0) { r.Swap(hi, lo); yield return 0; }
+        c = r.Cmp(hi, mid); yield return 0;
+        if (c < 0) { r.Swap(hi, mid); yield return 0; }
+        if (hi - lo == 2) { r.Final[lo] = r.Final[mid] = r.Final[hi] = true; yield break; }
+
+        r.Swap(mid, hi - 1); yield return 0;
+        var pivot = r.Data[hi - 1];
+        int i = lo, j = hi - 1;
+        while (true)
+        {
+            do { i++; c = r.CmpVal(i, pivot); yield return 0; } while (c < 0);
+            do { j--; c = r.CmpVal(j, pivot); yield return 0; } while (c > 0);
+            if (i >= j) break;
+            r.Swap(i, j); yield return 0;
+        }
+        r.Swap(i, hi - 1); yield return 0;
+        r.Final[i] = true;
+        foreach (var _ in QuickRange(r, lo, i - 1)) yield return 0;
+        foreach (var _ in QuickRange(r, i + 1, hi)) yield return 0;
     }
 
     private class Racer
     {
-        public string Name { get; }
-        public string Big { get; }
-        public int[] Data { get; set; }
+        public Algo Algo { get; }
+        public int[] Data { get; }
         public int Max { get; }
-        public Func<Racer, IAsyncEnumerable<int>> Algorithm { get; }
-        public int Comparisons { get; set; }
-        public int Swaps { get; set; }
-        public int Steps { get; set; }
+        public bool[] Final { get; }
+        public int Comparisons { get; private set; }
+        public int Writes { get; private set; }
+        public int Steps { get; private set; }
         public int Cursor { get; set; } = -1;
         public int Cursor2 { get; set; } = -1;
-        public int SortedUpTo { get; set; }
         public bool Done { get; set; }
 
-        public Racer(string name, string big, int[] data, int max, Func<Racer, IAsyncEnumerable<int>> alg)
+        public Racer(Algo algo, int[] data, int max)
         {
-            Name = name; Big = big; Data = data; Max = max; Algorithm = alg;
+            Algo = algo; Data = data; Max = max; Final = new bool[data.Length];
+        }
+
+        // One comparison = one step; one array write = one step; a swap is two writes, never counted when i == j.
+        public int Cmp(int i, int j) { CmpAt(i, j); return Data[i].CompareTo(Data[j]); }
+        public int CmpVal(int i, int v) { CmpAt(i, -1); return Data[i].CompareTo(v); }
+        public void CmpAt(int i, int j) { Comparisons++; Steps++; Cursor = i; Cursor2 = j; }
+
+        public void Set(int i, int v, bool final = false)
+        {
+            Data[i] = v; Writes++; Steps++; Cursor = i; Cursor2 = -1;
+            if (final) Final[i] = true;
+        }
+
+        public void Swap(int i, int j)
+        {
+            if (i == j) return;
+            (Data[i], Data[j]) = (Data[j], Data[i]);
+            Writes += 2; Steps += 2; Cursor = i; Cursor2 = j;
         }
     }
 }
@@ -247,14 +384,16 @@ else
     @@media (max-width: 480px) { .ar-grid { grid-template-columns: 1fr; } }
 
     .ar-racer { padding: 10px; }
-    .ar-racer-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-    .ar-racer-head strong { font-size: 0.9rem; }
-    .ar-racer-head small { font-size: 0.7rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
-    .ar-pill { padding: 1px 6px; background: var(--bg-surface); border-radius: 8px; margin-left: 4px; font-weight: 700; }
+    .ar-racer-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .ar-pick { flex: 1; min-width: 0; padding: 4px 6px; font-size: 0.85rem; font-weight: 700; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); }
+    .ar-big { display: block; margin-bottom: 6px; font-size: 0.68rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
+    .ar-pill { padding: 1px 6px; background: var(--bg-surface); border-radius: 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); }
 
     .ar-bars { display: flex; align-items: flex-end; gap: 1px; height: 100px; background: var(--bg-surface); border-radius: var(--radius-sm); padding: 2px; }
     .ar-bar { flex: 1; min-width: 1px; background: var(--primary); transition: height 0.06s linear, background 0.06s linear; border-radius: 1px 1px 0 0; }
 
     .ar-stats { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
     .ar-stats strong { color: var(--text-primary); margin-left: 2px; }
+
+    .ar-note { margin: 8px 2px 0; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
 </style>

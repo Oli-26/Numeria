@@ -21,6 +21,7 @@ public class ProofBlock
     public string Text { get; set; } = "";
     public string? MathExpression { get; set; }
     public string Type { get; set; } = "step"; // "given", "step", "conclusion", "distractor"
+    public List<string>? After { get; set; } // ids that must precede this step; null means the previous step in CorrectOrder
 }
 
 public class MistakeChallenge

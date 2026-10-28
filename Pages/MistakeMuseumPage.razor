@@ -6,7 +6,10 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
-@if (!unlocked)
+@if (!loaded)
+{
+}
+else if (!unlocked)
 {
     <div class="page-header">
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -124,11 +127,15 @@ else
         <div class="mm-result card @(isCorrect ? "mm-result-correct" : "mm-result-wrong") count-up">
             <h2>@(isCorrect ? "You Found It!" : "Not That One")</h2>
 
-            @if (isCorrect)
+            @if (isCorrect && earnedXp)
             {
                 <div class="xp-earned pulse">
                     <span class="xp-badge" style="font-size: 1rem; padding: 6px 14px">+@activeChallenge.XpReward XP</span>
                 </div>
+            }
+            else if (isCorrect)
+            {
+                <p class="mm-instruction">@(revealed ? "No XP this time because you had already seen the answer. Start the puzzle again from the list for a fresh attempt." : "Already completed, so no extra XP.")</p>
             }
 
             <div class="mm-error-explain">
@@ -164,6 +171,9 @@ else
     private bool submitted;
     private bool isCorrect;
     private bool unlocked;
+    private bool loaded;
+    private bool revealed;
+    private bool earnedXp;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -171,7 +181,7 @@ else
         {
             var profile = await Progress.GetProfileAsync();
             unlocked = profile.ShopPurchases.Contains("unlock-mistakes");
-            if (!unlocked) { StateHasChanged(); return; }
+            if (!unlocked) { loaded = true; StateHasChanged(); return; }
 
             challenges = await ChallengeRepo.GetMistakeChallengesAsync();
             completedIds = profile.ChallengesCompleted.ToHashSet();
@@ -182,6 +192,7 @@ else
                 if (c != null) InitChallenge(c);
             }
 
+            loaded = true;
             StateHasChanged();
         }
 
@@ -200,6 +211,7 @@ else
 
     private void StartChallenge(MistakeChallenge c)
     {
+        revealed = false;
         InitChallenge(c);
     }
 
@@ -209,6 +221,7 @@ else
         selectedStep = 0;
         submitted = false;
         isCorrect = false;
+        earnedXp = false;
     }
 
     private void SelectStep(int step)
@@ -228,8 +241,9 @@ else
             await JS.TryInvokeVoidAsync("Sounds.playCorrect");
             await JS.TryInvokeVoidAsync("Confetti.launch", 40);
 
-            if (!completedIds.Contains(activeChallenge.Id))
+            if (!revealed && !completedIds.Contains(activeChallenge.Id))
             {
+                earnedXp = true;
                 completedIds.Add(activeChallenge.Id);
                 await Gamification.AwardXpAsync(activeChallenge.XpReward);
                 var profile = await Progress.GetProfileAsync();
@@ -242,6 +256,7 @@ else
         }
         else
         {
+            revealed = true;
             await JS.TryInvokeVoidAsync("Sounds.playWrong");
         }
     }
