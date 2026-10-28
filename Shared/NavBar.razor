@@ -9,12 +9,12 @@
     <div class="nav-brand" @onclick='() => Navigate("/")'>
         <img class="nav-brand-icon" src="nous-mark.svg" alt="" />
         <span class="nav-brand-name" role="img" aria-label="Nous"></span>
-        @if (level > 0)
+        @if (lp.Level > 0)
         {
             <div class="nav-level-badge">
-                <span class="nav-level">Lvl @level</span>
+                <span class="nav-level">Lvl @lp.Level</span>
                 <div class="nav-xp-bar">
-                    <div class="nav-xp-fill" style="width: @xpPct.ToString("F0")%"></div>
+                    <div class="nav-xp-fill" style="width: @lp.Percent.ToString("F0")%"></div>
                 </div>
             </div>
         }
@@ -57,24 +57,21 @@
 
 <HubSheet Open="hubOpen" OnClose="CloseHub" />
 
-@if (IsActive("/") && level > 0)
+@if (IsActive("/") && lp.Level > 0)
 {
-    var ringLabel = $"Level {level}, {xpInLevel} of {xpNeeded} XP to level {level + 1}";
+    var ringLabel = $"Level {lp.Level}, {lp.XpInLevel} of {lp.XpNeeded} XP to level {lp.Level + 1}";
     <a class="level-ring" href="/profile" aria-label="@ringLabel" title="@ringLabel" @onclick:preventDefault @onclick='() => Navigate("/profile")'>
         <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
             <circle class="level-ring-track" cx="21" cy="21" r="18" />
-            <circle class="level-ring-fill" cx="21" cy="21" r="18" pathLength="100" stroke-dasharray="@xpPct.ToString("F0") 100" transform="rotate(-90 21 21)" />
+            <circle class="level-ring-fill" cx="21" cy="21" r="18" pathLength="100" stroke-dasharray="@lp.Percent.ToString("F0") 100" transform="rotate(-90 21 21)" />
         </svg>
-        <span class="level-ring-text"><small>LVL</small><strong>@level</strong></span>
+        <span class="level-ring-text"><small>LVL</small><strong>@lp.Level</strong></span>
     </a>
 }
 
 @code {
     private string currentUri = "";
-    private int level;
-    private int xpInLevel;
-    private int xpNeeded;
-    private double xpPct;
+    private LevelProgress lp;
     private bool hubOpen;
     private bool hubDot;
     private EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs>? _locationChangedHandler;
@@ -98,14 +95,8 @@
     private async Task LoadStats()
     {
         var profile = await Progress.GetProfileAsync();
-        level = Gamification.GetLevel(profile.TotalXp);
-        xpInLevel = Gamification.GetXpProgressInLevel(profile.TotalXp);
-        xpNeeded = Gamification.GetXpForNextLevel(level);
-        xpPct = xpNeeded > 0 ? (double)xpInLevel / xpNeeded * 100 : 0;
-
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
-        var dailyDone = profile.DailyChallengeDate == today && profile.DailyChallengeCompleted;
-        hubDot = !dailyDone || await ReviewService.GetDueCountAsync() > 0;
+        lp = Gamification.GetLevelProgress(profile.TotalXp);
+        hubDot = !profile.DailyChallengeDoneOn(DateTime.Now) || await ReviewService.GetDueCountAsync() > 0;
     }
 
     private async Task ToggleHub()
