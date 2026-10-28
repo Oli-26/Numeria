@@ -1,23 +1,6 @@
 @page "/rock-id"
-@inject IProgressService Progress
 @inject NavigationManager Nav
-@inject IJSRuntime JS
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Rock ID</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Rock ID" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Rock ID</h1>
@@ -58,8 +41,10 @@ else
                     <div class="prop"><span class="prop-key">Hardness</span><span class="prop-val">@currentRock.Hardness Mohs</span></div>
                     <div class="prop"><span class="prop-key">Grain</span><span class="prop-val">@currentRock.GrainSize</span></div>
                     <div class="prop"><span class="prop-key">Color</span><span class="prop-val">@currentRock.Color</span></div>
-                    <div class="prop"><span class="prop-key">Formation</span><span class="prop-val">@currentRock.Formation</span></div>
-                    <div class="prop prop-wide"><span class="prop-key">Key Minerals</span><span class="prop-val">@currentRock.Minerals</span></div>
+                    @if (FizzRocks.Contains(currentRock.Name))
+                    {
+                        <div class="prop prop-wide"><span class="prop-key">Acid test</span><span class="prop-val">Fizzes in dilute acid</span></div>
+                    }
                 </div>
             </div>
         </div>
@@ -102,12 +87,17 @@ else
         }
         else if (stage == "reveal")
         {
-            <div class="card reveal-card @(specificCorrect ? "reveal-ok" : "reveal-err")">
+            <div class="card reveal-card @(specificCorrect && classCorrect ? "reveal-ok" : "reveal-err")">
                 <div class="reveal-header">
-                    @if (specificCorrect)
+                    @if (specificCorrect && classCorrect)
                     {
                         <Icon Name="check" Size="22" Stroke="var(--success)" />
                         <span class="reveal-title ok">Correct!</span>
+                    }
+                    else if (specificCorrect)
+                    {
+                        <Icon Name="x-mark" Size="22" Stroke="var(--error)" />
+                        <span class="reveal-title err">Right rock, wrong class</span>
                     }
                     else
                     {
@@ -117,6 +107,14 @@ else
                 </div>
                 <div class="reveal-name">@currentRock.Name</div>
                 <div class="reveal-class class-tag class-@currentRock.Class">@currentRock.Class</div>
+                @if (specificCorrect && !classCorrect)
+                {
+                    <p class="reveal-note">Both steps must be right to score a point.</p>
+                }
+                <div class="reveal-facts">
+                    <div><span>Formation:</span> @currentRock.Formation</div>
+                    <div><span>Key minerals:</span> @currentRock.Minerals</div>
+                </div>
                 <p class="reveal-desc">@currentRock.Description</p>
                 <button class="btn btn-primary next-btn" @onclick="NextSample">
                     <Icon Name="dice" Size="16" /> Next Sample
@@ -149,10 +147,8 @@ else
         }
     </div>
 }
-}
 
 @code {
-    private bool unlocked;
     private string viewMode = "quiz";
     private string stage = "class"; // class -> specific -> reveal
     private Rock? currentRock;
@@ -164,20 +160,9 @@ else
     private bool classGuessed;
     private bool specificGuessed;
     private readonly Random rng = new();
+    private static readonly HashSet<string> FizzRocks = new() { "Limestone", "Chalk", "Marble" };
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            if (unlocked && currentRock == null)
-            {
-                NextSample();
-            }
-            StateHasChanged();
-        }
-    }
+    protected override void OnInitialized() => NextSample();
 
     private void SwitchMode(string mode)
     {
@@ -197,7 +182,10 @@ else
 
     private void NextSample()
     {
-        currentRock = rocks[rng.Next(rocks.Count)];
+        Rock next;
+        do { next = rocks[rng.Next(rocks.Count)]; }
+        while (rocks.Count > 1 && next == currentRock);
+        currentRock = next;
         stage = "class";
         classCorrect = false;
         specificCorrect = false;
@@ -292,12 +280,12 @@ else
             "Granite is a coarse-grained intrusive igneous rock formed from slowly cooled magma deep in the crust. Its visible crystals make up much of the continental crust.", SvgGranite),
         new("Basalt", "igneous", 6, "fine", "Dark grey to black", "Lava flows", "Plagioclase, pyroxene, olivine",
             "Basalt is a fine-grained extrusive igneous rock that solidifies rapidly from lava at the surface. It dominates ocean floors and forms features like the Giant's Causeway.", SvgBasalt),
-        new("Obsidian", "igneous", 6, "glassy", "Black, glassy", "Rapid lava cooling", "Volcanic glass (silica)",
+        new("Obsidian", "igneous", 5, "glassy", "Black, glassy", "Rapid lava cooling", "Volcanic glass (silica)",
             "Obsidian is a natural volcanic glass formed when felsic lava cools so quickly that crystals cannot grow. It fractures conchoidally and was prized for ancient blades and arrowheads.", SvgObsidian),
         new("Pumice", "igneous", 6, "fine, vesicular", "Pale cream", "Frothy lava ejecta", "Volcanic glass with gas pockets",
             "Pumice is a highly vesicular volcanic rock so full of gas bubbles that it often floats on water. It forms when frothy, gas-rich lava cools and solidifies almost instantly.", SvgPumice),
         new("Diorite", "igneous", 6, "coarse", "Salt-and-pepper", "Intermediate intrusion", "Plagioclase, hornblende",
-            "Diorite is a coarse-grained intrusive igneous rock with a striking black-and-white speckled appearance. It forms at depth from intermediate-composition magmas and was a favourite stone of the Inca.", SvgDiorite),
+            "Diorite is a coarse-grained intrusive igneous rock with a striking black-and-white speckled appearance. It forms at depth from intermediate-composition magmas and is hard and durable enough to have been used for ancient sculpture and monuments.", SvgDiorite),
         new("Gabbro", "igneous", 6, "coarse", "Dark green/black", "Deep mafic intrusion", "Plagioclase, pyroxene, olivine",
             "Gabbro is the coarse-grained, intrusive equivalent of basalt, crystallizing slowly from mafic magma deep underground. It forms much of the lower oceanic crust.", SvgGabbro),
         new("Rhyolite", "igneous", 6, "fine", "Pink, banded", "Felsic lava flows", "Quartz, feldspar",
@@ -309,7 +297,7 @@ else
             "Limestone is a sedimentary rock made primarily of calcium carbonate, often built up from shells and skeletons of marine organisms. It reacts with dilute acid and forms vast cave systems.", SvgLimestone),
         new("Sandstone", "sedimentary", 6, "medium", "Tan to red", "Beaches, dunes, rivers", "Quartz with iron oxide cement",
             "Sandstone is a clastic sedimentary rock made of cemented sand-sized grains, usually quartz. Its visible bedding records ancient deserts, rivers, and shorelines.", SvgSandstone),
-        new("Shale", "sedimentary", 3, "very fine", "Grey to black", "Quiet, deep water", "Clay minerals, quartz",
+        new("Shale", "sedimentary", 3, "very fine", "Grey to black", "Quiet water (lakes, lagoons, sea floors)", "Clay minerals, quartz",
             "Shale is a fissile sedimentary rock formed from compacted mud and clay in still water. It is the most abundant sedimentary rock and a major source of oil and natural gas.", SvgShale),
         new("Conglomerate", "sedimentary", 6, "very coarse", "Mixed, multicoloured", "High-energy rivers, beaches", "Rounded pebbles in matrix",
             "Conglomerate is a coarse sedimentary rock made of rounded pebbles cemented together in a finer matrix. The rounded clasts indicate transport by fast-flowing water.", SvgConglomerate),
@@ -423,6 +411,9 @@ else
     .reveal-title.err { color: var(--error); }
     .reveal-name { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 4px 0; }
     .reveal-class { display: inline-block; margin-bottom: 10px; }
+    .reveal-note { font-size: 0.82rem; color: var(--text-muted); margin: 0 0 10px; }
+    .reveal-facts { text-align: left; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px; display: grid; gap: 2px; }
+    .reveal-facts span { color: var(--text-muted); font-weight: 600; }
     .reveal-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 14px; text-align: left; }
     .next-btn { display: inline-flex; align-items: center; gap: 6px; }
 

@@ -1,23 +1,5 @@
 @page "/reaction-bench"
-@inject IProgressService Progress
 @inject NavigationManager Nav
-@inject IJSRuntime JS
-
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Reaction Bench</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Reaction Bench" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -27,7 +9,7 @@ else
 <div class="rb-intro card">
     <div class="rb-intro-row">
         <Icon Name="target" Size="18" Stroke="var(--accent)" />
-        <span>Pick 2 or 3 reagents from the palette, then run the reaction.</span>
+        <span>Pick 1 to 3 reagents from the palette, then run the reaction.</span>
     </div>
     <label class="rb-mystery">
         <input type="checkbox" @bind="mysteryMode" />
@@ -74,7 +56,7 @@ else
         }
     </div>
     <div class="rb-tray-actions">
-        <button class="btn btn-accent" disabled="@(selected.Count < 2)" @onclick="RunReaction">
+        <button class="btn btn-accent" disabled="@(selected.Count < 1)" @onclick="RunReaction">
             <Icon Name="zap" Size="16" /> React!
         </button>
         <button class="btn btn-ghost" @onclick="ClearAll" disabled="@(selected.Count == 0 && currentResult == null)">Clear</button>
@@ -89,7 +71,14 @@ else
     var rxn = currentResult;
     <div class="rb-result card">
         <div class="rb-result-head">
-            <span class="rb-type-badge type-@rxn.Type.ToLower().Replace(" ", "-").Replace("/", "-")">@rxn.Type</span>
+            @if (!mysteryMode || revealed)
+            {
+                <span class="rb-type-badge type-@rxn.Type.ToLower().Replace(" ", "-").Replace("/", "-")">@rxn.Type</span>
+            }
+            else
+            {
+                <span></span>
+            }
             @if (mysteryMode && !revealed)
             {
                 <button class="btn btn-accent btn-sm" @onclick="() => revealed = true">
@@ -98,6 +87,10 @@ else
             }
         </div>
 
+        @if (rxn.Warning != null)
+        {
+            <div class="rb-warning" role="alert"><strong>Never mix these at home.</strong> @rxn.Warning</div>
+        }
         <div class="rb-viz">
             @switch (rxn.Effect)
             {
@@ -197,32 +190,28 @@ else if (showNoMatch)
 {
     <div class="rb-result card">
         <div class="rb-no-match">
-            <strong>No known reaction.</strong>
-            <p>Try a classic acid + base, an active metal + acid, or a halide salt + silver nitrate.</p>
+            @if (noReaction != null)
+            {
+                <strong>Does not react.</strong>
+                <p>@noReaction.Reason</p>
+            }
+            else
+            {
+                <strong>Not in this bench yet.</strong>
+                <p>This combination is not modelled here, which does not mean nothing happens. Try a classic acid + base, an active metal + acid, or a halide salt + silver nitrate.</p>
+            }
         </div>
     </div>
 }
 
-}
-
 @code {
-    private bool unlocked;
     private HashSet<string> selected = new();
     private bool mysteryMode;
     private bool revealed;
     private bool showNoMatch;
+    private NonReaction? noReaction;
     private Reaction? currentResult;
     private Random rng = new();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
 
     private void ToggleReagent(string formula)
     {
@@ -230,6 +219,7 @@ else if (showNoMatch)
         else if (selected.Count < 3) selected.Add(formula);
         currentResult = null;
         showNoMatch = false;
+        noReaction = null;
         revealed = false;
     }
 
@@ -238,6 +228,7 @@ else if (showNoMatch)
         selected.Clear();
         currentResult = null;
         showNoMatch = false;
+        noReaction = null;
         revealed = false;
     }
 
@@ -252,15 +243,20 @@ else if (showNoMatch)
     {
         revealed = false;
         showNoMatch = false;
+        noReaction = null;
         currentResult = null;
 
-        var match = reactions.FirstOrDefault(r =>
-            r.Reagents.Length == selected.Count &&
-            r.Reagents.All(x => selected.Contains(x)));
-
+        var match = reactions.FirstOrDefault(r => SameSet(r.Reagents));
         if (match != null) currentResult = match;
-        else showNoMatch = true;
+        else
+        {
+            noReaction = nonReactions.FirstOrDefault(n => SameSet(n.Reagents));
+            showNoMatch = true;
+        }
     }
+
+    private bool SameSet(string[] reagentSet) =>
+        reagentSet.Length == selected.Count && reagentSet.All(selected.Contains);
 
     private record Reagent(string Formula, string Display, string Name);
 
@@ -271,7 +267,9 @@ else if (showNoMatch)
         string Type,
         string Explanation,
         string Effect,
-        string? ColorHex = null);
+        string? ColorHex = null,
+        string? Warning = null);
+    private record NonReaction(string[] Reagents, string Reason);
 
     private List<Reagent> reagents = new()
     {
@@ -294,7 +292,22 @@ else if (showNoMatch)
         new("EtOH", "C<sub>2</sub>H<sub>5</sub>OH", "Ethanol"),
         new("Glu", "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", "Glucose"),
         new("CH3COOH", "CH<sub>3</sub>COOH", "Vinegar"),
-        new("NaOCl", "NaOCl", "Bleach")
+        new("NaOCl", "NaOCl", "Bleach"),
+        new("Yeast", "Yeast", "Yeast")
+    };
+
+    private List<NonReaction> nonReactions = new()
+    {
+        new(new[] { "Cu", "HCl" }, "Copper sits below hydrogen in the reactivity series, so dilute hydrochloric acid cannot displace hydrogen from it."),
+        new(new[] { "Cu", "H2O" }, "Copper is not reactive enough to displace hydrogen from water."),
+        new(new[] { "Cu", "NaOH" }, "Copper does not react with sodium hydroxide solution."),
+        new(new[] { "Cu", "NaCl" }, "Copper does not displace sodium: it is far less reactive than sodium."),
+        new(new[] { "Fe", "NaOH" }, "Iron does not react with sodium hydroxide solution at room temperature."),
+        new(new[] { "NaCl", "NaOH" }, "Both are ionic compounds sharing sodium; mixing them just gives a solution of ions with no new product."),
+        new(new[] { "NaCl", "HCl" }, "Salt only adds more chloride ions to the acid; no new substance forms."),
+        new(new[] { "CH4", "H2O" }, "Methane is nonpolar and barely dissolves; at room temperature it does not react with water."),
+        new(new[] { "H2", "H2O" }, "Hydrogen does not react with water; it just bubbles through."),
+        new(new[] { "CO2", "HCl" }, "Carbon dioxide does not react with a strong acid; its own acid, carbonic acid, is far weaker.")
     };
 
     private List<Reaction> reactions = new()
@@ -310,7 +323,7 @@ else if (showNoMatch)
             "CH<sub>3</sub>COOH + NaOH &rarr; CH<sub>3</sub>COONa + H<sub>2</sub>O",
             "Sodium acetate and water",
             "Acid-base",
-            "Weak acid neutralized by strong base, producing a buffer salt and water.",
+            "Weak acid neutralized by strong base, producing sodium acetate and water. Left with some unreacted acetic acid, that sodium acetate would make a buffer.",
             "heat"),
         new(new[] { "HCl", "NH3" },
             "HCl + NH<sub>3</sub> &rarr; NH<sub>4</sub>Cl",
@@ -327,9 +340,9 @@ else if (showNoMatch)
             "none"),
         new(new[] { "CH3COOH", "NaOCl" },
             "CH<sub>3</sub>COOH + NaOCl &rarr; CH<sub>3</sub>COONa + HOCl",
-            "Sodium acetate and hypochlorous acid (toxic vapors!)",
+            "Sodium acetate and hypochlorous acid (toxic chlorine gas can follow)",
             "Acid-base",
-            "Mixing vinegar with bleach releases toxic chlorine vapors. Never do this in real life.",
+            "Vinegar turns bleach into hypochlorous acid, which readily gives off toxic chlorine gas, especially with extra acid. Never do this in real life.",
             "gas"),
 
         // Combustion
@@ -476,7 +489,7 @@ else if (showNoMatch)
             "2 H<sub>2</sub>O &rarr; 2 H<sub>2</sub> + O<sub>2</sub>",
             "Hydrogen and oxygen gas",
             "Electrolysis",
-            "Passing electricity through water splits it into hydrogen and oxygen.",
+            "Select water on its own: passing electricity through it splits it into hydrogen and oxygen.",
             "split"),
 
         // Salt dissolution
@@ -484,16 +497,43 @@ else if (showNoMatch)
             "NaCl(s) &rarr; Na<sup>+</sup>(aq) + Cl<sup>&minus;</sup>(aq)",
             "Sodium and chloride ions in solution",
             "Dissolution",
-            "Salt dissociates into hydrated ions in water; no chemical bonds are broken in the salt itself.",
+            "Salt dissociates into hydrated ions in water; the ionic lattice breaks apart, but no new substance forms and the ions can be recovered by evaporating the water.",
             "none"),
 
-        // Glucose + yeast-style fermentation analog (no enzymes listed but okay)
         new(new[] { "Glu", "H2O" },
-            "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> &rarr; 2 C<sub>2</sub>H<sub>5</sub>OH + 2 CO<sub>2</sub>",
+            "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>(s) &rarr; C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>(aq)",
+            "Glucose solution",
+            "Dissolution",
+            "Glucose dissolves readily in water as whole molecules. No new substance forms, and nothing ferments without yeast.",
+            "none"),
+
+        new(new[] { "Glu", "H2O", "Yeast" },
+            "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> &rarr;<sup>yeast</sup> 2 C<sub>2</sub>H<sub>5</sub>OH + 2 CO<sub>2</sub>",
             "Ethanol and carbon dioxide",
             "Fermentation",
-            "Yeasts convert glucose dissolved in water into ethanol and CO<sub>2</sub>, the basis of brewing.",
+            "Yeast enzymes convert glucose into ethanol and CO<sub>2</sub> in the absence of oxygen. The water is the solvent that keeps the yeast alive; it does not appear in the equation. This is the basis of brewing and baking.",
             "gas"),
+
+        new(new[] { "Na", "HCl" },
+            "2 Na + 2 HCl &rarr; 2 NaCl + H<sub>2</sub>",
+            "Sodium chloride and hydrogen gas",
+            "Single replacement",
+            "Sodium reacts even more violently with acid than with plain water, spitting hydrogen and heat. Dangerous: it can ignite the hydrogen.",
+            "gas"),
+        new(new[] { "Mg", "CH3COOH" },
+            "Mg + 2 CH<sub>3</sub>COOH &rarr; Mg(CH<sub>3</sub>COO)<sub>2</sub> + H<sub>2</sub>",
+            "Magnesium acetate and hydrogen gas",
+            "Single replacement",
+            "Magnesium is active enough to displace hydrogen even from weak vinegar, though more slowly than from HCl.",
+            "gas"),
+        new(new[] { "NaOCl", "NH3" },
+            "NaOCl + NH<sub>3</sub> &rarr; NH<sub>2</sub>Cl + NaOH",
+            "Chloramine and sodium hydroxide",
+            "Redox",
+            "Bleach and ammonia form chloramine, a toxic gas that damages the lungs. With more bleach it can go on to form more hazardous products.",
+            "gas",
+            null,
+            "Bleach plus ammonia (found in many cleaners) releases toxic chloramine vapour that can cause serious lung damage."),
 
         // Cu + AgNO3 single replacement
         new(new[] { "Cu", "AgNO3" },
@@ -604,6 +644,13 @@ else if (showNoMatch)
         padding: 12px; background: color-mix(in srgb, var(--primary) 8%, transparent); border-radius: var(--radius-sm);
         color: var(--text-secondary); font-size: 0.9rem;
     }
+
+    .rb-warning {
+        padding: 10px 12px; margin-bottom: 10px; border-radius: var(--radius-sm); font-size: 0.85rem; line-height: 1.5;
+        background: color-mix(in srgb, var(--error) 12%, transparent); color: var(--text-primary);
+        border: 1px solid var(--error);
+    }
+    .rb-warning strong { color: var(--error); }
 
     .rb-no-match strong { color: var(--error); display: block; margin-bottom: 6px; }
     .rb-no-match p { margin: 0; color: var(--text-secondary); font-size: 0.85rem; }

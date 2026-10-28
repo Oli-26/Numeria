@@ -1,38 +1,26 @@
 @page "/trolley-lab"
-@inject IProgressService Progress
 @inject NavigationManager Nav
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Trolley Lab</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Trolley Lab" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
+@{
     var dilemma = dilemmas[index];
+}
 
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Trolley Lab</h1>
-    </div>
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Trolley Lab</h1>
+</div>
 
-    <div class="card tl-intro">
-        <Icon Name="puzzle" Size="22" Stroke="var(--accent)" />
-        <p>Each scenario forces a choice. Your verdicts shape your ethical profile: consequentialist, deontological, virtue, or contractualist.</p>
-    </div>
+<div class="card tl-intro">
+    <Icon Name="puzzle" Size="22" Stroke="var(--accent)" />
+    <p>Each scenario forces a choice. After each verdict you see where the four major frameworks tend to land, and a profile at the end shows how often you sided with each: utilitarian, deontological, virtue, or contractualist.</p>
+</div>
 
-    <div class="card tl-dilemma">
-        <div class="tl-tag">@dilemma.Title</div>
-        <p class="tl-prompt">@((MarkupString)dilemma.Prompt)</p>
+<div class="card tl-dilemma">
+    <div class="tl-tag">@dilemma.Title (@(index + 1)/@dilemmas.Count)</div>
+    <p class="tl-prompt">@((MarkupString)dilemma.Prompt)</p>
 
+    @if (dilemma.Tracks)
+    {
         <div class="tl-tracks">
             <svg viewBox="0 0 320 120" class="tl-svg">
                 <line x1="20" y1="60" x2="160" y2="60" stroke="var(--text-secondary)" stroke-width="3"/>
@@ -45,65 +33,72 @@ else
                 <rect x="20" y="50" width="24" height="20" rx="3" fill="var(--primary)"/>
             </svg>
         </div>
-
-        @if (verdict == null)
-        {
-            <div class="tl-actions">
-                <button class="btn btn-accent" @onclick="() => Choose(0)">@dilemma.OptionA</button>
-                <button class="btn btn-outline" @onclick="() => Choose(1)">@dilemma.OptionB</button>
-            </div>
-        }
-        else
-        {
-            <div class="tl-result">
-                <strong>You chose: @(verdict == 0 ? dilemma.OptionA : dilemma.OptionB)</strong>
-                <p>@dilemma.Resolution</p>
-                <div class="tl-frames">
-                    <div class="tl-frame"><span>Util.</span> <strong>@(verdict == dilemma.UtilPick ? "✓" : "✗")</strong></div>
-                    <div class="tl-frame"><span>Deont.</span> <strong>@(verdict == dilemma.DeontPick ? "✓" : "✗")</strong></div>
-                    <div class="tl-frame"><span>Virtue</span> <strong>@(verdict == dilemma.VirtuePick ? "✓" : "✗")</strong></div>
-                    <div class="tl-frame"><span>Contract</span> <strong>@(verdict == dilemma.ContractPick ? "✓" : "✗")</strong></div>
-                </div>
-                <button class="btn btn-primary" style="margin-top:12px;width:100%" @onclick="Next">@(index < dilemmas.Count - 1 ? "Next dilemma" : "See profile")</button>
-            </div>
-        }
-    </div>
-
-    @if (showProfile)
+    }
+    else
     {
-        <div class="card tl-profile">
-            <h3>Your ethical profile</h3>
-            <div class="tl-bars">
-                @foreach (var (label, score) in Scores())
+        <p class="tl-stakes">At stake: @dilemma.OptionACost (first option) versus @dilemma.OptionBCost (second option).</p>
+    }
+
+    @if (verdict == null)
+    {
+        <div class="tl-actions">
+            <button class="btn btn-accent" @onclick="() => Choose(0)">@dilemma.OptionA</button>
+            <button class="btn btn-outline" @onclick="() => Choose(1)">@dilemma.OptionB</button>
+        </div>
+    }
+    else
+    {
+        <div class="tl-result">
+            <strong>You chose: @(verdict == 0 ? dilemma.OptionA : dilemma.OptionB)</strong>
+            <p>@dilemma.Resolution</p>
+            <div class="tl-frames">
+                @for (int f = 0; f < FrameworkNames.Length; f++)
                 {
-                    <div class="tl-bar-row">
-                        <span>@label</span>
-                        <div class="tl-bar"><div class="tl-bar-fill" style="@($"width:{score * 100 / dilemmas.Count}%")"></div></div>
-                        <strong>@score / @dilemmas.Count</strong>
+                    <div class="tl-frame">
+                        <div class="tl-frame-head">
+                            <span>@FrameworkNames[f]</span>
+                            <strong>@LeanText(dilemma, f, verdict.Value)</strong>
+                        </div>
+                        <p>@dilemma.Why[f]</p>
                     </div>
                 }
             </div>
-            <button class="btn btn-outline" style="margin-top:12px;width:100%" @onclick="Reset">Restart</button>
+            <button class="btn btn-primary" style="margin-top:12px;width:100%" @onclick="Next">@(index < dilemmas.Count - 1 ? "Next dilemma" : "See profile")</button>
         </div>
     }
+
+    @if (picks.Count > 0)
+    {
+        <button class="btn btn-outline tl-undo" @onclick="Undo">Undo (back one dilemma)</button>
+    }
+</div>
+
+@if (showProfile)
+{
+    <div class="card tl-profile">
+        <h3>Your ethical profile</h3>
+        <p class="tl-stakes">How often your choices matched what each framework tends to favour. Dilemmas where a framework is divided are not counted for it.</p>
+        <div class="tl-bars">
+            @foreach (var (label, agree, total) in Scores())
+            {
+                <div class="tl-bar-row">
+                    <span>@label</span>
+                    <div class="tl-bar"><div class="tl-bar-fill" style="@($"width:{(total == 0 ? 0 : agree * 100 / total)}%")"></div></div>
+                    <strong>@agree / @total</strong>
+                </div>
+            }
+        </div>
+        <button class="btn btn-outline" style="margin-top:12px;width:100%" @onclick="Reset">Restart</button>
+    </div>
 }
 
 @code {
-    private bool unlocked;
+    private static readonly string[] FrameworkNames = { "Utilitarian", "Deontological", "Virtue", "Contractualist" };
+
     private int index;
     private int? verdict;
     private bool showProfile;
     private readonly List<int> picks = new();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
 
     private void Choose(int v)
     {
@@ -117,50 +112,136 @@ else
         else showProfile = true;
     }
 
-    private void Reset() { index = 0; verdict = null; showProfile = false; picks.Clear(); }
-
-    private List<(string, int)> Scores()
+    private void Undo()
     {
-        int u = 0, d = 0, v = 0, c = 0;
-        for (int i = 0; i < picks.Count; i++)
-        {
-            if (picks[i] == dilemmas[i].UtilPick) u++;
-            if (picks[i] == dilemmas[i].DeontPick) d++;
-            if (picks[i] == dilemmas[i].VirtuePick) v++;
-            if (picks[i] == dilemmas[i].ContractPick) c++;
-        }
-        return new() { ("Utilitarian", u), ("Deontological", d), ("Virtue ethics", v), ("Contractualist", c) };
+        if (picks.Count == 0) return;
+        if (verdict == null) index--;
+        picks.RemoveAt(picks.Count - 1);
+        verdict = null;
+        showProfile = false;
     }
 
+    private void Reset() { index = 0; verdict = null; showProfile = false; picks.Clear(); }
+
+    private static string LeanText(Dilemma d, int f, int pick)
+    {
+        var lean = d.Lean[f];
+        if (lean == null) return "Divided";
+        return lean == pick ? "Agrees with you" : "Differs from you";
+    }
+
+    private List<(string, int, int)> Scores()
+    {
+        var result = new List<(string, int, int)>();
+        for (int f = 0; f < FrameworkNames.Length; f++)
+        {
+            int agree = 0, total = 0;
+            for (int i = 0; i < picks.Count; i++)
+            {
+                var lean = dilemmas[i].Lean[f];
+                if (lean == null) continue;
+                total++;
+                if (picks[i] == lean) agree++;
+            }
+            result.Add((FrameworkNames[f], agree, total));
+        }
+        return result;
+    }
+
+    // Lean and Why are indexed utilitarian, deontological, virtue, contractualist; null lean = divided.
     private record Dilemma(string Title, string Prompt, string OptionA, string OptionB,
-        string OptionACost, string OptionBCost, int UtilPick, int DeontPick, int VirtuePick, int ContractPick, string Resolution);
+        string OptionACost, string OptionBCost, bool Tracks, int?[] Lean, string[] Why, string Resolution);
 
     private static readonly List<Dilemma> dilemmas = new()
     {
         new("The Switch", "A runaway trolley will kill <strong>five</strong> workers. You can pull a lever to divert it to a side track where it kills <strong>one</strong>.",
-            "Pull the lever", "Do nothing", "1 dies", "5 die", 0, 1, 0, 0,
-            "Most people pull. Utilitarians clearly say yes; deontologists worry you've used the one as a means. Foot's original 1967 case."),
+            "Pull the lever", "Do nothing", "1 dies", "5 die", true,
+            new int?[] { 0, null, null, 0 },
+            new[]
+            {
+                "Five lives outweigh one, so divert.",
+                "Divided: the death is a foreseen side effect, not your means, so many deontologists permit it; strict ones still object to killing.",
+                "Divided: acting decisively to save five can be compassion, but taking a life by choice can also be a vice.",
+                "Few would reject a rule that lets the lever be pulled, since anyone could be one of the five."
+            },
+            "Most people pull. Utilitarians say yes. Many deontologists also allow it, because the death is a side effect rather than the means (the doctrine of double effect). Foot's 1967 case had a tram driver steering; the bystander at a lever is Thomson's (1976, 1985) version."),
         new("The Footbridge", "Same trolley, five workers. The only way to stop it is to push a <strong>large stranger</strong> off a footbridge into its path. His mass will stop it.",
-            "Push the stranger", "Do nothing", "1 dies (by your hand)", "5 die", 0, 1, 1, 1,
-            "Most people refuse. The math is identical to the Switch, but pushing feels like murder. Reveals the doing/allowing distinction."),
+            "Push the stranger", "Do nothing", "1 dies (by your hand)", "5 die", true,
+            new int?[] { 0, 1, 1, 1 },
+            new[]
+            {
+                "The sums are the same as the Switch: five outweigh one.",
+                "Using the stranger's body as a means to save others treats him as a mere tool.",
+                "Shoving someone to his death is callous; a person of good character recoils.",
+                "A principle allowing people to be used as stopping devices is one no one could accept."
+            },
+            "Most people refuse. The arithmetic matches the Switch, but here the victim's death is the means of saving the five, not a side effect. Greene's account points instead to the personal force of pushing."),
         new("The Surgeon", "Five patients will die without organ transplants. A healthy traveler walks in for a checkup. Their organs would save all five.",
-            "Harvest organs", "Let five die", "1 dies", "5 die", 0, 1, 1, 1,
-            "Almost no one accepts this. Same utilitarian math, but trust in institutions collapses if surgeons calculate. The contractualist objection is strongest here."),
+            "Harvest organs", "Let five die", "1 dies", "5 die", false,
+            new int?[] { 0, 1, 1, 1 },
+            new[]
+            {
+                "The bare sums favour harvesting, though rule utilitarians stress the damage to trust in medicine.",
+                "It treats a patient as spare parts and violates the duty not to kill.",
+                "It betrays the trust and care that define a doctor's role.",
+                "No one could accept a medical system that might sacrifice them; the objection is strongest here."
+            },
+            "Almost no one accepts this. The sums look utilitarian, but trust in institutions collapses if surgeons calculate."),
         new("The Crying Baby", "Soldiers will find your hiding village if they hear a sound. Your baby cries. You can smother her, or all 30 villagers, including her, will be killed.",
-            "Smother the baby", "Risk discovery", "1 dies", "30 die", 0, 1, 1, 0,
-            "An impossible choice. M*A*S*H, Sophie's Choice, and Walzer's just-war essays all turn on it. The act feels monstrous; the alternative is worse."),
+            "Smother the baby", "Risk discovery", "1 dies", "30 die", false,
+            new int?[] { 0, null, null, null },
+            new[]
+            {
+                "One death rather than thirty, and the baby likely dies either way.",
+                "Divided: killing an innocent is forbidden, but some argue she would die regardless and the soldiers are the killers.",
+                "Divided: it is hard to say what a loving, courageous person does here; many call it tragic rather than right.",
+                "Divided: reasonable principles pull in opposite directions."
+            },
+            "An impossible choice, familiar from M*A*S*H and used in Greene and colleagues' fMRI studies of moral judgment. The act feels monstrous; the alternative is worse. Philosophers disagree over whether it is permitted or merely tragic."),
         new("Ticking Bomb", "A captured terrorist knows where a bomb is hidden that will kill thousands. Torture might extract the location.",
-            "Authorize torture", "Refuse torture", "1 person harmed", "Thousands at risk", 0, 1, 1, 1,
-            "Real intelligence services say torture rarely works. Philosophical thought experiments treat the info as guaranteed, which is the trick. Most ethicists reject the framing."),
+            "Authorize torture", "Refuse torture", "1 person harmed", "Thousands at risk", false,
+            new int?[] { null, 1, 1, 1 },
+            new[]
+            {
+                "Divided: the thought experiment favours torture, but real-world effects (unreliable information, abuse, lost trust) lead many utilitarians to reject it.",
+                "Torture violates a person's dignity; many deontologists treat the ban as absolute.",
+                "Deliberate cruelty corrodes the character of the people and institutions that practise it.",
+                "A rule allowing torture could be abused against anyone, so it is hard to justify to all."
+            },
+            "Philosophical versions stipulate that the information is guaranteed, which is the trick. In practice, reviews of real interrogation programs, including the 2014 US Senate Intelligence Committee report, found little evidence that torture produced intelligence that could not be obtained otherwise. Most ethicists reject the framing."),
         new("Self-Driving Car", "A self-driving car must choose: hit five jaywalking pedestrians, or swerve into a wall, killing its single passenger.",
-            "Save pedestrians (kill passenger)", "Save passenger (hit pedestrians)", "1 dies", "5 die", 0, 0, 0, 0,
-            "The MIT Moral Machine survey: people want others' cars to sacrifice the passenger, but they want their own car to protect them. Markets respond accordingly."),
-        new("Famine Relief", "You can donate $200 to save a child's life from preventable disease. Or buy a new pair of shoes.",
-            "Donate", "Keep the money", "$200 lost", "1 child dies", 0, 0, 0, 0,
-            "Peter Singer's drowning child argument extended. Almost everyone says donate is right, almost no one consistently does it. Demandingness is the deepest objection to utilitarianism."),
+            "Save pedestrians (kill passenger)", "Save passenger (hit pedestrians)", "1 dies", "5 die", false,
+            new int?[] { 0, null, null, null },
+            new[]
+            {
+                "Minimise deaths: one passenger rather than five pedestrians.",
+                "Divided: swerving deliberately kills the passenger, while staying the course kills the pedestrians; the doing/allowing line is unclear for a programmed car.",
+                "Divided: the designer must weigh care for the passenger against responsibility to others.",
+                "Divided: pedestrians and passengers can each claim a fair rule favours them, and jaywalking adds a further complication."
+            },
+            "Bonnefon, Shariff and Rahwan (Science, 2016) found people approve of cars that sacrifice their passenger for the greater number, but prefer to buy cars that protect them. The Moral Machine experiment (Awad et al., Nature, 2018) later collected millions of such judgments worldwide. Markets respond accordingly."),
+        new("Famine Relief", "Charity evaluators estimate that a few thousand dollars can save a child's life from preventable disease. You could donate that amount, or spend it on something for yourself.",
+            "Donate", "Keep the money", "Several thousand dollars", "A child's life at risk", false,
+            new int?[] { 0, null, 0, 0 },
+            new[]
+            {
+                "A child's life is worth far more than the comfort the money would buy.",
+                "Divided: there is a duty of beneficence, but how demanding it is, and whether it is owed in this specific case, is disputed.",
+                "Generosity and compassion are virtues; ignoring a child you could easily help is a vice.",
+                "Few could reject a modest principle of rescue when the cost to you is small."
+            },
+            "Peter Singer's drowning child argument extends to this. Early versions (Unger and Singer in the 1990s) quoted figures near $200 per life; current estimates are several thousand dollars. Almost everyone says donating is right, almost no one consistently does it. Demandingness is the deepest objection to utilitarianism."),
         new("Lying Murderer", "A killer asks where your friend is hiding. You know. The killer will believe whatever you say.",
-            "Lie", "Tell the truth", "Friend lives", "Friend dies", 0, 1, 0, 0,
-            "Kant famously said you must not lie even here. Almost everyone disagrees. Some Kantians have spent 200 years trying to rescue him from his own example.")
+            "Lie", "Tell the truth", "Friend lives", "Friend dies", false,
+            new int?[] { 0, 1, 0, 0 },
+            new[]
+            {
+                "Saving a life far outweighs the small harm of a lie.",
+                "Kant held that lying is wrong even here, though many later deontologists disagree.",
+                "Honesty does not oblige you to help a murderer; loyalty and courage point to lying.",
+                "No one could reasonably demand that you hand over a victim to a killer."
+            },
+            "Kant famously said you must not lie even here. Almost everyone disagrees. Some Kantians have spent two centuries trying to rescue him from his own example.")
     };
 }
 
@@ -178,15 +259,19 @@ else
 
     .tl-result strong { display: block; font-size: 0.95rem; margin-bottom: 6px; }
     .tl-result p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 12px; }
-    .tl-frames { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .tl-frame { background: var(--bg-surface); padding: 8px 6px; border-radius: var(--radius-sm); text-align: center; }
-    .tl-frame span { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px; }
-    .tl-frame strong { font-size: 0.95rem; color: var(--text-primary); }
+    .tl-frames { display: flex; flex-direction: column; gap: 6px; }
+    .tl-frame { background: var(--bg-surface); padding: 8px 10px; border-radius: var(--radius-sm); }
+    .tl-frame-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+    .tl-frame-head span { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+    .tl-result .tl-frame-head strong { font-size: 0.8rem; margin: 0; color: var(--text-primary); }
+    .tl-result .tl-frame p { font-size: 0.78rem; margin: 0; }
+    .tl-stakes { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px; }
+    .tl-undo { margin-top: 8px; width: 100%; }
 
     .tl-profile { padding: 16px; }
     .tl-profile h3 { margin: 0 0 12px; font-size: 1rem; }
     .tl-bars { display: flex; flex-direction: column; gap: 10px; }
-    .tl-bar-row { display: grid; grid-template-columns: 100px 1fr 50px; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .tl-bar-row { display: grid; grid-template-columns: 100px 1fr 44px; align-items: center; gap: 8px; font-size: 0.8rem; }
     .tl-bar { height: 8px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; }
     .tl-bar-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
     .tl-bar-row strong { text-align: right; font-weight: 700; color: var(--primary); }

@@ -1,219 +1,212 @@
 @page "/front-page"
-@inject IProgressService Progress
 @inject NavigationManager Nav
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Front Page Builder</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Front Page Builder" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
+@{
     var s = stories[storyIndex];
+}
 
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Front Page Builder</h1>
-    </div>
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Front Page Builder</h1>
+</div>
 
-    <div class="card fp-intro">
-        <Icon Name="antenna" Size="22" Stroke="var(--accent)" />
-        <p>Same event, three story angles. Pick a headline, a photo caption, and a featured quote. The newsroom rates how the page frames the story.</p>
-    </div>
+<div class="card fp-intro">
+    <Icon Name="antenna" Size="22" Stroke="var(--accent)" />
+    <p>Same event, three story angles. Pick a headline, a photo caption, and a featured quote. The newsroom rates how the page frames the story and whether it stays true to the facts.</p>
+</div>
 
-    <div class="fp-tabs">
-        @for (int i = 0; i < stories.Count; i++)
+<div class="fp-tabs">
+    @for (int i = 0; i < stories.Count; i++)
+    {
+        var ix = i;
+        <button class="fp-tab @(storyIndex == ix ? "active" : "")" @onclick='() => { storyIndex = ix; Reset(); }'>@stories[ix].Topic</button>
+    }
+</div>
+
+<div class="card fp-event">
+    <small class="fp-stamp">The event</small>
+    <p>@s.Event</p>
+</div>
+
+<div class="card fp-slot">
+    <small class="fp-stamp">Headline</small>
+    <div class="fp-options">
+        @foreach (var o in s.Headlines)
         {
-            var ix = i;
-            <button class="fp-tab @(storyIndex == ix ? "active" : "")" @onclick='() => { storyIndex = ix; Reset(); }'>@stories[ix].Topic</button>
+            var opt = o;
+            <button class="fp-option @(headline?.Text == opt.Text ? "picked" : "")" @onclick="() => headline = opt">@opt.Text</button>
         }
     </div>
+</div>
 
-    <div class="card fp-event">
-        <small class="fp-stamp">The event</small>
-        <p>@s.Event</p>
+<div class="card fp-slot">
+    <small class="fp-stamp">Photo caption</small>
+    <div class="fp-options">
+        @foreach (var o in s.Captions)
+        {
+            var opt = o;
+            <button class="fp-option @(caption?.Text == opt.Text ? "picked" : "")" @onclick="() => caption = opt">@opt.Text</button>
+        }
     </div>
+</div>
 
-    <div class="card fp-slot">
-        <small class="fp-stamp">Headline</small>
-        <div class="fp-options">
-            @foreach (var o in s.Headlines)
-            {
-                var opt = o;
-                <button class="fp-option @(headline?.Text == opt.Text ? "picked" : "")" @onclick="() => headline = opt">@opt.Text</button>
-            }
-        </div>
+<div class="card fp-slot">
+    <small class="fp-stamp">Featured quote</small>
+    <div class="fp-options">
+        @foreach (var o in s.Quotes)
+        {
+            var opt = o;
+            <button class="fp-option @(quote?.Text == opt.Text ? "picked" : "")" @onclick="() => quote = opt">@opt.Text</button>
+        }
     </div>
+</div>
 
-    <div class="card fp-slot">
-        <small class="fp-stamp">Photo caption</small>
-        <div class="fp-options">
-            @foreach (var o in s.Captions)
-            {
-                var opt = o;
-                <button class="fp-option @(caption?.Text == opt.Text ? "picked" : "")" @onclick="() => caption = opt">@opt.Text</button>
-            }
-        </div>
-    </div>
-
-    <div class="card fp-slot">
-        <small class="fp-stamp">Featured quote</small>
-        <div class="fp-options">
-            @foreach (var o in s.Quotes)
-            {
-                var opt = o;
-                <button class="fp-option @(quote?.Text == opt.Text ? "picked" : "")" @onclick="() => quote = opt">@opt.Text</button>
-            }
-        </div>
-    </div>
-
-    @if (headline != null && caption != null && quote != null)
+@if (headline != null && caption != null && quote != null)
+{
+    var picks = new[] { ("Headline", headline), ("Caption", caption), ("Quote", quote) };
+    var totalLean = headline.Lean + caption.Lean + quote.Lean;
+    var totalSensation = headline.Sensation + caption.Sensation + quote.Sensation;
+    var misstated = picks.Where(p => !p.Item2.Accurate).Select(p => p.Item1.ToLowerInvariant()).ToList();
+    var leanLabel = totalLean switch
     {
-        var totalLean = headline.Lean + caption.Lean + quote.Lean;
-        var totalSensation = headline.Sensation + caption.Sensation + quote.Sensation;
-        var leanLabel = totalLean switch
-        {
-            <= -4 => ("Strong critical frame", "#E74C3C"),
-            <= -1 => ("Critical lean", "#E67E22"),
-            >= 4 => ("Strong supportive frame", "#1ABC9C"),
-            >= 1 => ("Supportive lean", "#2ECC71"),
-            _ => ("Balanced", "#7B68EE")
-        };
-        var sensLabel = totalSensation switch
-        {
-            >= 6 => ("Tabloid pitch", "#E91E63"),
-            >= 3 => ("Punchy", "#F39C12"),
-            _ => ("Restrained", "#4A90D9")
-        };
+        <= -4 => ($"Strongly critical of {s.Subject}", "#E74C3C"),
+        <= -1 => ($"Leans critical of {s.Subject}", "#E67E22"),
+        >= 4 => ($"Strongly supportive of {s.Subject}", "#1ABC9C"),
+        >= 1 => ($"Leans supportive of {s.Subject}", "#2ECC71"),
+        _ => ("Balanced", "#7B68EE")
+    };
+    var sensLabel = totalSensation switch
+    {
+        >= 6 => ("Tabloid pitch", "#E91E63"),
+        >= 3 => ("Punchy", "#F39C12"),
+        _ => ("Restrained", "#4A90D9")
+    };
+    var accLabel = misstated.Count == 0
+        ? ("Accurate: nothing contradicts the facts", "#2ECC71")
+        : ($"Misstates the facts: {string.Join(", ", misstated)}", "#E74C3C");
 
-        <div class="card fp-mock">
-            <small class="fp-stamp">Mock front page</small>
-            <h2 class="fp-headline">@headline.Text</h2>
-            <p class="fp-caption">"@caption.Text"</p>
-            <blockquote class="fp-quote">@quote.Text</blockquote>
-        </div>
+    <div class="card fp-mock">
+        <small class="fp-stamp">Mock front page</small>
+        <h2 class="fp-headline">@headline.Text</h2>
+        <p class="fp-caption">"@caption.Text"</p>
+        <blockquote class="fp-quote">@quote.Text</blockquote>
+    </div>
 
-        <div class="card fp-rating">
-            <h3>Newsroom assessment</h3>
-            <div class="fp-rate-row">
-                <span>Frame</span>
-                <strong style="@($"color:{leanLabel.Item2}")">@leanLabel.Item1</strong>
-            </div>
-            <div class="fp-rate-row">
-                <span>Tone</span>
-                <strong style="@($"color:{sensLabel.Item2}")">@sensLabel.Item1</strong>
-            </div>
-            <p class="fp-blurb">@s.LessonAfter</p>
+    <div class="card fp-rating">
+        <h3>Newsroom assessment</h3>
+        <div class="fp-rate-row">
+            <span>Frame</span>
+            <strong style="@($"color:{leanLabel.Item2}")">@leanLabel.Item1</strong>
         </div>
-    }
+        <div class="fp-rate-row">
+            <span>Tone</span>
+            <strong style="@($"color:{sensLabel.Item2}")">@sensLabel.Item1</strong>
+        </div>
+        <div class="fp-rate-row">
+            <span>Accuracy</span>
+            <strong style="@($"color:{accLabel.Item2}")">@accLabel.Item1</strong>
+        </div>
+        @if (misstated.Count > 0 && totalLean == 0)
+        {
+            <p class="fp-blurb">A balanced frame does not make a page accurate: opposing spin can cancel out while the facts are still misstated.</p>
+        }
+        <div class="fp-why">
+            @foreach (var p in picks)
+            {
+                <p><strong>@p.Item1:</strong> @p.Item2.Why</p>
+            }
+        </div>
+        <p class="fp-blurb">@s.LessonAfter</p>
+    </div>
 }
 
 @code {
-    private bool unlocked;
     private int storyIndex;
     private NewsOption? headline, caption, quote;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
-
     private void Reset() { headline = null; caption = null; quote = null; }
 
-    private record NewsOption(string Text, int Lean, int Sensation);
-    private record Story(string Topic, string Event, string LessonAfter, List<NewsOption> Headlines, List<NewsOption> Captions, List<NewsOption> Quotes);
+    private record NewsOption(string Text, int Lean, int Sensation, bool Accurate, string Why);
+    private record Story(string Topic, string Subject, string Event, string LessonAfter, List<NewsOption> Headlines, List<NewsOption> Captions, List<NewsOption> Quotes);
 
     private static readonly List<Story> stories = new()
     {
-        new("Protest", "10,000 people gathered downtown over the weekend. Police arrested 14 for property damage. The crowd dispersed by midnight.",
-            "Same event, six possible front pages. Lean and tone are choices, not facts. Lippmann (1922): readers respond to the picture, not the event.",
+        new("Protest", "the protesters", "10,000 people gathered downtown over the weekend. Police arrested 14 for property damage. The crowd dispersed by midnight.",
+            "Same event, 96 possible front pages (6 headlines x 4 captions x 4 quotes). Lean and tone are choices, not facts. Lippmann (1922): readers respond to the picture, not the event.",
             new()
             {
-                new("MASSIVE CROWD DEMANDS CHANGE", 2, 2),
-                new("PROTEST TURNS VIOLENT, 14 ARRESTED", -2, 3),
-                new("THOUSANDS RALLY DOWNTOWN", 1, 1),
-                new("RIOT POLICE CONFRONT MOB", -3, 3),
-                new("CITIZENS GATHER FOR RALLY", 0, 0),
-                new("UNREST GRIPS DOWNTOWN", -1, 2)
+                new("MASSIVE CROWD DEMANDS CHANGE", 2, 2, true, "Leads with the size of the crowd and gives it a purpose, which casts the protesters as a legitimate movement."),
+                new("PROTEST TURNS VIOLENT, 14 ARRESTED", -2, 3, false, "14 arrests for property damage among 10,000 people does not make the whole protest violent; the headline overstates it."),
+                new("THOUSANDS RALLY DOWNTOWN", 1, 1, true, "Reports the scale and place with a neutral verb, slightly favouring the turnout over the arrests."),
+                new("RIOT POLICE CONFRONT MOB", -3, 3, false, "No riot or confrontation is described; 'riot' and 'mob' frame the crowd as a threat."),
+                new("CITIZENS GATHER FOR RALLY", 0, 0, true, "Plain description of what happened with no loaded words."),
+                new("UNREST GRIPS DOWNTOWN", -1, 2, false, "'Grips' implies widespread disorder, which the event does not describe.")
             },
             new()
             {
-                new("Demonstrators march in solidarity at the steps of city hall", 2, 1),
-                new("Vandals smash storefronts as protest spirals", -2, 3),
-                new("Crowd assembles ahead of evening rally", 0, 0),
-                new("Police hold the line against agitators", -2, 2)
+                new("Demonstrators march in solidarity at the steps of city hall", 2, 1, false, "Adds a specific location and a mood the event does not give, picturing unity and legitimacy."),
+                new("Vandals smash storefronts as protest spirals", -2, 3, false, "Treats the property damage as the whole story and says it 'spirals', which the facts do not show."),
+                new("Crowd assembles ahead of evening rally", 0, 0, true, "Describes the gathering without judging it."),
+                new("Police hold the line against agitators", -2, 2, false, "'Agitators' and 'hold the line' cast the crowd as an opponent of the police; neither is in the facts.")
             },
             new()
             {
-                new("\"This is democracy in action,\" said one organizer.", 2, 0),
-                new("\"They were destroying everything,\" said a shop owner.", -2, 2),
-                new("\"The city will weather this,\" said the mayor.", 0, 1),
-                new("\"It was beautiful and peaceful for hours,\" said a marcher.", 2, 0)
+                new("\"This is democracy in action,\" said one organizer.", 2, 0, true, "An organizer's voice puts the protest in a favourable civic light."),
+                new("\"They were destroying everything,\" said a shop owner.", -2, 2, true, "A victim's account of the damage; it is a real viewpoint but exaggerated, so it pulls the story toward disorder."),
+                new("\"The city will weather this,\" said the mayor.", 0, 1, true, "An official voice that neither praises nor condemns the crowd."),
+                new("\"It was beautiful and peaceful for hours,\" said a marcher.", 2, 0, true, "A participant's account that stresses calm, softening the arrests.")
             }),
 
-        new("Election", "The incumbent won re-election by 2.3 percent. Turnout was 58 percent, slightly down from the previous election. Three districts had ballot recounts.",
-            "Margins, turnout, recounts: all factual. Yet six different framings produce six different stories.",
+        new("Election", "the incumbent", "The incumbent won re-election by 2.3 percent. Turnout was 58 percent, slightly down from the previous election. Three districts had ballot recounts.",
+            "Margins, turnout, recounts: all factual. Yet 96 different framings (6 headlines x 4 captions x 4 quotes) produce very different stories.",
             new()
             {
-                new("INCUMBENT SECURES VICTORY", 2, 0),
-                new("RAZOR-THIN MARGIN PROMPTS RECOUNTS", -1, 2),
-                new("VOTERS RETURN PRESIDENT TO OFFICE", 1, 0),
-                new("ELECTION IN CHAOS AS MARGINS NARROW", -2, 3),
-                new("PRESIDENT WINS SECOND TERM", 1, 0),
-                new("DEMOCRACY IN QUESTION AFTER CLOSE VOTE", -2, 2)
+                new("INCUMBENT SECURES VICTORY", 2, 0, true, "States the result and stops, which presents the win as settled."),
+                new("RAZOR-THIN MARGIN PROMPTS RECOUNTS", -1, 2, false, "A 2.3 percent margin is not razor-thin; the headline makes the result sound more doubtful than it was."),
+                new("VOTERS RETURN PRESIDENT TO OFFICE", 1, 0, true, "Credits the voters with the outcome, a mildly favourable frame for the winner."),
+                new("ELECTION IN CHAOS AS MARGINS NARROW", -2, 3, false, "Nothing in the facts describes chaos; the margin was a clear 2.3 percent."),
+                new("PRESIDENT WINS SECOND TERM", 1, 0, true, "A plain result headline that emphasises the winner's success."),
+                new("DEMOCRACY IN QUESTION AFTER CLOSE VOTE", -2, 2, false, "Calls the vote close and raises doubt about the system; recounts alone do not support either claim.")
             },
             new()
             {
-                new("Supporters celebrate at headquarters", 2, 1),
-                new("Voters wait in long lines on election day", 0, 0),
-                new("Tense scenes at recount centers", -1, 2),
-                new("Election workers count ballots into the night", 0, 1)
+                new("Supporters celebrate at headquarters", 2, 1, true, "Shows the winning side's joy, which frames the win as popular."),
+                new("Voters wait in long lines on election day", 0, 0, false, "Long lines are not in the facts, and turnout fell, so the picture implies enthusiasm that was not there."),
+                new("Tense scenes at recount centers", -1, 2, false, "Adds tension the facts do not describe; recounts in three districts are routine procedure."),
+                new("Election workers count ballots into the night", 0, 1, true, "Shows the process itself, which is neutral and slightly dramatic.")
             },
             new()
             {
-                new("\"The people have spoken,\" the president said.", 1, 0),
-                new("\"Something does not add up,\" an opposition lawyer claimed.", -2, 2),
-                new("\"Turnout was solid,\" an election official noted.", 0, 0),
-                new("\"This was the most secure election in years,\" a watchdog said.", 1, 0)
+                new("\"The people have spoken,\" the president said.", 1, 0, true, "The winner's own claim to a mandate, which favours the incumbent."),
+                new("\"Something does not add up,\" an opposition lawyer claimed.", -2, 2, true, "A partisan suggestion of wrongdoing; the facts show recounts but no evidence of a problem."),
+                new("\"Turnout was solid,\" an election official noted.", 0, 0, false, "Turnout fell from the previous election, so calling it solid hides the decline."),
+                new("\"This was the most secure election in years,\" a watchdog said.", 1, 0, true, "An outside endorsement of the process, which reassures readers about the result.")
             }),
 
-        new("Economy", "Inflation slowed to 2.4 percent for the month. Wages grew 0.3 percent. Unemployment edged up from 3.7 to 3.9 percent.",
-            "Three numbers can support optimism, alarm, or routine. Editors choose which the reader sees first.",
+        new("Economy", "the Fed and the economy's direction", "Annual inflation slowed to 2.4 percent. Wages grew 0.3 percent in the month. Unemployment edged up from 3.7 to 3.9 percent.",
+            "Three numbers can support optimism, alarm, or routine. Editors choose which the reader sees first, and there are 96 possible pages (6 x 4 x 4).",
             new()
             {
-                new("ECONOMY COOLS, FED WINS", 2, 1),
-                new("INFLATION EASES BUT JOBS SLIP", 0, 1),
-                new("UNEMPLOYMENT TICKS UP, WORKERS SQUEEZED", -2, 2),
-                new("PRICES STEADY, PROGRESS ON FED TARGET", 2, 0),
-                new("RECESSION FEARS GROW", -3, 3),
-                new("STABLE QUARTER FOR US ECONOMY", 1, 0)
+                new("ECONOMY COOLS, FED WINS", 2, 1, true, "Puts the inflation figure first and credits the Fed, ignoring the rise in unemployment."),
+                new("INFLATION EASES BUT JOBS SLIP", 0, 1, true, "Gives the good and the bad number equal weight."),
+                new("UNEMPLOYMENT TICKS UP, WORKERS SQUEEZED", -2, 2, true, "Leads with the worst number and adds hardship that the figures only hint at."),
+                new("PRICES STEADY, PROGRESS ON FED TARGET", 2, 0, false, "Prices are still rising at 2.4 percent a year; they are not steady, only rising more slowly."),
+                new("RECESSION FEARS GROW", -3, 3, false, "Nothing in the data says a recession is near; a 0.2 point rise in unemployment does not show it."),
+                new("STEADY ECONOMY AS INFLATION EASES TO 2.4%", 1, 0, true, "Reads the mix of numbers as stability, a calm, mildly positive frame.")
             },
             new()
             {
-                new("Shoppers browse a busy market on Saturday", 1, 0),
-                new("Job seekers line up at a downtown fair", -2, 2),
-                new("Federal Reserve building at sunset", 0, 1),
-                new("A family at the grocery checkout", 0, 0)
+                new("Shoppers browse a busy market on Saturday", 1, 0, true, "A scene of ordinary spending suggests things are fine."),
+                new("Job seekers line up at a downtown fair", -2, 2, true, "Points the reader at job-hunting, which echoes the rise in unemployment."),
+                new("Federal Reserve building at sunset", 0, 1, true, "A neutral image of the institution with a slightly dramatic mood."),
+                new("A family at the grocery checkout", 0, 0, true, "A neutral everyday image tied to prices.")
             },
             new()
             {
-                new("\"This is real progress,\" the chair of the Fed said.", 2, 0),
-                new("\"It feels worse than the numbers suggest,\" a shopper said.", -1, 1),
-                new("\"Soft landing remains plausible,\" an economist noted.", 1, 0),
-                new("\"Layoffs are coming,\" a union leader warned.", -2, 2)
+                new("\"This is real progress,\" the chair of the Fed said.", 2, 0, true, "The official responsible for the policy praising it; self-interested but on the record."),
+                new("\"It feels worse than the numbers suggest,\" a shopper said.", -1, 1, true, "An ordinary person's view that discounts the data and softens the good news."),
+                new("\"Soft landing remains plausible,\" an economist noted.", 1, 0, true, "An expert voice with a cautious, mildly hopeful outlook."),
+                new("\"Layoffs are coming,\" a union leader warned.", -2, 2, true, "A prediction from an interested party; the data show no layoffs, only slightly higher unemployment.")
             })
     };
 }
@@ -245,5 +238,8 @@ else
     .fp-rate-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
     .fp-rate-row:last-of-type { border-bottom: none; }
     .fp-rate-row span { color: var(--text-muted); }
+    .fp-why { margin-top: 10px; }
+    .fp-why p { margin: 0 0 6px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45; }
+    .fp-why strong { color: var(--text-primary); }
     .fp-blurb { margin: 10px 0 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; padding: 8px 10px; background: var(--bg-surface); border-radius: var(--radius-sm); }
 </style>

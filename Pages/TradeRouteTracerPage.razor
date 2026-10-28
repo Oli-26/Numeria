@@ -1,320 +1,334 @@
 @page "/trade-routes"
-@inject IProgressService Progress
+@using System.Globalization
 @inject NavigationManager Nav
-@inject IJSRuntime JS
 
-@if (!unlocked)
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Trade Route Tracer</h1>
+</div>
+
+<div class="trt-intro card">
+    <Icon Name="scroll" Size="20" Stroke="var(--accent)" />
+    <p>Select a historic trade route. Watch goods, ideas, and faiths travel the world.</p>
+</div>
+
+<div class="trt-route-chips">
+    @foreach (var r in routes)
+    {
+        var route = r;
+        <button class="chip @(selectedKey == route.Key ? "chip-active" : "")"
+                style="@(selectedKey == route.Key ? $"background: {route.Color}; border-color: {route.Color};" : $"border-color: {route.Color};")"
+                @onclick="() => SelectRoute(route.Key)">
+            @route.Name
+        </button>
+    }
+</div>
+
+<div class="trt-map-wrap card">
+    @* Keyed on the play run: a fresh <svg> restarts its SMIL clock, otherwise animateMotion added later with begin=0 starts in the past and freezes at the end. *@
+    <svg @key="playRun" viewBox="0 0 1000 500" class="trt-map" preserveAspectRatio="xMidYMid meet">
+        <defs>
+            <radialGradient id="trt-ocean" cx="50%" cy="45%" r="80%">
+                <stop offset="0%" stop-color="#f0d9a8" />
+                <stop offset="55%" stop-color="#e3c281" />
+                <stop offset="100%" stop-color="#a37f4a" />
+            </radialGradient>
+            <linearGradient id="trt-land" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#d9b97a" />
+                <stop offset="100%" stop-color="#a17a3f" />
+            </linearGradient>
+            <radialGradient id="trt-vignette" cx="50%" cy="50%" r="75%">
+                <stop offset="60%" stop-color="rgba(0,0,0,0)" />
+                <stop offset="100%" stop-color="rgba(40,20,5,0.55)" />
+            </radialGradient>
+            <pattern id="trt-paper" patternUnits="userSpaceOnUse" width="120" height="120">
+                <rect width="120" height="120" fill="rgba(0,0,0,0)" />
+                <circle cx="20" cy="30" r="0.7" fill="rgba(80,40,10,0.18)" />
+                <circle cx="80" cy="60" r="0.5" fill="rgba(80,40,10,0.13)" />
+                <circle cx="50" cy="95" r="0.6" fill="rgba(80,40,10,0.16)" />
+                <circle cx="100" cy="20" r="0.4" fill="rgba(80,40,10,0.10)" />
+            </pattern>
+            <filter id="trt-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+            <filter id="trt-rough" x="-5%" y="-5%" width="110%" height="110%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" />
+                <feDisplacementMap in="SourceGraphic" scale="1.2" />
+            </filter>
+            <filter id="trt-soft" x="-10%" y="-10%" width="120%" height="120%">
+                <feGaussianBlur stdDeviation="0.6" />
+            </filter>
+        </defs>
+
+        <rect x="0" y="0" width="1000" height="500" fill="url(#trt-ocean)" />
+        <rect x="0" y="0" width="1000" height="500" fill="url(#trt-paper)" />
+
+        <g stroke="rgba(80,40,10,0.18)" stroke-width="0.7" fill="none">
+            @for (int lat = 1; lat < 4; lat++)
+            {
+                <path d="@($"M0,{lat * 125} Q500,{lat * 125 - 4} 1000,{lat * 125}")" stroke-dasharray="3 5" />
+            }
+            @for (int lon = 1; lon < 5; lon++)
+            {
+                <line x1="@(lon * 200)" y1="0" x2="@(lon * 200)" y2="500" stroke-dasharray="3 5" />
+            }
+        </g>
+
+        <g fill="rgba(70,90,150,0.18)" stroke="rgba(60,80,140,0.32)" stroke-width="0.6">
+            <path d="M0,210 Q60,200 120,215 Q180,225 200,260 Q210,280 215,300 Q190,310 170,295 Q140,280 110,275 Q70,265 40,250 Q15,235 0,225 Z" opacity="0.35" filter="url(#trt-soft)" />
+            <path d="M650,250 Q700,265 720,290 Q740,320 730,355 Q720,380 700,375 Q680,360 670,335 Q665,305 660,280 Z" opacity="0.3" filter="url(#trt-soft)" />
+            <path d="M380,80 Q430,70 450,90 Q445,100 420,98 Q395,95 380,85 Z" opacity="0.3" filter="url(#trt-soft)" />
+        </g>
+
+        <g fill="url(#trt-land)" stroke="#6b4a1f" stroke-width="1.2" stroke-linejoin="round">
+            <path d="M55,95 Q90,82 130,80 Q170,78 215,82 Q245,90 252,120 Q260,150 250,175 Q248,205 235,225 Q220,250 200,260 Q175,265 150,262 Q120,258 95,240 Q78,220 70,195 Q62,170 60,145 Q58,120 55,95 Z" />
+            <path d="M198,260 Q220,258 240,262 Q255,275 262,295 Q258,308 240,312 Q220,310 205,298 Q198,285 198,270 Z" />
+            <path d="M225,310 Q260,302 295,308 Q315,330 318,360 Q310,395 290,425 Q270,452 245,460 Q230,448 225,425 Q220,400 218,375 Q215,350 220,325 Z" />
+            <path d="M285,68 Q320,60 348,68 Q358,90 350,112 Q330,118 305,115 Q290,100 285,82 Z" />
+            <path d="M445,98 Q480,88 520,90 Q555,92 570,118 Q578,140 560,165 Q540,180 510,182 Q478,180 458,168 Q445,148 442,125 Z" />
+            <path d="M460,200 Q495,192 540,195 Q580,200 595,235 Q605,275 590,315 Q575,355 545,380 Q515,392 490,388 Q470,360 460,330 Q450,295 452,260 Q455,225 460,200 Z" />
+            <path d="M560,170 Q595,162 625,170 Q645,195 640,225 Q625,250 600,250 Q580,242 568,222 Q558,200 558,180 Z" />
+            <path d="M540,85 Q620,72 720,72 Q780,76 815,98 Q820,128 798,150 Q765,168 720,170 Q670,172 625,168 Q585,162 555,150 Q540,125 538,105 Z" />
+            <path d="M700,205 Q730,200 755,210 Q765,238 758,265 Q740,282 720,278 Q705,265 700,245 Q695,225 698,210 Z" />
+            <path d="M755,135 Q810,128 870,135 Q885,170 880,200 Q865,228 835,238 Q800,235 778,225 Q758,200 754,170 Z" />
+            <path d="M820,255 Q860,250 895,260 Q905,278 890,295 Q860,302 830,295 Q815,280 818,265 Z" />
+            <path d="M830,300 Q860,295 880,305 Q878,318 855,318 Q838,315 830,308 Z" />
+            <path d="M845,360 Q900,353 945,360 Q955,385 938,408 Q905,422 868,418 Q848,400 843,378 Z" />
+        </g>
+
+        <g fill="rgba(50,30,10,0.32)">
+            <text x="490" y="118" font-size="10" font-family="serif" font-style="italic">Europe</text>
+            <text x="495" y="285" font-size="10" font-family="serif" font-style="italic">Africa</text>
+            <text x="660" y="120" font-size="10" font-family="serif" font-style="italic">Asia</text>
+            <text x="120" y="165" font-size="10" font-family="serif" font-style="italic">N. America</text>
+            <text x="245" y="395" font-size="9" font-family="serif" font-style="italic">S. America</text>
+            <text x="870" y="395" font-size="9" font-family="serif" font-style="italic">Australia</text>
+        </g>
+
+        <g opacity="0.55">
+            <g transform="translate(60,440)">
+                <circle r="26" fill="rgba(245,225,180,0.55)" stroke="#6b4a1f" stroke-width="0.8" />
+                <circle r="20" fill="none" stroke="#6b4a1f" stroke-width="0.4" />
+                <polygon points="0,-22 4,0 0,22 -4,0" fill="#6b4a1f" />
+                <polygon points="-22,0 0,4 22,0 0,-4" fill="#8a6a35" />
+                <text x="0" y="-28" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">N</text>
+                <text x="0" y="34" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">S</text>
+                <text x="-30" y="3" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">W</text>
+                <text x="30" y="3" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">E</text>
+            </g>
+        </g>
+
+        <g transform="translate(820,30)" opacity="0.65">
+            <path d="M0,0 L160,0 L160,40 L0,40 Z" fill="rgba(245,225,180,0.6)" stroke="#6b4a1f" stroke-width="0.8" />
+            <path d="M-6,-4 Q0,-2 6,-4 L6,4 Q0,2 -6,4 Z" fill="#6b4a1f" transform="translate(0,20)" />
+            <path d="M-6,-4 Q0,-2 6,-4 L6,4 Q0,2 -6,4 Z" fill="#6b4a1f" transform="translate(160,20)" />
+            <text x="80" y="18" text-anchor="middle" font-size="9" font-family="serif" fill="#4a2f10" font-style="italic">Tabula Mercatorum</text>
+            <text x="80" y="32" text-anchor="middle" font-size="7" font-family="serif" fill="#6b4a1f">Routes of Commerce</text>
+        </g>
+
+        @foreach (var r in routes)
+        {
+            var active = selectedKey == r.Key;
+            <path d="@r.PathD" fill="none"
+                  stroke="@r.Color"
+                  stroke-width="@(active ? 3.2 : 1.4)"
+                  stroke-opacity="@(active ? "0.95" : "0.28")"
+                  stroke-dasharray="@(active ? "9 6" : "2 5")"
+                  class="@(active && r.Circuit ? "trt-route-active" : null)"
+                  stroke-linecap="round" />
+            @if (active)
+            {
+                <path d="@r.PathD" fill="none" stroke="@r.Color" stroke-width="9" stroke-opacity="0.18" stroke-linecap="round" filter="url(#trt-soft)" />
+            }
+        }
+
+        @if (selectedRoute != null)
+        {
+            @foreach (var a in selectedRoute.Arrows)
+            {
+                <g transform="translate(@F(a.X) @F(a.Y)) rotate(@F(a.Angle))" fill="@selectedRoute.Color" stroke="#3a230a" stroke-width="0.8" stroke-linejoin="round">
+                    @if (selectedRoute.Circuit)
+                    {
+                        <polygon points="@OneWayArrow" />
+                    }
+                    else
+                    {
+                        <polygon points="@TwoWayArrowAhead" />
+                        <polygon points="@TwoWayArrowBack" />
+                    }
+                </g>
+            }
+
+            @foreach (var s in selectedRoute.Stops)
+            {
+                var stop = s;
+                var place = places[stop.Place!];
+                var label = LabelAt(place);
+                <g class="trt-city" @onclick="() => ToggleCity(stop.Place!)">
+                    <circle cx="@F(place.X)" cy="@F(place.Y)" r="@F(DotRadius + 6)" fill="@selectedRoute.Color" opacity="0.18" filter="url(#trt-soft)" />
+                    <circle cx="@F(place.X)" cy="@F(place.Y)" r="@F(DotRadius)" fill="@selectedRoute.Color" stroke="#fdf6e3" stroke-width="1.5" />
+                    <circle cx="@F(place.X)" cy="@F(place.Y)" r="@F(DotRadius - 2)" fill="#fdf6e3" opacity="0.7" />
+                    <text x="@F(label.X)" y="@F(label.Y)" text-anchor="@label.Anchor" font-size="9" font-family="serif" font-weight="600"
+                          fill="#3a230a" stroke="rgba(245,225,180,0.85)" stroke-width="2.5" paint-order="stroke">@stop.Place</text>
+                    @if (hoveredCity == stop.Place && !string.IsNullOrEmpty(stop.Note))
+                    {
+                        var box = NoteBox(place, stop.Note);
+                        <g>
+                            <rect x="@F(box.X)" y="@F(box.Y)" width="@F(box.W)" height="18" rx="3" fill="rgba(40,25,8,0.88)" stroke="@selectedRoute.Color" stroke-width="0.8" />
+                            <text x="@F(box.X + 6)" y="@F(box.Y + 13)" fill="#fdf6e3" font-size="9" font-family="serif" font-style="italic">@stop.Note</text>
+                        </g>
+                    }
+                </g>
+            }
+
+            @if (playing)
+            {
+                var dur = $"{F(PlaySeconds)}s";
+                var keyPoints = selectedRoute.Circuit ? null : "0;1;0";
+                var keyTimes = selectedRoute.Circuit ? null : "0;0.5;1";
+                var calcMode = selectedRoute.Circuit ? null : "linear";
+                <circle r="11" fill="@selectedRoute.Color" opacity="0.35" filter="url(#trt-soft)">
+                    <animateMotion dur="@dur" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" keyPoints="@keyPoints" keyTimes="@keyTimes" calcMode="@calcMode" />
+                </circle>
+                <circle r="7" fill="@selectedRoute.Color" stroke="#fdf6e3" stroke-width="2" filter="url(#trt-glow)">
+                    <animateMotion dur="@dur" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" keyPoints="@keyPoints" keyTimes="@keyTimes" calcMode="@calcMode" />
+                </circle>
+                <circle r="3" fill="#fdf6e3">
+                    <animateMotion dur="@dur" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" keyPoints="@keyPoints" keyTimes="@keyTimes" calcMode="@calcMode" />
+                </circle>
+                <circle r="5" fill="@selectedRoute.Color" opacity="0.6">
+                    <animateMotion dur="@dur" begin="0.4s" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" keyPoints="@keyPoints" keyTimes="@keyTimes" calcMode="@calcMode" />
+                </circle>
+                <circle r="4" fill="@selectedRoute.Color" opacity="0.4">
+                    <animateMotion dur="@dur" begin="0.8s" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" keyPoints="@keyPoints" keyTimes="@keyTimes" calcMode="@calcMode" />
+                </circle>
+            }
+        }
+
+        <rect x="0" y="0" width="1000" height="500" fill="url(#trt-vignette)" pointer-events="none" />
+        <rect x="3" y="3" width="994" height="494" fill="none" stroke="#6b4a1f" stroke-width="1.5" opacity="0.55" pointer-events="none" />
+        <rect x="8" y="8" width="984" height="484" fill="none" stroke="#6b4a1f" stroke-width="0.6" opacity="0.4" pointer-events="none" />
+    </svg>
+
+    @if (selectedRoute != null)
+    {
+        <div class="trt-map-controls">
+            <div class="trt-legend">
+                <span class="trt-legend-item">
+                    <svg viewBox="-11 -6 22 12" width="22" height="12" aria-hidden="true">
+                        <g fill="@selectedRoute.Color" stroke="#3a230a" stroke-width="0.8" stroke-linejoin="round">
+                            @if (selectedRoute.Circuit)
+                            {
+                                <polygon points="@OneWayArrow" />
+                            }
+                            else
+                            {
+                                <polygon points="@TwoWayArrowAhead" />
+                                <polygon points="@TwoWayArrowBack" />
+                            }
+                        </g>
+                    </svg>
+                    @(selectedRoute.Circuit ? "Direction ships sailed on each leg" : "Goods moved both ways")
+                </span>
+                <span class="trt-legend-item">
+                    <svg viewBox="-7 -7 14 14" width="12" height="12" aria-hidden="true">
+                        <circle r="5.5" fill="@selectedRoute.Color" stroke="#fdf6e3" stroke-width="1.5" />
+                    </svg>
+                    Stop: tap for its role
+                </span>
+            </div>
+            <button class="btn btn-sm btn-primary" @onclick="PlayRoute" disabled="@playing">
+                <Icon Name="trending-up" Size="14" /> @(playing ? "Tracing..." : "Play caravan")
+            </button>
+        </div>
+    }
+</div>
+
+@if (selectedRoute != null)
 {
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Trade Route Tracer</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Trade Route Tracer" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+    <div class="trt-detail card">
+        <div class="trt-detail-header" style="border-color: @selectedRoute.Color">
+            <h2>@selectedRoute.Name</h2>
+            <small>@selectedRoute.Era</small>
+        </div>
+
+        <div class="trt-section">
+            <h4><Icon Name="scroll" Size="14" /> History</h4>
+            @foreach (var p in selectedRoute.History)
+            {
+                <p>@p</p>
+            }
+        </div>
+
+        <div class="trt-section">
+            <h4><Icon Name="gift" Size="14" /> Goods exchanged</h4>
+            @foreach (var flow in selectedRoute.Goods)
+            {
+                <div class="trt-flow">
+                    <div class="trt-flow-label">@flow.From <span aria-hidden="true">&rarr;</span> @flow.To</div>
+                    <div class="trt-chips">
+                        @foreach (var g in flow.Goods)
+                        {
+                            <span class="trt-chip">@g</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="trt-section">
+            <h4><Icon Name="crown" Size="14" /> Cultural transfers</h4>
+            <ul class="trt-cultural">
+                @foreach (var t in selectedRoute.CulturalTransfers)
+                {
+                    <li>@t</li>
+                }
+            </ul>
+        </div>
+
+        <div class="trt-section">
+            <h4><Icon Name="search" Size="14" /> Stops</h4>
+            <ol class="trt-stops">
+                @foreach (var c in selectedRoute.Stops)
+                {
+                    <li><strong>@c.Place</strong>@(string.IsNullOrEmpty(c.Note) ? "" : $" - {c.Note}")</li>
+                }
+            </ol>
+        </div>
     </div>
 }
 else
 {
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Trade Route Tracer</h1>
+    <div class="card" style="text-align:center; padding: 24px; color: var(--text-muted);">
+        Tap a route above to begin tracing.
     </div>
-
-    <div class="trt-intro card">
-        <Icon Name="scroll" Size="20" Stroke="var(--accent)" />
-        <p>Select a historic trade route. Watch goods, ideas, and faiths travel the world.</p>
-    </div>
-
-    <div class="trt-route-chips">
-        @foreach (var r in routes)
-        {
-            var route = r;
-            <button class="chip @(selectedKey == route.Key ? "chip-active" : "")"
-                    style="@(selectedKey == route.Key ? $"background: {route.Color}; border-color: {route.Color};" : $"border-color: {route.Color};")"
-                    @onclick="() => SelectRoute(route.Key)">
-                @route.Name
-            </button>
-        }
-    </div>
-
-    <div class="trt-map-wrap card">
-        <svg viewBox="0 0 1000 500" class="trt-map" preserveAspectRatio="xMidYMid meet">
-            <defs>
-                <radialGradient id="trt-ocean" cx="50%" cy="45%" r="80%">
-                    <stop offset="0%" stop-color="#f0d9a8" />
-                    <stop offset="55%" stop-color="#e3c281" />
-                    <stop offset="100%" stop-color="#a37f4a" />
-                </radialGradient>
-                <linearGradient id="trt-land" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#d9b97a" />
-                    <stop offset="100%" stop-color="#a17a3f" />
-                </linearGradient>
-                <radialGradient id="trt-vignette" cx="50%" cy="50%" r="75%">
-                    <stop offset="60%" stop-color="rgba(0,0,0,0)" />
-                    <stop offset="100%" stop-color="rgba(40,20,5,0.55)" />
-                </radialGradient>
-                <pattern id="trt-paper" patternUnits="userSpaceOnUse" width="120" height="120">
-                    <rect width="120" height="120" fill="rgba(0,0,0,0)" />
-                    <circle cx="20" cy="30" r="0.7" fill="rgba(80,40,10,0.18)" />
-                    <circle cx="80" cy="60" r="0.5" fill="rgba(80,40,10,0.13)" />
-                    <circle cx="50" cy="95" r="0.6" fill="rgba(80,40,10,0.16)" />
-                    <circle cx="100" cy="20" r="0.4" fill="rgba(80,40,10,0.10)" />
-                </pattern>
-                <filter id="trt-glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feMerge>
-                        <feMergeNode in="blur" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-                <filter id="trt-rough" x="-5%" y="-5%" width="110%" height="110%">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" />
-                    <feDisplacementMap in="SourceGraphic" scale="1.2" />
-                </filter>
-                <filter id="trt-soft" x="-10%" y="-10%" width="120%" height="120%">
-                    <feGaussianBlur stdDeviation="0.6" />
-                </filter>
-            </defs>
-
-            <rect x="0" y="0" width="1000" height="500" fill="url(#trt-ocean)" />
-            <rect x="0" y="0" width="1000" height="500" fill="url(#trt-paper)" />
-
-            <g stroke="rgba(80,40,10,0.18)" stroke-width="0.7" fill="none">
-                @for (int lat = 1; lat < 4; lat++)
-                {
-                    <path d="@($"M0,{lat * 125} Q500,{lat * 125 - 4} 1000,{lat * 125}")" stroke-dasharray="3 5" />
-                }
-                @for (int lon = 1; lon < 5; lon++)
-                {
-                    <line x1="@(lon * 200)" y1="0" x2="@(lon * 200)" y2="500" stroke-dasharray="3 5" />
-                }
-            </g>
-
-            <g fill="rgba(70,90,150,0.18)" stroke="rgba(60,80,140,0.32)" stroke-width="0.6">
-                <path d="M0,210 Q60,200 120,215 Q180,225 200,260 Q210,280 215,300 Q190,310 170,295 Q140,280 110,275 Q70,265 40,250 Q15,235 0,225 Z" opacity="0.35" filter="url(#trt-soft)" />
-                <path d="M650,250 Q700,265 720,290 Q740,320 730,355 Q720,380 700,375 Q680,360 670,335 Q665,305 660,280 Z" opacity="0.3" filter="url(#trt-soft)" />
-                <path d="M380,80 Q430,70 450,90 Q445,100 420,98 Q395,95 380,85 Z" opacity="0.3" filter="url(#trt-soft)" />
-            </g>
-
-            <g fill="url(#trt-land)" stroke="#6b4a1f" stroke-width="1.2" stroke-linejoin="round">
-                <path d="M55,95 Q90,82 130,80 Q170,78 215,82 Q245,90 252,120 Q260,150 250,175 Q248,205 235,225 Q220,250 200,260 Q175,265 150,262 Q120,258 95,240 Q78,220 70,195 Q62,170 60,145 Q58,120 55,95 Z" />
-                <path d="M198,260 Q220,258 240,262 Q255,275 262,295 Q258,308 240,312 Q220,310 205,298 Q198,285 198,270 Z" />
-                <path d="M225,310 Q260,302 295,308 Q315,330 318,360 Q310,395 290,425 Q270,452 245,460 Q230,448 225,425 Q220,400 218,375 Q215,350 220,325 Z" />
-                <path d="M285,68 Q320,60 348,68 Q358,90 350,112 Q330,118 305,115 Q290,100 285,82 Z" />
-                <path d="M445,98 Q480,88 520,90 Q555,92 570,118 Q578,140 560,165 Q540,180 510,182 Q478,180 458,168 Q445,148 442,125 Z" />
-                <path d="M460,200 Q495,192 540,195 Q580,200 595,235 Q605,275 590,315 Q575,355 545,380 Q515,392 490,388 Q470,360 460,330 Q450,295 452,260 Q455,225 460,200 Z" />
-                <path d="M560,170 Q595,162 625,170 Q645,195 640,225 Q625,250 600,250 Q580,242 568,222 Q558,200 558,180 Z" />
-                <path d="M540,85 Q620,72 720,72 Q780,76 815,98 Q820,128 798,150 Q765,168 720,170 Q670,172 625,168 Q585,162 555,150 Q540,125 538,105 Z" />
-                <path d="M700,205 Q730,200 755,210 Q765,238 758,265 Q740,282 720,278 Q705,265 700,245 Q695,225 698,210 Z" />
-                <path d="M755,135 Q810,128 870,135 Q885,170 880,200 Q865,228 835,238 Q800,235 778,225 Q758,200 754,170 Z" />
-                <path d="M820,255 Q860,250 895,260 Q905,278 890,295 Q860,302 830,295 Q815,280 818,265 Z" />
-                <path d="M830,300 Q860,295 880,305 Q878,318 855,318 Q838,315 830,308 Z" />
-                <path d="M845,360 Q900,353 945,360 Q955,385 938,408 Q905,422 868,418 Q848,400 843,378 Z" />
-            </g>
-
-            <g fill="rgba(50,30,10,0.32)">
-                <text x="490" y="118" font-size="10" font-family="serif" font-style="italic">Europe</text>
-                <text x="495" y="285" font-size="10" font-family="serif" font-style="italic">Africa</text>
-                <text x="660" y="120" font-size="10" font-family="serif" font-style="italic">Asia</text>
-                <text x="120" y="165" font-size="10" font-family="serif" font-style="italic">N. America</text>
-                <text x="245" y="395" font-size="9" font-family="serif" font-style="italic">S. America</text>
-                <text x="870" y="395" font-size="9" font-family="serif" font-style="italic">Australia</text>
-            </g>
-
-            <g opacity="0.55">
-                <g transform="translate(60,440)">
-                    <circle r="26" fill="rgba(245,225,180,0.55)" stroke="#6b4a1f" stroke-width="0.8" />
-                    <circle r="20" fill="none" stroke="#6b4a1f" stroke-width="0.4" />
-                    <polygon points="0,-22 4,0 0,22 -4,0" fill="#6b4a1f" />
-                    <polygon points="-22,0 0,4 22,0 0,-4" fill="#8a6a35" />
-                    <text x="0" y="-28" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">N</text>
-                    <text x="0" y="34" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">S</text>
-                    <text x="-30" y="3" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">W</text>
-                    <text x="30" y="3" text-anchor="middle" font-size="8" font-family="serif" fill="#6b4a1f" font-weight="bold">E</text>
-                </g>
-            </g>
-
-            <g transform="translate(820,30)" opacity="0.65">
-                <path d="M0,0 L160,0 L160,40 L0,40 Z" fill="rgba(245,225,180,0.6)" stroke="#6b4a1f" stroke-width="0.8" />
-                <path d="M-6,-4 Q0,-2 6,-4 L6,4 Q0,2 -6,4 Z" fill="#6b4a1f" transform="translate(0,20)" />
-                <path d="M-6,-4 Q0,-2 6,-4 L6,4 Q0,2 -6,4 Z" fill="#6b4a1f" transform="translate(160,20)" />
-                <text x="80" y="18" text-anchor="middle" font-size="9" font-family="serif" fill="#4a2f10" font-style="italic">Tabula Mercatorum</text>
-                <text x="80" y="32" text-anchor="middle" font-size="7" font-family="serif" fill="#6b4a1f">Routes of Commerce</text>
-            </g>
-
-            @foreach (var r in routes)
-            {
-                <path d="@r.PathD" fill="none"
-                      stroke="@r.Color"
-                      stroke-width="@(selectedKey == r.Key ? 3.2 : 1.4)"
-                      stroke-opacity="@(selectedKey == r.Key ? "0.95" : "0.28")"
-                      stroke-dasharray="@(selectedKey == r.Key ? "9 6" : "2 5")"
-                      class="@(selectedKey == r.Key ? "trt-route-active" : "")"
-                      stroke-linecap="round" />
-                @if (selectedKey == r.Key)
-                {
-                    <path d="@r.PathD" fill="none" stroke="@r.Color" stroke-width="9" stroke-opacity="0.18" stroke-linecap="round" filter="url(#trt-soft)" />
-                }
-            }
-
-            @if (selectedRoute != null)
-            {
-                @foreach (var c in selectedRoute.Cities)
-                {
-                    var city = c;
-                    var importance = Math.Min(city.Name.Length / 4.0, 3.5) + 4;
-                    <g class="trt-city" @onclick="() => ToggleCity(city.Name)">
-                        <circle cx="@city.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                cy="@city.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                r="@((importance + 6).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                fill="@selectedRoute.Color" opacity="0.18" filter="url(#trt-soft)" />
-                        <circle cx="@city.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                cy="@city.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                r="@(importance.ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                fill="@selectedRoute.Color" stroke="#fdf6e3" stroke-width="1.5" />
-                        <circle cx="@city.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                cy="@city.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                r="@((importance - 2).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                fill="#fdf6e3" opacity="0.7" />
-                        <text x="@city.X.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                              y="@((city.Y - importance - 4).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                              text-anchor="middle" font-size="9" font-family="serif" font-weight="600"
-                              fill="#3a230a" stroke="rgba(245,225,180,0.85)" stroke-width="2.5" paint-order="stroke">@city.Name</text>
-                        @if (hoveredCity == city.Name && !string.IsNullOrEmpty(city.Note))
-                        {
-                            <g>
-                                <rect x="@((city.X + 10).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                      y="@((city.Y - 8).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                      width="@((city.Note.Length * 5.2 + 12).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                      height="18" rx="3" fill="rgba(40,25,8,0.88)" stroke="@selectedRoute.Color" stroke-width="0.8" />
-                                <text x="@((city.X + 16).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                      y="@((city.Y + 5).ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                      fill="#fdf6e3" font-size="9" font-family="serif" font-style="italic">@city.Note</text>
-                            </g>
-                        }
-                    </g>
-                }
-
-                @if (playing)
-                {
-                    <circle r="11" fill="@selectedRoute.Color" opacity="0.35" filter="url(#trt-soft)">
-                        <animateMotion dur="@($"{playDuration}s")" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" />
-                    </circle>
-                    <circle r="7" fill="@selectedRoute.Color" stroke="#fdf6e3" stroke-width="2" filter="url(#trt-glow)">
-                        <animateMotion dur="@($"{playDuration}s")" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" />
-                    </circle>
-                    <circle r="3" fill="#fdf6e3">
-                        <animateMotion dur="@($"{playDuration}s")" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" />
-                    </circle>
-                    <circle r="5" fill="@selectedRoute.Color" opacity="0.6">
-                        <animateMotion dur="@($"{playDuration}s")" begin="0.4s" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" />
-                    </circle>
-                    <circle r="4" fill="@selectedRoute.Color" opacity="0.4">
-                        <animateMotion dur="@($"{playDuration}s")" begin="0.8s" repeatCount="1" path="@selectedRoute.PathD" fill="freeze" />
-                    </circle>
-                }
-            }
-
-            <rect x="0" y="0" width="1000" height="500" fill="url(#trt-vignette)" pointer-events="none" />
-            <rect x="3" y="3" width="994" height="494" fill="none" stroke="#6b4a1f" stroke-width="1.5" opacity="0.55" pointer-events="none" />
-            <rect x="8" y="8" width="984" height="484" fill="none" stroke="#6b4a1f" stroke-width="0.6" opacity="0.4" pointer-events="none" />
-        </svg>
-
-        <div class="trt-map-controls">
-            @if (selectedRoute != null)
-            {
-                <button class="btn btn-sm btn-primary" @onclick="PlayRoute" disabled="@playing">
-                    <Icon Name="trending-up" Size="14" /> @(playing ? "Tracing..." : "Play caravan")
-                </button>
-            }
-        </div>
-    </div>
-
-    @if (selectedRoute != null)
-    {
-        <div class="trt-detail card">
-            <div class="trt-detail-header" style="border-color: @selectedRoute.Color">
-                <h2>@selectedRoute.Name</h2>
-                <small>@selectedRoute.Era</small>
-            </div>
-
-            <div class="trt-section">
-                <h4><Icon Name="scroll" Size="14" /> History</h4>
-                @foreach (var p in selectedRoute.History)
-                {
-                    <p>@p</p>
-                }
-            </div>
-
-            <div class="trt-section">
-                <h4><Icon Name="gift" Size="14" /> Goods exchanged</h4>
-                <div class="trt-chips">
-                    @foreach (var g in selectedRoute.GoodsEastWest)
-                    {
-                        <span class="trt-chip trt-chip-east">&rarr; @g</span>
-                    }
-                    @foreach (var g in selectedRoute.GoodsWestEast)
-                    {
-                        <span class="trt-chip trt-chip-west">&larr; @g</span>
-                    }
-                </div>
-            </div>
-
-            <div class="trt-section">
-                <h4><Icon Name="crown" Size="14" /> Cultural transfers</h4>
-                <ul class="trt-cultural">
-                    @foreach (var t in selectedRoute.CulturalTransfers)
-                    {
-                        <li>@t</li>
-                    }
-                </ul>
-            </div>
-
-            <div class="trt-section">
-                <h4><Icon Name="search" Size="14" /> Stops</h4>
-                <ol class="trt-stops">
-                    @foreach (var c in selectedRoute.Cities)
-                    {
-                        <li><strong>@c.Name</strong>@(string.IsNullOrEmpty(c.Note) ? "" : $" - {c.Note}")</li>
-                    }
-                </ol>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="card" style="text-align:center; padding: 24px; color: var(--text-muted);">
-            Tap a route above to begin tracing.
-        </div>
-    }
 }
 
 @code {
-    private bool unlocked;
     private string? selectedKey;
     private string? hoveredCity;
     private bool playing;
-    private double playDuration = 6.0;
+    private int playRun;
+
+    private const double DotRadius = 6;
+    private const string OneWayArrow = "6,0 -4,-4.5 -4,4.5";
+    private const string TwoWayArrowAhead = "10,0 2,-4 2,4";
+    private const string TwoWayArrowBack = "-10,0 -2,-4 -2,4";
 
     private TradeRoute? selectedRoute => selectedKey == null ? null : routes.FirstOrDefault(r => r.Key == selectedKey);
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
+    // Two-way routes play out and back, so they get longer.
+    private double PlaySeconds => selectedRoute?.Circuit == true ? 6 : 9;
 
     private void SelectRoute(string key)
     {
         selectedKey = key;
         playing = false;
+        playRun++;
         hoveredCity = null;
     }
 
@@ -326,26 +340,149 @@ else
     private async Task PlayRoute()
     {
         if (selectedRoute == null) return;
+        var run = ++playRun;
         playing = true;
         StateHasChanged();
-        await Task.Delay((int)(playDuration * 1000) + 200);
+        await Task.Delay(TimeSpan.FromSeconds(PlaySeconds + 1));
+        if (run != playRun) return;
         playing = false;
         StateHasChanged();
     }
 
-    private record City(string Name, double X, double Y, string Note = "");
+    private static string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
 
+    private static (double X, double Y, string Anchor) LabelAt(Place p) => p.Label switch
+    {
+        Side.Below => (p.X, p.Y + DotRadius + 11, "middle"),
+        Side.Left => (p.X - DotRadius - 4, p.Y + 3, "end"),
+        Side.Right => (p.X + DotRadius + 4, p.Y + 3, "start"),
+        _ => (p.X, p.Y - DotRadius - 4, "middle"),
+    };
+
+    // Width is a rough estimate for 9px italic serif; flips to the left of the dot near the right edge.
+    private static (double X, double Y, double W) NoteBox(Place p, string note)
+    {
+        var w = note.Length * 5.2 + 12;
+        var x = p.X + 10 + w <= 990 ? p.X + 10 : p.X - 10 - w;
+        return (Math.Max(10, x), Math.Clamp(p.Y - 8, 12, 470), w);
+    }
+
+    // Uniform Catmull-Rom spline written as cubic Beziers, so the drawn route passes through every waypoint.
+    private static List<(double X, double Y)[]> Segments(List<Waypoint> w, bool closed)
+    {
+        var n = w.Count;
+        (double X, double Y) P(int i)
+        {
+            var k = closed ? ((i % n) + n) % n : Math.Clamp(i, 0, n - 1);
+            return (w[k].X, w[k].Y);
+        }
+
+        var segments = new List<(double X, double Y)[]>();
+        for (var i = 0; i < (closed ? n : n - 1); i++)
+        {
+            var (p0, p1, p2, p3) = (P(i - 1), P(i), P(i + 1), P(i + 2));
+            segments.Add(new[]
+            {
+                p1,
+                (p1.X + (p2.X - p0.X) / 6, p1.Y + (p2.Y - p0.Y) / 6),
+                (p2.X - (p3.X - p1.X) / 6, p2.Y - (p3.Y - p1.Y) / 6),
+                p2,
+            });
+        }
+        return segments;
+    }
+
+    private static string BuildPathD(List<Waypoint> w, bool closed)
+    {
+        var curves = Segments(w, closed).Select(s => $"C{F(s[1].X)},{F(s[1].Y)} {F(s[2].X)},{F(s[2].Y)} {F(s[3].X)},{F(s[3].Y)}");
+        return $"M{F(w[0].X)},{F(w[0].Y)} {string.Join(" ", curves)}{(closed ? " Z" : "")}";
+    }
+
+    // One arrow at the midpoint of each leg long enough to fit it, pointing along the direction of travel.
+    private static List<Arrow> BuildArrows(List<Waypoint> w, bool closed) =>
+        Segments(w, closed)
+            .Where(s => Math.Sqrt(Math.Pow(s[3].X - s[0].X, 2) + Math.Pow(s[3].Y - s[0].Y, 2)) >= 24)
+            .Select(s => new Arrow(
+                (s[0].X + 3 * s[1].X + 3 * s[2].X + s[3].X) / 8,
+                (s[0].Y + 3 * s[1].Y + 3 * s[2].Y + s[3].Y) / 8,
+                Math.Atan2(s[3].Y + s[2].Y - s[1].Y - s[0].Y, s[3].X + s[2].X - s[1].X - s[0].X) * 180 / Math.PI))
+            .ToList();
+
+    private enum Side { Above, Below, Left, Right }
+
+    private record Place(double X, double Y, Side Label = Side.Above);
+
+    private record Waypoint(string? Place, double X, double Y, string Note = "");
+
+    private record GoodsFlow(string From, string To, List<string> Goods);
+
+    private record Arrow(double X, double Y, double Angle);
+
+    // Circuit: ships sailed one way round a closed loop. Otherwise goods moved both ways along an open path.
     private record TradeRoute(
         string Key,
         string Name,
         string Era,
         string Color,
-        string PathD,
-        List<City> Cities,
-        List<string> GoodsEastWest,
-        List<string> GoodsWestEast,
+        bool Circuit,
+        List<Waypoint> Path,
+        List<GoodsFlow> Goods,
         List<string> CulturalTransfers,
-        List<string> History);
+        List<string> History)
+    {
+        public List<Waypoint> Stops { get; } = Path.Where(w => w.Place != null).ToList();
+        public string PathD { get; } = BuildPathD(Path, Circuit);
+        public List<Arrow> Arrows { get; } = BuildArrows(Path, Circuit);
+    }
+
+    private static Waypoint Stop(string place, string note) => new(place, places[place].X, places[place].Y, note);
+
+    private static Waypoint Via(double x, double y) => new(null, x, y);
+
+    // One position per city, shared by every route. Roughly x = 461 + 3.26 * longitude, y = 304 - 3.37 * latitude,
+    // then nudged onto the stylised coastlines (Africa and the Americas are drawn shifted from that projection).
+    private static readonly Dictionary<string, Place> places = new()
+    {
+        ["Xi'an"] = new(816, 188),
+        ["Dunhuang"] = new(770, 169),
+        ["Samarkand"] = new(680, 160),
+        ["Merv"] = new(660, 166, Side.Below),
+        ["Baghdad"] = new(606, 192, Side.Below),
+        ["Damascus"] = new(579, 191, Side.Left),
+        ["Constantinople"] = new(553, 163),
+        ["Venice"] = new(501, 151),
+        ["Maluku"] = new(868, 306, Side.Below),
+        ["Malacca"] = new(816, 280),
+        ["Calicut"] = new(710, 264, Side.Left),
+        ["Aden"] = new(608, 249, Side.Below),
+        ["Alexandria"] = new(556, 203, Side.Left),
+        ["Cairo"] = new(561, 210, Side.Right),
+        ["Fez"] = new(474, 204, Side.Left),
+        ["Sijilmasa"] = new(482, 217, Side.Right),
+        ["Taghaza"] = new(476, 234, Side.Left),
+        ["Timbuktu"] = new(494, 252, Side.Right),
+        ["Elmina"] = new(458, 282, Side.Left),
+        ["Luanda"] = new(464, 322, Side.Left),
+        ["Lisbon"] = new(456, 163, Side.Left),
+        ["Bristol"] = new(450, 129, Side.Left),
+        ["London"] = new(458, 128, Side.Left),
+        ["Stromness"] = new(450, 105),
+        ["Bruges"] = new(474, 131, Side.Below),
+        ["Bergen"] = new(478, 100),
+        ["Lubeck"] = new(496, 122, Side.Right),
+        ["Riga"] = new(540, 112),
+        ["Novgorod"] = new(563, 107, Side.Right),
+        ["Kingston"] = new(246, 268, Side.Right),
+        ["Charleston"] = new(238, 200),
+        ["York Factory"] = new(160, 112, Side.Left),
+        ["Fort Albany"] = new(195, 128, Side.Below),
+        ["Hudson Strait"] = new(233, 95),
+        ["Quito"] = new(227, 322, Side.Left),
+        ["Cajamarca"] = new(226, 342, Side.Left),
+        ["Cusco"] = new(236, 362, Side.Left),
+        ["Lake Titicaca"] = new(247, 372, Side.Right),
+        ["Mapocho Valley"] = new(238, 412, Side.Left),
+    };
 
     private static readonly List<TradeRoute> routes = new()
     {
@@ -354,19 +491,21 @@ else
             "Silk Road",
             "Silk Road, 200 BC - 1500 AD",
             "#E67E22",
-            "M820,170 Q780,150 740,170 Q700,190 660,200 Q620,210 600,200 Q580,195 560,185 Q540,175 510,150 Q485,135 470,130",
-            new List<City> {
-                new("Xi'an", 820, 170, "Han capital, eastern terminus"),
-                new("Dunhuang", 760, 165, "Oasis gateway to the Taklamakan"),
-                new("Samarkand", 660, 200, "Sogdian merchant city"),
-                new("Persepolis", 600, 215, "Persian heartland"),
-                new("Baghdad", 580, 210, "Abbasid trade hub"),
-                new("Damascus", 555, 195, "Levantine entrepot"),
-                new("Constantinople", 510, 150, "Bridge of two continents"),
-                new("Venice", 470, 130, "Latin Christendom's gateway")
+            false,
+            new List<Waypoint> {
+                Stop("Xi'an", "Han capital, eastern terminus"),
+                Stop("Dunhuang", "Oasis gateway to the Taklamakan"),
+                Stop("Samarkand", "Sogdian merchant city"),
+                Stop("Merv", "Great oasis city of Khorasan"),
+                Stop("Baghdad", "Abbasid trade hub"),
+                Stop("Damascus", "Levantine entrepot"),
+                Stop("Constantinople", "Bridge of two continents"),
+                Stop("Venice", "Latin Christendom's gateway")
             },
-            new List<string> { "silk", "porcelain", "tea", "paper", "lacquerware", "rhubarb" },
-            new List<string> { "horses", "wool", "glass", "silver", "wine", "amber" },
+            new List<GoodsFlow> {
+                new("China", "Central Asia and the Mediterranean", new List<string> { "silk", "porcelain", "tea", "paper", "lacquerware", "rhubarb" }),
+                new("Central Asia, Persia and the Mediterranean", "China", new List<string> { "horses", "wool", "glass", "silver", "wine", "amber" })
+            },
             new List<string> {
                 "Buddhism travels east into China and Japan",
                 "Paper-making and gunpowder move west toward Europe",
@@ -384,17 +523,21 @@ else
             "Maritime Spice Route",
             "Spice Route, 100 AD - 1700 AD",
             "#16A085",
-            "M870,290 Q820,310 780,300 Q740,290 720,260 Q700,240 680,235 Q650,230 620,230 Q605,235 595,240 Q580,225 565,200 Q545,180 510,160",
-            new List<City> {
-                new("Maluku", 870, 290, "Spice Islands: cloves and nutmeg"),
-                new("Malacca", 800, 295, "Strait choke point"),
-                new("Calicut", 720, 260, "Pepper port of Kerala"),
-                new("Aden", 620, 230, "Red Sea gateway"),
-                new("Alexandria", 565, 200, "Mediterranean transhipment"),
-                new("Venice", 510, 160, "European spice monopoly")
+            false,
+            new List<Waypoint> {
+                Stop("Maluku", "Spice Islands: cloves and nutmeg"),
+                Stop("Malacca", "Strait choke point"),
+                Via(745, 293),
+                Stop("Calicut", "Pepper port of Kerala"),
+                Stop("Aden", "Red Sea gateway"),
+                Stop("Alexandria", "Mediterranean transhipment"),
+                Stop("Venice", "European spice monopoly")
             },
-            new List<string> { "cloves", "nutmeg", "pepper", "cinnamon", "sandalwood", "cotton" },
-            new List<string> { "silver", "gold", "horses", "wool", "Mediterranean glass" },
+            new List<GoodsFlow> {
+                new("Spice Islands", "India, Arabia and Europe", new List<string> { "cloves", "nutmeg" }),
+                new("India and Sri Lanka", "Arabia and Europe", new List<string> { "pepper", "cinnamon", "sandalwood", "cotton" }),
+                new("Europe and Arabia", "India and the Spice Islands", new List<string> { "silver", "gold", "horses", "wool", "Mediterranean glass" })
+            },
             new List<string> {
                 "Islam spreads through Indian Ocean ports to Indonesia",
                 "Hinduism and Buddhism shape Southeast Asian kingdoms",
@@ -412,24 +555,28 @@ else
             "Trans-Saharan Gold Route",
             "Trans-Saharan, 700 AD - 1600 AD",
             "#F1C40F",
-            "M500,330 Q505,300 510,275 Q515,250 520,225 Q525,210 530,200",
-            new List<City> {
-                new("Timbuktu", 500, 330, "Mali's golden city"),
-                new("Taghaza", 510, 275, "Saharan salt mines"),
-                new("Sijilmasa", 520, 225, "Northern caravan gate"),
-                new("Fez", 525, 210, "Maghreb scholarly hub"),
-                new("Cairo", 555, 215, "Mamluk metropolis")
+            false,
+            new List<Waypoint> {
+                Stop("Timbuktu", "Mali's golden city"),
+                Stop("Taghaza", "Saharan salt mines"),
+                Stop("Sijilmasa", "Northern caravan gate"),
+                Stop("Fez", "Maghreb scholarly hub"),
+                Via(520, 206),
+                Stop("Cairo", "Mamluk metropolis")
             },
-            new List<string> { "gold", "ivory", "kola nuts", "enslaved people", "leather" },
-            new List<string> { "salt", "copper", "horses", "books", "textiles", "Islamic scholarship" },
+            new List<GoodsFlow> {
+                new("West Africa", "North Africa", new List<string> { "gold", "ivory", "kola nuts", "enslaved people", "leather" }),
+                new("Saharan mines", "West Africa", new List<string> { "salt" }),
+                new("North Africa", "West Africa", new List<string> { "copper", "horses", "books", "textiles" })
+            },
             new List<string> {
                 "Islam spreads through West African elites and merchants",
-                "Arabic script adopted for Hausa, Fulani, and Swahili",
+                "Arabic script adopted for writing Hausa and Fulani (Ajami)",
                 "Sankore madrasa makes Timbuktu a center of learning",
                 "West African gold underwrites the medieval European economy"
             },
             new List<string> {
-                "From the 8th century, camel caravans of Berber and Tuareg merchants crossed the Sahara, linking the gold-producing kingdoms of Ghana, Mali, and Songhai with the cities of North Africa. Salt from the Sahara was traded almost ounce for ounce against West African gold.",
+                "From the 8th century, camel caravans of Berber and Tuareg merchants crossed the Sahara, linking the gold-producing kingdoms of Ghana, Mali, and Songhai with the cities of North Africa. Saharan salt, scarce in the lands to the south, was among the main goods exchanged for West African gold.",
                 "Mansa Musa's pilgrimage to Mecca in 1324 displayed the wealth of Mali so spectacularly that he reportedly devalued gold in Cairo for years. Timbuktu became famous in Europe as a city of legend, though most Europeans never reached it.",
                 "Portuguese caravels reaching the Gulf of Guinea in the 15th century gradually diverted the gold trade to the coast. The trans-Saharan routes survived but lost their place at the heart of the world economy."
             }),
@@ -437,19 +584,25 @@ else
         new TradeRoute(
             "atlantic-triangle",
             "Atlantic Triangle Trade",
-            "Triangle Trade, 1500 - 1800 AD",
+            "Triangle Trade, 1500s - 1860s AD",
             "#E74C3C",
-            "M470,140 Q420,200 440,260 Q460,320 470,340 Q400,360 320,360 Q260,360 250,320 Q260,260 320,220 Q400,170 470,140",
-            new List<City> {
-                new("Bristol", 470, 140, "British slaving port"),
-                new("Lisbon", 460, 175, "Portuguese hub"),
-                new("Elmina", 470, 290, "Gold Coast slaving castle"),
-                new("Luanda", 510, 350, "Angola embarkation point"),
-                new("Kingston", 280, 280, "Caribbean sugar island"),
-                new("Charleston", 230, 220, "American plantation port")
+            true,
+            new List<Waypoint> {
+                Stop("Bristol", "British slaving port"),
+                Stop("Lisbon", "Portuguese hub"),
+                Via(436, 225),
+                Stop("Elmina", "Gold Coast slaving castle"),
+                Stop("Luanda", "Angola embarkation point"),
+                Via(400, 345),
+                Stop("Kingston", "Jamaican port for the sugar plantations"),
+                Stop("Charleston", "American plantation port"),
+                Via(405, 142)
             },
-            new List<string> { "manufactured goods", "guns", "textiles", "rum", "iron bars" },
-            new List<string> { "enslaved people", "sugar", "tobacco", "cotton", "rum", "molasses" },
+            new List<GoodsFlow> {
+                new("Europe", "West Africa", new List<string> { "textiles", "guns", "iron bars", "spirits", "manufactured goods" }),
+                new("West Africa", "Americas", new List<string> { "enslaved people" }),
+                new("Americas", "Europe", new List<string> { "sugar", "tobacco", "cotton", "rum", "rice" })
+            },
             new List<string> {
                 "Forced diaspora reshapes the demography of the Americas",
                 "African religions, music, and foodways take root across the New World",
@@ -459,7 +612,7 @@ else
             new List<string> {
                 "From the 16th to the 19th century, European ships sailed a brutal triangle: manufactured goods south to West Africa, enslaved Africans west across the Middle Passage, and plantation produce (sugar, tobacco, cotton) back to Europe. Roughly 12 million Africans were forcibly shipped, and around 2 million died en route.",
                 "The trade restructured societies on three continents. Coastal African states reorganized around the slave trade, sometimes growing rich, often destabilised. The Americas were transformed by plantation economies whose wealth flowed back into European banks, factories, and palaces.",
-                "Abolition movements grew through the late 18th century. Britain banned the trade in 1807; the United States in 1808; Brazil only in 1850. The cultural and demographic legacy of the triangle still shapes the Atlantic world."
+                "Abolition movements grew through the late 18th century. Britain banned the trade in 1807; the United States in 1808; Brazil only in 1850, and the last illegal voyages reached Cuba in the 1860s. The cultural and demographic legacy of the triangle still shapes the Atlantic world."
             }),
 
         new TradeRoute(
@@ -467,17 +620,20 @@ else
             "Hanseatic League Routes",
             "Hanseatic League, 1200 - 1600 AD",
             "#9B59B6",
-            "M610,90 Q570,95 530,105 Q495,115 475,125 Q455,130 445,135 Q455,150 470,135 Q495,140 520,135 Q545,135 555,130",
-            new List<City> {
-                new("Novgorod", 610, 90, "Russian fur and wax depot"),
-                new("Riga", 555, 105, "Baltic gateway"),
-                new("Lubeck", 510, 115, "Hanseatic capital"),
-                new("Bergen", 495, 80, "Norwegian fish market"),
-                new("Bruges", 460, 130, "Flemish cloth city"),
-                new("London", 445, 135, "Steelyard counter")
+            false,
+            new List<Waypoint> {
+                Stop("Novgorod", "Russian fur and wax depot"),
+                Stop("Riga", "Baltic gateway"),
+                Stop("Lubeck", "Hanseatic capital"),
+                Stop("Bergen", "Norwegian fish market"),
+                Stop("Bruges", "Flemish cloth city"),
+                Stop("London", "Steelyard counter")
             },
-            new List<string> { "furs", "amber", "wax", "timber", "tar", "rye", "stockfish" },
-            new List<string> { "Flemish cloth", "wine", "salt", "spices", "weapons" },
+            new List<GoodsFlow> {
+                new("Novgorod and the Baltic", "Western Europe", new List<string> { "furs", "wax", "amber", "timber", "tar", "rye" }),
+                new("Bergen", "Lubeck and Western Europe", new List<string> { "stockfish" }),
+                new("Western Europe", "Baltic and Novgorod", new List<string> { "Flemish cloth", "wine", "salt", "spices", "weapons" })
+            },
             new List<string> {
                 "Low German becomes the lingua franca of the Baltic",
                 "Brick Gothic architecture spreads from Lubeck to the eastern Baltic",
@@ -495,16 +651,20 @@ else
             "Inca Royal Road",
             "Qhapaq Nan, 1438 - 1533 AD",
             "#1ABC9C",
-            "M255,300 Q260,330 270,360 Q275,390 280,420",
-            new List<City> {
-                new("Quito", 255, 300, "Northern provincial capital"),
-                new("Cajamarca", 260, 335, "Site of Atahualpa's capture"),
-                new("Cusco", 270, 370, "Inca imperial heart"),
-                new("Lake Titicaca", 275, 395, "Sacred Andean lake"),
-                new("Santiago", 280, 425, "Southern frontier")
+            false,
+            new List<Waypoint> {
+                Stop("Quito", "Northern provincial capital"),
+                Stop("Cajamarca", "Site of Atahualpa's capture"),
+                Stop("Cusco", "Inca imperial heart"),
+                Stop("Lake Titicaca", "Sacred Andean lake"),
+                Stop("Mapocho Valley", "Southern frontier, where Santiago was founded in 1541")
             },
-            new List<string> { "maize", "coca leaf", "potatoes", "quinoa", "fine textiles", "silver" },
-            new List<string> { "tropical feathers", "shells", "obsidian", "copper tools" },
+            new List<GoodsFlow> {
+                new("Provinces", "Cusco, as tribute", new List<string> { "maize", "woven cloth", "silver" }),
+                new("Highlands", "Coast and jungle", new List<string> { "freeze-dried potatoes", "quinoa", "llama wool", "obsidian", "copper tools" }),
+                new("Coast", "Highlands", new List<string> { "Spondylus shells", "cotton" }),
+                new("Eastern slopes and jungle", "Highlands", new List<string> { "coca leaf", "tropical feathers" })
+            },
             new List<string> {
                 "Quechua spreads as the imperial lingua franca",
                 "Khipu knot-records carry administrative and possibly narrative data",
@@ -522,25 +682,29 @@ else
             "Hudson's Bay Fur Route",
             "HBC, 1670 - 1870 AD",
             "#5DADE2",
-            "M210,130 Q220,160 235,185 Q255,205 280,215 Q310,220 350,210 Q400,180 440,150 Q455,140 465,135",
-            new List<City> {
-                new("York Factory", 210, 130, "HBC main bayside post"),
-                new("Fort Albany", 240, 175, "Subarctic exchange post"),
-                new("Montreal", 290, 215, "St. Lawrence shipping hub"),
-                new("Quebec", 320, 210, "Atlantic gateway"),
-                new("London", 445, 135, "HBC headquarters and fur market")
+            false,
+            new List<Waypoint> {
+                Stop("Fort Albany", "Subarctic exchange post"),
+                Stop("York Factory", "HBC main bayside post"),
+                Stop("Hudson Strait", "Ice-choked passage, navigable only in summer"),
+                Via(330, 140),
+                Stop("Stromness", "Orkney port for fresh water and recruits"),
+                Stop("London", "HBC headquarters and fur market")
             },
-            new List<string> { "beaver pelts", "marten", "fox furs", "moose hides", "pemmican" },
-            new List<string> { "muskets", "iron tools", "wool blankets", "glass beads", "brandy" },
+            new List<GoodsFlow> {
+                new("Hudson Bay posts", "London", new List<string> { "beaver pelts", "marten", "fox furs", "moose hides" }),
+                new("London", "Hudson Bay posts", new List<string> { "muskets", "iron tools", "wool blankets", "glass beads", "brandy" })
+            },
             new List<string> {
                 "Cree, Ojibwe, and Metis trade networks integrate with European demand",
                 "Birchbark canoe technology adopted by voyageurs",
                 "Michif language emerges from Cree-French contact",
+                "Pemmican, a Plains food of dried meat and fat, fuels the inland fur brigades",
                 "European demand for felt hats reshapes North American ecology"
             },
             new List<string> {
                 "Founded by royal charter in 1670, the Hudson's Bay Company received a monopoly over all lands draining into Hudson Bay, a vast territory called Rupert's Land. Furs, especially beaver, were processed in Europe into the felt hats fashionable from the 17th to mid-19th century.",
-                "The company built a string of bayside posts where Cree and other First Nations brought pelts to trade for European goods. French rivals from Montreal pushed deeper inland, leading to fierce competition until the rival North West Company merged with the HBC in 1821.",
+                "The company built a string of bayside posts where Cree and other First Nations brought pelts to trade for European goods. Each summer company ships sailed from London, often calling at Stromness in Orkney, through Hudson Strait to the bay, and hurried home with the furs before the ice closed in. Rivals based in Montreal, first French traders and later the North West Company, pushed deeper inland, until the North West Company merged with the HBC in 1821.",
                 "Overhunting collapsed beaver populations across much of the continent, and the silk hat eventually replaced the felt hat. The HBC sold Rupert's Land to Canada in 1870, but its trading posts seeded many of the towns of the Canadian north."
             })
     };
@@ -592,11 +756,17 @@ else
     .trt-city:hover circle:first-child { opacity: 0.32; }
 
     .trt-map-controls {
-        display: flex; justify-content: center; padding: 10px 4px 4px;
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 8px; padding: 10px 4px 4px;
     }
     .trt-map-controls .btn {
         display: inline-flex; align-items: center; gap: 6px;
     }
+    .trt-legend {
+        display: flex; flex-wrap: wrap; gap: 4px 12px;
+        font-size: 0.74rem; color: #f0d9a8;
+    }
+    .trt-legend-item { display: inline-flex; align-items: center; gap: 5px; }
 
     .trt-detail {
         padding: 16px; margin-bottom: 20px;
@@ -618,14 +788,16 @@ else
         margin: 0 0 8px; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.6;
     }
 
+    .trt-flow { margin-bottom: 10px; }
+    .trt-flow-label {
+        font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;
+    }
     .trt-chips { display: flex; gap: 6px; flex-wrap: wrap; }
     .trt-chip {
         font-size: 0.74rem; padding: 3px 8px; border-radius: 10px;
-        background: var(--bg-surface); color: var(--text-secondary);
+        background: var(--bg-surface); color: var(--text-primary);
         border: 1px solid var(--border);
     }
-    .trt-chip-east { border-color: rgba(230,126,34,0.4); color: var(--text-primary); }
-    .trt-chip-west { border-color: rgba(74,144,217,0.4); color: var(--text-primary); }
 
     .trt-cultural {
         margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;

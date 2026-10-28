@@ -1,23 +1,5 @@
 @page "/era-map"
-@inject IProgressService Progress
 @inject NavigationManager Nav
-@inject IJSRuntime JS
-
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Era Map</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Era Map" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -123,8 +105,8 @@ else
                 var dimmed = (selectedRegion != null && !isSelected) || (hoverRegion != null && !isHover && selectedRegion == null);
                 <g class="era-region-group @(dimmed ? "dimmed" : "") @(isSelected ? "selected" : "")"
                    @onclick="() => SelectRegion(r)"
-                   @onmouseover="() => hoverRegion = r"
-                   @onmouseout="() => hoverRegion = null">
+                   @onpointerenter="e => HoverRegion(e, r)"
+                   @onpointerleave="() => hoverRegion = null">
                     <path class="era-region-glow" d="@pathD" stroke="@r.Color" />
                     <path class="era-region-fill" d="@pathD" fill="@r.Color" stroke="@r.Color" />
                     @if (isSelected)
@@ -140,33 +122,35 @@ else
             @foreach (var region in CurrentEra.Regions)
             {
                 var r = region;
-                var c = CapitalPoint(r.Points);
                 var isSelected = selectedRegion?.Name == r.Name;
-                if (c.HasValue)
-                {
-                    <g transform="translate(@c.Value.x.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),@c.Value.y.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))">
-                        @if (isSelected)
-                        {
-                            <circle r="9.5" fill="none" stroke="#fff7e0" stroke-width="1.2" stroke-opacity="0.85" />
-                        }
-                        <circle r="6" fill="@r.Color" stroke="#fff7e0" stroke-width="1.5" />
-                        <path d="M -3,-2 L 0,-5 L 3,-2 L 2,2 L -2,2 Z" fill="#fff7e0" stroke="#000" stroke-width="0.3" stroke-opacity="0.4" />
-                    </g>
-                }
+                <g transform="translate(@Fmt(r.CapX),@Fmt(r.CapY))">
+                    @if (isSelected)
+                    {
+                        <circle r="9.5" fill="none" stroke="#fff7e0" stroke-width="1.2" stroke-opacity="0.85" />
+                    }
+                    <circle r="6" fill="@r.Color" stroke="#fff7e0" stroke-width="1.5" />
+                    <path d="M -3,-2 L 0,-5 L 3,-2 L 2,2 L -2,2 Z" fill="#fff7e0" stroke="#000" stroke-width="0.3" stroke-opacity="0.4" />
+                </g>
             }
         </g>
 
         @if (hoverRegion != null || selectedRegion != null)
         {
             var lbl = selectedRegion ?? hoverRegion!;
-            var c = CapitalPoint(lbl.Points);
-            if (c.HasValue)
-            {
-                <g class="floating-label" pointer-events="none" transform="translate(@c.Value.x.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),@c.Value.y.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))">
-                    <rect x="-60" y="-30" width="120" height="18" rx="3" fill="rgba(20,18,12,0.85)" stroke="@lbl.Color" stroke-width="1" />
-                    <text x="0" y="-17" text-anchor="middle" class="cap-label">@lbl.Name</text>
-                </g>
-            }
+            var lines = LabelLines(lbl.Name);
+            var w = lines.Max(LabelWidth) + 14;
+            var h = lines.Length * 13 + 5;
+            var lx = Math.Clamp(lbl.CapX, 12 + w / 2, 988 - w / 2);
+            var top = lbl.CapY - 12 - h < 12 ? lbl.CapY + 12 : lbl.CapY - 12 - h;
+            <g class="floating-label" pointer-events="none" transform="translate(@Fmt(lx),@Fmt(top))">
+                <rect x="@Fmt(-w / 2)" y="0" width="@Fmt(w)" height="@h" rx="3" fill="rgba(20,18,12,0.85)" stroke="@lbl.Color" stroke-width="1" />
+                <text text-anchor="middle" class="cap-label">
+                    @for (int i = 0; i < lines.Length; i++)
+                    {
+                        <tspan x="0" y="@(13 + i * 13)">@lines[i]</tspan>
+                    }
+                </text>
+            </g>
         }
 
         <g class="compass" transform="translate(940,80)" pointer-events="none">
@@ -259,45 +243,54 @@ else
     </div>
 </div>
 
-}
-
 @code {
-    private bool unlocked;
     private int eraIndex = 4; // start at 117 AD (Roman peak)
     private Region? selectedRegion;
     private Region? hoverRegion;
 
     private Era CurrentEra => eras[eraIndex];
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
-
     private void OnSliderInput(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out var v))
-        {
-            eraIndex = Math.Clamp(v, 0, eras.Count - 1);
-            selectedRegion = null;
-        }
+            JumpToEra(v);
     }
 
     private void JumpToEra(int i)
     {
         eraIndex = Math.Clamp(i, 0, eras.Count - 1);
         selectedRegion = null;
+        hoverRegion = null;
     }
 
-    private void StepBack() { if (eraIndex > 0) { eraIndex--; selectedRegion = null; } }
-    private void StepForward() { if (eraIndex < eras.Count - 1) { eraIndex++; selectedRegion = null; } }
+    private void StepBack() => JumpToEra(eraIndex - 1);
+    private void StepForward() => JumpToEra(eraIndex + 1);
 
     private void SelectRegion(Region r) => selectedRegion = selectedRegion?.Name == r.Name ? null : r;
+
+    // Touch taps also raise pointerenter but no reliable leave, so only a real mouse drives hover.
+    private void HoverRegion(PointerEventArgs e, Region r)
+    {
+        if (e.PointerType == "mouse") hoverRegion = r;
+    }
+
+    private static string Fmt(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string[] LabelLines(string name)
+    {
+        if (name.Length <= 18) return new[] { name };
+        var split = name.IndexOf(" (", StringComparison.Ordinal);
+        for (int d = 0, mid = name.Length / 2; split < 0 && d <= mid; d++)
+        {
+            if (name[mid - d] == ' ') split = mid - d;
+            else if (mid + d < name.Length && name[mid + d] == ' ') split = mid + d;
+        }
+        return split > 0 ? new[] { name[..split], name[(split + 1)..] } : new[] { name };
+    }
+
+    // Rough advance widths for 11px Cinzel bold plus letter-spacing; SVG text cannot be measured without JS.
+    private static double LabelWidth(string s) =>
+        s.Sum(ch => ch == ' ' ? 3.8 : char.IsUpper(ch) ? 8.8 : char.IsLetterOrDigit(ch) ? 7.2 : 4.6);
 
     private static (double x, double y)[] ParsePoints(string points)
     {
@@ -314,36 +307,28 @@ else
 
     private static string SmoothPath(string points)
     {
-        var pts = ParsePoints(points);
-        if (pts.Length < 3) return "";
-        var inv = System.Globalization.CultureInfo.InvariantCulture;
         var sb = new System.Text.StringBuilder();
-        var n = pts.Length;
-        var first = ((pts[0].x + pts[n - 1].x) / 2.0, (pts[0].y + pts[n - 1].y) / 2.0);
-        sb.Append("M ").Append(first.Item1.ToString("0.##", inv)).Append(',').Append(first.Item2.ToString("0.##", inv));
-        for (int i = 0; i < n; i++)
+        foreach (var ring in points.Split('|'))
         {
-            var c = pts[i];
-            var nxt = pts[(i + 1) % n];
-            var midX = (c.x + nxt.x) / 2.0;
-            var midY = (c.y + nxt.y) / 2.0;
-            sb.Append(" Q ").Append(c.x.ToString("0.##", inv)).Append(',').Append(c.y.ToString("0.##", inv))
-              .Append(' ').Append(midX.ToString("0.##", inv)).Append(',').Append(midY.ToString("0.##", inv));
+            var pts = ParsePoints(ring);
+            if (pts.Length < 3) continue;
+            var n = pts.Length;
+            if (sb.Length > 0) sb.Append(' ');
+            sb.Append("M ").Append(Fmt((pts[0].x + pts[n - 1].x) / 2.0)).Append(',').Append(Fmt((pts[0].y + pts[n - 1].y) / 2.0));
+            for (int i = 0; i < n; i++)
+            {
+                var c = pts[i];
+                var nxt = pts[(i + 1) % n];
+                sb.Append(" Q ").Append(Fmt(c.x)).Append(',').Append(Fmt(c.y))
+                  .Append(' ').Append(Fmt((c.x + nxt.x) / 2.0)).Append(',').Append(Fmt((c.y + nxt.y) / 2.0));
+            }
+            sb.Append(" Z");
         }
-        sb.Append(" Z");
         return sb.ToString();
     }
 
-    private static (double x, double y)? CapitalPoint(string points)
-    {
-        var pts = ParsePoints(points);
-        if (pts.Length == 0) return null;
-        double sx = 0, sy = 0;
-        foreach (var p in pts) { sx += p.x; sy += p.y; }
-        return (sx / pts.Length, sy / pts.Length);
-    }
-
-    private record Region(string Name, string Color, string Capital, string Dates, string Description, string Points);
+    // Points holds one or more map-space rings separated by '|'; CapX/CapY place the capital marker.
+    private record Region(string Name, string Color, string Capital, string Dates, string Description, string Points, double CapX, double CapY);
     private record Era(string Label, string ShortLabel, string Headline, List<Region> Regions);
 
     // Color palette per civilization family
@@ -357,6 +342,8 @@ else
     private const string C_GREECE    = "#4A90D9";
     private const string C_MAURYA    = "#E67E22";
     private const string C_ROME      = "#9C2B2B";
+    private const string C_CARTHAGE  = "#8E3B8A";
+    private const string C_SELEUCID  = "#2A9D8F";
     private const string C_PARTHIA   = "#5D4E8C";
     private const string C_KUSHAN    = "#A0522D";
     private const string C_TEOTI     = "#3E8B3E";
@@ -387,33 +374,56 @@ else
     private const string C_AUSHUN    = "#8E7CC3";
     private const string C_ROC       = "#C0392B";
     private const string C_USSR      = "#7A1E1E";
-    private const string C_USA       = "#1F4FA8";
+    private const string C_USA       = "#4A86D8";
     private const string C_USA_M     = "#2c5fb8";
     private const string C_CHINA_M   = "#B33030";
-    private const string C_EU        = "#1E5BA8";
+    private const string C_EU        = "#D4A72C";
     private const string C_INDIA_M   = "#E67E22";
     private const string C_BRAZIL    = "#2E8B57";
+
+    // Shared outlines, reused across eras.
+    private const string P_GB         = "466,104 477,100 482,110 489,119 488,127 469,129 470,120 464,112";
+    private const string P_IRELAND    = "453,114 463,111 466,121 459,128 451,124";
+    private const string P_FRANCE     = "470,134 486,130 500,131 504,138 504,150 496,156 474,156 468,146";
+    private const string P_IBERIA     = "456,152 476,148 494,154 494,166 482,176 464,176 456,166";
+    private const string P_JAPAN      = "898,168 924,166 930,206 920,224 902,224 900,200";
+    private const string P_ALASKA     = "60,90 100,80 104,132 90,144 66,138 58,118";
+    private const string P_USA        = "64,163 160,163 184,172 204,190 226,182 242,168 258,178 248,196 232,210 218,234 204,262 192,246 158,256 124,236 88,232 72,200";
+    private const string P_CANADA     = "104,80 150,73 200,70 240,84 258,108 270,142 268,168 252,176 242,168 226,182 204,190 184,172 160,163 64,163 66,150 92,146 104,132";
+    private const string P_SPANISH_SA = "246,330 282,318 300,316 292,336 280,360 286,390 300,410 306,432 292,462 272,466 256,446 246,400 240,366";
+    private const string P_PHILIPPINES = "874,262 888,258 894,276 890,296 878,292 872,276";
+    private const string P_RAJ        = "688,224 740,226 772,240 776,262 762,290 732,328 702,308 690,262";
+    private const string P_BURMA      = "782,262 806,264 812,282 806,306 792,304 784,284";
+    private const string P_MALAYA     = "818,310 834,310 840,326 826,330";
+    private const string P_NIGERIA    = "500,254 522,252 528,266 520,282 504,284 496,270";
+    private const string P_KENYA      = "560,280 588,276 600,288 594,298 566,298";
+    private const string P_FR_NAFRICA = "466,184 490,180 526,180 528,196 524,226 506,232 486,222 470,206";
+    private const string P_FR_WAFRICA = "460,232 474,212 490,222 506,232 526,228 534,244 520,248 498,250 490,268 480,276 468,270 460,256";
+    private const string P_MADAGASCAR = "614,328 624,326 628,348 620,370 610,364 610,342";
+    private const string P_INDOCHINA  = "826,264 852,268 866,282 864,302 846,310 832,298 830,282";
+    private const string P_MING       = "772,170 820,160 860,152 892,160 910,206 882,254 796,256 770,212";
+    private const string P_MODERN_CHINA = "720,150 890,155 910,205 880,255 795,255 720,235 700,185";
 
     private List<Era> eras = new()
     {
         new Era("3000 BC", "3000BC", "Bronze Age dawn: the first cities and kingdoms",
             new()
             {
-                new("Sumer", C_SUMER, "Ur / Uruk", "c. 3500 - 1900 BC",
+                new("Sumer", C_SUMER, "Uruk / Ur", "c. 3500 - 1900 BC",
                     "The first urban civilization. Sumerians invented cuneiform writing, the wheel, and large-scale irrigation in the Tigris-Euphrates floodplain. City-states like Uruk and Ur dominated southern Mesopotamia.",
-                    "615,200 620,210 635,215 640,225 625,230 612,222"),
-                new("Egypt (Old Kingdom)", C_EGYPT, "Memphis", "c. 2700 - 2200 BC",
-                    "Unified along the Nile under god-kings (pharaohs), the Old Kingdom built the Great Pyramids of Giza. Hieroglyphic writing and a centralized bureaucracy emerged early.",
-                    "560,210 580,210 590,260 580,310 565,310 555,260"),
-                new("Indus Valley", C_INDUS, "Harappa / Mohenjo-Daro", "c. 2600 - 1900 BC",
-                    "A vast urban civilization stretching across modern Pakistan and northwest India. Cities had grid plans, drainage, and standardized weights. Their script remains undeciphered.",
-                    "705,235 740,245 745,275 720,290 700,275"),
-                new("Yangshao / Longshan (China)", C_CHINA, "Anyang region", "c. 5000 - 2000 BC",
+                    "614,204 632,206 646,222 640,234 622,232 610,218", 628, 220),
+                new("Egypt (Early Dynastic)", C_EGYPT, "Memphis", "c. 3100 - 2686 BC",
+                    "Upper and Lower Egypt had recently been unified, traditionally by Narmer (Menes), with Memphis as capital. Hieroglyphic writing and royal tombs at Abydos appear; the pyramid age of the Old Kingdom would follow from c. 2686 BC.",
+                    "554,190 576,188 586,202 584,224 572,230 560,216", 567, 203),
+                new("Early Harappan (Indus)", C_INDUS, "Harappa / Kot Diji", "c. 3300 - 2600 BC",
+                    "Farming towns along the Indus and its tributaries, such as early Harappa and Kot Diji, were growing and trading. The great planned Indus cities, with grid streets, drainage, and standardized weights, would emerge around 2600 BC.",
+                    "688,228 716,228 728,242 722,264 704,272 690,262", 705, 248),
+                new("Yangshao / Longshan (China)", C_CHINA, "Yellow River valley", "c. 5000 - 2000 BC",
                     "Neolithic farming cultures along the Yellow River. Painted pottery, millet agriculture, silk, and the first walled towns, the seedbed of later Chinese civilization.",
-                    "800,180 855,180 870,210 850,235 805,225"),
+                    "800,178 856,176 872,206 852,232 806,224", 838, 196),
                 new("Norte Chico", C_OLMEC, "Caral", "c. 3000 - 1800 BC",
-                    "The earliest urban culture in the Americas, on the coast of modern Peru. Monumental platform mounds and sunken plazas at Caral predate Egyptian pyramids.",
-                    "270,360 290,360 300,395 280,415 270,400"),
+                    "The earliest urban culture in the Americas, on the coast of modern Peru. Monumental platform mounds and sunken plazas at Caral are roughly as old as Egypt's pyramids.",
+                    "266,358 288,356 296,378 288,398 272,396 264,378", 279, 376),
             }),
 
         new Era("1500 BC", "1500BC", "Bronze Age empires of chariots and cuneiform",
@@ -421,42 +431,42 @@ else
             {
                 new("Egypt (New Kingdom)", C_EGYPT, "Thebes", "c. 1550 - 1077 BC",
                     "Egypt's imperial age under pharaohs like Thutmose III, Hatshepsut, and Ramesses II. Conquered Nubia and the Levant, fought Hittites at Kadesh, built temples at Karnak and Abu Simbel.",
-                    "555,210 590,210 595,290 580,335 560,335 548,260"),
+                    "552,190 576,187 592,186 606,192 604,206 590,208 586,226 582,246 568,250 560,234 558,212", 572, 216),
                 new("Hittite Empire", C_HITTITE, "Hattusa", "c. 1600 - 1180 BC",
-                    "An Indo-European chariot empire in Anatolia. Rivalled Egypt for Levantine dominance. Master metallurgists who pioneered ironworking. Collapsed in the Bronze Age Collapse.",
-                    "590,150 660,160 670,180 640,195 600,185"),
+                    "An Indo-European chariot empire in Anatolia. Rivalled Egypt for Levantine dominance. Hittite texts treat iron as a rare prestige metal, though the old claim that they pioneered ironworking is now doubted. Collapsed in the Bronze Age Collapse.",
+                    "590,150 660,160 670,180 640,195 600,185", 614, 171),
                 new("Mitanni / Babylon", C_SUMER, "Babylon", "c. 1600 - 1300 BC",
                     "Hurrian and Kassite kingdoms ruled Mesopotamia after Hammurabi's Babylon. Skilled chariot warriors and diplomats; correspondents in the Amarna letters.",
-                    "615,200 645,210 650,225 625,232 612,220"),
-                new("Shang China", C_CHINA, "Anyang", "c. 1600 - 1046 BC",
-                    "First historically attested Chinese dynasty. Famous for oracle bone inscriptions (the earliest Chinese writing) and stunning bronze ritual vessels.",
-                    "800,185 860,185 870,215 845,235 805,225"),
-                new("Indus (late phase)", C_INDUS, "Mohenjo-Daro", "c. 1900 - 1300 BC",
-                    "The great Indus cities were already in decline, possibly from climate shifts and river changes. Smaller late-Harappan settlements persisted.",
-                    "705,240 740,250 740,275 715,285 700,270"),
+                    "606,196 636,194 648,206 652,224 628,234 612,222", 628, 214),
+                new("Shang China", C_CHINA, "Zhengzhou (Anyang from c. 1300 BC)", "c. 1600 - 1046 BC",
+                    "First historically attested Chinese dynasty. Around 1500 BC its centre was the walled city at Zhengzhou; the later capital at Anyang yielded oracle bone inscriptions, the earliest Chinese writing, and stunning bronze ritual vessels.",
+                    "806,176 860,174 874,200 864,226 830,232 804,214", 846, 193),
+                new("Indus (late phase)", C_INDUS, "no major city", "c. 1900 - 1300 BC",
+                    "The great Indus cities had largely been abandoned, possibly after climate shifts and river changes. Smaller late-Harappan villages persisted, shifting east toward the Ganges plain.",
+                    "694,232 728,236 742,252 734,272 712,280 694,266", 714, 255),
                 new("Olmec", C_OLMEC, "San Lorenzo", "c. 1500 - 400 BC",
-                    "Mesoamerica's first major civilization, in Mexico's Gulf coast. Famous for colossal basalt heads, the long-count calendar, and rituals later inherited by the Maya and Aztecs.",
-                    "215,275 245,275 250,300 230,315 215,300"),
+                    "Mesoamerica's first major civilization, in Mexico's Gulf coast. Famous for colossal basalt heads and fine jade carving. Their art and rituals echoed through later Mesoamerica, including among the Maya and Aztecs.",
+                    "215,275 245,275 250,300 230,315 215,300", 233, 292),
             }),
 
         new Era("500 BC", "500BC", "The Axial Age: Persia, Greece, the Buddha and Confucius",
             new()
             {
                 new("Achaemenid Persia", C_PERSIA, "Persepolis", "550 - 330 BC",
-                    "The largest empire the world had yet seen, founded by Cyrus the Great. Stretched from the Indus to Libya. Built the Royal Road, used satraps, and tolerated local religions.",
-                    "590,160 700,170 760,200 760,250 660,250 605,225 595,190"),
+                    "The largest empire the world had yet seen, founded by Cyrus the Great. Stretched from the Indus to Egypt and Libya. Built the Royal Road, used satraps, and tolerated local religions.",
+                    "556,190 574,184 588,168 592,156 640,156 690,166 728,178 734,204 718,232 706,262 690,262 668,250 640,248 612,242 600,226 588,232 572,234 556,218", 672, 230),
                 new("Greek City-States", C_GREECE, "Athens / Sparta", "c. 800 - 323 BC",
                     "Independent poleis (Athens, Sparta, Corinth, Thebes) shared a language and culture. The Persian Wars forged a Greek identity. Birthplace of philosophy, drama, and democracy.",
-                    "535,150 575,150 580,170 555,180 535,170"),
-                new("Zhou China (Warring States)", C_CHINA, "Luoyang", "1046 - 256 BC",
-                    "The Zhou dynasty fragmented into rival kingdoms during the Warring States period. Iron tools spread; Confucius, Laozi, Mozi, and Sun Tzu all lived in this turbulent age.",
-                    "780,170 880,160 895,200 870,240 800,230 775,200"),
-                new("Mauryan India", C_MAURYA, "Pataliputra", "322 - 184 BC",
-                    "Founded just after this date by Chandragupta Maurya. By 500 BC, the region was a patchwork of mahajanapadas where the Buddha and Mahavira preached.",
-                    "705,230 760,240 760,290 720,320 695,290 690,250"),
-                new("Carthage", C_ROME, "Carthage", "c. 814 - 146 BC",
+                    "535,150 575,150 580,170 555,180 535,170", 547, 166),
+                new("Zhou China (Spring and Autumn)", C_CHINA, "Luoyang", "1046 - 256 BC",
+                    "Zhou royal power had faded and rival states such as Jin, Qi, Chu, and Wu competed for dominance. Confucius was teaching, and tradition places Laozi and Sun Tzu in the same age. The Warring States period would follow from 475 BC.",
+                    "780,170 880,160 895,200 870,240 800,230 775,200", 842, 190),
+                new("Magadha and the Mahajanapadas", C_MAURYA, "Rajagriha", "c. 600 - 322 BC",
+                    "Northern India was divided among rival kingdoms and republics, the mahajanapadas. Magadha, ruled from Rajagriha, was absorbing its neighbours. The Buddha and Mahavira preached here; Magadha's Mauryan dynasty would unify most of India from 322 BC.",
+                    "708,236 740,240 764,248 764,272 742,282 716,272 706,254", 745, 266),
+                new("Carthage", C_CARTHAGE, "Carthage", "c. 814 - 146 BC",
                     "A Phoenician trading colony that grew into the dominant power of the western Mediterranean. Maritime empire built on commerce and naval might.",
-                    "490,200 520,200 525,225 500,230 488,215"),
+                    "484,184 512,178 528,182 532,194 516,204 488,202", 510, 190),
             }),
 
         new Era("200 BC", "200BC", "Rome rises in the west, Han China in the east",
@@ -464,22 +474,25 @@ else
             {
                 new("Roman Republic", C_ROME, "Rome", "509 - 27 BC",
                     "By 200 BC Rome had defeated Carthage in the Second Punic War and dominated Italy and the western Mediterranean. The Republic's legions would soon swallow the Hellenistic east.",
-                    "490,140 545,140 555,170 545,210 510,215 488,180"),
+                    "500,140 514,137 522,146 530,158 532,170 520,174 510,166 506,154 498,148 | 472,166 484,156 494,152 496,162 486,172 474,176", 516, 155),
                 new("Han China", C_CHINA, "Chang'an", "202 BC - 220 AD",
                     "Founded by Liu Bang after the Qin collapse. Han China matched Rome in scale and sophistication. Confucianism became the state ideology; the Silk Road opened westward.",
-                    "780,170 890,165 905,210 880,255 800,245 775,205"),
+                    "780,170 890,165 905,210 880,255 800,245 775,205", 825, 191),
                 new("Mauryan India", C_MAURYA, "Pataliputra", "322 - 184 BC",
                     "The Mauryan empire under Ashoka had unified almost all of South Asia by the mid-3rd century BC, then fragmented. By 200 BC its core in the Ganges plain remained.",
-                    "705,230 760,240 760,290 720,320 695,290 690,250"),
-                new("Parthian Empire", C_PARTHIA, "Ctesiphon", "247 BC - 224 AD",
-                    "An Iranian dynasty that displaced the Seleucids. Famous heavy cavalry (cataphracts) and horse archers. Held the line against Rome along the Euphrates for centuries.",
-                    "605,180 700,185 730,215 710,250 645,250 605,220"),
+                    "706,236 740,240 764,248 764,276 742,288 718,284 704,262", 745, 263),
+                new("Seleucid Empire", C_SELEUCID, "Antioch", "312 - 63 BC",
+                    "The largest of the states carved from Alexander's empire. Antiochus III had forced Parthia and Bactria back into submission and in 200 BC took Coele-Syria from the Ptolemies at Panium. Rome would defeat him at Magnesia a decade later.",
+                    "590,178 612,174 640,172 652,180 655,199 674,207 692,201 698,222 686,240 660,246 636,240 620,232 606,214 594,204 590,192", 600, 186),
+                new("Parthia", C_PARTHIA, "Nisa / Hecatompylos", "247 BC - 224 AD",
+                    "Still a small kingdom in northeastern Iran, recently made to accept Seleucid overlordship. Its horse archers and armoured cataphracts would carry it into Mesopotamia from the mid-2nd century BC, and later hold the Euphrates against Rome.",
+                    "654,180 676,175 694,184 692,200 674,207 655,199", 673, 191),
                 new("Hellenistic Egypt (Ptolemies)", C_GREECE, "Alexandria", "305 - 30 BC",
                     "The Ptolemaic kingdom ruled Egypt after Alexander's death. Greek culture fused with Egyptian. The Library of Alexandria was the ancient world's greatest center of learning.",
-                    "555,210 588,210 593,275 575,310 558,310 550,255"),
+                    "540,186 560,186 582,186 588,198 584,226 572,234 560,220 548,202", 564, 197),
                 new("Xiongnu Confederacy", C_HITTITE, "Steppe", "c. 209 BC - 89 AD",
                     "A nomadic steppe empire north of Han China, possibly ancestral to the Huns. The Han fought them for over a century; the Great Wall was built largely against them.",
-                    "750,90 880,80 890,140 800,150 760,130"),
+                    "750,90 880,80 890,140 800,150 760,130", 805, 120),
             }),
 
         new Era("117 AD", "117AD", "Pax Romana and the Han: two empires at their peaks",
@@ -487,65 +500,65 @@ else
             {
                 new("Roman Empire (Trajan)", C_ROME, "Rome", "27 BC - 476 AD",
                     "Under Trajan in 117 AD the empire reached its greatest extent: from Britain to Mesopotamia. Roads, aqueducts, and the legions held together a Mediterranean world of 60+ million people.",
-                    "470,130 600,130 670,180 640,250 540,260 480,250 460,200 460,160"),
+                    "458,152 470,138 486,132 498,126 504,132 506,140 524,138 540,134 558,136 568,144 584,150 610,152 636,156 652,166 648,182 628,186 616,196 606,212 600,226 588,230 574,230 566,226 560,212 548,202 520,202 494,200 470,196 466,184 466,172 458,166 | 468,113 480,111 488,119 488,126 470,128 467,120", 516, 155),
                 new("Han China", C_CHINA, "Luoyang", "202 BC - 220 AD",
-                    "The Eastern Han dynasty's late peak. Paper was invented; Buddhism arrived along the Silk Road; bureaucracy ran on Confucian exams. Soon to fragment into the Three Kingdoms.",
-                    "780,165 895,160 910,205 880,255 800,250 775,205"),
+                    "The Eastern Han dynasty's late peak. Paper was improved and spread; Buddhism arrived along the Silk Road; officials were chosen mostly by recommendation and schooled in the Confucian classics. Soon to fragment into the Three Kingdoms.",
+                    "780,165 895,160 910,205 880,255 800,250 775,205", 842, 190),
                 new("Kushan Empire", C_KUSHAN, "Purushapura", "c. 30 - 375 AD",
                     "A Central Asian empire spanning Bactria, Gandhara, and northern India. Patrons of Mahayana Buddhism and the Greco-Buddhist art of Gandhara. Major node on the Silk Road.",
-                    "680,200 770,210 775,255 720,280 690,255"),
+                    "680,200 770,210 775,255 720,280 690,255", 710, 228),
                 new("Parthian Empire", C_PARTHIA, "Ctesiphon", "247 BC - 224 AD",
-                    "Rome's eastern rival, locked in centuries of border war. Trajan briefly took Ctesiphon shortly before this date, but the empire held and later overthrew the Parthians.",
-                    "640,205 700,210 720,235 695,260 650,255"),
+                    "Rome's eastern rival, locked in centuries of border war. Trajan briefly took Ctesiphon in 116, but the empire held; the Sassanids would overthrow the Parthians in 224.",
+                    "620,196 646,182 672,178 682,188 676,204 682,230 686,252 664,256 642,248 630,234 618,216", 630, 208),
                 new("Teotihuacan", C_TEOTI, "Teotihuacan", "c. 100 BC - 550 AD",
                     "A massive city in the Valley of Mexico with the Pyramids of the Sun and Moon. At its peak, one of the largest cities on Earth. Influenced Maya art and politics from afar.",
-                    "210,275 245,275 252,300 230,315 212,300"),
+                    "210,275 245,275 252,300 230,315 212,300", 224, 288),
             }),
 
-        new Era("600 AD", "600AD", "Late antiquity: Byzantium, Sassanids, Tang, and the Maya",
+        new Era("600 AD", "600AD", "Late antiquity: Byzantium, Sassanids, Sui China, and the Maya",
             new()
             {
                 new("Byzantine Empire", C_BYZANTINE, "Constantinople", "330 - 1453",
-                    "The eastern Roman empire under Justinian's successors. Held the Balkans, Anatolia, and parts of Italy and North Africa. About to be hammered by Persian and Arab onslaughts.",
-                    "520,140 600,140 640,165 615,210 555,215 520,180"),
+                    "The eastern Roman empire under Justinian's successors. Held the Balkans, Anatolia, Syria, Egypt, and parts of Italy and North Africa. About to be hammered by Persian and Arab onslaughts.",
+                    "536,142 562,136 590,146 620,152 646,164 640,180 616,188 606,212 592,214 586,228 568,230 558,208 548,198 540,186 536,170 534,156 | 498,182 530,180 536,192 524,200 500,198 | 512,152 522,152 530,164 526,172 512,170", 580, 156),
                 new("Sassanid Persia", C_SASSANID, "Ctesiphon", "224 - 651",
                     "The last great pre-Islamic Iranian empire, locked in a 400-year struggle with Rome / Byzantium. Khosrow II briefly took Egypt and the Levant before being crushed by Heraclius.",
-                    "605,170 720,180 760,215 740,260 660,260 605,225"),
-                new("Tang China", C_CHINA, "Chang'an", "618 - 907",
-                    "Founded just after this date in 618. The early 600s saw the Sui reunify China; by 600 the framework of Tang cosmopolitan brilliance was being assembled.",
-                    "770,170 890,165 910,210 875,255 800,250 770,205"),
+                    "614,190 640,176 690,176 730,186 750,214 738,250 700,256 664,250 640,240 622,224 616,206", 630, 208),
+                new("Sui China", C_CHINA, "Daxing (Chang'an)", "581 - 618",
+                    "The Sui reunified China in 589 after nearly three centuries of division and rebuilt Chang'an as Daxing. The Grand Canal and formal civil service exams took shape under the Sui; failed wars in Korea would topple the dynasty in 618, opening the way for the Tang.",
+                    "770,170 890,165 910,210 875,255 800,250 770,205", 825, 191),
                 new("Maya Classic", C_MAYA, "Tikal", "c. 250 - 900",
                     "Independent Maya city-states across the Yucatan and Guatemala lowlands. Tikal, Calakmul, and Palenque competed in dynastic politics, astronomy, and monumental architecture.",
-                    "215,280 250,280 258,305 232,318 215,302"),
+                    "228,280 256,280 266,300 248,316 230,306", 247, 297),
                 new("Tiwanaku", C_TIWANAKU, "Tiwanaku", "c. 500 - 1000",
                     "An Andean civilization centered on Lake Titicaca. Massive stone gateways, sophisticated raised-field agriculture at high altitude, and far-reaching cultural influence in the Andes.",
-                    "275,395 300,395 305,425 285,445 272,425"),
-                new("Gupta successors (India)", C_PALA, "Kannauj", "c. 320 - 650",
-                    "After the Gupta golden age, India fragmented again into regional kingdoms. Harsha briefly reunified the north shortly after 600. South India was dominated by the Pallavas and Chalukyas.",
-                    "705,235 760,245 760,295 725,325 700,295"),
+                    "275,395 300,395 305,425 285,445 272,425", 288, 418),
+                new("Gupta successors (India)", C_PALA, "Kannauj", "c. 550 - 650",
+                    "The Gupta Empire (c. 320-550) had broken up into regional kingdoms. Harsha would reunify much of the north from Kannauj after 606, while the Pallavas and Chalukyas contested the south.",
+                    "705,235 760,245 760,295 725,325 700,295", 730, 258),
             }),
 
-        new Era("800 AD", "800AD", "Charlemagne crowned, Abbasid Baghdad shines, Tang at full bloom",
+        new Era("800 AD", "800AD", "Charlemagne crowned, Abbasid Baghdad shines, Tang China past its peak",
             new()
             {
                 new("Carolingian Empire", C_CAROLING, "Aachen", "800 - 888",
                     "Charlemagne was crowned Emperor by the Pope in 800, reviving the imperial idea in the Latin West. His Frankish realm covered France, Germany, and northern Italy.",
-                    "470,120 540,115 560,145 540,170 490,170 470,150"),
+                    "466,146 470,134 488,126 500,121 514,119 521,130 528,140 520,150 516,158 506,152 496,158 486,160 472,156", 499, 130),
                 new("Abbasid Caliphate", C_ABBASID, "Baghdad", "750 - 1258",
-                    "From Baghdad, the Abbasids ruled an Islamic empire from Morocco to Central Asia. The House of Wisdom translated Greek, Persian, and Indian science. The Islamic Golden Age.",
-                    "470,180 600,180 700,200 720,240 660,275 540,295 490,290 465,250"),
+                    "From Baghdad, the Abbasids ruled an Islamic empire from Ifriqiya to Central Asia; Morocco and al-Andalus had already broken away. Under Harun al-Rashid, scholars were translating Greek, Persian, and Indian science: the Islamic Golden Age.",
+                    "506,182 530,180 556,186 572,186 590,180 612,186 640,180 670,176 700,182 716,196 712,218 696,234 690,256 668,250 640,256 618,262 604,244 590,228 578,232 566,228 556,206 530,204 506,202", 628, 208),
                 new("Tang China", C_CHINA, "Chang'an", "618 - 907",
-                    "Cosmopolitan Chang'an was likely the largest city in the world. Block printing, gunpowder beginnings, Buddhism flourishing, and a civil service of poets running an empire.",
-                    "770,170 890,165 910,210 875,255 800,250 770,205"),
+                    "Still recovering from the An Lushan rebellion (755-763), which had left regional military governors powerful. Chang'an remained perhaps the largest city in the world, block printing was spreading, Buddhism flourished, and poets such as Bai Juyi served as officials.",
+                    "770,170 890,165 910,210 875,255 800,250 770,205", 825, 191),
                 new("Pala Empire", C_PALA, "Pataliputra", "c. 750 - 1161",
                     "A Buddhist dynasty that dominated eastern India and Bengal. Patronized the great monastic universities of Nalanda and Vikramashila; spread Mahayana to Tibet.",
-                    "710,240 760,250 760,295 730,320 710,295"),
+                    "728,244 760,248 766,264 760,284 740,290 726,270", 745, 264),
                 new("Heian Japan", C_HEIAN, "Heian-kyo (Kyoto)", "794 - 1185",
-                    "The Heian capital had just been founded in 794. Aristocratic court culture; a century later Murasaki Shikibu would write The Tale of Genji, often called the world's first novel.",
-                    "900,170 922,170 925,210 905,222"),
+                    "The Heian capital had just been founded in 794. Aristocratic court culture; about two centuries later Murasaki Shikibu would write The Tale of Genji, often called the world's first novel.",
+                    P_JAPAN, 911, 204),
                 new("Byzantine Empire", C_BYZANTINE, "Constantinople", "330 - 1453",
                     "Recovering after the Iconoclast crises. Held Anatolia and the Balkans against Bulgars, Arabs, and Slavs. Empress Irene was on the throne in 800, the only sole female ruler so far.",
-                    "525,140 600,140 630,165 605,205 555,210 525,175"),
+                    "532,148 560,140 588,146 616,150 648,162 644,178 616,186 590,180 566,176 540,172 | 514,158 524,156 530,166 526,174 514,172", 580, 158),
             }),
 
         new Era("1200 AD", "1200AD", "Genghis Khan rises: the world about to be reordered",
@@ -553,45 +566,45 @@ else
             {
                 new("Song China", C_SONG, "Hangzhou", "960 - 1279",
                     "The Southern Song after losing the north to the Jin. Economically and technologically the most advanced state on Earth: paper money, gunpowder weapons, magnetic compass, printed books.",
-                    "780,200 890,200 905,235 870,265 800,260 780,225"),
+                    "780,196 890,196 905,235 870,265 800,260 780,225", 875, 210),
                 new("Mongol confederations (rising)", C_MONGOL, "Karakorum (soon)", "c. 1206+",
                     "Temujin united the Mongol tribes in 1206 as Genghis Khan. Within a generation his armies would conquer from Korea to the Carpathians. In 1200 the storm was just gathering.",
-                    "720,90 880,80 895,140 800,150 740,135"),
+                    "720,90 880,80 895,140 800,150 740,135", 796, 122),
                 new("Ayyubid Sultanate", C_AYYUBID, "Cairo", "1171 - 1260",
                     "Saladin's dynasty, ruling Egypt, Syria, and parts of Arabia. Recaptured Jerusalem from the Crusaders in 1187. Coexisted (uneasily) with the Crusader states along the coast.",
-                    "545,200 615,205 640,240 600,280 555,275 540,235"),
+                    "548,190 574,188 590,184 606,180 622,186 618,200 606,212 616,230 630,252 620,268 604,256 592,234 584,230 570,232 556,214", 567, 204),
                 new("Holy Roman Empire", C_HRE, "various", "962 - 1806",
                     "A loose confederation of German principalities under Hohenstaufen rule. Frederick Barbarossa's grandson Frederick II would soon bring the imperial idea to its medieval height.",
-                    "475,115 540,110 555,145 530,170 490,170 470,140"),
+                    "490,136 494,124 506,116 522,114 538,122 542,136 532,146 522,152 514,160 504,156 494,150", 515, 134),
                 new("Khmer Empire", C_PALA, "Angkor", "802 - 1431",
                     "The Khmer empire centered on the vast hydraulic city of Angkor. Suryavarman II had recently built Angkor Wat; Jayavarman VII was about to build the Bayon and the walled city of Angkor Thom.",
-                    "790,275 840,280 855,305 820,325 790,310"),
+                    "804,270 842,272 860,290 852,310 826,316 806,300", 834, 292),
                 new("Inca precursors (Killke)", C_INCA, "Cuzco region", "c. 900 - 1200",
                     "Around Cuzco, the Killke culture laid foundations later inherited by the Inca. The Inca state itself would not dominate the Andes until the mid-1400s.",
-                    "275,390 300,390 305,420 285,440 273,420"),
+                    "275,390 300,390 305,420 285,440 273,420", 287, 403),
             }),
 
         new Era("1450 AD", "1450AD", "Ottomans take Constantinople, Aztecs and Inca peak",
             new()
             {
                 new("Ottoman Empire", C_OTTOMAN, "Edirne / soon Istanbul", "1299 - 1922",
-                    "About to take Constantinople in 1453 under Mehmed II, ending Byzantium. Already controlled most of Anatolia and the Balkans. The dominant power of the eastern Mediterranean.",
-                    "525,150 620,160 660,180 645,215 580,225 540,200 520,175"),
+                    "About to take Constantinople in 1453 under Mehmed II, ending Byzantium. Already held most of the Balkans and western Anatolia, though rival beyliks such as Karaman still ruled much of the rest. A rising power in the eastern Mediterranean.",
+                    "530,140 556,134 576,138 590,144 606,150 626,158 630,174 612,184 594,182 580,170 560,172 540,168 528,156", 571, 152),
                 new("Ming China", C_MING, "Beijing", "1368 - 1644",
-                    "After throwing off Mongol Yuan rule, the Ming had just moved the capital to Beijing and built the Forbidden City. Zheng He's treasure fleets had recently sailed to East Africa.",
-                    "770,170 890,165 910,210 880,255 795,255 770,210"),
+                    "After throwing off Mongol Yuan rule, the Ming had moved the capital to Beijing in 1421, around the new Forbidden City. Zheng He's treasure fleets had sailed as far as East Africa.",
+                    P_MING, 860, 166),
                 new("Aztec Triple Alliance", C_AZTEC, "Tenochtitlan", "1428 - 1521",
-                    "Tenochtitlan, Texcoco, and Tlacopan had just formed the Triple Alliance. Within decades they would dominate central Mexico, demanding tribute and sacrificial captives from subject peoples.",
-                    "210,275 245,275 252,300 230,318 212,302"),
+                    "Tenochtitlan, Texcoco, and Tlacopan had formed the Triple Alliance in 1428. Within decades they would dominate central Mexico, demanding tribute and sacrificial captives from subject peoples.",
+                    "210,275 245,275 252,300 230,318 212,302", 224, 288),
                 new("Inca Empire (Tawantinsuyu)", C_INCA, "Cuzco", "c. 1438 - 1533",
                     "Pachacuti had just begun the Inca expansion. By 1500 Tawantinsuyu would stretch 4,000 km along the Andes, the largest empire ever in the pre-Columbian Americas.",
-                    "270,360 305,360 315,420 290,460 270,440 260,395"),
+                    "270,360 305,360 315,420 290,460 270,440 260,395", 287, 398),
                 new("Songhai Empire", C_SONGHAI, "Gao / Timbuktu", "c. 1464 - 1591",
                     "About to displace Mali as the dominant West African empire under Sunni Ali. Controlled the Niger bend, the gold trade, and the great learning city of Timbuktu.",
-                    "470,255 540,255 555,290 510,310 475,295"),
+                    "466,232 506,228 528,238 524,258 494,266 470,256", 502, 246),
                 new("Timurid successors", C_MUGHAL, "Samarkand / Herat", "1370 - 1507",
                     "After Timur's death in 1405, his successors held a fragmenting empire centered on Samarkand and Herat. Brilliant Persianate court culture; soon to spawn the Mughals in India.",
-                    "640,170 730,180 750,215 705,245 660,235 640,200"),
+                    "640,170 730,180 750,215 705,245 660,235 640,200", 690, 198),
             }),
 
         new Era("1600 AD", "1600AD", "Gunpowder empires and the first global trade networks",
@@ -599,74 +612,74 @@ else
             {
                 new("Ottoman Empire", C_OTTOMAN, "Istanbul", "1299 - 1922",
                     "Past its 16th-century peak under Suleiman but still vast: Anatolia, the Balkans, the Levant, Egypt, North Africa, Mesopotamia, and Arabia. Suleiman had besieged Vienna in 1529.",
-                    "470,200 545,180 615,170 660,180 660,220 600,250 540,260 480,255 460,225"),
-                new("Mughal Empire", C_MUGHAL, "Agra / Delhi", "1526 - 1857",
-                    "Akbar had died in 1605; Jahangir ruled most of the subcontinent. The Mughals built Agra, then later the Taj Mahal and the Red Fort. A wealthy, multireligious empire.",
-                    "680,210 770,225 775,275 720,310 690,290 675,245"),
+                    "498,180 520,176 534,172 536,156 538,142 552,136 568,140 584,146 610,150 640,158 652,170 648,190 640,210 640,226 628,232 632,252 618,262 606,246 596,230 582,232 568,232 558,212 540,200 516,198 498,194", 580, 156),
+                new("Mughal Empire", C_MUGHAL, "Agra", "1526 - 1857",
+                    "Akbar, who reigned until his death in 1605, ruled northern India from Kabul to Bengal and was pushing into the Deccan. A wealthy, multireligious empire; his successors would build the Taj Mahal and the Red Fort.",
+                    "678,212 712,214 745,232 770,240 772,262 748,278 718,288 696,276 686,250 676,232", 724, 256),
                 new("Ming / late Ming", C_MING, "Beijing", "1368 - 1644",
                     "The Ming were entering crisis: silver inflation, peasant revolts, Manchu pressure. They would fall in 1644 to the Manchu-led Qing. Still the world's largest economy in 1600.",
-                    "770,170 890,165 910,210 880,255 795,255 770,210"),
+                    P_MING, 860, 166),
                 new("Spanish Empire", C_SPAIN, "Madrid", "1492 - 1898",
-                    "Under Philip III. Vast holdings in the Americas (Mexico, Peru, the Philippines), much of Italy, the Low Countries (in revolt) and, since 1580, Portugal and its global empire.",
-                    "150,280 200,260 220,295 240,330 270,330 290,400 270,460 240,455 210,400 175,330 160,300"),
-                new("Russia (early Romanov)", C_RUSSIA, "Moscow", "1547 - 1917",
-                    "Just emerging from the Time of Troubles. Michael Romanov would be elected tsar in 1613. Cossacks were already pushing east; Siberia would be reached within a generation.",
-                    "580,80 850,75 895,115 855,150 750,160 660,150 600,125"),
+                    "Under Philip III. Vast holdings in the Americas (Mexico, Peru), the Philippines, much of Italy, and the Low Countries (the Dutch north in revolt). Since 1580 the same king had also ruled Portugal and its global empire.",
+                    P_IBERIA + " | 510,150 520,152 528,162 526,172 514,172 | 488,123 500,121 503,131 491,134 | 100,234 124,238 158,256 190,250 214,262 250,280 268,302 256,320 238,312 214,296 190,290 150,290 118,268 | " + P_SPANISH_SA + " | " + P_PHILIPPINES, 474, 162),
+                new("Tsardom of Russia", C_RUSSIA, "Moscow", "1547 - 1721",
+                    "Ruled by Boris Godunov after the old Rurikid line died out in 1598. The Time of Troubles (1598-1613) was beginning; it would end with the election of Michael Romanov in 1613. Cossacks under Yermak had crossed the Urals in 1582, and Tobolsk was founded in 1587.",
+                    "556,94 590,78 640,72 664,82 664,118 642,134 612,148 592,150 572,140 556,124", 578, 116),
                 new("Tokugawa Japan", C_HEIAN, "Edo", "1603 - 1868",
-                    "Tokugawa Ieyasu won at Sekigahara in 1600 and would soon found the shogunate at Edo (Tokyo). Japan was about to enter 250 years of self-imposed isolation.",
-                    "900,170 922,170 925,210 905,222"),
+                    "Tokugawa Ieyasu won at Sekigahara in 1600 and would soon found the shogunate at Edo (Tokyo). Within a few decades Japan would sharply restrict foreign contact for over two centuries.",
+                    P_JAPAN, 917, 196),
             }),
 
         new Era("1800 AD", "1800AD", "European empires expand, gunpowder Asia in retreat",
             new()
             {
                 new("British Empire", C_BRITAIN, "London", "1583 - 1997",
-                    "Just lost the American colonies but gaining India after Plassey (1757). About to dominate the seas after Trafalgar (1805). Industrial Revolution in full swing at home.",
-                    "455,100 510,95 540,115 530,140 490,150 460,135"),
+                    "Had lost thirteen American colonies in 1783 but kept Canada and Caribbean islands, founded a convict colony in New South Wales (1788) and seized the Cape from the Dutch (1795). The East India Company had been expanding in India since Plassey (1757). Industrial Revolution in full swing at home.",
+                    P_GB + " | " + P_IRELAND + " | 136,118 150,98 200,74 240,86 260,112 272,150 266,170 244,168 226,182 204,188 184,172 160,164 140,150 | 736,250 762,248 766,268 756,282 738,276 | 716,292 744,290 748,306 734,326 720,318 | 904,380 934,384 932,406 914,414 902,400 | 500,386 530,384 538,396 518,402 498,396", 480, 121),
                 new("Napoleonic France", C_FRANCE, "Paris", "1799 - 1815",
                     "Napoleon had just become First Consul. Within a few years he would dominate continental Europe before catastrophic defeats in Russia (1812) and at Waterloo (1815).",
-                    "455,135 525,130 540,160 510,190 475,190 455,165"),
+                    "468,134 484,129 496,126 504,128 506,138 504,148 498,156 476,156 466,146", 488, 140),
                 new("Russian Empire", C_RUSSIA, "St. Petersburg", "1721 - 1917",
-                    "Catherine the Great had just died (1796); Paul then Alexander I now ruled. Vast holdings from Poland to the Pacific; about to fight (and beat) Napoleon.",
-                    "580,75 880,70 905,115 855,155 750,160 660,150 595,120"),
+                    "Catherine the Great had died in 1796; her son Paul I now ruled, until his murder in 1801 brought Alexander I to the throne. Vast holdings from Poland to the Pacific and on into Alaska; about to fight (and beat) Napoleon.",
+                    "544,98 560,86 600,72 720,66 880,68 905,112 880,118 840,120 790,122 730,124 696,138 660,142 630,150 610,152 590,150 570,146 552,136 544,118 | " + P_ALASKA, 562, 104),
                 new("Qing China", C_QING, "Beijing", "1644 - 1912",
-                    "Under the Qianlong era's twilight. Largest population and economy in the world but increasingly stagnant. The Opium Wars and humiliating treaties lay just decades ahead.",
-                    "720,140 890,150 910,205 880,255 795,255 720,235 700,180"),
+                    "The Qianlong emperor had died in 1799; under the Jiaqing emperor the Qing still ruled the world's largest population and economy, but the White Lotus rebellion exposed growing strains. The Opium Wars and humiliating treaties lay just decades ahead.",
+                    "700,150 720,128 800,124 860,122 892,130 908,170 910,205 880,255 795,255 720,235 700,190", 860, 166),
                 new("Ottoman Empire (declining)", C_OTTOMAN, "Istanbul", "1299 - 1922",
                     "The 'sick man of Europe' was already losing ground in the Balkans and the Caucasus. Selim III's reform attempts were running into fierce Janissary opposition.",
-                    "490,180 600,170 660,180 660,220 600,250 540,255 490,245"),
-                new("Spanish America (collapsing)", C_SPAIN, "Madrid", "1492 - 1898",
-                    "Spain still nominally ruled most of the Americas, but within 25 years the Bolivarian wars of independence would dismantle the empire from Mexico to Patagonia.",
-                    "175,260 220,260 265,310 290,400 270,460 245,455 215,395 180,330"),
+                    "500,180 522,176 536,170 538,150 548,142 566,142 584,148 610,150 640,158 652,170 648,190 640,210 640,226 628,232 630,250 618,258 606,246 596,230 582,232 568,232 558,212 540,200 518,198 502,194", 580, 156),
+                new("Spanish Empire", C_SPAIN, "Madrid", "1492 - 1898",
+                    "Spain still ruled most of the Americas from California to Patagonia, but within 25 years the Spanish American wars of independence would strip away its mainland empire from Mexico to Chile.",
+                    P_IBERIA + " | 72,200 100,196 150,206 176,226 190,248 216,262 250,280 268,302 256,320 238,312 214,296 190,290 150,290 118,266 96,240 | " + P_SPANISH_SA + " | " + P_PHILIPPINES, 474, 162),
             }),
 
         new Era("1914 AD", "1914AD", "On the eve of the Great War",
             new()
             {
                 new("British Empire", C_BRITAIN, "London", "1583 - 1997",
-                    "At its territorial peak: a quarter of the world's land and population. India, Canada, Australia, large swathes of Africa, Egypt in all but name, and a global navy.",
-                    "455,100 510,95 540,115 530,140 490,150 460,135"),
+                    "Near its territorial peak: a quarter of the world's land and population. India, Canada, Australia, large swathes of Africa, Egypt in all but name, and a global navy.",
+                    P_GB + " | " + P_IRELAND + " | " + P_CANADA + " | " + P_RAJ + " | " + P_BURMA + " | " + P_MALAYA + " | 824,362 918,352 936,388 910,416 852,418 822,398 | 952,422 968,421 972,444 956,448 | 552,192 574,190 584,204 592,226 594,250 586,272 568,278 552,266 548,240 550,212 | " + P_KENYA + " | 532,314 556,312 562,330 574,344 566,368 562,388 540,398 512,398 496,384 512,372 518,352 520,340 532,332 | " + P_NIGERIA, 480, 121),
                 new("French Empire", C_FRANCE, "Paris", "1830 - 1962",
-                    "Second-largest colonial empire after Britain. Held most of West and Equatorial Africa, Indochina, and Madagascar. About to bleed in the trenches of Verdun and the Somme.",
-                    "455,135 525,130 540,160 510,180 475,180 455,160"),
+                    "Second-largest colonial empire after Britain. Held Algeria, most of West and Equatorial Africa, Indochina, and Madagascar, with protectorates over Tunisia and Morocco. About to bleed in the trenches of Verdun and the Somme.",
+                    P_FRANCE + " | " + P_FR_NAFRICA + " | " + P_FR_WAFRICA + " | 530,222 552,220 560,248 556,276 546,300 526,306 518,294 538,286 542,262 534,246 | " + P_MADAGASCAR + " | " + P_INDOCHINA, 488, 140),
                 new("German Empire", C_GERMANY, "Berlin", "1871 - 1918",
-                    "Bismarck's united Germany, now under Wilhelm II, had Europe's strongest army and was challenging Britain at sea. About to invade Belgium and ignite WWI.",
-                    "490,110 545,110 560,140 535,160 500,160 485,135"),
+                    "Bismarck's united Germany, now under Wilhelm II, had Europe's strongest army and colonies in Africa and the Pacific, and was challenging Britain at sea. About to invade Belgium and ignite WWI.",
+                    "498,122 512,113 530,112 546,114 548,124 536,128 520,132 506,140 500,134 | 566,300 592,300 598,314 590,330 570,330 562,316 | 480,334 516,334 518,352 512,372 494,378 482,362 | 522,256 532,252 538,262 534,282 520,288 516,272 | 896,322 920,322 924,336 900,336", 518, 121),
                 new("Austro-Hungarian Empire", C_AUSHUN, "Vienna / Budapest", "1867 - 1918",
                     "The dual monarchy ruled a polyglot empire from the Alps to the Carpathians. Franz Ferdinand's assassination in Sarajevo in June 1914 would trigger the war.",
-                    "510,140 565,140 580,165 555,180 520,175 510,155"),
+                    "508,144 520,136 536,133 552,132 558,142 550,150 536,154 528,158 518,152", 530, 144),
                 new("Russian Empire", C_RUSSIA, "St. Petersburg", "1721 - 1917",
                     "Stretched from Warsaw to Vladivostok. Industrializing rapidly but politically brittle after 1905. Within four years it would collapse into revolution and civil war.",
-                    "580,75 880,70 905,115 855,155 750,160 660,150 595,120"),
+                    "534,92 546,76 600,70 720,66 880,68 905,112 902,150 888,142 860,132 820,134 760,134 720,136 704,180 668,182 640,166 616,156 592,150 572,146 556,140 548,130 548,118 536,114", 562, 104),
                 new("Ottoman Empire", C_OTTOMAN, "Istanbul", "1299 - 1922",
                     "Reduced to Anatolia and parts of the Middle East. Would join the war on the Central Powers' side and not survive the peace; the empire ended in 1922.",
-                    "525,170 600,165 660,180 660,220 605,250 555,255 525,225"),
+                    "566,150 578,144 592,146 612,150 640,158 650,170 648,190 640,212 642,228 628,232 630,250 618,262 608,250 598,232 596,214 592,196 588,178 578,170 566,162", 580, 156),
                 new("Republic of China", C_ROC, "Beijing", "1912 - 1949",
                     "The Qing dynasty had collapsed in 1912. The new republic under Yuan Shikai was already fragmenting toward the warlord era. Japan would soon press the Twenty-One Demands.",
-                    "720,150 890,155 910,205 880,255 795,255 720,235 700,185"),
+                    P_MODERN_CHINA, 860, 166),
                 new("Empire of Japan", C_HEIAN, "Tokyo", "1868 - 1947",
                     "Modernized under Meiji. Defeated Russia in 1905, annexed Korea in 1910. Already a great power; about to seize German Pacific colonies during WWI.",
-                    "895,170 925,170 928,215 905,225"),
+                    P_JAPAN, 917, 196),
             }),
 
         new Era("1945 AD", "1945AD", "End of WWII: Cold War borders take shape",
@@ -674,22 +687,22 @@ else
             {
                 new("Soviet Union", C_USSR, "Moscow", "1922 - 1991",
                     "Triumphant after defeating Nazi Germany at staggering cost. Red Army occupied Eastern Europe; the Iron Curtain about to descend. Stalin reigned with absolute power.",
-                    "510,75 880,70 905,115 855,155 750,160 660,150 580,130 525,110"),
+                    "552,104 566,86 600,70 720,66 880,68 905,112 902,150 888,142 860,132 820,134 760,134 720,136 704,180 668,182 640,166 616,156 592,150 572,146 556,140 546,128 544,112", 578, 116),
                 new("United States", C_USA, "Washington DC", "1776 - present",
                     "Emerged from WWII with the world's only intact major economy and a nuclear monopoly. About to launch the Marshall Plan and become the West's hegemon.",
-                    "70,95 195,75 255,110 270,170 230,210 195,255 150,285 110,260 80,200 65,150"),
+                    P_USA + " | " + P_ALASKA, 224, 206),
                 new("British Empire (declining)", C_BRITAIN, "London", "1583 - 1997",
-                    "Bankrupt and exhausted by war. India would be independent in 1947, Palestine abandoned in 1948. Within two decades almost the entire empire would be gone.",
-                    "455,100 510,95 540,115 530,140 490,150 460,135"),
+                    "Bankrupt and exhausted by war. Canada, Australia, New Zealand, and South Africa were already self-governing dominions; India would be independent in 1947 and Palestine abandoned in 1948. Within two decades most of the remaining colonies would be gone.",
+                    P_GB + " | " + P_RAJ + " | " + P_BURMA + " | " + P_MALAYA + " | 552,226 588,224 594,250 586,272 568,278 552,266 548,240 | 560,280 588,276 600,288 598,314 590,330 566,330 560,300 | 532,316 556,314 564,332 572,344 562,366 540,370 522,360 524,340 | " + P_NIGERIA, 480, 121),
                 new("French Empire (declining)", C_FRANCE, "Paris", "1830 - 1962",
                     "Liberated from German occupation. Trying to reassert control in Indochina and Algeria; both would explode into wars of independence within a few years.",
-                    "455,135 525,130 540,160 510,180 475,180 455,160"),
-                new("Republic of China (collapsing)", C_ROC, "Nanjing", "1912 - 1949",
+                    P_FRANCE + " | " + P_FR_NAFRICA + " | " + P_FR_WAFRICA + " | 518,256 530,222 552,220 560,248 556,276 546,300 526,306 518,292 512,272 | " + P_MADAGASCAR + " | " + P_INDOCHINA, 488, 140),
+                new("Republic of China (collapsing)", C_ROC, "Chongqing (Nanjing from 1946)", "1912 - 1949",
                     "Chiang Kai-shek's KMT had just won the war against Japan but was about to lose the civil war to Mao's communists. By 1949 the KMT would retreat to Taiwan.",
-                    "720,150 890,155 910,205 880,255 795,255 720,235 700,185"),
+                    P_MODERN_CHINA, 815, 213),
                 new("Occupied Japan / Germany", C_GERMANY, "(occupied)", "1945 - 1952 / 1955",
                     "Both Axis powers were under Allied military occupation: Germany divided among four powers, Japan under General MacArthur. Both would soon become Cold War frontline democracies.",
-                    "490,115 545,115 560,140 535,160 500,160 485,135"),
+                    "496,120 512,113 528,115 532,130 524,144 506,146 500,136 | " + P_JAPAN, 516, 124),
             }),
 
         new Era("2000 AD", "2000AD", "A multipolar world of nation-states",
@@ -697,25 +710,25 @@ else
             {
                 new("United States", C_USA_M, "Washington DC", "1776 - present",
                     "Sole superpower at the end of the Cold War. Booming dot-com economy; about to be jolted by 9/11 and the wars in Afghanistan and Iraq. Global reach in trade, military, and culture.",
-                    "70,95 195,75 255,110 270,170 230,210 195,255 150,285 110,260 80,200 65,150"),
+                    P_USA + " | " + P_ALASKA, 224, 206),
                 new("People's Republic of China", C_CHINA_M, "Beijing", "1949 - present",
                     "Two decades into Deng's reforms, growing at near double-digit rates. About to join the WTO in 2001. Would soon become the world's factory and second-largest economy.",
-                    "720,150 890,155 910,205 880,255 795,255 720,235 700,185"),
+                    P_MODERN_CHINA, 860, 166),
                 new("European Union", C_EU, "Brussels", "1993 - present",
                     "The EU had just adopted the euro (1999); coins and notes would circulate from 2002. About to expand eastward in 2004, absorbing former Warsaw Pact members.",
-                    "455,105 575,105 600,150 580,180 510,185 470,170 455,140"),
+                    "456,152 468,138 482,130 490,121 502,115 512,110 522,112 524,124 528,138 522,146 532,166 524,172 512,168 508,156 498,154 494,166 482,176 464,176 | 516,104 524,88 540,76 562,80 566,96 556,104 540,108 528,112 | " + P_GB + " | " + P_IRELAND + " | 538,158 550,156 556,166 548,172 538,168", 494, 130),
                 new("Russian Federation", C_RUSSIA, "Moscow", "1991 - present",
                     "Vladimir Putin had just become president on the last day of 1999. Recovering from the chaotic 1990s. Still the largest country on Earth by area.",
-                    "580,75 880,70 905,115 855,155 750,160 660,150 595,120"),
+                    "562,96 600,74 720,66 880,68 905,112 902,150 888,142 860,132 820,130 760,130 720,130 690,130 660,128 630,130 612,138 600,150 584,148 570,136 562,114", 578, 116),
                 new("India", C_INDIA_M, "New Delhi", "1947 - present",
                     "Liberalizing since 1991, with a fast-growing IT sector. World's largest democracy, soon to overtake China as the most populous country (around 2023).",
-                    "680,225 770,235 775,285 720,320 690,295 675,255"),
+                    "704,228 740,232 772,240 776,262 762,290 732,328 712,310 700,276 698,250", 720, 250),
                 new("Brazil", C_BRAZIL, "Brasilia", "1822 - present",
                     "Stable democracy after decades of military rule. Largest economy in South America. About to enter the boom years of the Lula presidency (2003-2010).",
-                    "260,335 320,320 345,365 330,425 290,470 260,460 245,400"),
+                    "260,335 320,320 345,365 330,425 290,470 260,460 245,400", 306, 384),
                 new("Islamic World (regional powers)", C_ABBASID, "various", "modern",
                     "A patchwork of nation-states from Morocco to Indonesia. Saudi Arabia, Iran, Turkey, Egypt, and Pakistan are major regional powers. Diverse politically and economically.",
-                    "470,180 600,180 700,200 720,240 660,275 540,295 490,290 465,250"),
+                    "466,182 520,178 560,180 584,158 620,152 650,164 700,188 712,222 700,262 660,270 600,268 540,272 490,268 466,246", 612, 222),
             }),
     };
 }

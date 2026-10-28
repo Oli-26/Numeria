@@ -1,23 +1,6 @@
 @page "/cosmic-scale"
-@inject IProgressService Progress
 @inject NavigationManager Nav
 @inject IJSRuntime JS
-
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Cosmic Scale Zoomer</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Cosmic Scale Zoomer" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -29,7 +12,7 @@ else
 
 <div class="cosmic-stage">
     <div class="cosmic-zoom-controls">
-        <button class="zoom-btn" aria-label="Zoom out" @onclick="ZoomOut" disabled="@(currentIndex == 0)">
+        <button class="zoom-btn" aria-label="Zoom out" @onclick="ZoomOut" disabled="@(currentIndex == scales.Count - 1)">
             <Icon Name="chevron-up" Size="20" />
         </button>
         <input type="range"
@@ -45,7 +28,7 @@ else
                 <div class="slider-tick @(i == currentIndex ? "tick-active" : "")"></div>
             }
         </div>
-        <button class="zoom-btn" aria-label="Zoom in" @onclick="ZoomIn" disabled="@(currentIndex == scales.Count - 1)">
+        <button class="zoom-btn" aria-label="Zoom in" @onclick="ZoomIn" disabled="@(currentIndex == 0)">
             <Icon Name="chevron-down" Size="20" />
         </button>
         <div class="cosmic-position">
@@ -83,14 +66,14 @@ else
             @for (int i = 0; i < scales.Count; i++)
             {
                 var s = scales[i];
-                var pct = (i / (double)(scales.Count - 1)) * 100.0;
+                var pct = ExponentPct(s.Exponent);
                 var major = (s.Exponent % 5 == 0);
                 <div class="axis-tick @(major ? "axis-tick-major" : "") @(i == currentIndex ? "axis-tick-here" : "")"
-                     style="left: @(pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                     style="left: @pct%"></div>
             }
             <div class="axis-cursor" style="left: @AxisCursorPct%"></div>
-            <div class="axis-label-left">10<sup>-35</sup></div>
-            <div class="axis-label-right">10<sup>27</sup></div>
+            <div class="axis-label-left">10<sup>@scales[0].Exponent</sup></div>
+            <div class="axis-label-right">10<sup>@scales[^1].Exponent</sup></div>
         </div>
 
         <div class="cosmic-description">@Cur.Description</div>
@@ -101,7 +84,14 @@ else
                 var diff = Cur.Exponent - Prv.Exponent;
                 <div class="comparison-line">
                     <Icon Name="chevron-up" Size="14" />
-                    <span>About <strong>10<sup>@diff</sup></strong> times bigger than <em>@Prv.Name</em></span>
+                    @if (diff == 0)
+                    {
+                        <span>About the same scale as <em>@Prv.Name</em></span>
+                    }
+                    else
+                    {
+                        <span>About <strong>10<sup>@diff</sup></strong> times bigger than <em>@Prv.Name</em></span>
+                    }
                 </div>
             }
             @if (Nxt != null)
@@ -109,7 +99,14 @@ else
                 var diff = Nxt.Exponent - Cur.Exponent;
                 <div class="comparison-line">
                     <Icon Name="chevron-down" Size="14" />
-                    <span>About <strong>10<sup>@diff</sup></strong> times smaller than <em>@Nxt.Name</em></span>
+                    @if (diff == 0)
+                    {
+                        <span>About the same scale as <em>@Nxt.Name</em></span>
+                    }
+                    else
+                    {
+                        <span>About <strong>10<sup>@diff</sup></strong> times smaller than <em>@Nxt.Name</em></span>
+                    }
                 </div>
             }
         </div>
@@ -121,7 +118,7 @@ else
     <div class="jump-grid">
         @foreach (var jump in jumpPoints)
         {
-            var idx = jump.Item2;
+            var idx = IndexOfScale(jump.Item2);
             <button class="jump-chip @(currentIndex == idx ? "jump-active" : "")" @onclick="() => JumpTo(idx)">
                 @jump.Item1
             </button>
@@ -129,12 +126,9 @@ else
     </div>
 </div>
 
-}
-
 @code {
-    private bool unlocked;
     private bool reducedMotion;
-    private int currentIndex = 17;
+    private int currentIndex;
 
     // CSS cannot pause SVG animate elements, so reduced-motion users get the scenes without them.
     private static readonly System.Text.RegularExpressions.Regex SvgAnimate = new(@"<animate\b[^>]*/>");
@@ -144,9 +138,15 @@ else
     private Scale? Prv => currentIndex > 0 ? scales[currentIndex - 1] : null;
     private Scale? Nxt => currentIndex < scales.Count - 1 ? scales[currentIndex + 1] : null;
 
-    private string AxisCursorPct =>
-        ((currentIndex / (double)(scales.Count - 1)) * 100.0)
+    private string AxisCursorPct => ExponentPct(Cur.Exponent);
+
+    private string ExponentPct(int exponent)
+    {
+        var min = scales[0].Exponent;
+        var max = scales[^1].Exponent;
+        return ((exponent - min) / (double)(max - min) * 100.0)
             .ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     private string RegimeClass
     {
@@ -172,14 +172,16 @@ else
         return StarfieldBg();
     }
 
+    protected override void OnInitialized() => currentIndex = IndexOfScale("Adult Human");
+
+    private int IndexOfScale(string name) => Math.Max(0, scales.FindIndex(x => x.Name == name));
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var profile = await Progress.GetProfileAsync();
             try { reducedMotion = await JS.InvokeAsync<bool>("prefersReducedMotion"); }
             catch (JSException) { }
-            unlocked = true;
             StateHasChanged();
         }
     }
@@ -192,8 +194,8 @@ else
         }
     }
 
-    private void ZoomIn() { if (currentIndex < scales.Count - 1) currentIndex++; }
-    private void ZoomOut() { if (currentIndex > 0) currentIndex--; }
+    private void ZoomIn() { if (currentIndex > 0) currentIndex--; }
+    private void ZoomOut() { if (currentIndex < scales.Count - 1) currentIndex++; }
     private void JumpTo(int idx) { currentIndex = Math.Clamp(idx, 0, scales.Count - 1); }
 
     private static string FormatMeters(int exp)
@@ -203,9 +205,9 @@ else
             var v = Math.Pow(10, exp);
             return v >= 1 ? $"{v:0.###} m" : $"{v * 1000:0.###} mm";
         }
-        if (exp <= -9 && exp >= -12) return $"{Math.Pow(10, exp + 12):0.###} pm";
-        if (exp <= -6 && exp >= -8) return $"{Math.Pow(10, exp + 9):0.###} nm";
-        if (exp <= -4 && exp >= -5) return $"{Math.Pow(10, exp + 6):0.###} um";
+        if (exp <= -10 && exp >= -12) return $"{Math.Pow(10, exp + 12):0.###} pm";
+        if (exp <= -7 && exp >= -9) return $"{Math.Pow(10, exp + 9):0.###} nm";
+        if (exp <= -4 && exp >= -6) return $"{Math.Pow(10, exp + 6):0.###} um";
         if (exp >= 4 && exp <= 6) return $"{Math.Pow(10, exp - 3):0.###} km";
         if (exp >= 16 && exp <= 22) return $"{Math.Pow(10, exp - 16) / 9.461:0.###} light years";
         return $"10^{exp} m";
@@ -213,16 +215,16 @@ else
 
     private record Scale(int Exponent, string Name, string Description, string BackgroundTint, string Svg);
 
-    private List<(string, int)> jumpPoints => new()
+    private List<(string, string)> jumpPoints => new()
     {
-        ("Quantum", 0),
-        ("Atomic", 5),
-        ("Cellular", 11),
-        ("Human", 17),
-        ("Planetary", 23),
-        ("Stellar", 26),
-        ("Galactic", 30),
-        ("Universe", 33)
+        ("Quantum", "Planck Length"),
+        ("Atomic", "Atom"),
+        ("Cellular", "Animal Cell"),
+        ("Human", "Adult Human"),
+        ("Planetary", "Earth's Diameter"),
+        ("Stellar", "Sun's Diameter"),
+        ("Galactic", "Milky Way Galaxy"),
+        ("Universe", "Observable Universe")
     };
 
     private readonly List<Scale> scales = new()
@@ -236,11 +238,6 @@ else
             "A theoretical region where space-time bubbles in and out of existence due to quantum fluctuations. Virtual particles wink in and out faster than light could cross the bubble.",
             "linear-gradient(135deg, #220055 0%, #0d002a 100%)",
             QuantumFoamSvg("#9966FF")),
-
-        new Scale(-22, "Neutrino Reach",
-            "The effective interaction range of a neutrino. About 100 trillion neutrinos pass through your thumbnail every second from the Sun, and almost none of them notice you exist.",
-            "linear-gradient(135deg, #001a33 0%, #00081a 100%)",
-            NeutrinoSvg()),
 
         new Scale(-18, "Quark / Electron",
             "The fundamental constituents of matter, with no known internal structure. Quarks are forever trapped inside protons and neutrons by the strong force.",
@@ -258,7 +255,7 @@ else
             NucleusSvg()),
 
         new Scale(-11, "Hydrogen Atom",
-            "The simplest, most abundant atom in the universe. One proton and one electron in a probabilistic cloud. Roughly three out of every four atoms in existence are hydrogen.",
+            "The simplest, most abundant atom in the universe. One proton and one electron in a probabilistic cloud. Roughly nine out of every ten atoms in the universe are hydrogen (about three quarters of ordinary matter by mass).",
             "linear-gradient(135deg, #003355 0%, #001125 100%)",
             AtomSvg("#4FC3F7")),
 
@@ -277,7 +274,7 @@ else
             "linear-gradient(135deg, #332200 0%, #120c00 100%)",
             VirusSvg()),
 
-        new Scale(-7, "Bacterium",
+        new Scale(-6, "Bacterium",
             "Single-celled organisms that outnumber every other life form on Earth. There are more bacteria in your gut than human cells in your body.",
             "linear-gradient(135deg, #223300 0%, #0c1200 100%)",
             BacteriumSvg()),
@@ -312,7 +309,7 @@ else
             "linear-gradient(180deg, #67a8d8 0%, #2c5577 100%)",
             FigureSvg(0.6)),
 
-        new Scale(1, "Adult Human",
+        new Scale(0, "Adult Human",
             "Around 1.7 meters tall on average. You are roughly halfway in scale between an atom and a star, geometrically speaking.",
             "linear-gradient(180deg, #67a8d8 0%, #2c5577 100%)",
             FigureSvg(1.0)),
@@ -343,7 +340,7 @@ else
             CountrySvg()),
 
         new Scale(7, "Earth's Diameter",
-            "Earth is about 12,742 km across. A jet airliner takes around 17 hours to fly from pole to pole. The crust we live on is just 0.5% of that diameter thick.",
+            "Earth is about 12,742 km across. A jet airliner takes around 22 hours to fly from pole to pole. The crust we live on is just 0.5% of that diameter thick.",
             "radial-gradient(circle at 50% 50%, #001a33 0%, #00050f 100%)",
             EarthSvg()),
 
@@ -363,7 +360,7 @@ else
             OrbitSvg()),
 
         new Scale(13, "Outer Solar System",
-            "Out past Neptune, around 30 AU from the Sun. The Voyager 1 probe took 35 years to cross this distance and is still our farthest ambassador.",
+            "Out past Neptune, around 30 AU from the Sun. Voyager 1 took roughly a decade to cross this distance, and reached the edge of the Sun's bubble (the heliopause, about 120 AU out) in 2012. It is still our farthest ambassador.",
             "radial-gradient(circle at 50% 50%, #00112e 0%, #000005 100%)",
             SolarSystemSvg()),
 
@@ -392,7 +389,7 @@ else
             "radial-gradient(circle at 50% 50%, #240044 0%, #08001a 100%)",
             GalaxyClusterSvg()),
 
-        new Scale(25, "Virgo Supercluster",
+        new Scale(24, "Virgo Supercluster",
             "A vast structure of about 100 galaxy groups spanning 110 million light years. It is itself just a lobe of the much larger Laniakea Supercluster.",
             "radial-gradient(circle at 50% 50%, #330055 0%, #0a0018 100%)",
             SuperclusterSvg()),
@@ -490,23 +487,6 @@ else
                 <circle cx='130' cy='95' r='1'/>
                 <circle cx='65' cy='100' r='1'/>
                 <circle cx='160' cy='75' r='1'/>
-            </g>
-        </svg>";
-
-    private static string NeutrinoSvg() =>
-        @"<svg viewBox='0 0 200 160' xmlns='http://www.w3.org/2000/svg'>
-            <g stroke='#7CCFFF' stroke-width='0.8' fill='none' opacity='0.65'>
-                <path d='M0 30 Q60 25 120 35 T200 30'/>
-                <path d='M0 60 Q60 55 120 65 T200 60'/>
-                <path d='M0 90 Q60 85 120 95 T200 90'/>
-                <path d='M0 120 Q60 115 120 125 T200 120'/>
-                <path d='M0 150 Q60 145 120 155 T200 150'/>
-            </g>
-            <g fill='#A8E0FF'>
-                <circle cx='40' cy='32' r='1.5'><animate attributeName='cx' values='40;200' dur='2.1s' repeatCount='indefinite'/></circle>
-                <circle cx='100' cy='62' r='1.5'><animate attributeName='cx' values='100;200' dur='1.8s' repeatCount='indefinite'/></circle>
-                <circle cx='30' cy='92' r='1.5'><animate attributeName='cx' values='30;200' dur='2.4s' repeatCount='indefinite'/></circle>
-                <circle cx='80' cy='122' r='1.5'><animate attributeName='cx' values='80;200' dur='2.0s' repeatCount='indefinite'/></circle>
             </g>
         </svg>";
 

@@ -1,23 +1,7 @@
 @page "/etymology"
-@inject IProgressService Progress
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Etymology Tracer</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Etymology Tracer" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
     <div class="page-header">
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>Etymology Tracer</h1>
@@ -48,6 +32,11 @@ else
                     <button class="etym-suggest" @onclick="() => Pick(sx)">@sx</button>
                 }
             </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(searchText) && !Suggestions().Any())
+        {
+            <div class="etym-nomatch">No word found for "@searchText.Trim()". Try one of the words below.</div>
         }
 
         <div class="etym-chips">
@@ -88,8 +77,8 @@ else
                               stroke="var(--border)" stroke-width="1.5" />
                         @if (!string.IsNullOrEmpty(e.Label))
                         {
-                            var midX = (e.X1 + e.X2) / 2;
-                            var midY = (e.Y1 + e.Y2) / 2;
+                            var midX = e.X2;
+                            var midY = e.Y2 - 14;
                             <g>
                                 <rect x="@((midX - 60).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                                       y="@((midY - 9).ToString(System.Globalization.CultureInfo.InvariantCulture))"
@@ -129,7 +118,7 @@ else
             </div>
 
             <div class="etym-legend">
-                <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Proto-root</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Root / source word (PIE where reconstructed)</span>
                 <span class="legend-item"><span class="legend-dot" style="background:var(--primary)"></span>Modern English</span>
                 <span class="legend-item"><span class="legend-dot" style="background:var(--bg-card);border:1px solid var(--border)"></span>Cognate / ancestor</span>
             </div>
@@ -150,22 +139,10 @@ else
             <p>Pick a word above to see its family tree.</p>
         </div>
     }
-}
 
 @code {
-    private bool unlocked;
     private string searchText = string.Empty;
     private string? selectedWord;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
 
     private void Pick(string w)
     {
@@ -192,37 +169,31 @@ else
 
     private TreeLayout Layout(Family family)
     {
-        // Compute depth for each node by walking parent chain
-        var byId = family.Nodes.ToDictionary(n => n.Id);
-        int Depth(Node n) {
-            int d = 0;
-            var c = n;
-            while (c.ParentId != null && byId.ContainsKey(c.ParentId)) { c = byId[c.ParentId]; d++; }
-            return d;
-        }
-
-        var depths = family.Nodes.ToDictionary(n => n.Id, n => Depth(n));
-        var maxDepth = depths.Values.Max();
-
-        // Group nodes by depth, assign x positions evenly
-        var byDepth = family.Nodes.GroupBy(n => depths[n.Id]).OrderBy(g => g.Key).ToList();
-        var posMap = new Dictionary<string, (double X, double Y)>();
         const double rowH = 100;
-        const double colW = 180;
+        const double slotW = 170;
+        var ids = family.Nodes.Select(n => n.Id).ToHashSet();
+        var children = family.Nodes.Where(n => n.ParentId != null)
+            .GroupBy(n => n.ParentId!).ToDictionary(g => g.Key, g => g.ToList());
+        var posMap = new Dictionary<string, (double X, double Y)>();
+        double nextLeaf = 0;
+        int maxDepth = 0;
 
-        foreach (var grp in byDepth)
+        double Place(Node n, int depth)
         {
-            var list = grp.ToList();
-            // Sort so main-line node (IsMain or has descendant chain to a main) is centered
-            // Simple: keep input order, center around 0
-            int n = list.Count;
-            for (int i = 0; i < n; i++)
+            maxDepth = Math.Max(maxDepth, depth);
+            double x;
+            if (children.TryGetValue(n.Id, out var kids))
             {
-                double x = (i - (n - 1) / 2.0) * colW;
-                double y = 40 + grp.Key * rowH;
-                posMap[list[i].Id] = (x, y);
+                var xs = kids.Select(k => Place(k, depth + 1)).ToList();
+                x = (xs.First() + xs.Last()) / 2;
             }
+            else x = nextLeaf++ * slotW;
+            posMap[n.Id] = (x, 40 + depth * rowH);
+            return x;
         }
+
+        foreach (var root in family.Nodes.Where(n => n.ParentId == null || !ids.Contains(n.ParentId)))
+            Place(root, 0);
 
         var posNodes = family.Nodes.Select(n => new PosNode(
             posMap[n.Id].X, posMap[n.Id].Y, n.LangPeriod, n.Form, n.Meaning, n.IsMain, n.IsRoot
@@ -247,11 +218,11 @@ else
     // Each tree: root at depth 0, descendants flow down. Modern English form is marked IsMain.
     private static readonly Dictionary<string, Family> Families = new()
     {
-        ["father"] = new Family("PIE *ph₂tér-", "male parent", "Grimm's Law turned PIE *p- into Germanic *f-, giving 'father' rather than Latin 'pater'.", new() {
+        ["father"] = new Family("PIE *ph₂tér-", "male parent", "Grimm's Law turned PIE *p- into Germanic *f-, giving 'father' rather than Latin 'pater'. Around 1500 the d between vowels shifted to th (also in mother, gather, weather); the modern vowel came from later lengthening, not from the Great Vowel Shift.", new() {
             new("r", "PIE (~4500 BCE)", "*ph₂tér-", "father", null, null, IsRoot: true),
             new("gmc", "Proto-Germanic", "*fadēr", "father", "r", "Grimm's Law: p > f"),
             new("oe", "Old English (~900)", "fæder", "father", "gmc", "vowel shift"),
-            new("en", "Modern English", "father", "father", "oe", "Great Vowel Shift", IsMain: true),
+            new("en", "Modern English", "father", "father", "oe", "d > th (~1500)", IsMain: true),
             new("lat", "Latin", "pater", "father", "r", "kept *p-"),
             new("fr", "French", "père", "father", "lat", "Vulgar Latin > OFr"),
             new("skt", "Sanskrit", "pitṛ́", "father", "r", "Indo-Iranian branch"),
@@ -308,12 +279,12 @@ else
             new("gk", "Greek", "pous / podos", "foot", "r", null),
             new("podiatry", "English (via Gk.)", "podiatry", "foot care", "gk", "borrowed"),
         }),
-        ["water"] = new Family("PIE *wódr̥-", "water", null, new() {
+        ["water"] = new Family("PIE *wódr̥-", "water", "Greek húdōr comes from the zero-grade *ud-ṓr; Greek word-initial u- always takes a rough breathing, which is why it is written with h-.", new() {
             new("r", "PIE", "*wódr̥-", "water", null, null, IsRoot: true),
             new("gmc", "Proto-Germanic", "*watōr", "water", "r", null),
             new("oe", "Old English", "wæter", "water", "gmc", null),
             new("en", "Modern English", "water", "water", "oe", null, IsMain: true),
-            new("gk", "Greek", "húdōr", "water", "r", "h- from w-"),
+            new("gk", "Greek", "húdōr", "water", "r", "from zero-grade *ud-ṓr"),
             new("hydro", "English (via Gk.)", "hydro-", "water-", "gk", "combining form"),
         }),
         ["fire"] = new Family("PIE *péh₂wr̥-", "fire (inanimate)", "PIE had two words: *péh₂wr̥- (the substance, gave English 'fire') and *h₁n̥gʷnis (animate, gave Latin 'ignis' > ignite).", new() {
@@ -342,7 +313,7 @@ else
             new("nocturnal", "English (via Lat.)", "nocturnal", "of night", "lat", "borrowed"),
             new("gk", "Greek", "núx", "night", "r", null),
         }),
-        ["salt"] = new Family("PIE *séh₂ls", "salt", "Latin sal gave salary (Roman soldiers paid in salt allowance).", new() {
+        ["salt"] = new Family("PIE *séh₂ls", "salt", "Latin sal gave salary (via salarium). The popular story that Roman soldiers were paid in salt is traditional but not attested.", new() {
             new("r", "PIE", "*séh₂ls", "salt", null, null, IsRoot: true),
             new("gmc", "Proto-Germanic", "*saltą", "salt", "r", null),
             new("oe", "Old English", "sealt", "salt", "gmc", null),
@@ -387,7 +358,7 @@ else
         }),
         ["computer"] = new Family("Latin computare", "to reckon, count", "From com- (with) + putare (to think, prune). Same root gives dispute, reputation, amputate.", new() {
             new("r", "Latin", "computare", "to reckon", null, null, IsRoot: true),
-            new("ofr", "Old French", "computer", "to count", "r", "borrowed"),
+            new("ofr", "Middle French", "computer", "to count", "r", "borrowed"),
             new("en16", "Early Modern Eng.", "compute", "calculate", "ofr", "1630s"),
             new("en", "Modern English", "computer", "machine that computes", "en16", "agent suffix -er", IsMain: true),
             new("putare", "Latin (sister)", "putare", "to think, prune", "r", "base verb"),
@@ -400,20 +371,20 @@ else
             new("en", "Modern English", "butter", "butter", "oe", null, IsMain: true),
             new("butyric", "English (via Lat.)", "butyric", "buttery (acid)", "lat", "scientific"),
         }),
-        ["alcohol"] = new Family("Arabic al-kuḥl", "the kohl (eye powder)", "Arabic al-kuḥl meant powdered antimony eyeliner; Europeans extended it to any fine powder, then to distilled spirits.", new() {
+        ["alcohol"] = new Family("Arabic al-kuḥl", "the kohl (eye powder)", "Arabic al-kuḥl meant powdered antimony eyeliner; in the 1540s English used it for any fine powder, and only in the 17th-18th centuries did it come to mean distilled spirits.", new() {
             new("r", "Arabic", "al-kuḥl", "the kohl", null, null, IsRoot: true),
             new("mlat", "Medieval Latin", "alcohol", "fine powder", "r", "borrowed"),
-            new("fr", "Middle French", "alcohol", "spirits", "mlat", "sense shift"),
-            new("en", "Modern English", "alcohol", "spirits", "fr", "1540s", IsMain: true),
+            new("en16", "English (1540s)", "alcohol", "fine powder", "mlat", "borrowed"),
+            new("en", "Modern English", "alcohol", "spirits", "en16", "sense shift, 17-18th c.", IsMain: true),
             new("kohl", "English (sister loan)", "kohl", "eye cosmetic", "r", "re-borrowed"),
         }),
-        ["tea"] = new Family("Old Chinese *lˤa", "tea leaf", "Two roads: the Min Chinese 'te' went by sea (Dutch traders) giving 'tea, thé'; the Mandarin 'cha' went by land giving 'chai, chay'.", new() {
+        ["tea"] = new Family("Old Chinese *lˤa", "tea leaf", "Two broad routes: Min Chinese 'te' travelled by sea via Dutch traders, giving 'tea, thé'; the 'cha' form is older in the trade and spread overland (Persian, Russian, Hindi 'chai') and also by sea via Portuguese traders at Macau (Cantonese), giving Portuguese 'chá'.", new() {
             new("r", "Old Chinese", "*lˤa", "tea", null, null, IsRoot: true),
             new("min", "Min (Hokkien)", "tê", "tea", "r", "coastal dialect"),
             new("nl", "Dutch", "thee", "tea", "min", "via Dutch traders"),
             new("en", "Modern English", "tea", "tea", "nl", "1650s", IsMain: true),
-            new("man", "Mandarin", "chá", "tea", "r", "northern dialect"),
-            new("chai", "Hindi/Russian", "chai / чай", "tea", "man", "overland route"),
+            new("man", "Mandarin / Cantonese", "chá", "tea", "r", "cha form"),
+            new("chai", "Hindi/Russian", "chai / чай", "tea", "man", "mainly overland"),
         }),
         ["robot"] = new Family("Czech robota", "forced labor, drudgery", "Coined by Karel Čapek's brother Josef for the 1920 play R.U.R. From Slavic 'rabota' = work.", new() {
             new("r", "Proto-Slavic", "*orbota", "hard work", null, null, IsRoot: true),
@@ -475,6 +446,8 @@ else
         border-radius: 4px; cursor: pointer;
     }
     .etym-suggest:hover { background: var(--bg-card); }
+
+    .etym-nomatch { margin-top: 8px; font-size: 0.85rem; color: var(--text-muted); }
 
     .etym-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
     .etym-chip {

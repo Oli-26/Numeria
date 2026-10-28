@@ -1,23 +1,5 @@
 @page "/deep-time"
-@inject IProgressService Progress
 @inject NavigationManager Nav
-@inject IJSRuntime JS
-
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Deep Time Scroller</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Deep Time Scroller" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
-}
-else
-{
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -25,8 +7,25 @@ else
 </div>
 
 <p class="dt-intro">
-    <Icon Name="scroll" Size="14" /> Scroll down through 4.54 billion years of Earth's history. Time is visually compressed so the Cambrian doesn't drown out the Hadean.
+    <Icon Name="scroll" Size="14" /> Scroll down through 4.54 billion years of Earth's history. Row spacing here is compressed, not to scale: the Precambrian (Hadean, Archean and Proterozoic) is about 88% of Earth's history. The strip below shows the true proportions.
 </p>
+
+<div class="dt-strip" role="img" aria-label="Earth's history to scale: Hadean 12%, Archean 33%, Proterozoic 43%, Phanerozoic 12%. Humans are a hairline at the end.">
+    <div class="dt-strip-bar">
+        @foreach (var span in eonSpans)
+        {
+            <div class="dt-strip-seg" style="width: @(SpanPct(span.StartMya, span.EndMya))%; background: @span.Color"></div>
+        }
+        <div class="dt-strip-humans"></div>
+    </div>
+    <div class="dt-strip-legend">
+        @foreach (var span in eonSpans)
+        {
+            <span><i style="background: @span.Color"></i>@span.Name @(SpanPct(span.StartMya, span.EndMya))%</span>
+        }
+        <span><i class="dt-strip-hair"></i>Humans: thinner than a hairline</span>
+    </div>
+</div>
 
 <div class="dt-filter">
     <button class="chip @(eonFilter == null ? "chip-active" : "")" @onclick="() => eonFilter = null">All</button>
@@ -79,24 +78,22 @@ else
     </div>
 </div>
 
-}
-
 @code {
-    private bool unlocked;
     private string? eonFilter;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
+    private IEnumerable<DeepEvent> GetFilteredEvents() => events;
 
-    private IEnumerable<DeepEvent> GetFilteredEvents() =>
-        eonFilter == null ? events : events.Where(e => e.Eon == eonFilter);
+    // Eon boundaries in Mya; widths of the to-scale strip derive from these.
+    private static readonly (string Name, string Color, double StartMya, double EndMya)[] eonSpans =
+    {
+        ("Hadean", "#1a1a1a", 4540, 4000),
+        ("Archean", "#4a4a4a", 4000, 2500),
+        ("Proterozoic", "#7B3FA0", 2500, 539),
+        ("Phanerozoic", "#3498DB", 539, 0)
+    };
+
+    private static string SpanPct(double startMya, double endMya) =>
+        ((startMya - endMya) / 4540.0 * 100.0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
     // Visual spacing per row in pixels. We compress ancient time slightly and
     // leave normal spacing for recent rows so the deep past doesn't dominate.
@@ -163,8 +160,8 @@ else
             "A spike in asteroid and comet impacts batters the inner solar system. The Moon's largest craters date from this time. Earth's surface is repeatedly sterilised and remade."),
         new(3_800_000_000, "3.8 Gya", "archean", "Earliest possible life",
             "Carbon isotope ratios in rocks from Greenland suggest biological activity. Whatever was alive was simple, single-celled, and probably anaerobic, living off chemistry rather than sunlight."),
-        new(3_500_000_000, "3.5 Gya", "archean", "Stromatolites and cyanobacteria",
-            "Layered microbial mats called stromatolites appear in the rock record. Cyanobacteria begin photosynthesis, slowly producing oxygen as a waste product. They will eventually transform the planet."),
+        new(3_500_000_000, "3.5 Gya", "archean", "Stromatolites: early microbial mats",
+            "Layered microbial mats called stromatolites appear in the rock record. Some may have been built by photosynthetic microbes; exactly when oxygen-producing photosynthesis began is still debated, with firmer evidence from around 3.0-2.7 Gya."),
         new(3_200_000_000, "3.2 Gya", "archean", "Stable continental crust",
             "Plate tectonics may begin in earnest. The first true continents (cratons) become stable enough to survive to the present day. Microbial life thrives in shallow seas."),
         new(2_700_000_000, "2.7 Gya", "archean", "Oxygenic photosynthesis widespread",
@@ -173,16 +170,16 @@ else
             "Free oxygen finally accumulates in the atmosphere. To most existing life this is a catastrophic toxin, triggering possibly the largest mass extinction in history. The sky turns blue."),
         new(2_300_000_000, "2.3 Gya", "proterozoic", "Huronian glaciation",
             "With methane stripped from the atmosphere by oxygen, the greenhouse weakens and Earth freezes. Glaciers reach the tropics in one of the longest ice ages ever recorded."),
-        new(2_100_000_000, "2.1 Gya", "proterozoic", "Eukaryotes appear",
-            "Cells with nuclei and membrane-bound organelles emerge, probably via one cell engulfing another (endosymbiosis). Mitochondria are descended from these captured bacteria."),
+        new(1_800_000_000, "~1.8 Gya", "proterozoic", "Eukaryotes appear",
+            "Cells with nuclei and membrane-bound organelles are clearly in the fossil record by about 1.6-1.8 Gya, and may be older. They arose probably via one cell engulfing another (endosymbiosis). Mitochondria are descended from these captured bacteria."),
         new(1_500_000_000, "1.5 Gya", "proterozoic", "Multicellular experiments",
             "Some eukaryotes start clumping together, with hints of cell specialisation. The fossil record from this time is sparse but suggestive."),
-        new(1_200_000_000, "1.2 Gya", "proterozoic", "Sexual reproduction",
+        new(1_050_000_000, "~1.05 Gya", "proterozoic", "Sexual reproduction",
             "The red alga Bangiomorpha, preserved in Arctic Canada, is one of the oldest organisms with clear evidence of sexual reproduction. Genetic shuffling supercharges evolution."),
-        new(750_000_000, "750 Mya", "proterozoic", "Snowball Earth begins",
-            "A series of extreme glaciations may have left the entire planet ice-covered, oceans frozen to the equator. Life clings on around hydrothermal vents and beneath thin ice."),
-        new(635_000_000, "635 Mya", "proterozoic", "Ediacaran biota",
-            "As the planet thaws, strange soft-bodied multicellular organisms appear: fronds, discs, quilted creatures unlike anything alive today. The first complex animal communities."),
+        new(717_000_000, "~717 Mya", "proterozoic", "Snowball Earth begins",
+            "The Sturtian glaciation begins, the first of a series of extreme glaciations may have left the entire planet ice-covered, oceans frozen to the equator. Life clings on around hydrothermal vents and beneath thin ice."),
+        new(575_000_000, "~575 Mya", "proterozoic", "Ediacaran biota",
+            "The Ediacaran Period opens 635 Mya as the ice retreats, and by about 575 Mya strange soft-bodied multicellular organisms appear: fronds, discs, quilted creatures unlike anything alive today. The first complex animal communities."),
         new(540_000_000, "540 Mya", "paleozoic", "Cambrian Explosion",
             "Within a geological eyeblink, virtually every modern animal phylum appears in the fossil record. Eyes, shells, jaws, predation, complex food webs all arrive in a burst of evolutionary creativity."),
         new(485_000_000, "485 Mya", "paleozoic", "First land plants",
@@ -200,7 +197,7 @@ else
         new(230_000_000, "230 Mya", "mesozoic", "First dinosaurs",
             "In the recovering Triassic ecosystems, small bipedal archosaurs evolve into the first true dinosaurs. They will dominate the planet for the next 165 million years."),
         new(201_000_000, "201 Mya", "mesozoic", "End-Triassic extinction",
-            "Another volcanic episode, this time as Pangaea begins to rift apart, wipes out around half of all species. The survivors include the dinosaurs, who now have the world to themselves."),
+            "Another volcanic episode, this time as Pangaea begins to rift apart, wipes out around three quarters of all species. The survivors include the dinosaurs, who now have the world to themselves."),
         new(150_000_000, "150 Mya", "mesozoic", "Archaeopteryx",
             "A feathered dinosaur the size of a raven, preserved in Jurassic limestone in Bavaria, shows that birds are essentially small flying dinosaurs. They will outlive the rest of the lineage."),
         new(125_000_000, "125 Mya", "mesozoic", "Flowering plants diversify",
@@ -210,7 +207,7 @@ else
         new(55_000_000, "55 Mya", "cenozoic", "PETM warming event",
             "A massive release of carbon (perhaps from methane hydrates) spikes global temperatures by 5-8 degrees Celsius in a few thousand years. The ocean acidifies. A natural analogue for today's emissions."),
         new(34_000_000, "34 Mya", "cenozoic", "Antarctic ice sheet forms",
-            "As Antarctica drifts over the south pole and ocean currents reorganise, it freezes over. Earth shifts from a hothouse to an icehouse climate that has persisted, with wobbles, ever since."),
+            "Falling atmospheric CO2 and new ocean gateways around Antarctica (the Drake Passage and Tasmanian gateway) isolate the continent, already sitting over the pole, and permanent ice sheets form. Earth shifts from a hothouse to an icehouse climate that has persisted, with wobbles, ever since."),
         new(23_000_000, "23 Mya", "cenozoic", "Grasslands spread; mammals diversify",
             "Grasses, which had been minor players, expand into vast plains. Grazing mammals (horses, antelope, elephants) co-evolve with them. The savannahs that will shape human evolution begin to form."),
         new(7_000_000, "7 Mya", "cenozoic", "Hominin and chimp lineages split",
@@ -226,11 +223,11 @@ else
         new(5_000, "5 Kya", "cenozoic", "First cities and writing",
             "Uruk, Memphis, Mohenjo-daro, and other urban centres appear, supported by agriculture and irrigation. Writing emerges to track grain, taxes, and gods. History, in the literal sense, begins."),
         new(2_000, "2 Kya", "cenozoic", "Classical empires at peak",
-            "Rome, Han China, the Maurya, and the Parthians rule huge populations connected by roads and trade. Most of humanity now lives in stratified, literate, agrarian states."),
+            "Rome, Han China, the Kushan Empire, and the Parthians rule huge populations connected by roads and trade. Most of humanity now lives in stratified, literate, agrarian states."),
         new(200, "200 ya", "cenozoic", "Industrial Revolution",
             "Coal-powered steam engines transform manufacturing and transport, starting in Britain. Atmospheric carbon dioxide begins its sharp rise. Human population starts the climb from one billion towards eight."),
         new(70, "70 ya", "cenozoic", "Great Acceleration",
-            "Post-WWII, almost every measure of human activity (energy use, fertilizer, plastics, vehicles, dam-building, atmospheric CO2) hockey-sticks upward. Geologists propose this as the start of the Anthropocene."),
+            "Post-WWII, almost every measure of human activity (energy use, fertilizer, plastics, vehicles, dam-building, atmospheric CO2) hockey-sticks upward. Some geologists proposed this as the start of the Anthropocene, though the IUGS rejected a formal Anthropocene epoch in March 2024."),
         new(1, "Today", "cenozoic", "You, reading this",
             "Roughly 8 billion humans share the planet with the descendants of every survivor of every event above. Everything in the timeline led to this moment. The next chapter is being written now.")
     };
@@ -243,6 +240,24 @@ else
         background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm);
         border-left: 3px solid var(--primary);
     }
+
+    .dt-strip { margin-bottom: 14px; }
+    .dt-strip-bar {
+        position: relative; display: flex; height: 14px; border-radius: 3px;
+        border: 1px solid var(--border);
+    }
+    .dt-strip-seg { height: 100%; }
+    .dt-strip-seg:first-child { border-radius: 2px 0 0 2px; }
+    .dt-strip-humans {
+        position: absolute; right: 0; top: -4px; bottom: -4px; width: 1px; background: var(--accent);
+    }
+    .dt-strip-legend {
+        display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px;
+        font-size: 0.7rem; color: var(--text-muted);
+    }
+    .dt-strip-legend span { display: inline-flex; align-items: center; gap: 4px; }
+    .dt-strip-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; border: 1px solid var(--border); }
+    .dt-strip-legend i.dt-strip-hair { width: 1px; height: 10px; border: 0; background: var(--accent); border-radius: 0; }
 
     .dt-filter {
         display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;
