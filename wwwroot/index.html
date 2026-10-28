@@ -429,6 +429,46 @@
             }
         }
 
+        // Typesets \( \), \[ \] and $$ $$ maths inside lesson text. A single $ is left alone so prices stay prices.
+        // Once rendered the delimiters are gone, so calling this again on the same element does nothing.
+        var MATH_IN_TEXT = /\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$/g;
+        async function renderMathIn(elementId) {
+            var root = document.getElementById(elementId);
+            if (!root || !/\\\(|\\\[|\$\$/.test(root.textContent)) return;
+            await loadKatex();
+            var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+            var nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(function (node) {
+                var text = node.nodeValue, last = 0, m;
+                MATH_IN_TEXT.lastIndex = 0;
+                if (!MATH_IN_TEXT.test(text)) return;
+                MATH_IN_TEXT.lastIndex = 0;
+                var frag = document.createDocumentFragment();
+                while ((m = MATH_IN_TEXT.exec(text))) {
+                    frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+                    var span = document.createElement('span');
+                    katex.render(m[1] || m[2] || m[3], span, { throwOnError: false, displayMode: m[1] === undefined });
+                    frag.appendChild(span);
+                    last = MATH_IN_TEXT.lastIndex;
+                    // Chrome will break a line between KaTeX's inline-block output and the punctuation after it,
+                    // so move that punctuation inside the formula's last box (restyled as body text).
+                    var punct = /^[.,;:!?)]+/.exec(text.slice(last));
+                    var bases = span.querySelectorAll('.katex-html > .base');
+                    if (punct && bases.length) {
+                        var tail = document.createElement('span');
+                        tail.className = 'math-punct';
+                        tail.textContent = punct[0];
+                        bases[bases.length - 1].appendChild(tail);
+                        last += punct[0].length;
+                        MATH_IN_TEXT.lastIndex = last;
+                    }
+                }
+                frag.appendChild(document.createTextNode(text.slice(last)));
+                node.parentNode.replaceChild(frag, node);
+            });
+        }
+
         // Toast notifications
         var toastCounter = 0;
         function showToast(message, type) {

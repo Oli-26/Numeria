@@ -59,7 +59,7 @@
                     }
                     else
                     {
-                    <div class="concept-content">
+                    <div class="concept-content" id="concept-content-@concept.Id">
                         @((MarkupString)ContentFor(concept))
                     </div>
 
@@ -419,6 +419,7 @@ else
         if (lesson != null && !showQuiz && currentConceptIndex < lesson.Concepts.Count)
         {
             var concept = lesson.Concepts[currentConceptIndex];
+            await JS.TryInvokeVoidAsync("renderMathIn", $"concept-content-{concept.Id}");
             for (int i = 0; i < concept.MathExpressions.Count; i++)
             {
                 await JS.TryInvokeVoidAsync("renderMath", $"math-{concept.Id}-{i}", concept.MathExpressions[i], true);
