@@ -1,161 +1,289 @@
 @page "/sound-shift"
-@inject IProgressService Progress
 @inject NavigationManager Nav
 
-@if (!unlocked)
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Sound Shift Sim</h1>
-    </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase "Sound Shift Sim" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
+@{
+    var preset = CurrentPreset();
+    var derivation = Derive(preset);
 }
-else
-{
-    <div class="page-header">
-        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1>Sound Shift Sim</h1>
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Sound Shift Sim</h1>
+</div>
+
+<div class="card ss-intro">
+    <Icon Name="speech" Size="22" Stroke="var(--accent)" />
+    <p>Pick a sound law and a word. Each rule rewrites the whole word at once, in historical order, and each card shows what it changed and what it left alone.</p>
+</div>
+
+<div class="card ss-controls">
+    <label class="ss-label">Sound law</label>
+    <div class="ss-laws">
+        @foreach (var l in lawNames)
+        {
+            <button class="ss-law @(law == l.Law ? "active" : "")" @onclick="() => law = l.Law">@l.Name</button>
+        }
     </div>
 
-    <div class="card ss-intro">
-        <Icon Name="speech" Size="22" Stroke="var(--accent)" />
-        <p>Pick a sound law and a starting word. Watch each rule fire in order. Real diachronic linguistics in slow motion.</p>
+    <label class="ss-label" style="margin-top:12px">@(law == Grimm ? "Preset or your own PIE form" : "Word")</label>
+    <div class="ss-presets">
+        @foreach (var p in SoundShiftEngine.Presets(law))
+        {
+            <button class="ss-preset @(ReferenceEquals(p, preset) ? "active" : "")" title="@(law == VowelShift ? $"/{p.Source}/" : $"*{p.Source}")" @onclick="() => Pick(p)">
+                @(law == HighGerman ? $"{p.Word} / {p.Sister}" : p.Word)
+            </button>
+        }
     </div>
 
-    <div class="card ss-controls">
-        <label class="ss-label">Sound law</label>
-        <div class="ss-laws">
-            @foreach (var law in laws)
+    @if (law == Grimm)
+    {
+        <input class="ss-input ss-ipa" @bind="input" @bind:event="oninput" placeholder="e.g. pṓds" maxlength="40" aria-label="PIE form" autocapitalize="off" autocomplete="off" spellcheck="false" />
+        <div class="ss-palette">
+            @foreach (var row in palette)
             {
-                var l = law;
-                <button class="ss-law @(selectedLaw.Name == l.Name ? "active" : "")" @onclick="() => selectedLaw = l">@l.Name</button>
+                <div class="ss-pal-row">
+                    <span class="ss-pal-label">@row.Label</span>
+                    @foreach (var sym in row.Symbols)
+                    {
+                        <button class="ss-sym ss-ipa" @onclick="() => input += sym">@sym</button>
+                    }
+                </div>
             }
-        </div>
-
-        <label class="ss-label" style="margin-top:12px">Starting word</label>
-        <input class="ss-input" @bind="input" @bind:event="oninput" placeholder="Type a word..." />
-
-        <div class="ss-presets">
-            @foreach (var p in selectedLaw.Presets)
-            {
-                var px = p;
-                <button class="ss-preset" @onclick='() => { input = px; }'>@px</button>
-            }
-        </div>
-    </div>
-
-    <div class="card ss-result">
-        <div class="ss-blurb">@((MarkupString)selectedLaw.Description)</div>
-
-        <div class="ss-steps">
-            @{ var trace = ApplySteps(input ?? "", selectedLaw); }
-            <div class="ss-step ss-step-start">
-                <span class="ss-tag">Input</span>
-                <strong>@(string.IsNullOrWhiteSpace(input) ? "-" : input)</strong>
+            <div class="ss-pal-row">
+                <button class="ss-sym ss-sym-wide" aria-label="Delete last sound" @onclick="Backspace">⌫</button>
+                <button class="ss-sym ss-sym-wide" @onclick='() => input = ""'>Clear</button>
             </div>
-            @foreach (var s in trace)
+        </div>
+        <label class="ss-toggle"><input type="checkbox" @bind="verner" /> Apply Verner's Law after Grimm</label>
+    }
+</div>
+
+<div class="card ss-result">
+    <div class="ss-blurb">
+        @switch (law)
+        {
+            case Grimm:
+                <p>From Proto-Indo-European (PIE) to Proto-Germanic, the ancestor of English, German and Norse, the stops moved in a chain: voiceless stops became fricatives (p t k → f θ x), voiced stops lost their voice (b d g → p t k), and breathy-voiced stops became plain voiced (bʰ dʰ gʰ → b d g). The order matters: had b d g devoiced first, the new p t k would have shifted again.</p>
+                <p>Latin and Greek did not take part, so English <em>father</em> and Latin <em>pater</em> are cognates: sisters descended from one PIE word, not parent and child. Karl Verner later explained why some words show d where Grimm predicts θ: it depended on where the PIE accent fell. Verner's b d g, like the b d g from Grimm's third step, were often pronounced as fricatives (β ð ɣ).</p>
+                <p class="ss-key">θ as in <em>thin</em>; x as <em>ch</em> in <em>loch</em> (later h); ʰ breathy release; ʷ lip-rounding; ḱ ǵ palatal k g; h₁ h₂ h₃ laryngeals; m̥ syllabic m; an acute marks the PIE accent; * marks a reconstructed form.</p>
+                break;
+            case VowelShift:
+                <p>Between about 1400 and 1700 the long vowels of English moved. The two highest, iː and uː, became diphthongs, and the other long vowels each rose a step. The steps run here as a chain, diphthongs first, so nothing shifts twice: <em>food</em>'s oː rises to uː only after the old uː has moved on. (Which vowel really moved first is still debated.)</p>
+                <p>Printing reached England in the 1470s, in the middle of the shift, and spelling kept the old vowel letters. Forms are phonemic IPA: Middle English in, modern American English out.</p>
+                break;
+            default:
+                <p>In the early Middle Ages the southern dialects that became High German shifted the Germanic stops a second time. Low German, Dutch and English did not, so English keeps the older consonants: compare <em>water</em> and <em>Wasser</em>.</p>
+                <p>p t k became affricates (pf, ts) at the start of a word, when doubled and after some consonants, and fricatives (ff, ss, xx) after vowels; d became t. Standard German kept k except after vowels: only southern dialects have kx. The input is a simplified West Germanic form; the output is Old High German as sounds, with its spelling and the modern German word.</p>
+                break;
+        }
+    </div>
+
+    @if (derivation.Source.Count == 0)
+    {
+        <p class="ss-empty">Type a PIE form above, or tap a word.</p>
+    }
+    else
+    {
+        var d = derivation;
+        var (open, close) = law == VowelShift ? ("/", "/") : law == Grimm ? ("*", "") : ("", "");
+        var stepNo = 0;
+        // A trailing "other changes" card is not part of the law, so the no-change notice goes above it.
+        var noChangeAt = d.LawChanged ? -1 : d.Steps.Count > 1 && d.Steps[^1].IsOther ? d.Steps.Count - 1 : d.Steps.Count;
+
+        <div class="ss-row ss-source">
+            <span class="ss-tag">@SourceLabel</span>
+            @Form(d.Source, None, "", law == VowelShift ? "/" : "*", close, d.Unknown)
+            @if (law == VowelShift && preset?.Spelling is { } meSpelling)
             {
-                <div class="ss-arrow">↓</div>
-                <div class="ss-step">
-                    <span class="ss-tag">@s.Rule</span>
-                    <strong>@s.Form</strong>
-                    <small>@s.Note</small>
-                </div>
-            }
-            @if (trace.Count == 0 && !string.IsNullOrWhiteSpace(input))
-            {
-                <div class="ss-arrow">↓</div>
-                <div class="ss-step ss-step-noop">
-                    <span class="ss-tag">No change</span>
-                    <small>This word doesn't trigger any rule in this law.</small>
-                </div>
+                <small>Middle English spelling <em>@meSpelling</em></small>
             }
         </div>
-    </div>
-}
+
+        @if (d.Unknown.Count > 0)
+        {
+            <div class="ss-warn">
+                Not PIE sounds in this tool: <strong class="ss-ipa">@string.Join(", ", d.Unknown.Select(i => SoundShiftEngine.Show(d.Source[i])).Distinct())</strong>.
+                They pass through untouched, so the result is not a real reconstruction. Use the symbols in the palette.
+            </div>
+        }
+
+        @for (var n = 0; n < d.Steps.Count; n++)
+        {
+            var st = d.Steps[n];
+            @if (n == noChangeAt)
+            {
+                @NoChange(d)
+            }
+            <div class="ss-rule @(st.IsOther ? "ss-rule-other" : "") @(st.Fired ? "" : "ss-rule-idle")">
+                <div class="ss-rule-head">
+                    <span class="ss-num">@(st.IsOther ? "+" : (++stepNo).ToString())</span>
+                    <strong>@st.Name</strong>
+                </div>
+                <div class="ss-env">@st.Environment</div>
+                @if (st.Fired)
+                {
+                    <div class="ss-change">
+                        @Form(st.Before, st.ChangedBefore, "ss-from", open, close)
+                        <span class="ss-to" aria-label="becomes">→</span>
+                        @Form(st.After, st.ChangedAfter, "ss-hit", open, close)
+                    </div>
+                }
+                else
+                {
+                    <div class="ss-idle">@(st.Blocked.Count > 0 ? "No change: every candidate sound is protected by an exception." : "No change: no sound in this word meets this rule.")</div>
+                }
+                @foreach (var b in st.Blocked)
+                {
+                    <div class="ss-block"><span class="ss-seg ss-kept ss-ipa">@SoundShiftEngine.Show(b.Segment)</span> kept: @b.Reason</div>
+                }
+            </div>
+        }
+
+        @if (noChangeAt == d.Steps.Count)
+        {
+            @NoChange(d)
+        }
+
+        <div class="ss-row ss-final">
+            @if (law == Grimm)
+            {
+                var full = preset is not null && verner;
+                <span class="ss-tag">@(full ? "Proto-Germanic" : verner ? "After Grimm and Verner" : "After Grimm alone")</span>
+                @Form(d.Output, None, "", "*", "")
+                @if (full)
+                {
+                    <small>→ English <strong>@(preset!.Word)</strong></small>
+                }
+                else if (preset is null)
+                {
+                    <small>Only the consonant laws run on typed words. The vowel, laryngeal and ending changes on the way to Proto-Germanic are filled in for the preset words.</small>
+                }
+            }
+            else if (law == VowelShift)
+            {
+                <span class="ss-tag">Modern English</span>
+                @Form(d.Output, None, "", "/", "/")
+                <small>spelled <strong>@(preset!.Word)</strong></small>
+            }
+            else
+            {
+                <span class="ss-tag">Old High German</span>
+                @Form(d.Output, None, "", "", "")
+                <small>spelled <em>@(preset!.Spelling)</em>; modern German <strong>@(preset!.Sister)</strong></small>
+            }
+        </div>
+
+        @if (law == Grimm && preset is not null && !verner)
+        {
+            var withVerner = SoundShiftEngine.Run(Grimm, preset, verner: true);
+            <div class="ss-warn">
+                @if (SoundShiftEngine.Join(withVerner.LawOutput) != SoundShiftEngine.Join(d.LawOutput))
+                {
+                    <text>Grimm alone predicts <span class="ss-ipa">*@SoundShiftEngine.Join(d.LawOutput)</span>, but the Germanic languages point to <span class="ss-ipa">*@SoundShiftEngine.Canonical(preset.Target!)</span>. The gap is what Verner's Law explains: turn it back on.</text>
+                }
+                else
+                {
+                    <text>Verner's Law makes no difference to this word. Turn it back on to see the remaining changes to Proto-Germanic <span class="ss-ipa">*@SoundShiftEngine.Canonical(preset.Target!)</span>.</text>
+                }
+            </div>
+        }
+
+        @if (preset is not null)
+        {
+            <div class="ss-row ss-sisters">
+                @if (law == Grimm)
+                {
+                    <p>English <strong>@preset.Word</strong> and @preset.Sister: sisters from one PIE ancestor, <span class="ss-ipa">*@SoundShiftEngine.Canonical(preset.Source, Grimm)</span>, not parent and child.</p>
+                }
+                else if (law == HighGerman)
+                {
+                    <p>English <strong>@preset.Word</strong> and German <strong>@preset.Sister</strong>: sisters from one West Germanic ancestor, <span class="ss-ipa">*@SoundShiftEngine.Canonical(preset.Source)</span>. English kept the old consonants.</p>
+                }
+                else
+                {
+                    <p>Middle English <em>@preset.Spelling</em> <span class="ss-ipa">/@SoundShiftEngine.Canonical(preset.Source)/</span> became modern <strong>@preset.Word</strong> <span class="ss-ipa">/@d.OutputText/</span>.</p>
+                }
+                <small>@preset.Note</small>
+            </div>
+        }
+    }
+</div>
 
 @code {
-    private bool unlocked;
-    private string? input = "pater";
-    private SoundLaw selectedLaw = laws[0];
+    private const SoundShiftEngine.Law Grimm = SoundShiftEngine.Law.Grimm;
+    private const SoundShiftEngine.Law VowelShift = SoundShiftEngine.Law.VowelShift;
+    private const SoundShiftEngine.Law HighGerman = SoundShiftEngine.Law.HighGerman;
+    private static readonly int[] None = Array.Empty<int>();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private static readonly (string Name, SoundShiftEngine.Law Law)[] lawNames =
     {
-        if (firstRender)
-        {
-            var profile = await Progress.GetProfileAsync();
-            unlocked = true;
-            StateHasChanged();
-        }
-    }
-
-    private static List<TraceStep> ApplySteps(string word, SoundLaw law)
-    {
-        var trace = new List<TraceStep>();
-        var current = word.ToLowerInvariant();
-        foreach (var rule in law.Rules)
-        {
-            var next = rule.Apply(current);
-            if (next != current)
-            {
-                trace.Add(new TraceStep(rule.Name, next, rule.Note));
-                current = next;
-            }
-        }
-        return trace;
-    }
-
-    private record TraceStep(string Rule, string Form, string Note);
-    private record Rule(string Name, string Note, Func<string, string> Apply);
-    private record SoundLaw(string Name, string Description, List<Rule> Rules, List<string> Presets);
-
-    private static readonly List<SoundLaw> laws = new()
-    {
-        new("Grimm's Law",
-            "Proto-Indo-European voiceless stops shift to fricatives in Proto-Germanic. <strong>p > f, t > th, k > h</strong>. <strong>b > p, d > t, g > k</strong>. <strong>bh > b, dh > d, gh > g</strong>. Latin <em>pater</em> → English <em>father</em>.",
-            new()
-            {
-                new("p > f", "voiceless labial stop becomes labial fricative", s => s.Replace("p", "f")),
-                new("t > th", "voiceless alveolar stop becomes dental fricative", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<!t)t(?!h)", "th")),
-                new("k > h", "voiceless velar stop becomes glottal fricative", s => s.Replace("k", "h").Replace("c", "h")),
-                new("b > p", "voiced labial devoices", s => s.Replace("b", "p")),
-                new("d > t", "voiced alveolar devoices", s => s.Replace("d", "t")),
-                new("g > k", "voiced velar devoices", s => s.Replace("g", "k"))
-            },
-            new() { "pater", "tres", "duo", "genu", "frater", "decem" }),
-
-        new("Great Vowel Shift",
-            "English long vowels rotate upward (1400-1700). Long <strong>i</strong> diphthongizes to <em>ai</em>; long <strong>u</strong> to <em>au</em>; long <strong>e</strong> raises to <em>i</em>; long <strong>o</strong> raises to <em>u</em>; long <strong>a</strong> raises to <em>e</em>. Why English spelling looks insane.",
-            new()
-            {
-                new("ee/ie > i", "long e raised", s => s.Replace("ee", "i").Replace("ie", "i")),
-                new("oo > u", "long o raised", s => s.Replace("oo", "u")),
-                new("a (long) > e (long)", "in many positions a raised toward e", s => System.Text.RegularExpressions.Regex.Replace(s, "a([bcdfgklmnprstv])e", "e$1")),
-                new("i > ai", "long i diphthongized", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<![aeo])i([bcdfgklmnprstv])e", "ai$1")),
-                new("u > au", "long u diphthongized", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<![aeo])u([bcdfgklmnprstv])e", "au$1"))
-            },
-            new() { "tide", "moon", "stone", "house", "bite", "feet" }),
-
-        new("High German Shift",
-            "Second consonant shift (5th-9th c.) made German diverge from English. <strong>p > pf/f, t > z(ts)/s, k > ch</strong>. English <em>apple</em> = German <em>Apfel</em>; English <em>water</em> = German <em>Wasser</em>; English <em>make</em> = German <em>machen</em>.",
-            new()
-            {
-                new("p > pf (initial)", "initial p becomes affricate pf", s => s.Length > 0 && s[0] == 'p' ? "pf" + s.Substring(1) : s),
-                new("p > ff (medial)", "medial p doubles as ff", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<=[aeiou])p(?=[aeiou])", "ff")),
-                new("t > z (initial)", "initial t becomes affricate z (ts)", s => s.Length > 0 && s[0] == 't' ? "z" + s.Substring(1) : s),
-                new("t > ss (medial)", "medial t becomes ss", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<=[aeiou])t(?=[aeiou])", "ss")),
-                new("k > ch (medial)", "medial k becomes ch", s => System.Text.RegularExpressions.Regex.Replace(s, "(?<=[aeiou])k", "ch"))
-            },
-            new() { "apple", "water", "make", "pepper", "tongue", "open" })
+        ("Grimm's Law", Grimm), ("Great Vowel Shift", VowelShift), ("High German shift", HighGerman),
     };
+
+    private static readonly (string Label, string[] Symbols)[] palette =
+    {
+        ("Stops", new[] { "p", "t", "k", "ḱ", "kʷ", "b", "d", "g", "ǵ", "gʷ", "bʰ", "dʰ", "gʰ", "ǵʰ", "gʷʰ" }),
+        ("Others", new[] { "s", "m", "n", "r", "l", "y", "w", "m̥", "n̥", "r̥", "l̥", "h₁", "h₂", "h₃", "-" }),
+        ("Vowels", new[] { "e", "o", "a", "i", "u", "ē", "ō", "ā", "ī", "ū" }),
+        ("Accent", new[] { "é", "ó", "á", "í", "ú", "ḗ", "ṓ" }),
+    };
+
+    private SoundShiftEngine.Law law = Grimm;
+    private string input = SoundShiftEngine.GrimmPresets.Single(p => p.Word == "father").Source;
+    private bool verner = true;
+    private SoundShiftEngine.Preset vowelPreset = SoundShiftEngine.VowelShiftPresets[0];
+    private SoundShiftEngine.Preset germanPreset = SoundShiftEngine.HighGermanPresets[0];
+
+    private SoundShiftEngine.Preset? CurrentPreset() => law switch
+    {
+        Grimm => SoundShiftEngine.GrimmPresets.FirstOrDefault(p =>
+            SoundShiftEngine.Canonical(p.Source, Grimm) == SoundShiftEngine.Canonical(input, Grimm)),
+        VowelShift => vowelPreset,
+        _ => germanPreset,
+    };
+
+    private SoundShiftEngine.Derivation Derive(SoundShiftEngine.Preset? preset) => law == Grimm
+        ? (preset is { } p ? SoundShiftEngine.Run(Grimm, p, verner) : SoundShiftEngine.Run(Grimm, input, verner))
+        : SoundShiftEngine.Run(law, preset!);
+
+    private string SourceLabel => law switch
+    {
+        Grimm => "Proto-Indo-European",
+        VowelShift => "Middle English",
+        _ => "West Germanic (simplified)",
+    };
+
+    private void Pick(SoundShiftEngine.Preset p)
+    {
+        if (law == Grimm) input = p.Source;
+        else if (law == VowelShift) vowelPreset = p;
+        else germanPreset = p;
+    }
+
+    private void Backspace()
+    {
+        var segs = SoundShiftEngine.Tokenize(input, pie: true);
+        if (segs.Count == 0) return;
+        segs.RemoveAt(segs.Count - 1);
+        input = SoundShiftEngine.Join(segs);
+    }
+
+    private static string SegClass(int k, IReadOnlyList<int> hits, string hitClass, IReadOnlyList<int>? bad) =>
+        "ss-seg" + (hits.Contains(k) ? " " + hitClass : "") + (bad?.Contains(k) == true ? " ss-bad" : "");
+
+    private static RenderFragment NoChange(SoundShiftEngine.Derivation d) =>
+        @<div class="ss-warn">@(d.Steps.Any(s => !s.IsOther && s.Blocked.Count > 0)
+            ? "These rules leave the word unchanged: every sound that could have shifted is protected by an exception (see the kept notes above)."
+            : "Unchanged: this word has no sound that these rules affect.")</div>;
+
+    // Segments sit on one line with no whitespace between them, so the word reads unbroken.
+    private static RenderFragment Form(IReadOnlyList<string> segs, IReadOnlyList<int> hits, string hitClass, string open, string close, IReadOnlyList<int>? bad = null) =>
+        @<span class="ss-form ss-ipa">@(open)@for (var k = 0; k < segs.Count; k++) { <span class="@SegClass(k, hits, hitClass, bad)">@SoundShiftEngine.Show(segs[k])</span> }@(close)</span>;
 }
 
 <style>
+    .ss-ipa { font-family: 'Gentium Plus', 'Charis SIL', 'Noto Serif', 'DejaVu Serif', 'Times New Roman', serif; }
+
     .ss-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
     .ss-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
 
@@ -165,19 +293,50 @@ else
     .ss-law { padding: 6px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; font-size: 0.8rem; cursor: pointer; color: var(--text-secondary); }
     .ss-law.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    .ss-input { width: 100%; padding: 10px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--text-primary); }
-    .ss-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-    .ss-preset { padding: 4px 10px; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 10px; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
+    .ss-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ss-preset { padding: 5px 10px; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 10px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; }
+    .ss-preset.active { border-style: solid; border-color: var(--accent); color: var(--text-primary); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 
-    .ss-result { padding: 14px; }
-    .ss-blurb { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .ss-input { width: 100%; margin-top: 12px; padding: 10px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 1.15rem; color: var(--text-primary); }
+    .ss-palette { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .ss-pal-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+    .ss-pal-label { flex-basis: 100%; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-top: 4px; }
+    .ss-sym { min-width: 36px; height: 36px; padding: 0 6px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; color: var(--text-primary); cursor: pointer; }
+    .ss-sym-wide { min-width: 64px; font-size: 0.8rem; font-family: inherit; margin-top: 4px; }
+    .ss-toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary); }
 
-    .ss-steps { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
-    .ss-step { background: var(--bg-surface); border-radius: var(--radius-sm); padding: 10px 12px; }
-    .ss-step-start { background: color-mix(in srgb, var(--primary) 8%, transparent); }
-    .ss-step-noop { opacity: 0.7; }
-    .ss-tag { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
-    .ss-step strong { display: block; font-size: 1.1rem; font-family: 'Cormorant Garamond', Georgia, serif; color: var(--text-primary); }
-    .ss-step small { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-    .ss-arrow { text-align: center; color: var(--text-muted); font-size: 0.95rem; }
+    .ss-result { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .ss-blurb { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .ss-blurb p { margin: 0 0 8px; }
+    .ss-blurb p:last-child { margin-bottom: 0; }
+    .ss-key { font-size: 0.78rem; color: var(--text-muted); }
+    .ss-empty { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+
+    .ss-tag { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
+    .ss-row { background: var(--bg-surface); border-radius: var(--radius-sm); padding: 10px 12px; }
+    .ss-row small { display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; line-height: 1.45; }
+    .ss-source { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+    .ss-final { background: color-mix(in srgb, var(--success) 10%, transparent); }
+    .ss-sisters p { margin: 0; font-size: 0.88rem; color: var(--text-primary); line-height: 1.5; }
+
+    .ss-form { font-size: 1.25rem; color: var(--text-primary); overflow-wrap: anywhere; }
+    .ss-seg { padding: 0 1px; border-radius: 3px; }
+    .ss-hit { background: color-mix(in srgb, var(--accent) 26%, transparent); font-weight: 700; }
+    .ss-from { text-decoration: underline 2px var(--accent); text-underline-offset: 3px; }
+    .ss-bad { color: var(--error); text-decoration: underline wavy var(--error); }
+    .ss-kept { border: 1px dashed var(--border); padding: 0 4px; margin-right: 2px; }
+
+    .ss-rule { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+    .ss-rule-other { border-style: dashed; background: color-mix(in srgb, var(--warning) 6%, transparent); }
+    .ss-rule-idle { opacity: 0.7; }
+    .ss-rule-head { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-primary); }
+    .ss-num { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: white; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .ss-rule-other .ss-num { background: var(--warning); }
+    .ss-env { font-size: 0.78rem; color: var(--text-muted); margin: 4px 0 0 30px; line-height: 1.45; }
+    .ss-change { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 8px 0 0 30px; }
+    .ss-to { color: var(--text-muted); }
+    .ss-idle { font-size: 0.78rem; color: var(--text-muted); margin: 6px 0 0 30px; font-style: italic; }
+    .ss-block { font-size: 0.78rem; color: var(--text-secondary); margin: 4px 0 0 30px; line-height: 1.4; }
+
+    .ss-warn { font-size: 0.82rem; line-height: 1.5; color: var(--text-primary); background: color-mix(in srgb, var(--warning) 12%, transparent); border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent); border-radius: var(--radius-sm); padding: 8px 12px; }
 </style>
