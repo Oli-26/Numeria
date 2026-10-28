@@ -177,10 +177,13 @@
                     <button class="topic-filter-chip @(topicFilter == "mastered" ? "active" : "")" @onclick='() => topicFilter = "mastered"'>Mastered <small>@profile.TopicMastery.Count(kv => kv.Value > 0)</small></button>
                 </div>
 
-                @* Domain summary chart *@
+                @* Domain summary chart: only subjects with a started topic, since the rest sit at 0% *@
+                var startedDomains = domains.Where(d => topics.Any(t => t.Domain == d.Id && topicProgress.GetValueOrDefault(t.Id, 0) > 0)).ToList();
+                @if (startedDomains.Count > 0)
+                {
                 <div class="card domain-summary-card">
                     <h3 class="domain-summary-title">Domain Progress</h3>
-                    @foreach (var d in domains.OrderByDescending(d => DomainAvgProgress(d.Id)))
+                    @foreach (var d in startedDomains.OrderByDescending(d => DomainAvgProgress(d.Id)))
                     {
                         var domTopics = topics.Where(t => t.Domain == d.Id).ToList();
                         if (domTopics.Count == 0) continue;
@@ -198,8 +201,16 @@
                         </div>
                     }
                 </div>
+                }
 
-                @* Filtered topic list, grouped by domain *@
+                @* Filtered topic list, grouped by domain; each group starts collapsed *@
+                @if (!topics.Any(t => FilterMatch(t, topicFilter)))
+                {
+                    <div class="card topics-empty">
+                        <p>@(topicFilter == "mastered" ? "No mastered topics yet. Pass a topic's mastery quiz to earn a rank." : "You haven't started a topic yet.")</p>
+                        <a class="btn btn-sm btn-primary" href="/domains">Browse subjects</a>
+                    </div>
+                }
                 @foreach (var d in domains)
                 {
                     var domTopics = topics.Where(t => t.Domain == d.Id)
@@ -208,8 +219,8 @@
                         .ToList();
                     if (domTopics.Count == 0) continue;
 
-                    <div class="topic-domain-group">
-                        <div class="topic-domain-head" style="color: @SubjectHues.For(d.Id)">@d.Name <small>@domTopics.Count</small></div>
+                    <details class="topic-domain-group">
+                        <summary class="topic-domain-head" style="color: @SubjectHues.For(d.Id)">@d.Name <small>@domTopics.Count</small><span class="topic-domain-chevron"><Icon Name="chevron-down" Size="14" /></span></summary>
                         <div class="topic-rows">
                             @foreach (var topic in domTopics)
                             {
@@ -218,7 +229,6 @@
                                 var progress = topicProgress.GetValueOrDefault(topic.Id, 0);
                                 var mastery = profile.TopicMastery.GetValueOrDefault(topic.Id, 0);
                                 <a class="topic-row" href="@($"/topic/{topic.Id}")">
-                                    <span class="topic-row-stripe" style="background: @topic.Color"></span>
                                     <div class="topic-row-body">
                                         <div class="topic-row-line1">
                                             <span class="topic-row-name">@topic.Name</span>
@@ -250,7 +260,7 @@
                                 </a>
                             }
                         </div>
-                    </div>
+                    </details>
                 }
             }
         </div>
@@ -369,7 +379,7 @@ else
     private int overallAccuracy;
     private double achievementPct;
     private string activeTab = "overview";
-    private string topicFilter = "all";
+    private string topicFilter = "active";
     private List<(string date, string label)> last28Days = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -613,11 +623,20 @@ else
     .domain-row-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
 
     /* Topics: domain-grouped list */
-    .topic-domain-group { margin-bottom: 14px; }
+    .topic-domain-group { margin-bottom: 6px; }
+    .topic-domain-group[open] { margin-bottom: 14px; }
     .topic-domain-head {
         font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.5px; margin: 0 4px 6px; display: flex; align-items: baseline; gap: 6px;
+        letter-spacing: 0.5px; margin: 0 4px; padding: 8px 0; display: flex; align-items: center; gap: 6px;
+        list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
+    .topic-domain-head::-webkit-details-marker { display: none; }
+    .topic-domain-chevron { display: flex; margin-left: auto; color: var(--text-muted); transition: transform 0.2s ease; }
+    .topic-domain-group[open] .topic-domain-chevron { transform: rotate(180deg); }
+    .topic-domain-group[open] .topic-rows { margin-bottom: 4px; }
+    .topics-empty { text-align: center; padding: 20px 16px; }
+    .topics-empty:hover { transform: none; }
+    .topics-empty p { margin: 0 0 12px; color: var(--text-secondary); }
     .topic-domain-head small { color: var(--text-muted); font-weight: 500; font-size: 0.7rem; letter-spacing: 0; }
     .topic-rows { display: flex; flex-direction: column; gap: 4px; }
     .topic-row {
@@ -628,7 +647,6 @@ else
         transition: background 0.15s ease, border-color 0.15s ease;
     }
     .topic-row:hover { background: var(--bg-surface); border-color: var(--text-muted); }
-    .topic-row-stripe { width: 3px; border-radius: 2px; flex-shrink: 0; }
     .topic-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .topic-row-line1 { display: flex; align-items: center; gap: 6px; }
     .topic-row-name { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
