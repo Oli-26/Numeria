@@ -1,0 +1,331 @@
+[
+  {
+    "id": "ecau-01",
+    "topicId": "econ-causal-inference",
+    "order": 1,
+    "title": "Counterfactuals and Selection Bias",
+    "description": "Potential outcomes, the selection-bias equation and the crisis that started the revolution",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "ecau-01-c1",
+        "title": "Two Worlds, One Observed",
+        "contentHtml": "<p>Your econometrics course taught you to read a regression coefficient as an association. This topic is about the harder question it leaves open: what would have happened <em>otherwise</em>? Take a concrete case. Should a 17-year-old finish high school? For each person there are two <strong>potential outcomes</strong>: her earnings if she completes school and her earnings if she does not. Her personal causal effect is the gap between them.</p><p>The framework goes back to Jerzy Neyman, who introduced it in 1923 for randomised agricultural experiments, and it was refined and extended by Donald Rubin in the 1970s for observational data.<sup class=\"cite\" data-cite=\"1\">1</sup> Its power lies in making the problem stark. Nobody can both finish and not finish school, so one of the two outcomes, the counterfactual, is always missing.<sup class=\"cite\" data-cite=\"2\">2</sup> This is often called the fundamental problem of causal inference: no amount of data on one person reveals her own treatment effect without strong assumptions.</p><p>What you can sometimes learn is an <strong>average</strong> effect across many people, provided a research design tells you what the treated group's untreated outcomes would have looked like. Different averages answer different questions:</p><ul><li>the <strong>average treatment effect</strong> (ATE), across the whole population;</li><li>the <strong>average effect on the treated</strong> (ATT), among those who actually took the treatment;</li><li>and, as lesson 3 shows, effects for narrower groups defined by how they respond to an instrument.</li></ul><p>Notice what is missing from the framework: no regression equation, no functional form, no list of control variables. A causal effect is defined first, as a comparison between two states of the world, and only then do you ask which data and assumptions could estimate it. That ordering, question before method, is the habit the credibility revolution tried to instil in economics.</p>",
+        "mathExpressions": [
+          "\\beta_i = Y_i(1) - Y_i(0)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-01-c2",
+        "title": "Selection Bias in One Line",
+        "contentHtml": "<p>Open the 1980 US Census, as Joshua Angrist and Alan Krueger did, and look at men born in the 1930s.<sup class=\"cite\" data-cite=\"1\">1</sup> Each extra year of schooling goes with about 7 per cent higher earnings, and the step from 11 to 12 years with about 12 per cent.<sup class=\"cite\" data-cite=\"2\">2</sup> Is that the return to school? Write the naive comparison of means in potential outcomes, then add and subtract one counterfactual term: the average untreated earnings of the people who were treated. The gap splits in two, as the formula shows:</p><ul><li>the <strong>average effect on the treated</strong>, what finishing school actually did for those who finished;</li><li><strong>selection bias</strong>, how differently the two groups would have earned had <em>neither</em> finished.</li></ul><p>The second term is the problem. People who finish school may be more able, more motivated or more willing to work hard, and would probably out-earn dropouts even without the diploma. Then selection bias is positive and the raw gap overstates the causal return.<sup class=\"cite\" data-cite=\"3\">3</sup> You cannot simply control it away, because the traits that matter most are exactly the ones no survey records.</p><p>Random assignment cures this at a stroke. If a coin decides who is treated, potential outcomes are independent of treatment, the two groups would have earned the same on average without it, and the selection term vanishes. With full compliance, the difference in means then estimates the average treatment effect for the study population. That is why randomised trials have long been the norm in medicine, and why field experiments, as the work of the 2019 laureates Abhijit Banerjee, Esther Duflo and Michael Kremer illustrates, have spread through development economics.</p><p>But nobody can ethically forbid a random half of teenagers from finishing school. The question of the credibility revolution is how to get the coin's protection without the coin: find situations where something as good as random pushed some people into treatment and not others.</p>",
+        "mathExpressions": [
+          "\\begin{gathered} E[Y|D{=}1]-E[Y|D{=}0] \\\\ = E[Y(1)-Y(0)\\mid D{=}1] \\\\ + E[Y(0)|D{=}1]-E[Y(0)|D{=}0] \\end{gathered}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-01-c3",
+        "title": "Taking the Con out of Econometrics",
+        "contentHtml": "<p>Until at least the 1980s, economists mostly got at causes through <strong>structural equation models</strong>: systems of equations, in a tradition running back to Trygve Haavelmo in the 1940s, that write down how earnings, schooling or prices are generated. The weakness is that the causal answer is only as good as the specification. Get the structure wrong and the numbers are wrong too, often with no warning sign.</p><p>In 1983 Edward Leamer made the worry famous in \"Let's Take the Con out of Econometrics\". His parable: an applied econometrician is like a farmer who notices higher yields under trees where birds roost and concludes that droppings boost crops; a rival with the same data credits the shade instead, and a bright chap at the back observes that the two stories cannot be told apart.<sup class=\"cite\" data-cite=\"1\">1</sup> Leamer's remedy was <strong>sensitivity analysis</strong>, showing how results move as the specification changes.</p><p>Three years later Robert LaLonde ran a decisive test. He took a job-training programme that had been evaluated by a randomised experiment, then applied the standard econometric methods of the day to observational data on the same programme. The non-experimental estimates were systematically different from the experimental benchmark.<sup class=\"cite\" data-cite=\"2\">2</sup> If the methods failed where the right answer was known, why trust them where it was not?</p><p>Labour economists responded in the late 1980s by hunting for natural experiments. In 2010 Angrist and Jörn-Steffen Pischke named the result a <strong>credibility revolution</strong>. They argued that its main engine was not Leamer's sensitivity analysis<sup class=\"cite\" data-cite=\"3\">3</sup> but a new focus on the quality of <strong>research design</strong>: studies built around real or natural experiments, whose authors put real effort into making the case for a causal interpretation. The approach spread fastest in labour, development, education, environmental, health and public economics, and remained rare in industrial organisation and macroeconomics.<sup class=\"cite\" data-cite=\"4\">4</sup> The rest of this topic follows its main tools, its growing pains and its critics.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q01",
+      "ecau-q02",
+      "ecau-q03",
+      "ecau-q04",
+      "ecau-q05",
+      "ecau-q06",
+      "ecau-q07",
+      "ecau-q08"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "ecau-02",
+    "topicId": "econ-causal-inference",
+    "order": 2,
+    "title": "Nature's Experiments",
+    "description": "Natural experiments, the Mariel boatlift and Card and Krueger's minimum wage study",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "ecau-02-c1",
+        "title": "Nature's Laboratory",
+        "contentHtml": "<p>In 1944 Trygve Haavelmo, later the 1989 Nobel laureate, wrote that economists might be helped by \"the stream of experiments that Nature is steadily turning out of her own enormous laboratory\".<sup class=\"cite\" data-cite=\"1\">1</sup> It took decades for the profession to take him at his word. A <strong>natural experiment</strong> is an event, outside the control of the people being studied, that shifts the variable of interest as if it had been randomly assigned. The shift can come from a policy change, an administrative rule, a quirk of nature such as birth dates or weather, or an unforeseen shock such as a wave of migrants.</p><p>Some of the best are startlingly mundane:</p><ul><li>Parents seem to prefer children of both sexes, so families whose first two children are the same sex are more likely to have a third. Because a baby's sex is random, Angrist and Evans (1998) used it to estimate how a third child affects mothers' work, finding effects slightly larger than ordinary regressions suggest.</li><li>The week in which US households received a tax rebate depended on the second-to-last digit of their social security number. Comparing households paid in different weeks, Johnson, Parker and Souleles found they spent around 30 per cent of the rebate on non-durable goods.<sup class=\"cite\" data-cite=\"2\">2</sup></li><li>Sweden issued savings bonds whose interest was partly paid out as lottery prizes, letting researchers study how a windfall changes hours worked, health and well-being.</li></ul><p>The craft is not mainly statistical. A natural experiment differs from a clinical trial in one crucial way: the researcher does not control who is offered treatment, and people may choose whether to take it up.<sup class=\"cite\" data-cite=\"3\">3</sup> So the new style demanded deep <strong>institutional knowledge</strong>: exactly who was affected, why, and whether anything else changed at the same moment. The credibility of an estimate now rested on the story of where its variation came from.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-02-c2",
+        "title": "The Mariel Boatlift",
+        "contentHtml": "<p>In late April 1980 Fidel Castro announced that Cubans who wished to emigrate could leave from the port of Mariel. Between May and September around 125,000 people left, and half of them settled permanently in Miami.<sup class=\"cite\" data-cite=\"1\">1</sup> Within a few months the city's labour force had grown by about 7 per cent, and the newcomers were mostly less skilled, so the shock to low-wage labour markets was larger still. Simple supply and demand predicts falling wages for the workers they competed with.</p><p>David Card saw a natural experiment. Immigrants normally move to cities that are already booming, which muddles any comparison of high- and low-immigration places. The boatlift, by contrast, was triggered by a decision in Havana, not by Miami's economy. Card compared wages and unemployment in Miami before and after 1980 with the same trends in four comparison cities. Over 1979–85 he found virtually no effect on the wages of non-Cuban workers and no rise in unemployment among less-skilled Black workers.<sup class=\"cite\" data-cite=\"2\">2</sup> Even earlier Cuban immigrants were not substantially affected.</p><p>Card offered two reasons: fewer natives and earlier immigrants moved to Miami after the boatlift, and a city long shaped by immigration had industries ready to absorb low-skilled labour. The second reason is also a warning about <strong>external validity</strong>: Miami's history made it an unusual place to receive a refugee wave.</p><p>Thirty-five years later the boatlift became a battleground. George Borjas argued that a credible test must match immigrants' skills to those of existing workers. At least 60 per cent of the Marielitos were high school dropouts, and he reported that the wages of dropouts in Miami fell by 10 to 30 per cent.<sup class=\"cite\" data-cite=\"3\">3</sup> Giovanni Peri and Vasil Yasenov replied with the synthetic control method of lesson 6. Among non-Cuban high-school dropouts they found no significant wage difference between Miami and its control after 1980, and argued that small sub-samples with large measurement error could manufacture big gaps.<sup class=\"cite\" data-cite=\"4\">4</sup> The Nobel committee later judged that the survey samples seem to have been too small for precise conclusions.<sup class=\"cite\" data-cite=\"5\">5</sup> The design was clean; the data were thin.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-02-c3",
+        "title": "Burgers on the Border",
+        "contentHtml": "<p>In the early 1990s most economists accepted the textbook prediction that a higher minimum wage costs jobs, and much of the evidence showed the expected negative correlation. But causation could run backwards: when unemployment rises and wages sag, pressure to raise the minimum grows. On 1 April 1992 New Jersey raised its minimum wage from $4.25 to $5.05 an hour, while neighbouring Pennsylvania stayed at $4.25.<sup class=\"cite\" data-cite=\"1\">1</sup> David Card and Alan Krueger saw a <strong>difference-in-differences</strong> design waiting to happen.</p><p>They surveyed 410 fast-food restaurants in New Jersey and eastern Pennsylvania before and after the rise, in an industry where pay is low and the minimum binds. The comparison works if the two sides of the border would have moved together without the law, which is plausible for adjacent areas facing the same economic weather. The results ran against the textbook:</p><ul><li>starting wages rose about 11 per cent more in New Jersey than in Pennsylvania, so the law clearly bit;</li><li>employment fell in Pennsylvania and edged up in New Jersey, a relative rise of 13 per cent;<sup class=\"cite\" data-cite=\"2\">2</sup></li><li>within New Jersey, stores forced to raise pay from $4.25 did not lose jobs relative to stores already paying $5.00 or more.</li></ul><p>A storm followed. Neumark and Wascher attacked the quality of the survey data, and in 2000 Card and Krueger redid the analysis with administrative data from the Bureau of Labor Statistics.<sup class=\"cite\" data-cite=\"3\">3</sup> They still found a positive estimate for New Jersey, though no longer statistically significant. The study did not prove that minimum wages never cost jobs, but it shifted the burden of proof and launched decades of follow-up work. Proposed explanations include higher productivity after pay rises, costs passed on as higher prices, and employers with <strong>monopsony</strong> power, for whom a minimum wage can raise employment. The Nobel committee's summary is that the negative employment effects are small, and much smaller than economists believed thirty years ago.<sup class=\"cite\" data-cite=\"4\">4</sup></p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q09",
+      "ecau-q10",
+      "ecau-q11",
+      "ecau-q12",
+      "ecau-q13",
+      "ecau-q14",
+      "ecau-q15",
+      "ecau-q16"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "ecau-03",
+    "topicId": "econ-causal-inference",
+    "order": 3,
+    "title": "Lotteries, Instruments and the LATE",
+    "description": "The draft lottery, compliers and what an instrumental variable really estimates",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "ecau-03-c1",
+        "title": "Numbers Drawn on Television",
+        "contentHtml": "<p>On 1 December 1969, during the Vietnam War, the United States held a televised draft lottery.<sup class=\"cite\" data-cite=\"1\">1</sup> Each birth date was given a number from 1 to 365, and men whose number fell below a ceiling were eligible to be drafted.<sup class=\"cite\" data-cite=\"2\">2</sup> Among men born in 1950–52, about 38 per cent ended up draft-eligible.<sup class=\"cite\" data-cite=\"3\">3</sup> For a young man, the order of the draw could decide the next years of his life. For an economist, it was a randomised experiment that nobody had designed for research.</p><p>Comparing veterans with non-veterans tells you little, because the men who serve differ from those who do not in ways both visible and hidden. Joshua Angrist's 1990 study instead used draft eligibility as an <strong>instrument</strong> for military service. Eligibility was random, so any earnings gap between eligible and ineligible men had to flow through what eligibility changed: the chance of serving. Dividing the earnings gap by the gap in service rates gives an estimate of the effect of serving itself. Using Social Security earnings records, Angrist found that in the early 1980s white veterans earned about 15 per cent less than comparable non-veterans, a loss he likened to losing two years of civilian work experience.<sup class=\"cite\" data-cite=\"4\">4</sup> (Hearst, Newman and Hulley had used the lottery first, in 1986, to study veterans' mortality.)</p><p>There was a catch, and it would change econometrics. Most men who served in Vietnam were volunteers who would have served whatever their number, while some eligible men were exempted on health grounds or because they were still in school.<sup class=\"cite\" data-cite=\"5\">5</sup> The lottery moved only a subset of men into uniform: those who would not have volunteered but went when called. Angrist's estimate is therefore probably not representative of volunteers. An instrument, it turned out, does not speak for everyone. The next concept asks exactly whom it speaks for.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-03-c2",
+        "title": "Compliers, Defiers and the LATE",
+        "contentHtml": "<p>Every binary instrument sorts people into four hidden types. With draft eligibility as the instrument and service as the treatment:</p><ul><li><strong>compliers</strong> serve if eligible and stay home if not;</li><li><strong>always-takers</strong> serve either way, like volunteers;</li><li><strong>never-takers</strong> avoid service either way;</li><li><strong>defiers</strong> do the opposite of what the instrument pushes them towards.</li></ul><p>Imbens and Angrist showed that a valid instrument alone is not enough to identify any meaningful average treatment effect.<sup class=\"cite\" data-cite=\"1\">1</sup> If defiers exist, the effects of people pushed into treatment can be cancelled by those pushed out of it, so the IV estimate could even be negative when every individual effect is positive. Their extra condition, <strong>monotonicity</strong>, introduced in 1994, says the instrument moves everyone in the same direction or not at all; it rules out defiers.<sup class=\"cite\" data-cite=\"2\">2</sup> With it, the familiar IV ratio in the formula identifies the <strong>local average treatment effect</strong> (LATE): the average effect among compliers. Always-takers and never-takers contribute nothing, because the instrument never changes their treatment and so offers no comparison for them.</p><p>This resolved a puzzle. Using quarter of birth as an instrument for schooling, Angrist and Krueger had found a return of about 9 per cent a year, above the 7 per cent correlation, when ability bias predicted the reverse. LATE explains why that need not be a contradiction: the estimate applies only to people who left school when the law allowed them to, whose returns may differ from everyone else's.<sup class=\"cite\" data-cite=\"3\">3</sup> You can never name the individual compliers, but you can estimate their share of the population and describe their observed characteristics.</p><p>Just as important, by recasting IV in potential outcomes, Angrist and Imbens merged an instrument invented in economics with the causal framework developed in statistics. Every assumption became explicit, and so open to challenge.</p>",
+        "mathExpressions": [
+          "\\text{IV} = \\frac{E[Y|Z=1]-E[Y|Z=0]}{E[D|Z=1]-E[D|Z=0]}",
+          "\\text{LATE} = E[Y(1)-Y(0)\\mid \\text{complier}]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-03-c3",
+        "title": "When Instruments Fail",
+        "contentHtml": "<p>A natural experiment can be perfectly random and still a poor instrument. In Angrist and Krueger's census data, men born in the first quarter of the year had on average only about 0.15 fewer years of schooling than men born in the fourth.<sup class=\"cite\" data-cite=\"1\">1</sup> Such a small first stage leaves the estimate exposed. In a 1993 working paper John Bound, David Jaeger and Regina Baker published a cautionary tale. When an instrument explains little of the variation in the treatment, even a slight correlation between instrument and error can produce large inconsistencies, and in finite samples IV estimates are biased in the same direction as the OLS estimates they were meant to correct. Re-examining the quarter-of-birth results, they found signs of both problems. Their prescription became routine: report the first-stage F statistic and partial R-squared so readers can judge the instrument's strength.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The other weak point is the <strong>exclusion restriction</strong>: the instrument may affect the outcome only through the treatment. It can be argued for but never fully tested. If a draftee avoided military service by staying in school or moving abroad, those choices could affect his earnings directly, violating exclusion even though the lottery itself was random.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Researchers have kept finding new instruments, each with its own debates:</p><ul><li><strong>Judge designs.</strong> Kling (2006) studied how prison sentence length affects later work, using the fact that judges are randomly assigned to cases and some are systematically harsher.<sup class=\"cite\" data-cite=\"4\">4</sup> Similar designs use judges hearing disability insurance cases in Norway, or bail judges deciding on detention.</li><li><strong>Shift-share instruments.</strong> Altonji and Card (1991) predicted immigrant inflows from earlier settlement patterns, since newcomers settle near earlier immigrants. Such instruments are now very common in applied microeconomics, and a wave of papers around 2019–2020 asked when they are truly valid.</li></ul>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q17",
+      "ecau-q18",
+      "ecau-q19",
+      "ecau-q20",
+      "ecau-q21",
+      "ecau-q22",
+      "ecau-q23",
+      "ecau-q24"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "ecau-04",
+    "topicId": "econ-causal-inference",
+    "order": 4,
+    "title": "Life at the Cutoff",
+    "description": "Regression discontinuity from merit awards to Maimonides' rule, and how to attack it",
+    "xpReward": 190,
+    "concepts": [
+      {
+        "id": "ecau-04-c1",
+        "title": "Just Above, Just Below",
+        "contentHtml": "<p>Rules with thresholds are everywhere: a test score that wins a scholarship, an income that unlocks a benefit, a vote share that wins a seat. In 1960 Thistlethwaite and Donald Campbell, an early champion of quasi-experiments, saw what such rules offer. Merit awards were given to students who scored above a cutoff on a test, so they compared later outcomes, such as career aspirations and postgraduate enrolment, for students just above and just below the line.<sup class=\"cite\" data-cite=\"1\">1</sup> The idea, the <strong>regression discontinuity</strong> (RD) design, attracted little attention in economics until the late 1990s.</p><p>Why does it work? As David Lee and Thomas Lemieux explain, if people have some influence over their score but cannot control it <em>precisely</em>, then whether someone lands just above or just below the cutoff is close to a coin flip.<sup class=\"cite\" data-cite=\"2\">2</sup> Near the threshold, RD behaves like a local randomised experiment, and the effect is the jump in the expected outcome as the running variable crosses the cutoff. That has a practical payoff. Characteristics fixed before the score was realised, such as family background, should have the same distribution on both sides; if they jump at the cutoff, the design is in trouble.</p><p>Two examples show the range:</p><ul><li><strong>Medicine.</strong> Newborns below 1,500 grams are typically classified as low birth weight and receive extra medical care. Almond, Doyle, Kowalski and Williams (2010) compared babies just either side of the line and found lower one-year mortality just below it, even though lighter babies generally fare worse.<sup class=\"cite\" data-cite=\"3\">3</sup></li><li><strong>Politics.</strong> The candidate who barely wins a close election should resemble the one who barely loses, at least in voters' eyes. Lee (2008) used such races to separate the effect of holding office from the qualities that win office, and concluded that the incumbency advantage is substantial.<sup class=\"cite\" data-cite=\"4\">4</sup></li></ul><p>The comparison is local by construction: it tells you about units near the cutoff, which is both RD's strength and its limit.</p>",
+        "mathExpressions": [
+          "\\tau = \\lim_{x \\downarrow c} E[Y|x] - \\lim_{x \\uparrow c} E[Y|x]"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-04-c2",
+        "title": "Maimonides' Rule",
+        "contentHtml": "<p>In the twelfth century Maimonides proposed a rule for class sizes, and Israeli public schools still partly follow it: no class above 40.<sup class=\"cite\" data-cite=\"1\">1</sup> A grade with 40 pupils can be taught as one class, but a grade with 41 must be split into two.<sup class=\"cite\" data-cite=\"2\">2</sup> Plot average class size against enrolment and you get a sawtooth, climbing steadily and then dropping sharply just past 40, 80 and 120. Joshua Angrist and Victor Lavy realised in 1999 that if the up-and-down pattern in class size was matched by a similar pattern in test scores, the rule would reveal the causal effect of class size.</p><p>This is a <strong>fuzzy</strong> regression discontinuity. In a sharp design, crossing the cutoff switches treatment fully on. Here, crossing 40 changes class size a lot but not mechanically, because schools have other reasons to split or merge classes. The fix borrows from lesson 3: use the class size the rule predicts as an instrument for actual class size, and divide the jump in outcomes by the jump in treatment. With data on Israeli 4th and 5th graders tested in 1991, Angrist and Lavy found that smaller classes significantly raised reading and maths scores for 5th graders, with a smaller reading gain for 4th graders and the largest gains for pupils from disadvantaged backgrounds.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Then came something rarer than a new result: the authors revisited their own design. In \"Maimonides Rule Redux\" (2017), Angrist, Lavy, Jetson Leder-Luis and Adi Shany applied the rule to Israeli data from 2002–2011. The first stage was still strong, but the IV estimates now showed no effect of class size on achievement.<sup class=\"cite\" data-cite=\"4\">4</sup> The new data also revealed <strong>sorting</strong>: too many schools had enrolments that just barely produced an extra class.<sup class=\"cite\" data-cite=\"5\">5</sup> The authors concluded that this manipulation appeared innocuous, explaining neither the original gains nor the new zeros. The episode still carries two lessons: an RD estimate belongs to its time and place, and cutoffs that matter invite people to work around them.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-04-c3",
+        "title": "Guarding the Threshold",
+        "contentHtml": "<p>Because RD rests on one assumption, that nothing but treatment changes abruptly at the cutoff, practitioners have built a routine for attacking it. The first threat is <strong>manipulation</strong>. If students can retake a test until they clear the bar, or officials can nudge a score over the line, those just above differ from those just below and the coin flip is gone. As Lee and Lemieux put it, a discontinuous rule may itself create the incentives that invalidate the design.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>Justin McCrary proposed a simple check in a 2007 paper: if people are piling up on the favourable side, the <strong>density</strong> of the running variable will itself jump at the cutoff. Applied to popular elections to the House of Representatives, where sorting was not expected, his test found none. Applied to roll-call voting in the House, where sorting was expected, it found it.<sup class=\"cite\" data-cite=\"2\">2</sup> Researchers now pair the density test with <strong>covariate balance</strong> checks: characteristics fixed before the score should show no jump at the threshold.</p><p>The second threat is the analyst. To estimate the jump you must model the outcome on each side, and it was once common to fit third-, fourth- or higher-order polynomials of the running variable. Andrew Gelman and Guido Imbens argued in 2014 that such estimates can be misleading and recommended local linear or quadratic fits instead.<sup class=\"cite\" data-cite=\"3\">3</sup> How close to the cutoff to look, the bandwidth, then trades bias against noise.</p><p>The discipline seems to pay. The Nobel committee cited evidence from Brodeur, Cook and Heyes (2020) that p-hacking is more common in difference-in-differences and IV studies than in randomised trials and RD designs, probably because RD now has an established code of conduct that limits the researcher's freedom to choose.<sup class=\"cite\" data-cite=\"4\">4</sup> A design is only as credible as the checks it survives.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q25",
+      "ecau-q26",
+      "ecau-q27",
+      "ecau-q28",
+      "ecau-q29",
+      "ecau-q30",
+      "ecau-q31",
+      "ecau-q32"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "ecau-05",
+    "topicId": "econ-causal-inference",
+    "order": 5,
+    "title": "Difference-in-Differences Rebuilt",
+    "description": "Two-way fixed effects, the 2021 staggered-adoption shake-up and honest parallel trends",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "ecau-05-c1",
+        "title": "The Most Popular Design",
+        "contentHtml": "<p>The <strong>difference-in-differences</strong> (DiD) design compares how outcomes changed for a treated group with how they changed over the same period for an untreated one. The Nobel committee called it probably the most commonly used design for estimating causal effects, and noted that it is usually attributed to John Snow in 1855.<sup class=\"cite\" data-cite=\"1\">1</sup> Its key assumption is <strong>parallel trends</strong>: without treatment, the two groups' average outcomes would have moved in step. They need not start at the same level, only travel the same path. Card and Krueger's New Jersey study is the canonical case with two groups and two periods.</p><p>Real policies rarely arrive in such a neat square. US states expanded Medicaid in different years; state minimum wages rose at different times. The standard tool for this <strong>staggered adoption</strong> was the <strong>two-way fixed effects</strong> (TWFE) regression: regress the outcome on unit fixed effects, period fixed effects and a dummy that switches on once a unit is treated. Unit effects absorb permanent differences between places; period effects absorb shocks common to everyone; the coefficient on the dummy was read as the treatment effect. Linear regressions of this kind became the default way to run DiD with many groups and periods.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The comfort rested on an assumption that was rarely examined: that the treatment effect is the same for every unit and every period. Suppose instead that a policy's impact grows over the years, or that early adopters gain more than late ones. What, exactly, does the TWFE coefficient then average? Multiple authors noticed that it may not be a straightforward weighted average of the unit-level effects at all.<sup class=\"cite\" data-cite=\"3\">3</sup> Between 2018 and 2021 a cluster of econometricians worked out the answer in detail, and their papers changed how applied economists run the most popular design in the field.</p>",
+        "mathExpressions": [
+          "\\begin{gathered} (\\bar Y_{T,\\text{post}}-\\bar Y_{T,\\text{pre}}) \\\\ -\\,(\\bar Y_{C,\\text{post}}-\\bar Y_{C,\\text{pre}}) \\end{gathered}",
+          "Y_{it} = \\alpha_i + \\lambda_t + \\beta D_{it} + \\varepsilon_{it}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-05-c2",
+        "title": "Forbidden Comparisons",
+        "contentHtml": "<p>Andrew Goodman-Bacon showed that, with staggered timing, the TWFE estimator is a weighted average of all the simple two-group, two-period DiD comparisons hidden in the data.<sup class=\"cite\" data-cite=\"1\">1</sup> Some of those comparisons are clean: a newly treated state against states not yet treated. Others are not. In 2016, a state that first expanded Medicaid in 2014 might be used as the control group for a state that first expanded in 2016.<sup class=\"cite\" data-cite=\"2\">2</sup> If the 2014 state's effect is still growing, part of its treatment effect is subtracted as if it were the counterfactual trend, and the estimate is biased. Comparisons between units that are both already treated have been dubbed <strong>forbidden comparisons</strong>.</p><p>Clément de Chaisemartin and Xavier D'Haultfœuille made the danger vivid. TWFE, they showed, estimates a weighted sum of the average effects in each group and period, but some weights can be <strong>negative</strong>, typically for early adopters in late periods. Due to the negative weights, the regression coefficient can be negative even when every group's true effect is positive.<sup class=\"cite\" data-cite=\"3\">3</sup> Liyang Sun and Sarah Abraham found the same disease in event-study regressions with leads and lags: each coefficient can be contaminated by effects from other periods,<sup class=\"cite\" data-cite=\"4\">4</sup> and apparent <strong>pre-trends</strong> can arise purely from differences in effects across cohorts, mimicking a failed parallel-trends test.</p><p>None of this says DiD is wrong. If effects are the same everywhere, the negative weights cancel against the positive ones and TWFE recovers the causal effect. With a single adoption date, the forbidden comparisons never arise. The lesson is subtler: a regression that looks like a design can quietly make comparisons no researcher would choose on purpose, and even when all the weights are positive, the average it produces may not be the one a policymaker cares about. The new work turned a mechanical regression back into an explicit question: which units are compared with which, and with what weights?</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-05-c3",
+        "title": "Clean Comparisons, Honest Trends",
+        "contentHtml": "<p>The repair kit shares one idea: decide the comparisons yourself. Brantly Callaway and Pedro Sant'Anna break the problem into <strong>group-time average treatment effects</strong>: the effect for the cohort first treated in one year, measured in a given year. Each is estimated from a clean comparison with units that are never treated or not yet treated, so no already-treated unit ever plays control.<sup class=\"cite\" data-cite=\"1\">1</sup> The pieces are then aggregated with weights the researcher chooses: by time since adoption, by cohort, or overall. Parallel trends may even hold only after conditioning on observed covariates. Fittingly, they illustrated the method with the effect of minimum wages on teen employment from 2001 to 2007, and released open-source software.<sup class=\"cite\" data-cite=\"2\">2</sup> The estimators of Sun and Abraham, of de Chaisemartin and D'Haultfœuille, and of Kirill Borusyak, Xavier Jaravel and Jann Spiess, who impute each treated unit's untreated outcome, are close cousins.</p><p>The second front is parallel trends itself. The usual defence is an event-study plot showing no differences before treatment. As Jonathan Roth, Sant'Anna and co-authors summarise, researchers have identified at least three problems with leaning on it:<sup class=\"cite\" data-cite=\"3\">3</sup></p><ul><li>pre-trend tests often have <strong>low power</strong>, so passing one does not show that trends are parallel;</li><li>conditioning the analysis on passing the test creates <strong>pre-test bias</strong>, a selection effect of its own;</li><li>when a pre-trend <em>is</em> found, you may still want to learn something rather than abandon the study.</li></ul><p>Ashesh Rambachan and Roth's answer is a sensitivity analysis. Instead of assuming parallel trends exactly, assume for instance that the violation after treatment is no larger than the largest violation seen before it, and report the effects consistent with that.<sup class=\"cite\" data-cite=\"4\">4</sup> The resulting confidence sets tend to be wider than conventional ones, which is the honest price of a weaker assumption. DiD has not become less useful; it has become more explicit about what it assumes.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q33",
+      "ecau-q34",
+      "ecau-q35",
+      "ecau-q36",
+      "ecau-q37",
+      "ecau-q38",
+      "ecau-q39",
+      "ecau-q40"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "ecau-06",
+    "topicId": "econ-causal-inference",
+    "order": 6,
+    "title": "Building a Synthetic Twin",
+    "description": "Synthetic control from the Basque Country and Proposition 99 to synthetic DiD",
+    "xpReward": 210,
+    "concepts": [
+      {
+        "id": "ecau-06-c1",
+        "title": "A Basque Country Without Terrorism",
+        "contentHtml": "<p>Some questions have only one treated unit. What did years of political terrorism cost the Basque Country? No lottery assigns regions to violence, and no single other region is a convincing twin. Traditional comparative case studies chose comparison units through informal statements of affinity, which left readers free to doubt the choice.<sup class=\"cite\" data-cite=\"1\">1</sup> And when the units are a few countries or regions, no single one may be a good match.</p><p>Alberto Abadie and Javier Gardeazabal's answer was to build the twin. From a combination of other regions they constructed a <strong>synthetic control</strong> that resembled many of the Basque Country's economic characteristics before terrorism broke out in the 1970s. The synthetic region's later path stands in for a Basque Country without terrorism. After the outbreak, Basque GDP per head declined about 10 percentage points relative to its synthetic twin, and the gap seemed to widen with spikes in terrorist activity.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>They backed this with a second, independent design. A truce was declared in September 1998.<sup class=\"cite\" data-cite=\"3\">3</sup> If the conflict was hurting the Basque economy, shares of firms with much of their business there should have done relatively well as the truce became credible, and badly when the ceasefire ended. Event-study methods found evidence consistent with exactly that. Two designs with different weaknesses pointing the same way are more persuasive than either alone.</p><p>The logic generalises Card's Mariel study. Instead of choosing between Houston, Atlanta or another city as Miami's comparison, or simply averaging them, choose <strong>weights</strong> so that the weighted average matches the treated unit's pre-treatment outcomes and characteristics as closely as possible. In the original method the weights cannot be negative and must add up to one, so the counterfactual is a genuine blend of real places.<sup class=\"cite\" data-cite=\"4\">4</sup></p>",
+        "mathExpressions": [
+          "\\begin{gathered} \\hat Y_{1t}(0) = \\textstyle\\sum_j w_j Y_{jt} \\\\ w_j \\ge 0, \\ \\textstyle\\sum_j w_j = 1 \\end{gathered}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-06-c2",
+        "title": "Proposition 99 and the Placebo Test",
+        "contentHtml": "<p>The method's landmark paper, by Abadie, Alexis Diamond and Jens Hainmueller in 2010, studied <strong>Proposition 99</strong>, the large-scale tobacco control programme California implemented in 1988. Their synthetic California was a weighted blend of other states, chosen to match California's cigarette sales and their predictors before 1988. States that adopted large tobacco programmes of their own or sharply raised tobacco taxes were discarded from the donor pool, so they could not contaminate the counterfactual.<sup class=\"cite\" data-cite=\"1\">1</sup> After 1988 the real and synthetic Californias diverged. By 2000, they estimated, annual cigarette sales per head were about 26 packs lower than they would have been without Proposition 99.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>How do you judge significance with one treated state? Pretend in turn that each state in the donor pool had been treated, build a synthetic control for it, and record its <strong>placebo effect</strong>. If California's gap is extreme relative to this distribution of placebo gaps, it is unlikely to be a fluke.<sup class=\"cite\" data-cite=\"3\">3</sup> Because some donor states are poorly fitted even before the intervention, the preferred statistic compares the fit after the intervention with the fit before it. This <strong>permutation inference</strong> is informative however few comparison units there are.</p><p>A later study of the 1990 German reunification shows the method's transparency. A simple average of industrialised countries fails to track West Germany's GDP per head even before 1990, and parallel trends visibly fails in the pre-reunification data. The synthetic West Germany tracks it closely, and it is built from just five countries: Austria (0.42), the United States (0.22), Japan (0.16), Switzerland (0.11) and the Netherlands (0.09).<sup class=\"cite\" data-cite=\"4\">4</sup> Such <strong>sparse</strong> weights let experts judge the counterfactual directly, and even reason about bias. If reunification dragged on the growth of West Germany's smaller neighbours, for example by diverting demand and investment to East Germany, the estimate is a lower bound on the size of the negative effect.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-06-c3",
+        "title": "Promise, Pitfalls and Hybrids",
+        "contentHtml": "<p>Susan Athey and Guido Imbens called synthetic control arguably the most important innovation in the evaluation literature of the previous fifteen years.<sup class=\"cite\" data-cite=\"1\">1</sup> Its appeal lies partly in what it refuses to do. A regression-based counterfactual can put negative weights on some units or weights above one, <strong>extrapolating</strong> beyond the data; in the German example, the regression counterfactual uses negative weights for four countries.<sup class=\"cite\" data-cite=\"2\">2</sup> Synthetic control weights are non-negative and sum to one, so the counterfactual interpolates among real units. And because the weights can be computed from pre-intervention data alone, they can be fixed before post-intervention outcomes are even observed, which guards against specification searches.</p><p>Abadie's 2021 guide is just as clear about where it fails:</p><ul><li><strong>Volatility.</strong> If the outcome is noisy, effects similar in size to normal fluctuations are hard to detect, and noise raises the risk of <strong>over-fitting</strong>, matching the pre-treatment path by chance.</li><li><strong>Anticipation.</strong> If people react before a policy formally begins, the estimate is biased; the advice is to backdate the intervention.<sup class=\"cite\" data-cite=\"3\">3</sup></li><li><strong>Spillovers.</strong> If the intervention affects units in the donor pool too, they must be discarded, even though nearby units often share the regional shocks that make them good comparisons.</li><li><strong>No good blend.</strong> There may be no combination of untreated units that credibly approximates the treated one, and then the conventional estimator should not be used.<sup class=\"cite\" data-cite=\"4\">4</sup></li></ul><p>Meanwhile the method has merged with its parent. Dmitry Arkhangelsky, Athey, David Hirshberg, Imbens and Stefan Wager proposed <strong>synthetic difference-in-differences</strong>, an estimator that builds on insights from both methods, and found it has desirable robustness properties and performs well in settings where either conventional estimator is commonly used.<sup class=\"cite\" data-cite=\"5\">5</sup> The family resemblance is the point: DiD, synthetic control and their hybrids are all ways of constructing what the treated would have done, each with different assumptions about how untreated units can stand in.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q41",
+      "ecau-q42",
+      "ecau-q43",
+      "ecau-q44",
+      "ecau-q45",
+      "ecau-q46",
+      "ecau-q47",
+      "ecau-q48"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "ecau-07",
+    "topicId": "econ-causal-inference",
+    "order": 7,
+    "title": "The Nobel and Its Critics",
+    "description": "The 2021 prize, the case against LATE and RCTs, and the limits of external validity",
+    "xpReward": 220,
+    "concepts": [
+      {
+        "id": "ecau-07-c1",
+        "title": "Stockholm, October 2021",
+        "contentHtml": "<p>On 11 October 2021 the Royal Swedish Academy of Sciences divided the economics prize in two. One half went to David Card of the University of California, Berkeley, \"for his empirical contributions to labour economics\".<sup class=\"cite\" data-cite=\"1\">1</sup> The other half was shared by Joshua Angrist of MIT and Guido Imbens of Stanford \"for their methodological contributions to the analysis of causal relationships\".<sup class=\"cite\" data-cite=\"2\">2</sup> Card was born in Guelph, Canada, in 1956; Angrist in Columbus, Ohio, in 1960; Imbens in Eindhoven in the Netherlands in 1963. Card and Angrist both took their doctorates at Princeton.</p><p>The citation reads as a summary of this topic. Card's natural experiments on minimum wages, immigration and schooling challenged conventional wisdom. Besides the studies in lesson 2, he and Krueger compared people living in the same state who had grown up in different states, and found that returns to education rose with the teacher density of the state where they grew up:<sup class=\"cite\" data-cite=\"3\">3</sup> evidence that school resources matter. Angrist and Imbens solved the interpretive problem those studies raised, showing what a natural experiment estimates when effects vary and people choose whether to comply. Together, in the committee's account, the laureates laid the ground for the <strong>design-based approach</strong>, which aims to emulate a randomised experiment using observational data.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>One collaborator was absent. Alan Krueger, who co-authored a number of the early key studies with Card and the quarter-of-birth study with Angrist, died in 2019.<sup class=\"cite\" data-cite=\"5\">5</sup> The committee's chair, Peter Fredriksson, said the laureates had shown that natural experiments are a rich source of knowledge.<sup class=\"cite\" data-cite=\"6\">6</sup> The committee also stressed that the approach had become dominant within economics and spread to the other social sciences, and that Card's work shows the iterative way such evidence accumulates: a surprising result, reanalyses, rival explanations and, eventually, a much deeper understanding of how labour markets operate than economists had thirty years before.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-07-c2",
+        "title": "The Case Against Clean Identification",
+        "contentHtml": "<p>Every revolution has its counter-revolutionaries, and this one had formidable ones. In his 2008 Keynes Lecture at the British Academy, Angus Deaton argued that many IV and randomised studies in development are unlikely to recover quantities useful for policy or understanding.<sup class=\"cite\" data-cite=\"1\">1</sup> His two charges were a misunderstanding of <strong>exogeneity</strong> and careless handling of <strong>heterogeneity</strong>. He went further, arguing that experiments have no special ability to produce more credible knowledge than other methods, and that evaluating projects one at a time is unlikely to deliver scientific progress on development.<sup class=\"cite\" data-cite=\"2\">2</sup> He welcomed a shift towards experiments that test theoretical mechanisms.</p><p>James Heckman, himself a laureate in 2000, pressed from the structural side. With Sergio Urzua he invoked <strong>Marschak's Maxim</strong>: estimators should be selected for their ability to answer well-posed economic problems with minimal assumptions.<sup class=\"cite\" data-cite=\"3\">3</sup> A LATE is clean, but it is the effect for compliers with <em>this</em> instrument. A different instrument defines a different complier population, so two valid studies can disagree without either being wrong, and neither may answer the policy question actually being asked.</p><p>Imbens replied in a paper titled \"Better LATE Than Nothing\". Shoring up internal validity and being clear about which population an estimate describes, he argued, had made empirical economics more credible, not less, and identifying an effect requires different assumptions from generalising it.<sup class=\"cite\" data-cite=\"4\">4</sup> Angrist and Pischke, for their part, said that the charge that design-driven researchers seek good answers instead of good questions worried them little.<sup class=\"cite\" data-cite=\"5\">5</sup></p><p>The debate has since moved towards synthesis. Heckman proposed a third way that makes the implicit economics of LATE explicit, extending the policy questions it can answer. Kline and Walters (2019) showed that IV and selection-correction estimates of LATE are numerically equivalent, a bridge on which structural models can be validated against design-based estimates.<sup class=\"cite\" data-cite=\"6\">6</sup> As the Nobel committee put it, quasi-experimental variation and structural models may usefully complement one another.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "ecau-07-c3",
+        "title": "What Experiments Can't Tell You",
+        "contentHtml": "<p>Even a perfect experiment answers a narrow question. Deaton and Nancy Cartwright listed the limits in 2016. Randomisation does not equalise everything but the treatment across treatment and control groups; it does not automatically deliver a precise average effect;<sup class=\"cite\" data-cite=\"1\">1</sup> and its estimate applies to the trial sample, sometimes a convenience sample, so extending it to other groups needs separate justification. Trials can show <em>what worked</em> there. Learning <em>why things work</em>, which is what lets you predict elsewhere, needs theory and other evidence too.</p><p>Hunt Allcott put numbers on the worry. The Opower energy conservation programmes were evaluated in 111 randomised trials involving 8.6 million households across the United States.<sup class=\"cite\" data-cite=\"2\">2</sup> Predictions based on the first ten trials substantially overstated the effects in the next 101 sites.<sup class=\"cite\" data-cite=\"3\">3</sup> The early sites were not typical: utilities in more environmentalist areas were more likely to adopt the programme, and their customers responded more. Allcott called this <strong>site selection bias</strong>. Many replications, each internally valid, still gave systematically biased predictions out of sample. Donald Campbell had drawn the line between <strong>internal</strong> and <strong>external validity</strong> in 1957; the credibility revolution made the first rigorous and left the second hard.</p><p>Other frontiers remain open:</p><ul><li><strong>Researcher freedom.</strong> Card and Krueger's 1995 meta-analysis found publication bias in the older minimum wage literature, and later work found an excess of p-values just below 0.05.<sup class=\"cite\" data-cite=\"4\">4</sup> Pre-analysis plans and journals' data-posting requirements are partial remedies.</li><li><strong>Rival languages of causality.</strong> Judea Pearl's directed acyclic graphs encode causal assumptions as diagrams. Imbens argues that potential outcomes suit economics better, and that credible applications, not mathematical elegance or rhetoric, are what drive the adoption of new methods.<sup class=\"cite\" data-cite=\"5\">5</sup></li><li><strong>Heterogeneity.</strong> Machine learning methods are now used to estimate how treatment effects vary across people, one answer to the charge that a single average hides too much.</li></ul><p>The revolution's lasting gift may be a habit: state the counterfactual, show where the variation comes from, and say for whom the answer holds.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "ecau-q49",
+      "ecau-q50",
+      "ecau-q51",
+      "ecau-q52",
+      "ecau-q53",
+      "ecau-q54",
+      "ecau-q55",
+      "ecau-q56"
+    ],
+    "puzzleId": null
+  }
+]

@@ -1,0 +1,895 @@
+[
+  {
+    "id": "mdec-q01",
+    "lessonId": "mdec-01",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "In the noisy-channel view of decipherment, what does the language model P(p) do?",
+    "options": [
+      "Scores how likely a candidate plaintext is",
+      "Maps each cipher symbol to a letter",
+      "Measures how long the ciphertext is",
+      "Chooses the single best plaintext"
+    ],
+    "correctAnswer": "Scores how likely a candidate plaintext is",
+    "explanation": "The language model judges candidate plaintexts, for example from letter-pair counts in news text. The channel model links plaintext to ciphertext, and the Viterbi algorithm picks the best plaintext.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q02",
+    "lessonId": "mdec-01",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "Shannon's unicity distance is the minimum ciphertext length needed to guarantee that a legible decipherment is the only one that can be found.",
+    "correctAnswer": "True",
+    "explanation": "That is the definition. Below the unicity distance, several keys can give plausible plaintexts; beyond it, one is expected to survive.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q03",
+    "lessonId": "mdec-01",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "In Knight's experiments, trigrams, cubed channel probabilities and a smoothed language model cut the errors on a 417-letter substitution cipher from 68 to _____.",
+    "correctAnswer": "10",
+    "acceptableAnswers": [
+      "10",
+      "ten",
+      "Ten"
+    ],
+    "explanation": "The plain bigram model left 68 errors. Combining the three fixes brought the count down to 10, an error rate of 2.4%.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q04",
+    "lessonId": "mdec-01",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "A simple English substitution key holds about 88 bits, and English wastes about 3.2 bits per letter. Roughly how much ciphertext is needed before only one solution is expected?",
+    "options": [
+      "About 3 letters",
+      "About 28 letters",
+      "About 280 letters",
+      "About 2,800 letters"
+    ],
+    "correctAnswer": "About 28 letters",
+    "explanation": "Unicity distance is roughly key information divided by redundancy: 88 / 3.2 is about 28 letters.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q05",
+    "lessonId": "mdec-01",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each part of the noisy-channel framework to its job.",
+    "pairs": [
+      {
+        "left": "Language model",
+        "right": "How probable a candidate plaintext is"
+      },
+      {
+        "left": "Channel model",
+        "right": "How plaintext turns into the observed symbols"
+      },
+      {
+        "left": "EM algorithm",
+        "right": "Tunes unknown parameters to make the observed text probable"
+      },
+      {
+        "left": "Viterbi algorithm",
+        "right": "Picks the single best plaintext"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "Two models (language and channel) define the probabilities; EM fits the channel's free parameters, and Viterbi decodes.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q06",
+    "lessonId": "mdec-01",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "A proposed decipherment that lets a sign take whatever value each passage needs is strong evidence, because it can read the whole corpus.",
+    "correctAnswer": "False",
+    "explanation": "Such a system has as many free choices as the data, so it can read anything. A good decipherment is economical, unique and predicts texts it was not fitted to.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q07",
+    "lessonId": "mdec-01",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about a lost script.",
+    "steps": [
+      "Unicity distance compares the information in the key with the redundancy of the language.",
+      "For a lost script, the key includes the sign values, the language and its spelling rules.",
+      "So the key of a lost script carries less information than a 26-letter substitution key.",
+      "That means a lost script needs a longer text than a simple cipher before a reading becomes unique."
+    ],
+    "correctAnswer": "3",
+    "explanation": "Step 3 is wrong. A key that includes sign values, the language, its grammar and its spelling holds far more information than a letter permutation, which is exactly why lost scripts need long texts.",
+    "xpReward": 35
+  },
+  {
+    "id": "mdec-q08",
+    "lessonId": "mdec-01",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why are computational decipherment methods benchmarked on Ugaritic and Linear B?",
+    "options": [
+      "Their answers are already known, so accuracy can be measured",
+      "They are the oldest scripts in the world",
+      "Their languages have no known relatives",
+      "Their texts have no word divisions"
+    ],
+    "correctAnswer": "Their answers are already known, so accuracy can be measured",
+    "explanation": "Methods are scored on how accurately they align lost words with their counterparts in the known language, which requires a decipherment humans have already made.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q09",
+    "lessonId": "mdec-02",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Which of these produces a Zipf-like distribution of word frequencies?",
+    "options": [
+      "Only natural languages",
+      "Only enciphered natural languages",
+      "Even random typing that sometimes hits the space bar",
+      "Only texts longer than a million words"
+    ],
+    "correctAnswer": "Even random typing that sometimes hits the space bar",
+    "explanation": "The typing monkey creates short 'words' far more often than long ones, so their frequencies fall off in a Zipf-like curve. That is why Zipf's law alone is weak evidence for language.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q10",
+    "lessonId": "mdec-02",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "When symbols constrain each other, block entropy grows more slowly than N times the single-symbol entropy.",
+    "correctAnswer": "True",
+    "explanation": "Correlations show up as sub-linear growth, for example H2 < 2H1. The more restrictive the rules, the lower the entropy.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q11",
+    "lessonId": "mdec-02",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "In Piantadosi's demonstration, an English corpus split on the letter _____ instead of on spaces still gave a near-Zipfian distribution of 'words'.",
+    "correctAnswer": "e",
+    "acceptableAnswers": [
+      "e",
+      "E",
+      "\"e\""
+    ],
+    "explanation": "Treating 'e' as the word boundary produces nonsense units that still follow a near-Zipfian curve.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q12",
+    "lessonId": "mdec-02",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What did the Lee, Jonathan and Ziman decision rule conclude about 75 'texts' made from throws of seven dice?",
+    "options": [
+      "That they were a syllabic writing system",
+      "That they were nonlinguistic",
+      "That they were logographic writing",
+      "That the sample was too small to classify"
+    ],
+    "correctAnswer": "That they were a syllabic writing system",
+    "explanation": "Sproat's test showed that the rule called dice throws a syllabic script and Mesopotamian deity symbols a logographic one, so it cannot tell language from other structure.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q13",
+    "lessonId": "mdec-02",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each item to what the lesson says about it.",
+    "pairs": [
+      {
+        "left": "Rigid sequence",
+        "right": "Entropy near zero; each symbol fixes the next"
+      },
+      {
+        "left": "Random, equiprobable sequence",
+        "right": "Maximal entropy; anything can follow anything"
+      },
+      {
+        "left": "Kudurru deity symbols",
+        "right": "Not writing, yet classified as logographic writing"
+      },
+      {
+        "left": "Zipf's law",
+        "right": "Holds for language and for random typing"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "Rigid and random-equiprobable sequences are the two entropy extremes. The kudurrus and Zipf's law both show that language-like statistics can come from non-language.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q14",
+    "lessonId": "mdec-02",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "In Sproat's 2014 study, the measures proposed in earlier papers cleanly separated his nonlinguistic corpora from the fourteen languages.",
+    "correctAnswer": "False",
+    "explanation": "On the earlier measures, all of the nonlinguistic systems behaved the same as the linguistic ones. Only a new repetition measure and a re-tuned measure of Lee's separated them.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q15",
+    "lessonId": "mdec-02",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this reasoning.",
+    "steps": [
+      "The Voynich manuscript's words follow Zipf's law.",
+      "Natural languages follow Zipf's law.",
+      "Random typing with a space bar also produces Zipf-like frequencies.",
+      "So Zipf's law by itself shows that the Voynich text encodes a language.",
+      "A stronger case would need finer structure that random processes do not produce."
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 does not follow. Because random typing also gives Zipf-like curves, the law cannot by itself distinguish language from other processes.",
+    "xpReward": 35
+  },
+  {
+    "id": "mdec-q16",
+    "lessonId": "mdec-02",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Even after finding measures that separated his categories, why did Sproat caution against statistical tests of whether symbols are writing?",
+    "options": [
+      "Statistics depend heavily on corpus size, text length and genre",
+      "His measures classified every system as writing",
+      "He found that the Indus signs were a syllabary",
+      "The measures need a bilingual text to work"
+    ],
+    "correctAnswer": "Statistics depend heavily on corpus size, text length and genre",
+    "explanation": "A shopping list does not look like a novel. Sproat argued that real proof needs a credible decipherment or archaeological evidence of a culture of active literacy.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q17",
+    "lessonId": "mdec-03",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "According to Farmer, Sproat and Witzel, what is the average length of the inscriptions in Mahadevan's concordance?",
+    "options": [
+      "4.6 signs",
+      "17 signs",
+      "46 signs",
+      "1.2 signs"
+    ],
+    "correctAnswer": "4.6 signs",
+    "explanation": "The average over 2,905 objects is 4.6 signs; 17 is the longest inscription on a single surface.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q18",
+    "lessonId": "mdec-03",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "Rao and colleagues' 2009 Science paper reported that the Indus script's conditional entropy is closer to those of natural languages than to various nonlinguistic systems.",
+    "correctAnswer": "True",
+    "explanation": "That was the paper's central claim. The argument was over what the comparison actually shows.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q19",
+    "lessonId": "mdec-03",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each publication to its main claim.",
+    "pairs": [
+      {
+        "left": "Farmer, Sproat and Witzel (2004)",
+        "right": "The signs did not encode speech"
+      },
+      {
+        "left": "Rao et al., Science (2009)",
+        "right": "Conditional entropy closer to languages than to nonlinguistic systems"
+      },
+      {
+        "left": "Rao et al., PNAS (2009)",
+        "right": "A Markov model that scores, generates and restores sign sequences"
+      },
+      {
+        "left": "Mukhopadhyay (2019)",
+        "right": "Mostly logographic signs on formalised data-carriers"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "The 2004 collapse thesis provoked the entropy and Markov papers; Mukhopadhyay later argued for a middle position of logograms on administrative data-carriers.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q20",
+    "lessonId": "mdec-03",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What were Rao's 'Type 1' and 'Type 2' nonlinguistic baselines, according to the supplementary material?",
+    "options": [
+      "Artificially generated random-equiprobable and rigid sequences",
+      "Vinča and kudurru inscriptions",
+      "DNA and protein sequences",
+      "Fortran code and a Beethoven sonata"
+    ],
+    "correctAnswer": "Artificially generated random-equiprobable and rigid sequences",
+    "explanation": "Sproat pointed out that the baselines were generated from a random equiprobable model and a rigid model, not taken from real ancient systems.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q21",
+    "lessonId": "mdec-03",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Sproat showed that 400 signs in a perfect _____ distribution, each chosen independently of the last, fit Rao's Indus entropy curve very well.",
+    "correctAnswer": "Zipf",
+    "acceptableAnswers": [
+      "Zipf",
+      "zipf",
+      "Zipfian",
+      "zipfian"
+    ],
+    "explanation": "A Zipfian corpus with no dependencies between neighbouring signs reproduces the 'language-like' curve, so the curve cannot by itself indicate language.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q22",
+    "lessonId": "mdec-03",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "In their 2010 reply, Rao and colleagues claimed that entropic similarity alone proves the Indus script is language.",
+    "correctAnswer": "False",
+    "explanation": "They said the opposite: similarity increases the evidence when combined with other language-like properties, and barring a full decipherment neither thesis can be proved.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q23",
+    "lessonId": "mdec-03",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument for the Indus script being writing.",
+    "steps": [
+      "Indus inscriptions average about five signs, and the corpus has about 7,000 sign occurrences.",
+      "Rao's team compared the script's conditional entropy with languages and with nonlinguistic baselines.",
+      "The Type 1 and Type 2 baselines were real ancient nonlinguistic systems, so the comparison was a fair test.",
+      "Sproat showed that a Zipfian corpus with independent signs also fits the Indus curve."
+    ],
+    "correctAnswer": "3",
+    "explanation": "Step 3 is the error. The supplementary material showed that the Type 1 and Type 2 baselines were generated artificially, from a random equiprobable model and a rigid one, not taken from real ancient systems.",
+    "xpReward": 35
+  },
+  {
+    "id": "mdec-q24",
+    "lessonId": "mdec-03",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "On which point do Rao's team and Sproat agree?",
+    "options": [
+      "Only a decipherment could prove the signs encode language",
+      "Conditional entropy reliably separates language from non-language",
+      "The Indus signs encode Proto-Dravidian",
+      "The Indus signs are heraldic emblems"
+    ],
+    "correctAnswer": "Only a decipherment could prove the signs encode language",
+    "explanation": "Rao's team wrote that barring a full decipherment neither thesis can be proved; Sproat says only a verifiable decipherment can settle the question in the affirmative.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q25",
+    "lessonId": "mdec-04",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "What date range did radiocarbon dating give for the Voynich manuscript's parchment?",
+    "options": [
+      "1404–1438",
+      "1550–1600",
+      "1912–1915",
+      "1294–1320"
+    ],
+    "correctAnswer": "1404–1438",
+    "explanation": "Four samples from four pages all fell in 1404–1438, a narrow range because atmospheric radiocarbon was changing quickly then.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q26",
+    "lessonId": "mdec-04",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "Radiocarbon dating of the parchment shows exactly when the Voynich text was written.",
+    "correctAnswer": "False",
+    "explanation": "As Hodgins said, radiocarbon dates when the animal lived, not when the book was written.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q27",
+    "lessonId": "mdec-04",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "The palaeographer Lisa Fagin Davis identified _____ scribal hands in the Voynich manuscript.",
+    "correctAnswer": "five",
+    "acceptableAnswers": [
+      "five",
+      "Five",
+      "5"
+    ],
+    "explanation": "Davis found Currier's Scribes 1 and 2 plus three new hands, comparing glyphs such as [k] and word-final [n].",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q28",
+    "lessonId": "mdec-04",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What did Montemurro and Zanette find about how Voynich words are spread through the text?",
+    "options": [
+      "Some words cluster in particular sections, as content words do in real texts",
+      "All words are spread evenly, as in random text",
+      "Words repeat in a fixed cycle",
+      "Only function words appear in the botanical pages"
+    ],
+    "correctAnswer": "Some words cluster in particular sections, as content words do in real texts",
+    "explanation": "Content-bearing words cluster where their topic is discussed. Voynich words show the same kind of clustering, which the authors took as evidence of genuine linguistic structure.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q29",
+    "lessonId": "mdec-04",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each researcher to the Voynich idea the lesson links them with.",
+    "pairs": [
+      {
+        "left": "Gordon Rugg",
+        "right": "A Cardan grille can generate Voynich-like text"
+      },
+      {
+        "left": "Torsten Timm",
+        "right": "Text generated by copying and modifying earlier words"
+      },
+      {
+        "left": "Hauer and Kondrak",
+        "right": "Anagrammed Hebrew, offered with explicit caveats"
+      },
+      {
+        "left": "Gerard Cheshire",
+        "right": "A proto-Romance reading for Maria of Castile"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "Rugg and Timm proposed ways a meaningless text could be produced; Hauer and Kondrak and Cheshire proposed languages, with very different levels of caution.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q30",
+    "lessonId": "mdec-04",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Hauer and Kondrak found that letters inside Voynich words look unusually close to a fixed order, suggesting they may have been rearranged.",
+    "correctAnswer": "True",
+    "explanation": "The manuscript's minimum alphagram distance was less than half that of Hebrew, which they read as a sign of letters reordered within words.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q31",
+    "lessonId": "mdec-04",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which fact sits most awkwardly with Rugg's Cardan grille account?",
+    "options": [
+      "The grille was invented around 1550, but the parchment dates to 1404–1438",
+      "A grille cannot produce words of different lengths",
+      "Rugg used a modern computer",
+      "The manuscript has no illustrations"
+    ],
+    "correctAnswer": "The grille was invented around 1550, but the parchment dates to 1404–1438",
+    "explanation": "The device postdates the parchment by more than a century. It is not decisive, because old parchment can be written on later, but it weakens the account.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q32",
+    "lessonId": "mdec-04",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this reasoning about a claimed Voynich reading.",
+    "steps": [
+      "A decoder outputs a line of Hebrew from the first line of the manuscript.",
+      "A native speaker says it is not quite a coherent sentence.",
+      "After spelling corrections, Google Translate produces passable English.",
+      "So the manuscript has now been deciphered as Hebrew."
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 overreaches. A single short passage, decoded with letters free to move inside words, is what the authors themselves called possibly an artefact of anagramming and language models.",
+    "xpReward": 35
+  },
+  {
+    "id": "mdec-q33",
+    "lessonId": "mdec-05",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "How are Linear B sound values applied to Linear A?",
+    "options": [
+      "Same-shaped signs are assumed to have similar values",
+      "From a Linear A and Greek bilingual",
+      "By radiocarbon dating the tablets",
+      "From a surviving Minoan dictionary"
+    ],
+    "correctAnswer": "Same-shaped signs are assumed to have similar values",
+    "explanation": "This is the homomorphy-homophony principle. It gives an approximate reading, but the Minoan language behind it is unknown.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q34",
+    "lessonId": "mdec-05",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "Most surviving rongorongo objects are still on Rapa Nui.",
+    "correctAnswer": "False",
+    "explanation": "None of the 27 surviving wooden objects is now on the island; most were collected by missionaries and sent abroad.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q35",
+    "lessonId": "mdec-05",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What range did the 2024 study obtain for the wood of rongorongo tablet D (Échancrée)?",
+    "options": [
+      "1493 to 1509 cal AD",
+      "1812 to 1836 cal AD",
+      "1722 to 1843 cal AD",
+      "1862 to 1887 cal AD"
+    ],
+    "correctAnswer": "1493 to 1509 cal AD",
+    "explanation": "Tablet D's wood dates to 1493–1509, centuries before Europeans arrived in the 1720s. The other three tablets gave nineteenth-century dates.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q36",
+    "lessonId": "mdec-05",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Because wood can be older than the carving on it, a radiocarbon date for a tablet's wood is only a terminus post _____.",
+    "correctAnswer": "quem",
+    "acceptableAnswers": [
+      "quem",
+      "Quem"
+    ],
+    "explanation": "A terminus post quem is a date after which something must have happened: the carving cannot be older than the tree, but it could be much younger.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q37",
+    "lessonId": "mdec-05",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each script or resource to its problem.",
+    "pairs": [
+      {
+        "left": "Linear A",
+        "right": "Pronounceable with borrowed values, language unknown"
+      },
+      {
+        "left": "Rongorongo",
+        "right": "Whether it was invented before European contact"
+      },
+      {
+        "left": "Cypro-Minoan",
+        "right": "Disputed sign inventory and three-script division"
+      },
+      {
+        "left": "GORILA",
+        "right": "Five printed volumes of Linear A inscriptions"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "Each small corpus fails in a different way: unknown language, uncertain origin, or an unreliable sign list. GORILA's print format also hindered statistical work.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q38",
+    "lessonId": "mdec-05",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "The unsupervised network grouped Cypro-Minoan signs mainly by writing medium, not by the supposed CM1, CM2 and CM3 scripts.",
+    "correctAnswer": "True",
+    "explanation": "Signs from clay tablets sat at the periphery of the learned space and signs from other objects at the core, supporting a single script with a tablet style.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q39",
+    "lessonId": "mdec-05",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this argument about rongorongo.",
+    "steps": [
+      "Tablet D's wood dates to 1493–1509 cal AD.",
+      "So the carving on tablet D was made in 1493–1509.",
+      "Europeans first reached Rapa Nui in the 1720s.",
+      "If the carving predates contact, rongorongo could be an independent invention of writing."
+    ],
+    "correctAnswer": "2",
+    "explanation": "Step 2 is the error. The wood's date is only a terminus post quem; on an island where timber was scarce and reused, the carving could be much later.",
+    "xpReward": 35
+  },
+  {
+    "id": "mdec-q40",
+    "lessonId": "mdec-05",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Why does the sign list matter so much for statistical work on an undeciphered script?",
+    "options": [
+      "Splitting or merging allographs changes the inventory and every statistic built on it",
+      "It reveals the underlying language",
+      "It removes the need for a large corpus",
+      "It fixes the direction of reading"
+    ],
+    "correctAnswer": "Splitting or merging allographs changes the inventory and every statistic built on it",
+    "explanation": "Treating two drawings of one sign as different signs inflates the inventory and creates spurious rare signs, which distorts entropies, Zipf fits and singleton counts.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q41",
+    "lessonId": "mdec-06",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "About how many distinct symbols did Virolleaud notice in Ugaritic words, suggesting an alphabet?",
+    "options": [
+      "Thirty",
+      "Ninety",
+      "Four hundred",
+      "Seven thousand"
+    ],
+    "correctAnswer": "Thirty",
+    "explanation": "Only thirty distinct symbols suggested an alphabet rather than a syllabary or logographic script.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q42",
+    "lessonId": "mdec-06",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "Snyder, Barzilay and Knight's 2010 model was trained on parallel Ugaritic and Hebrew translations.",
+    "correctAnswer": "False",
+    "explanation": "It used Ugaritic word types and a separate Hebrew lexicon with no parallel text, plus knowledge of Hebrew morphology.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q43",
+    "lessonId": "mdec-06",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each principle of Luo, Cao and Barzilay's model to its meaning.",
+    "pairs": [
+      {
+        "left": "Distributional similarity",
+        "right": "Matching characters appear in similar contexts"
+      },
+      {
+        "left": "Monotonic alignment",
+        "right": "Cognates rarely reorder their characters"
+      },
+      {
+        "left": "Structural sparsity",
+        "right": "Cognate matches are mostly one-to-one"
+      },
+      {
+        "left": "Coverage",
+        "right": "Enough cognates to cover much of the lost vocabulary"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "All four principles come from historical linguistics and stand in for the supervision the model lacks.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q44",
+    "lessonId": "mdec-06",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "What does the minimum-cost flow step decide in Luo, Cao and Barzilay's 2019 model?",
+    "options": [
+      "Which lost-language words are paired with which known-language words",
+      "The sound value of each Linear B sign directly",
+      "The order in which the tablets were written",
+      "Which language family the lost language belongs to"
+    ],
+    "correctAnswer": "Which lost-language words are paired with which known-language words",
+    "explanation": "The word-level matching is a hidden variable. Edges of capacity one enforce one-to-one pairs, and costs come from how far apart the network judges two words to be.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q45",
+    "lessonId": "mdec-06",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "On the harder Linear B test, with the Greek side cut to 455 proper nouns, the 2019 model matched _____ % of cognates.",
+    "correctAnswer": "67.3",
+    "acceptableAnswers": [
+      "67.3",
+      "67.3%",
+      "67"
+    ],
+    "explanation": "It reached 84.7% when every Linear B word had a Greek partner and 67.3% in the more realistic names setting.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q46",
+    "lessonId": "mdec-06",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "The follow-up paper on undersegmented scripts found strong evidence that Basque is related to Iberian.",
+    "correctAnswer": "False",
+    "explanation": "Its language-closeness measure found no strong evidence for Basque, in line with the view favoured by current scholarship.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q47",
+    "lessonId": "mdec-06",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Put these steps in the decipherment of Ugaritic, by people and then by machines, in chronological order.",
+    "steps": [
+      "Ugaritic tablets are found in Syria (1929)",
+      "Bauer decodes the first letters from prefix and suffix patterns",
+      "Dhorme corrects Bauer's reading of the word for axe",
+      "Snyder, Barzilay and Knight's Bayesian model maps 29 of 30 letters (2010)",
+      "Luo, Cao and Barzilay's neural model improves on it by 5.5 points (2019)"
+    ],
+    "correctAnswer": null,
+    "explanation": "The human decipherment of the 1930s came first; the 2010 Bayesian model and the 2019 neural model then re-deciphered Ugaritic against the known answer.",
+    "xpReward": 50
+  },
+  {
+    "id": "mdec-q48",
+    "lessonId": "mdec-06",
+    "type": "MultipleChoice",
+    "difficulty": 3,
+    "prompt": "Which input that the Ugaritic and Linear B benchmarks supply is missing for Linear A?",
+    "options": [
+      "A known closely related language",
+      "Signs with recognisable shapes",
+      "Clay administrative documents",
+      "A writing direction"
+    ],
+    "correctAnswer": "A known closely related language",
+    "explanation": "The methods work by finding cognates in a known relative such as Hebrew or Greek. Minoan has no identified relative, so there are no cognates to find.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q49",
+    "lessonId": "mdec-07",
+    "type": "MultipleChoice",
+    "difficulty": 1,
+    "prompt": "Who solved Zodiac's first cipher, Z408, in 1969?",
+    "options": [
+      "Donald and Bettye Harden",
+      "The FBI Laboratory",
+      "Oranchak, Blake and Van Eycke",
+      "Sujith Ravi and Kevin Knight"
+    ],
+    "correctAnswer": "Donald and Bettye Harden",
+    "explanation": "The Hardens solved it within days of publication. Ravi and Knight cracked it automatically only in 2011, and the trio solved Z340 in 2020.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q50",
+    "lessonId": "mdec-07",
+    "type": "TrueOrFalse",
+    "difficulty": 1,
+    "prompt": "The Z340 solution revealed the identity of the Zodiac killer.",
+    "correctAnswer": "False",
+    "explanation": "The plaintext does not name the killer, and the case remains unsolved.",
+    "xpReward": 20
+  },
+  {
+    "id": "mdec-q51",
+    "lessonId": "mdec-07",
+    "type": "FillIn",
+    "difficulty": 2,
+    "prompt": "Z340's cipher alphabet has _____ distinct symbols.",
+    "correctAnswer": "63",
+    "acceptableAnswers": [
+      "63",
+      "sixty-three",
+      "Sixty-three"
+    ],
+    "explanation": "With 63 symbols the space of substitution keys is huge, which also let solvers manufacture misleading readable fragments.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q52",
+    "lessonId": "mdec-07",
+    "type": "MultipleChoice",
+    "difficulty": 2,
+    "prompt": "Which clue pointed to the right transposition for Z340?",
+    "options": [
+      "Reading with period 19 sharply increased the number of repeated bigrams",
+      "A crib taken from a newspaper headline",
+      "A second copy in plaintext",
+      "Letter frequencies that matched English exactly"
+    ],
+    "correctAnswer": "Reading with period 19 sharply increased the number of repeated bigrams",
+    "explanation": "Repeated symbol pairs are a signature of substituted English in reading order; period-19 and (1, 2)-decimation readings each gave 37.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q53",
+    "lessonId": "mdec-07",
+    "type": "ConceptMatch",
+    "difficulty": 2,
+    "prompt": "Match each person to their part in the Z340 story.",
+    "pairs": [
+      {
+        "left": "Sam Blake",
+        "right": "Enumerated transposition schemes and ran them on Spartan"
+      },
+      {
+        "left": "David Oranchak",
+        "right": "Ran variants through AZdecrypt and analysed the outputs"
+      },
+      {
+        "left": "Jarl Van Eycke",
+        "right": "Developed AZdecrypt and traced a skipped symbol"
+      },
+      {
+        "left": "Joachim von zur Gathen",
+        "right": "Computed a unicity distance of 80 to 152"
+      }
+    ],
+    "correctAnswer": null,
+    "explanation": "The three solvers split the search, the solver software and the error-fixing; von zur Gathen supplied the independent uniqueness argument.",
+    "xpReward": 30
+  },
+  {
+    "id": "mdec-q54",
+    "lessonId": "mdec-07",
+    "type": "TrueOrFalse",
+    "difficulty": 2,
+    "prompt": "Von zur Gathen's unicity distance for the Z340 system is far shorter than the cipher's 340 symbols, which supports a unique solution.",
+    "correctAnswer": "True",
+    "explanation": "At most 152 against 340 symbols means a second equally plausible plaintext is practically ruled out.",
+    "xpReward": 25
+  },
+  {
+    "id": "mdec-q55",
+    "lessonId": "mdec-07",
+    "type": "ProofOrdering",
+    "difficulty": 3,
+    "prompt": "Put these events in order.",
+    "steps": [
+      "Z340 appears in newspapers (November 1969)",
+      "Blake passes his repeated-bigram observations to Oranchak (early 2019)",
+      "A batch of 655,088 transposition variants begins (2 December 2020)",
+      "An AZdecrypt output shows HOPE YOU ARE and TRYING TO CATCH ME",
+      "The team sends its report to the FBI (5 December 2020)",
+      "The FBI confirms the solution (11 December 2020)"
+    ],
+    "correctAnswer": null,
+    "explanation": "Fifty-one years separate publication from solution; the final week ran from the batch launch to the FBI's confirmation.",
+    "xpReward": 50
+  },
+  {
+    "id": "mdec-q56",
+    "lessonId": "mdec-07",
+    "type": "FindTheError",
+    "difficulty": 3,
+    "prompt": "Find the error in this comparison.",
+    "steps": [
+      "Z340 has 340 symbols.",
+      "Its encipherment system has a unicity distance of at most 152.",
+      "So the Z340 plaintext is very probably the only plausible one.",
+      "A Voynich reading of one short anagrammed passage is just as secure, because the whole manuscript is far longer than 152 characters."
+    ],
+    "correctAnswer": "4",
+    "explanation": "Step 4 is wrong. Unicity depends on the system and the text actually read: a flexible key with free anagramming has far more freedom than Z340's, and a short passage gives little evidence however long the book is.",
+    "xpReward": 35
+  }
+]

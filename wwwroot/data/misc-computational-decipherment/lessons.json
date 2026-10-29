@@ -1,0 +1,325 @@
+[
+  {
+    "id": "mdec-01",
+    "topicId": "misc-computational-decipherment",
+    "order": 1,
+    "title": "Decipherment as Inference",
+    "description": "Decipherment as a search for the most probable plaintext, and how much text a unique answer needs",
+    "xpReward": 160,
+    "concepts": [
+      {
+        "id": "mdec-01-c1",
+        "title": "The Noisy Channel: Decipherment as Search",
+        "contentHtml": "<p>Earlier topics told decipherment as a story of inspired individuals. Computational linguistics recasts it as <strong>probabilistic inference</strong>. In a 2006 paper, Kevin Knight and colleagues at the University of Southern California set out the standard framework, the <strong>noisy channel</strong>. You imagine that a plaintext \\(p\\) passed through a channel that turned it into the symbols \\(c\\) you can see, and you look for the plaintext that maximises \\(P(p \\mid c)\\).</p><p>By Bayes' rule this splits into two models. A <strong>language model</strong> \\(P(p)\\) says how likely a candidate plaintext is, for example from counts of letter pairs in news text. A <strong>channel model</strong> \\(P(c \\mid p)\\) says how plaintext becomes ciphertext: which symbol stands for which letter, or which sign for which syllable. Most of the channel's parameters cannot be learned from labelled examples, because nobody has the answer. Instead the <strong>expectation-maximisation (EM)</strong> algorithm tunes them to make the observed text as probable as possible, and the Viterbi algorithm then picks the single best plaintext.</p><p>The machinery is less automatic than it sounds. Knight's team reported that straightforward unsupervised learning techniques most often fail on the first try.<sup class=\"cite\" data-cite=\"1\">1</sup> On a 417-letter English substitution cipher, a letter-bigram language model left 68 errors. Switching to trigrams, cubing the channel probabilities and smoothing the language model brought that down to 10 errors, or 2.4%.<sup class=\"cite\" data-cite=\"2\">2</sup> Each fix encodes a judgement about the problem, not just more computing power.</p><p>The framing exposes what every decipherment needs: a model of the language, a model of how the script or cipher works, and enough text for the evidence to outweigh the freedom in the key. The same paper names the Easter Island rongorongo script and the 20,000-word Voynich manuscript as problems where supervised learning is not an option.<sup class=\"cite\" data-cite=\"3\">3</sup> Most of this topic is about what happens when one of those three ingredients is missing.</p>",
+        "mathExpressions": [
+          "P(p \\mid c) \\propto P(p)\\,P(c \\mid p)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-01-c2",
+        "title": "Unicity Distance: How Much Text Is Enough?",
+        "contentHtml": "<p>Give a determined reader a short enough text and a flexible enough key, and they will find a message in it. Claude Shannon made this precise in his 1949 paper \"Communication Theory of Secrecy Systems\". His <strong>unicity distance</strong> is the minimum length of ciphertext needed to guarantee that a legible decipherment is the only one that can be found.<sup class=\"cite\" data-cite=\"1\">1</sup> In Joachim von zur Gathen's summary, Shannon's idea is that once the information content of the ciphertext exceeds that of the key and the plaintext combined, you can expect a unique solution.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>In symbols, \\(U \\approx H(K)/D\\): the information in the key, in bits, divided by the <strong>redundancy</strong> of the language, the bits per symbol it wastes compared with random text. Try it on a simple substitution cipher of English. There are \\(26!\\) keys, about \\(2^{88}\\), so \\(H(K) \\approx 88\\) bits. Von zur Gathen takes standard English to carry about 1.5 bits per letter,<sup class=\"cite\" data-cite=\"3\">3</sup> against \\(\\log_2 26 \\approx 4.7\\) bits for random letters, so the redundancy is about 3.2 bits per letter and \\(U \\approx 88/3.2 \\approx 28\\) letters. Shorter than that, several keys can give plausible English; much longer, only one survives.</p><p>Now apply the same arithmetic to a lost script. The key is no longer a permutation of 26 letters. It includes every sign value, the identity of the language, its grammar and its spelling conventions, so its information content is enormous and hard even to estimate, and the redundancy of an unknown language is unknown too. Meanwhile the texts are short. The average Indus inscription is about five signs long,<sup class=\"cite\" data-cite=\"4\">4</sup> and the Phaistos Disc carries 241 symbols. This is why decipherers prize long texts, bilinguals and proper names: each one removes freedom from the key. It is also why a short text read with a flexible key will always yield \"solutions\", and why counting them proves nothing.</p>",
+        "mathExpressions": [
+          "U \\approx \\dfrac{H(K)}{D}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-01-c3",
+        "title": "What Counts as a Decipherment?",
+        "contentHtml": "<p>A proposed decipherment is a <strong>model</strong> of a corpus: one fixed set of sign values, one language and one set of spelling rules. Seen that way, the traditional tests become ordinary model checking. The model should be <strong>economical</strong>, with far fewer free choices than the corpus has signs. It should be <strong>unique</strong>: the text must be long enough, relative to those choices, that rival keys produce nonsense. And it should <strong>predict</strong>, reading texts it was never fitted to. A system that gives a sign whatever value the next passage needs has as many parameters as data, and can \"read\" anything.</p><p>Machine learning adds a habit that human decipherers rarely had: scoring methods on problems whose answers are known. Computational decipherment is benchmarked on scripts that are already solved, such as Ugaritic and Linear B, and judged by how accurately it aligns words of the lost language with their counterparts in the known one.<sup class=\"cite\" data-cite=\"1\">1</sup> Without that kind of score, a striking output means little. When Bradley Hauer and Grzegorz Kondrak ran their decoder on the Voynich manuscript in 2016, they wrote that the results could be read either as \"tantalizing clues\" for Hebrew or as \"artifacts of the combinatorial power of anagramming and language models\".<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>There is an even earlier question: is the system writing at all? The computational linguist Richard Sproat points out that whether an unknown system is writing can only be answered definitively in the affirmative if one can develop a verifiable decipherment.<sup class=\"cite\" data-cite=\"3\">3</sup> Statistics can make a case more or less likely; only a reading proves that symbols encode language. That standard runs through this topic, from the Indus seals, whose status as writing is disputed, to the Zodiac 340 cipher, where a unique, checkable plaintext ended a 51-year search.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q01",
+      "mdec-q02",
+      "mdec-q03",
+      "mdec-q04",
+      "mdec-q05",
+      "mdec-q06",
+      "mdec-q07",
+      "mdec-q08"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mdec-02",
+    "topicId": "misc-computational-decipherment",
+    "order": 2,
+    "title": "Zipf, Entropy and Their Limits",
+    "description": "What word-frequency laws and entropy measures reveal about unknown symbol systems, and what they cannot",
+    "xpReward": 170,
+    "concepts": [
+      {
+        "id": "mdec-02-c1",
+        "title": "Zipf's Law and the Typing Monkey",
+        "contentHtml": "<p>Rank the words of a long text by frequency and a regularity appears: the second most common word is about half as frequent as the first, the third about a third as frequent, and so on. This is <strong>Zipf's law</strong>, \\(f(r) \\propto 1/r^{\\alpha}\\) with \\(\\alpha \\approx 1\\). Mandelbrot's refinement adds a shift, \\(f(r) \\propto 1/(r+\\beta)^{\\alpha}\\) with \\(\\beta \\approx 2.7\\). Claims that an unknown script \"behaves like language\" often start here. The word tokens of the Voynich manuscript satisfy Zipf's law, and Indus sign frequencies follow a Zipf-Mandelbrot distribution.</p><p>The trouble is that Zipf's law is cheap. As Miller argued in 1957 and Li in 1992, even a monkey banging on a typewriter produces it.<sup class=\"cite\" data-cite=\"1\">1</sup> The monkey occasionally hits the space bar, creating a word boundary; because short \"words\" are far more probable than long ones, their frequencies fall off in a Zipf-like curve. Steven Piantadosi gives a vivid demonstration in a 2014 review. Take a real English corpus, treat the letter \"e\" rather than the space as the word boundary, and the resulting nonsense \"words\" still show a near-Zipfian distribution.<sup class=\"cite\" data-cite=\"2\">2</sup> Sproat spells out the consequence for decipherment: Zipfian distributions have long been known to hold of many things besides language, so arguments from them are easy to dismiss.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Zipf is weak evidence, not no evidence. Piantadosi stresses that real word frequencies carry structure random typing cannot explain: they depend on meaning, fit differently for different word classes and drift over time. Marcelo Montemurro and Damián Zanette add that the detailed frequency-rank profile of human languages differs significantly from that of random symbol sequences. So a Zipf-like curve is a hurdle that almost every symbol system clears. What matters is the finer structure, and whether anything other than language could have produced it.</p>",
+        "mathExpressions": [
+          "f(r) \\propto \\dfrac{1}{r^{\\alpha}}, \\quad \\alpha \\approx 1"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-02-c2",
+        "title": "Entropy, Conditional Entropy and Block Entropy",
+        "contentHtml": "<p><strong>Entropy</strong> measures how unpredictable the next symbol is, in bits. For single symbols, \\(H_1 = -\\sum_i p_i \\log p_i\\). The <strong>bigram conditional entropy</strong> \\(H(Y \\mid X)\\) asks how uncertain the next symbol is once you know the current one. <strong>Block entropy</strong> \\(H_N\\) extends the idea to sequences of N symbols. When symbols constrain each other, block entropy grows more slowly than N times the single-symbol value, so \\(H_2 < 2H_1\\). The more restrictive the rules, the fewer combinations are allowed and the lower the entropy.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>In his 1951 paper on the prediction and entropy of printed English, Shannon estimated bounds for these quantities experimentally: for predicting a letter from the five before it, between 1.3 and 2.2 bits.<sup class=\"cite\" data-cite=\"2\">2</sup> Numbers like these suggest a picture. A language-like system should sit between two extremes: a <strong>rigid</strong> sequence where each symbol fixes the next, with entropy near zero, and a <strong>random, equiprobable</strong> one where anything can follow anything, with maximal entropy.</p><p>The catch is <strong>sample size</strong>. The Indus corpus has about 7,000 sign occurrences of about 400 sign types,<sup class=\"cite\" data-cite=\"3\">3</sup> so most possible pairs of signs never occur at all. Rao's team smoothed their bigram estimates with a modified Kneser-Ney method, and later used the NSB estimator, a Bayesian technique designed for undersampled data; even so, they report that beyond blocks of six signs the estimates become less reliable.<sup class=\"cite\" data-cite=\"4\">4</sup> Rob Lee, Philip Jonathan and Pauline Ziman, studying symbols on about 300 Pictish standing stones in Scotland, designed measures meant to be robust to very small samples. As Sproat drily notes, with such small data sets, smoothing can only do so much.</p><p>Whatever the method, these numbers describe <em>structure</em>: how strongly symbols predict one another. Whether that structure comes from grammar is a separate question, and it is where the arguments start.</p>",
+        "mathExpressions": [
+          "H(Y \\mid X) = -\\sum_{x,y} p(x,y)\\log p(y \\mid x)"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-02-c3",
+        "title": "Structure Is Not Language",
+        "contentHtml": "<p>Plenty of symbol systems that do not encode language still have rules about what goes with what. Sproat lists European heraldry, mathematical notation, labanotation for dance and Boy Scout merit badges. Entropy and Markov statistics detect such rules. On their own they cannot tell you whether the rules are grammar.</p><p>Sproat tested this directly in 2010. He built a small corpus of the deity symbols carved on Mesopotamian boundary stones, called <strong>kudurrus</strong>: 545 tokens of 59 types from a system known not to be writing,<sup class=\"cite\" data-cite=\"1\">1</sup> although its pictographic symbols are often arranged in lines. Lee, Jonathan and Ziman had used a decision tree on two entropy-based measures to declare Pictish symbols a written language. Fed the kudurrus, the same rule produced a classification of the system as a logographic writing system.<sup class=\"cite\" data-cite=\"2\">2</sup> Worse, 75 \"texts\" produced by successive throws of seven six-sided dice came out as a syllabic script.</p><p>In 2014 he scaled the test up in the journal <em>Language</em>. He built corpora from nonlinguistic systems, ancient and modern, including Mesopotamian deity symbols, totem poles of the Pacific Northwest, Pennsylvania barn stars, weather forecast icons and Asian emoticons, and compared them with fourteen languages written in many kinds of script. On the measures proposed in earlier papers, all of the nonlinguistic systems behaved the same as the linguistic ones.<sup class=\"cite\" data-cite=\"3\">3</sup> Two measures did separate the categories: a new measure of local repetition, and one of Lee's measures with a different cut-off. Under his procedure, both the Pictish and the Indus symbols came out as nonlinguistic.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>Sproat did not treat that as settled either. All such statistics are heavily influenced by corpus size, text length and genre: a shopping list does not look like a novel. A reliable demonstration that symbols are writing, he argued, needs supporting evidence such as a credible decipherment or archaeological evidence of a related culture of active literacy.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q09",
+      "mdec-q10",
+      "mdec-q11",
+      "mdec-q12",
+      "mdec-q13",
+      "mdec-q14",
+      "mdec-q15",
+      "mdec-q16"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mdec-03",
+    "topicId": "misc-computational-decipherment",
+    "order": 3,
+    "title": "The Indus Script: Language or Not?",
+    "description": "The 2004 collapse thesis, Rao's entropy and Markov models, and Sproat's rebuttal",
+    "xpReward": 180,
+    "concepts": [
+      {
+        "id": "mdec-03-c1",
+        "title": "The Collapse Thesis",
+        "contentHtml": "<p>The Indus civilisation flourished from about 2600 to 1900 BCE and left 4,000 to 5,000 objects carrying its signs: seals and seal impressions, copper plates, pots and potsherds, tablets, bangles and tools. Ever since the first seal impression was found at Harappa in 1872–73, the standard assumption has been that the signs were writing, and there have been literally hundreds of claimed decipherments. In 2004 Steve Farmer, Richard Sproat and Michael Witzel published \"The Collapse of the Indus-Script Thesis: The Myth of a Literate Harappan Civilization\", arguing that the signs did not encode speech at all. Their case leaned heavily on counting:</p><ul><li><strong>Brevity.</strong> The longest inscription on one surface has 17 signs, fewer than 1 in 100 carry as many as 10, and the average length across the 2,905 objects in Iravatham Mahadevan's concordance is 4.6 signs.<sup class=\"cite\" data-cite=\"1\">1</sup></li><li><strong>Too little repetition.</strong> High-frequency signs are common across the corpus but rarely repeat inside one inscription: of the 20 most frequent signs, 10 have zero or near-zero repetition rates in all 2,905 inscriptions. Phonetic scripts spell words from a limited stock of sounds, so the authors expected random-looking repetition and did not find it.</li><li><strong>Too many rare signs.</strong> 27% of the 417 signs in Mahadevan's concordance occur only once,<sup class=\"cite\" data-cite=\"2\">2</sup> and the share of such singletons seemed to rise, not fall, as new inscriptions were found.</li><li><strong>No long texts anywhere.</strong> Only 21 or 22 inscriptions are known in Linear Elamite,<sup class=\"cite\" data-cite=\"3\">3</sup> used by the Harappans' literate neighbours, yet most of them are longer than the longest of the 4,000 to 5,000 Indus inscriptions.</li></ul><p>Instead, they proposed, the signs were religious or political symbols that served social functions without encoding speech, and they described their arguments as amounting to proof. Notice the form of the case, though: every argument says the Indus corpus looks unlike known scripts on some statistic. That kind of argument can be turned round, and in 2009 it was.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-03-c2",
+        "title": "Rao's Entropy Curve and Markov Model",
+        "contentHtml": "<p>In April 2009 Rajesh Rao of the University of Washington and colleagues in India, including Mahadevan, replied in <em>Science</em>. Their one-page paper, \"Entropic evidence for linguistic structure in the Indus script\", reported that the script's bigram conditional entropy is closer to those of natural languages than to various kinds of nonlinguistic system.<sup class=\"cite\" data-cite=\"1\">1</sup> The comparison set included English (as words and as letters), Sumerian cuneiform, Old Tamil and two nonlinguistic baselines: \"Type 1\" systems with little sequential order and \"Type 2\" systems with rigid order.</p><p>A second paper, in <em>PNAS</em> the same year, trained a first-order <strong>Markov chain</strong> on about 3,800 inscriptions. The model could generate new sign sequences, fill in damaged or unreadable signs, and score how \"Indus-like\" a string is. Seals found in Mesopotamia and elsewhere in West Asia scored lower than texts from the Indus region, which the authors read as evidence that the script expressed different content abroad.<sup class=\"cite\" data-cite=\"2\">2</sup> A 2010 study by Nisha Yadav and colleagues added that sign frequencies follow a Zipf-Mandelbrot distribution, that the signs that begin texts differ from those that end them, and that an n-gram model could restore doubtfully read texts with about 75% accuracy.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Rao's group framed all this as <strong>inductive</strong> evidence. They estimate the posterior probability that the script encodes language given a list of properties: the texts are written in lines, have a direction (usually right to left, shown by signs overwriting one another on pottery), use modifying marks and ligatures, follow a Zipf-Mandelbrot law and have entropies like languages. No single property is decisive, they argued, but together they tilt the balance. Their 2010 reply added <strong>block entropies</strong> up to six signs, compared not only with languages but with DNA, protein sequences, a Beethoven sonata and Fortran code. DNA, proteins and the music came out higher than the Indus signs and natural languages, Fortran lower.<sup class=\"cite\" data-cite=\"4\">4</sup></p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-03-c3",
+        "title": "Sproat's Rebuttal and the State of Play",
+        "contentHtml": "<p>Sproat's response, a 2010 \"Last Words\" column in <em>Computational Linguistics</em>, attacked the baselines. The paper's supplementary material showed that the Type 1 and Type 2 curves did not come from real ancient systems: they were generated artificially, one from a random and equiprobable model, the other from a rigid one.<sup class=\"cite\" data-cite=\"1\">1</sup> Real symbol systems are neither. A rigid system conveys no information, and symbols stand for things that are not equally common; random is not the same as random and equiprobable. Sproat showed that an artificial corpus of 400 signs in a perfect Zipf distribution, each chosen independently of the last, fits Rao's Indus curve very well. His summary: neither paper had shown that one can tell structure that comes from language apart from structure that comes from other kinds of constraint.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Rao and colleagues replied that Sproat had knocked down a straw man. They had never claimed that entropy alone proves language; Sproat's account left out their comparisons with DNA and proteins; and his Zipf counterexamples do not reproduce the way block entropies scale beyond pairs of signs. They also cited archaeologists and epigraphers who reject the collapse thesis, including Asko Parpola, who wrote that its arguments \"can be easily controverted\".</p><p>Where does that leave you? On one point the two sides agree. Rao's team writes that barring a full decipherment, neither the linguistic nor the nonlinguistic thesis can be proved,<sup class=\"cite\" data-cite=\"3\">3</sup> and Sproat says only a verifiable decipherment can settle it in the affirmative. Meanwhile others have taken a middle position. Bahata Ansumali Mukhopadhyay argued in 2019 that Indus seals and tablets were formalised data-carriers,<sup class=\"cite\" data-cite=\"4\">4</sup> like Mesopotamian proto-cuneiform administrative tablets or modern fiscal stamps, whose signs were mostly logograms for words and grammatical functions rather than phonetic spellings. The question is open, and statistics alone will not close it.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q17",
+      "mdec-q18",
+      "mdec-q19",
+      "mdec-q20",
+      "mdec-q21",
+      "mdec-q22",
+      "mdec-q23",
+      "mdec-q24"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mdec-04",
+    "topicId": "misc-computational-decipherment",
+    "order": 4,
+    "title": "The Voynich Manuscript by the Numbers",
+    "description": "Radiocarbon, scribes, word statistics and why every claimed reading so far has failed",
+    "xpReward": 190,
+    "concepts": [
+      {
+        "id": "mdec-04-c1",
+        "title": "Parchment, Provenance and Five Scribes",
+        "contentHtml": "<p>Beinecke MS 408 at Yale, the Voynich manuscript, has about 240 pages of an unknown script, with drawings of plants, astronomical and astrological diagrams, bathing figures, cosmological medallions and pharmaceutical herbs and roots. Its later history is unusually well documented. The first confirmed owner is the Holy Roman Emperor Rudolf II, who paid 600 gold ducats for it.<sup class=\"cite\" data-cite=\"1\">1</sup> Johannes Marcus Marci sent it to the Jesuit scholar Athanasius Kircher in 1666 with a letter still kept with the book, and in 1912 the bookseller Wilfrid Voynich bought it from the Jesuit College at Frascati near Rome.</p><p>In results announced in 2011, Greg Hodgins's team at the University of Arizona radiocarbon-dated four small samples cut from four pages in different sections. The samples fell between 1404 and 1438, an unusually narrow range, because atmospheric radiocarbon was changing quickly in the early fifteenth century.<sup class=\"cite\" data-cite=\"2\">2</sup> Hodgins added the vital caveat: radiocarbon dates when the animal lived, not when the book was written.<sup class=\"cite\" data-cite=\"3\">3</sup> The Beinecke's own description is correspondingly cautious, placing the manuscript at the end of the fifteenth century or in the sixteenth while noting that scientific testing suggests material consistency with fifteenth-century manuscripts.</p><p>Who wrote it? In the 1970s Captain Prescott Currier noticed two \"languages\", A and B, with different statistics in the botanical section, and matched them to two hands, Scribe 1 and Scribe 2. Lisa Fagin Davis, a palaeographer, has since applied the methods of Latin palaeography, comparing hundreds of examples of individual glyphs such as the gallows glyph EVA [k] and the word-final [n]. She identified five hands: Currier's two and three new ones.<sup class=\"cite\" data-cite=\"4\">4</sup> She is candid that this is expert judgement, a subjective analysis rather than a measurement. It still matters for statistics: a \"language\" that changes with the scribe may be a writing habit, a dialect or a change of cipher setting.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-04-c2",
+        "title": "Voynichese Under the Statistician's Lens",
+        "contentHtml": "<p>Treat the space-separated groups of Voynich glyphs as words and the text looks language-like in several ways. Its word frequencies follow Zipf's law. In 2013 Marcelo Montemurro and Damián Zanette went further, using information theory to measure how unevenly each word is spread through the text. In real texts, content-bearing words cluster where their topic is discussed, while uninformative words are spread almost evenly. Voynich words behave the same way: some are used in only one or two of the thematic sections, and the most informative words form networks that tend to occur together. They concluded that the text has a complex organisation compatible with real language, which severely limits the scope of the hoax hypothesis.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>Other measurements point the other way. Gordon Rugg of Keele University notes that words in the first half of a line tend to be longer than words in the second half,<sup class=\"cite\" data-cite=\"2\">2</sup> and that small regularities of the kind you quickly find in a real language, such as the English choice between \"a\" and \"an\", do not appear. Hauer and Kondrak measured how close the letters inside words are to a fixed order. For the manuscript this \"alphagram distance\" was exceptionally low: the manuscript's minimum was less than half that of Hebrew.<sup class=\"cite\" data-cite=\"3\">3</sup> They suggested that, if the text encodes a natural language, the letters within words may have been rearranged during encryption.</p><p>These results are not contradictory. Long-range clustering shows that the text is organised by topic, as language is. Line-position effects and rigid word-internal ordering show that the writing process imposed constraints that ordinary spelling does not. A satisfying account, whether language, cipher or meaningless artefact, has to explain all of them at once, and none yet does.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-04-c3",
+        "title": "Hoaxes, Algorithms and Failed Readings",
+        "contentHtml": "<p>If the text is meaningless, how could anyone produce something so structured by hand? In 2003 Gordon Rugg showed that text resembling Voynichese can be generated with a Cardan grille, an encryption device invented around 1550.<sup class=\"cite\" data-cite=\"1\">1</sup> That date sits awkwardly with parchment dated to 1404–1438, although old parchment can be written on later. Torsten Timm proposed a simpler mechanism in 2014, later developed with Andreas Schinner in the journal <em>Cryptologia</em>: the text was generated by copying and modifying already written text,<sup class=\"cite\" data-cite=\"2\">2</sup> a process a scribe could carry out while writing. Montemurro and Zanette's reply to all such models is that they must reproduce the long-range statistics too, not just plausible word shapes.</p><p>Claimed decipherments fail in a recognisable pattern. In 2019 Gerard Cheshire of the University of Bristol announced in the journal <em>Romance Studies</em> that the manuscript was written in a \"proto-Romance\" language and had been compiled by a Dominican nun as a reference book for Maria of Castile, Queen of Aragon.<sup class=\"cite\" data-cite=\"3\">3</sup> Other experts were not persuaded; Rugg pointed out that anyone claiming a real language must explain the text's statistical oddities rather than ignore them.</p><p>Hauer and Kondrak's 2016 Hebrew result is more instructive because its authors were cautious. Their decoder turned the first line into Hebrew that a native speaker called not quite a coherent sentence; after a couple of spelling corrections, Google Translate rendered it as \"She made recommendations to the priest, man of the house and me and people.\" With letters free to be rearranged inside words and a language model to steer the choices, plausible fragments are cheap. As Hauer and Kondrak note, past Voynich decipherment claims have typically been limited to short passages without ever producing a full solution.<sup class=\"cite\" data-cite=\"4\">4</sup></p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q25",
+      "mdec-q26",
+      "mdec-q27",
+      "mdec-q28",
+      "mdec-q29",
+      "mdec-q30",
+      "mdec-q31",
+      "mdec-q32"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mdec-05",
+    "topicId": "misc-computational-decipherment",
+    "order": 5,
+    "title": "Small Corpora: Linear A, Rongorongo and Sign Lists",
+    "description": "Reading Linear A with borrowed values, dating rongorongo wood, and letting neural networks sort signs",
+    "xpReward": 200,
+    "concepts": [
+      {
+        "id": "mdec-05-c1",
+        "title": "Linear A: Sounds Without a Language",
+        "contentHtml": "<p>Linear A was written from about 1800 to 1450 BCE, mainly on Crete, and fewer than two thousand documents survive.<sup class=\"cite\" data-cite=\"1\">1</sup> Most are clay administrative records of goods coming in and going out, and their texts are laconic, full of abbreviations whose meaning depends on context. Linear A served as the template for Linear B, which Mycenaean Greeks used from about 1400 to 1190 BCE and which was deciphered as an early form of Greek in 1952. Many signs in the two scripts have the same shape. By the <strong>homomorphy-homophony principle</strong>, scholars assume that same-shaped signs had similar sound values and apply the Linear B values to Linear A, giving an approximate reading.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>So Linear A reverses the usual problem: you can pronounce much of it, roughly, but the language, called Minoan, is unknown. It does not seem to be related to Greek or any other known Indo-European language, nor to the Semitic languages of nearby Egypt and the Levant. A few sign-sequences, such as <em>ku-ro</em>, are understood from context, but as Ester Salgarella and Simon Castellan note, knowing the meaning of <em>ku-ro</em> is more of an exception than the rule.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Computation enters in two ways. The first is infrastructure. The corpus long existed only in the five printed volumes of GORILA, and a printed edition does not allow statistical comparison of signs and sign-sequences across the whole corpus. Salgarella and Castellan's SigLA database puts the documents online with sign-by-sign search. The second is search. Francesco Perono Cacciafoco's group has run a cryptanalytic \"brute force attack\", systematically testing Linear A syllabograms against phonetic values from deciphered languages of the Aegean, the Mediterranean and surrounding areas.<sup class=\"cite\" data-cite=\"4\">4</sup> With a small corpus and many candidate languages, the unicity problem from the first lesson bites hard: some matches are expected by chance alone. Linear A remains undeciphered.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-05-c2",
+        "title": "Rongorongo: Dating the Wood, Not the Writing",
+        "contentHtml": "<p>Rongorongo, the script of Rapa Nui (Easter Island), was first noticed by outsiders in 1864<sup class=\"cite\" data-cite=\"1\">1</sup> and survives on 27 wooden objects, none of them still on the island. The texts are relatively long, carved in pictorial glyphs of human postures and body parts, animals, plants, tools and heavenly bodies, often joined in complex ligatures. Production stopped in the late 1860s after Peruvian slave raids and epidemics devastated the population, and the script has never been read.</p><p>The big open question is whether the islanders invented writing on their own or after seeing Europeans write; Europeans first reached the island in the 1720s. If the script came first, it would be one of the few independent inventions of writing, alongside those of Mesopotamia, Egypt, China and Mesoamerica. In 2024 Silvia Ferrara and colleagues radiocarbon-dated four tablets kept in Rome, collected by missionaries in 1869 for Bishop Tepano Jaussen of Tahiti. Three gave nineteenth-century dates. The fourth, tablet D (Échancrée), gave 1493 to 1509 cal AD, centuries before European contact.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The careful reading matters more than the headline. Tablet D is made of <em>Podocarpus</em> wood, which never grew on the island; it may have arrived as driftwood or from a ship. Wood can be old when it is carved, especially on an island where timber was scarce and reused, so the date of the tree serves only as a <strong>terminus post quem</strong>:<sup class=\"cite\" data-cite=\"3\">3</sup> the carving cannot be older than the wood, but it could be much younger. The authors call tablet D an outlier that needs further research. The result keeps independent invention alive; it does not prove it. For decipherment, the lesson is general: a number from a laboratory answers a narrower question than the one you care about, and the gap has to be argued, not assumed.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-05-c3",
+        "title": "Counting Signs by Machine: Cypro-Minoan",
+        "contentHtml": "<p>Before you can compute an entropy or fit a Markov model, you need a <strong>sign list</strong>: which marks are distinct signs (graphemes) and which are just different ways of drawing the same sign (allographs). For an undeciphered script this is itself an inference, and errors propagate. Split one sign into two and you inflate the inventory, create spurious rare signs and shift every statistic built on top.</p><p>Cypro-Minoan, used mainly on Cyprus in the later second millennium BCE, with a dozen inscriptions from Ugarit in Syria and three from Tiryns in Greece, is a test case. In Jean-Pierre Olivier's reference corpus the inscriptions fall into three scripts, CM1, CM2 and CM3, with 96 syllabic signs in all, and the division has been taken to reflect different languages. CM2 rests on just four clay tablet fragments from Enkomi.</p><p>In 2022 Michele Corazza, Fabio Tamburini, Miguel Valério and Silvia Ferrara trained an <strong>unsupervised</strong> convolutional neural network on images of 2,899 signs from 213 inscriptions. Unsupervised means it used no prior knowledge of the script: it learned from the shapes of the signs and their contexts in sequences. The learned space split mainly by writing medium, with signs from clay tablets at the periphery and signs from other objects at the core. Nothing in the model matched the supposed three-script division, and it supported several proposed pairs of allographs. The authors concluded that CM2 is probably a tablet style rather than a separate script, and that the evidence favours a single Cypro-Minoan script.</p><p>Note what the network did not do. The authors state that they could infer nothing new about the language or languages recorded. This is the realistic shape of machine learning on unread scripts: not a decipherment, but better-founded inputs (sign lists, corpus structure, scribal styles) for whoever attempts one.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q33",
+      "mdec-q34",
+      "mdec-q35",
+      "mdec-q36",
+      "mdec-q37",
+      "mdec-q38",
+      "mdec-q39",
+      "mdec-q40"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mdec-06",
+    "topicId": "misc-computational-decipherment",
+    "order": 6,
+    "title": "Neural Decipherment: Ugaritic and Linear B",
+    "description": "How Bayesian and neural models re-deciphered Ugaritic and Linear B, and what their benchmarks prove",
+    "xpReward": 210,
+    "concepts": [
+      {
+        "id": "mdec-06-c1",
+        "title": "Ugaritic: From Bauer's Guess to a Bayesian Model",
+        "contentHtml": "<p>Ugaritic tablets were first found in Syria in 1929, in a cuneiform script of an unknown type. Charles Virolleaud saw that the inscribed words used only thirty distinct symbols, so the script was probably alphabetic,<sup class=\"cite\" data-cite=\"1\">1</sup> and the find-spot suggested a West Semitic language similar to Hebrew and Aramaic. Hans Bauer, a German cryptographer and Semitic scholar, decoded the first two letters by matching them to Hebrew letters with similar patterns in prefixes and suffixes, then hunted for cognates. A lucky guess that a word on an axe meant \"axe\" opened the problem up (Bauer chose the wrong sound sequence and Edouard Dhorme corrected it), and further tablets let Bauer, Dhorme and Virolleaud finish the work.</p><p>In 2010 Benjamin Snyder, Regina Barzilay and Kevin Knight turned that human strategy into a <strong>Bayesian generative model</strong>. Its inputs were 7,386 unanalysed Ugaritic word types and a separate, morphologically analysed Hebrew lexicon, with no parallel text. The model jointly guessed letter correspondences, how each Ugaritic word splits into prefix, stem and suffix, and which Hebrew word it is cognate with. A \"spike and slab\" prior pushed the letter mapping to be sparse, so that each Ugaritic letter maps to very few Hebrew ones. The results: 29 of 30 letters mapped correctly and 60.4% of cognates translated correctly,<sup class=\"cite\" data-cite=\"2\">2</sup> against 22 letters and 29% for a baseline that treated the problem as a simple substitution cipher. Without the sparsity priors, performance fell significantly.</p><p>Look at what the model was given: the right related language, its morphology, its lexicon, and prior knowledge such as the fact that Ugaritic has eight more letters than Hebrew. It encoded, as probabilities, much of what Bauer knew in his head. That is its strength, and also why a later team judged that such an approach is highly customised for one language pair and does not generalise.<sup class=\"cite\" data-cite=\"3\">3</sup></p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-06-c2",
+        "title": "Inside a Neural Decipherer",
+        "contentHtml": "<p>In 2019 Jiaming Luo and Regina Barzilay of MIT, with Yuan Cao of Google Brain, built a model meant to work across languages. It rests on four principles taken from historical linguistics:</p><ul><li><strong>Distributional similarity:</strong> matching characters appear in similar places in corresponding cognates, so their contexts should match.</li><li><strong>Monotonic alignment:</strong> cognates rarely reorder their characters, so the alignment should preserve order.</li><li><strong>Structural sparsity:</strong> cognate matches are mostly one-to-one, since both words are derived from the same proto-origin.<sup class=\"cite\" data-cite=\"1\">1</sup></li><li><strong>Coverage:</strong> related languages should share enough cognates that the mapping covers a significant part of the lost vocabulary.</li></ul><p>A character-level <strong>sequence-to-sequence</strong> neural network, nudged towards monotonic rewriting, models how a lost word maps onto its known cognate, using character embeddings shared across both languages. The word-level matching is a hidden variable chosen by solving a <strong>minimum-cost flow</strong> problem. Words of the two languages are nodes, each edge has capacity one, which enforces one-to-one matching, and an edge costs more the further apart the network judges the two words to be. Training alternates the two parts in an EM-style loop, and the network is re-initialised after each round, because a poor early alignment can trap it in a bad local minimum.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>On Ugaritic the model improved on Snyder's 2010 result by 5.5 percentage points, without being given Hebrew morphology. On Linear B, a syllabic script with 70 symbols in their corpus, it made the first automatic attempt. With 919 Linear B words paired with Greek, it matched 84.7% correctly.<sup class=\"cite\" data-cite=\"3\">3</sup> In a harder setting meant to simulate how many Linear B signs were historically deciphered, by comparison with Greek place names, the Greek side was cut to 455 proper nouns and about half the Linear B words had no partner. It still matched 67.3%.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-06-c3",
+        "title": "What the Benchmarks Prove",
+        "contentHtml": "<p>Undeciphered scripts usually break two assumptions the 2019 model relied on: the text is not neatly divided into words, and nobody knows the closest related language. A follow-up paper by Luo, Frederik Hartmann, Enrico Santus, Barzilay and Cao tackled both. It modelled word segmentation and cognate alignment together, and gave the model a sense of phonetics by learning character embeddings based on the International Phonetic Alphabet, so that similar sounds get similar representations. It also proposed a measure of how close two languages are. That measure correctly picked out the related languages for Gothic and Ugaritic.<sup class=\"cite\" data-cite=\"1\">1</sup> For Iberian, an undeciphered language, it found no strong evidence for Basque as a relative, in line with the position favoured by current scholarship.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>These are real advances, and the scepticism concerns interpretation, not quality. Notice what the successes had in hand:</p><ul><li><strong>The answer key.</strong> Accuracy is measured against known cognates, which exist only because humans deciphered Ugaritic and Linear B first. The Linear B word pairs came from a compiled list of the Linear B lexicon.</li><li><strong>A known relative.</strong> Hebrew for Ugaritic, Greek for Linear B. These methods find cognates; a language with no known relatives offers none to find.</li><li><strong>A clean corpus.</strong> In the 2019 benchmarks someone had already decided what the signs and the words are.</li></ul><p>The authors are frank about the wider record: in 2019 Luo and colleagues wrote that techniques developed for man-made ciphers had not been shown successful in deciphering archaeological data.<sup class=\"cite\" data-cite=\"3\">3</sup> A fair summary is that neural models can now redo known decipherments and test hypotheses about relatedness, which is valuable. They have not yet read a script whose language was unknown, and Linear A, rongorongo and the Indus signs lack exactly the inputs these benchmarks supply.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q41",
+      "mdec-q42",
+      "mdec-q43",
+      "mdec-q44",
+      "mdec-q45",
+      "mdec-q46",
+      "mdec-q47",
+      "mdec-q48"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "mdec-07",
+    "topicId": "misc-computational-decipherment",
+    "order": 7,
+    "title": "Zodiac 340: Anatomy of a Real Solution",
+    "description": "How a 51-year-old cipher fell to transposition search, and why the answer is trusted",
+    "xpReward": 220,
+    "concepts": [
+      {
+        "id": "mdec-07-c1",
+        "title": "Fifty-One Years of Z340",
+        "contentHtml": "<p>In 1968 and 1969 a serial killer who called himself Zodiac murdered at least five people in northern California and mailed taunting letters and ciphers to newspapers. His first cipher, Z408, was published on 1 August 1969 and solved within days by a puzzle-loving couple, the teacher Donald Harden and his wife Bettye.<sup class=\"cite\" data-cite=\"1\">1</sup> It was a <strong>homophonic substitution</strong>: each plaintext letter could be written with several different symbols, which flattens the letter frequencies a codebreaker relies on. In 2011 Sujith Ravi and Kevin Knight showed that a Bayesian sampler combining letter n-gram models with word dictionaries could crack Z408 fully automatically, which had never been done before.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The second cipher, <strong>Z340</strong>, appeared in newspapers on 12 November 1969, and the FBI Laboratory received it the next day. It resisted everyone. Its alphabet has 63 distinct symbols, which makes the space of possible substitution keys much larger.<sup class=\"cite\" data-cite=\"3\">3</sup> Hill-climbing solvers such as AZdecrypt and ZKDecrypto, which perturb a random key and keep changes that make the output more English-like, kept finding readable fragments that led nowhere. Over 51 years the FBI's cryptanalysts reviewed numerous proposed solutions from the public, none of which had merit.</p><p>The reason was that substitution was only half the system. Homophonic solvers assume the symbols are in reading order. If they have also been shuffled by a <strong>transposition</strong>, the language model sees scrambled English and scores every key badly. A large alphabet makes things worse in a subtle way: with so many symbols to assign, a solver has enough freedom to manufacture a few real words from noise. The task was a search over two keys at once, with no easy way to tell a near miss from nonsense.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-07-c2",
+        "title": "The Break",
+        "contentHtml": "<p>The decisive clue came from repeated pairs of symbols. Reading the cipher with a period of 19 substantially increased the number of repeated bigrams, a hint that this was closer to the order in which Zodiac had written the plaintext. A related route, the (1, 2)-decimation of the 20 by 17 grid, steps one row down and two columns across, wrapping round the edges. The period-19 readings and the (1, 2)-decimation each possess 37 repeating bigrams.<sup class=\"cite\" data-cite=\"1\">1</sup> Sam Blake, an Australian mathematician, passed these observations to the American software engineer David Oranchak in early 2019.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Blake then enumerated vast numbers of candidate transposition schemes, including splits of the cipher into sections, and filtered them by their count of repeated bigrams. Oranchak ran the survivors through AZdecrypt, the solver developed by the Belgian programmer Jarl Van Eycke, and Blake ran them through ZKDecrypto on the University of Melbourne's Spartan supercomputer. A new AZdecrypt feature that inserts word spaces automatically made partial solutions far easier to recognise. On 2 December 2020 they started a batch of 655,088 transposition variants.<sup class=\"cite\" data-cite=\"3\">3</sup> By the next day one output contained HOPE YOU ARE, TRYING TO CATCH ME and THE GAS CHAMBER.</p><p>Using those phrases as cribs on the first section gave a substitution key, and because every symbol of the cipher alphabet appears in the first nine rows of the transposed text, the key was complete. With Zodiac's misspellings corrected, the message begins: \"I hope you are having lots of fun in trying to catch me that wasn't me on the TV show which brings up a point about me I am not afraid of the gas chamber because it will send me to paradise all the sooner\". Garbling in the second section came from Zodiac's own mistakes: Van Eycke found that a symbol had been skipped on one line, and that the words LIFE IS had been left out of the transposition. The team sent their report to the FBI on 5 December 2020, and on 11 December the FBI confirmed that it had independently verified the decryption.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "mdec-07-c3",
+        "title": "Why This One Counts",
+        "contentHtml": "<p>Numerous Z340 \"solutions\" came before this one. What makes this one different is a checklist you can apply to any claimed decipherment.</p><ul><li><strong>Uniqueness.</strong> Joachim von zur Gathen modelled the whole system (homophonic substitution, sections, transpositions, misspellings and nulls) and found that the unicity distance of the cipher's system is between 80 and 152 symbols.<sup class=\"cite\" data-cite=\"1\">1</sup> The cipher has 340, far beyond the bound, so a second equally plausible plaintext is practically ruled out. He knew of no comparable analysis for any other proposed solution.<sup class=\"cite\" data-cite=\"2\">2</sup></li><li><strong>No forced words.</strong> Apart from cribs that appeared spontaneously in a systematic batch run, nothing was pushed into the plaintext.</li><li><strong>A methodical key.</strong> The transpositions follow a regular procedure, not an arbitrary rearrangement chosen to make words appear.</li><li><strong>Context.</strong> The text refers to events in the case. Seventeen days before Z340 was mailed, someone claiming to be Zodiac had phoned repeatedly into a live television programme, and the plaintext says \"that wasn't me on the TV show\".</li><li><strong>Independent verification.</strong> FBI cryptanalysts confirmed it.</li></ul><p>The solvers themselves pointed to contemporary references to events in the case, the lack of forced words and phrases, and methodical transposition rather than random rearrangement.<sup class=\"cite\" data-cite=\"3\">3</sup> Set the other cases of this topic against that list. The Voynich Hebrew line is one short passage, with letters free to move inside words. The proto-Romance reading has a key flexible enough to fit any passage. The Indus debate has no reading at all, only statistics about structure. Even the neural Linear B results score themselves against a decipherment that humans had already made.</p><p>Note too what the solution did not deliver. The plaintext does not name the killer, and the Zodiac case remains one of the most widely known unsolved serial killer cases.<sup class=\"cite\" data-cite=\"4\">4</sup> Machines have made the search for keys enormously cheaper. What turns a search result into a reading is still evidence that the answer is unique, consistent and confirmed from outside.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "mdec-q49",
+      "mdec-q50",
+      "mdec-q51",
+      "mdec-q52",
+      "mdec-q53",
+      "mdec-q54",
+      "mdec-q55",
+      "mdec-q56"
+    ],
+    "puzzleId": null
+  }
+]
