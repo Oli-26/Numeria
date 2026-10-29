@@ -39,7 +39,7 @@ public class LeaderboardService : ILeaderboardService
                 Date = DateTime.Now.ToString("yyyy-MM-dd")
             };
 
-            var url = $"{FirebaseUrl}/leaderboard/{safeName}.json";
+            var url = $"{FirebaseUrl}/leaderboard/{Uri.EscapeDataString(safeName)}.json";
             var response = await _http.PutAsJsonAsync(url, entry);
             return response.IsSuccessStatusCode;
         }
@@ -72,7 +72,7 @@ public class LeaderboardService : ILeaderboardService
         try
         {
             var safeName = SanitizeName(name);
-            var url = $"{FirebaseUrl}/leaderboard/{safeName}.json";
+            var url = $"{FirebaseUrl}/leaderboard/{Uri.EscapeDataString(safeName)}.json";
             var json = await _http.GetStringAsync(url);
             if (json == "null") return null;
 
@@ -87,36 +87,34 @@ public class LeaderboardService : ILeaderboardService
         }
     }
 
-    private static string SanitizeName(string name)
+    // Names become database keys and URL path segments, so keep only letters, digits, _ and -.
+    // A raw "%2F" would otherwise decode to "/" and write inside another player's entry.
+    public static string SanitizeName(string name)
     {
-        // Firebase keys cannot contain . $ # [ ] /
-        var safe = name.Replace(".", "").Replace("$", "").Replace("#", "")
-                       .Replace("[", "").Replace("]", "").Replace("/", "")
-                       .Replace("\\", "").Replace(" ", "_").Trim();
-        return string.IsNullOrEmpty(safe) ? "Anonymous" : safe;
+        var chars = name.Trim().Replace(' ', '_').Where(c => char.IsLetterOrDigit(c) || c is '_' or '-').Take(20).ToArray();
+        return chars.Length == 0 ? "Anonymous" : new string(chars);
     }
 
+    // One malformed entry must not blank the whole board, so entries are parsed one by one.
     private static List<LeaderboardEntry> ParseEntries(string json)
     {
+        var entries = new List<LeaderboardEntry>();
         try
         {
-            if (json == "null") return new();
-
-            var dict = JsonSerializer.Deserialize<Dictionary<string, LeaderboardEntry>>(json, new JsonSerializerOptions
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object) return entries;
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            foreach (var prop in doc.RootElement.EnumerateObject())
             {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (dict == null) return new();
-
-            return dict.Values
-                .OrderByDescending(e => e.Score)
-                .ToList();
+                try
+                {
+                    var e = prop.Value.Deserialize<LeaderboardEntry>(options);
+                    if (e != null && !string.IsNullOrWhiteSpace(e.Name)) entries.Add(e);
+                }
+                catch (JsonException) { }
+            }
         }
-        catch
-        {
-            return new();
-        }
+        catch (JsonException) { }
+        return entries.OrderByDescending(e => e.Score).ToList();
     }
-
 }
