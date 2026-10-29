@@ -4,9 +4,17 @@
 @inject ISessionStateService SessionState
 @inject INotificationService NotificationSvc
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="dashboard">
     <WebInstallBanner />
+    @if (streakUp && profile != null)
+    {
+        <div class="streak-pop" role="status">
+            <span class="flame"><Icon Name="fire" Size="20" /></span>
+            <strong>@profile.CurrentStreak day streak</strong>
+        </div>
+    }
     @if (savedSession != null && savedSession.ActiveTopicId != null && savedSession.ActiveLessonId != null)
     {
         <div class="card resume-banner card-clickable" @onclick="ResumeSession">
@@ -206,6 +214,7 @@
         Labs.Where(l => (l.Domain == "*" && !NoHallOfFame.Contains(currentDomain)) || l.Domain == currentDomain)
             .Select(l => (l, l.UnlockId == null || profile?.ShopPurchases.Contains(l.UnlockId.Replace("*", currentDomain)) == true));
     private bool cookieViewed;
+    private bool streakUp;
     private List<Domain> allDomains = new();
 
     private string DomainName(string id) => allDomains.FirstOrDefault(d => d.Id == id)?.Name ?? id;
@@ -214,9 +223,12 @@
     {
         if (firstRender)
         {
+            var streakBefore = (await Progress.GetProfileAsync()).CurrentStreak;
             await Progress.UpdateStreakAsync();
             await Progress.StartSessionAsync();
             profile = await Progress.GetProfileAsync();
+            // Day one is not news; from day two the first open of the day gets a moment.
+            streakUp = profile.CurrentStreak > streakBefore && profile.CurrentStreak >= 2;
             if (profile.TotalXp == 0 && profile.DisplayName == "Mathematician")
             {
                 Nav.NavigateTo("/welcome");
@@ -233,6 +245,11 @@
 
             // Paint the subject first; topic progress fills in after.
             StateHasChanged();
+            if (streakUp)
+            {
+                await JS.TryInvokeVoidAsync("Sounds.playStreak");
+                await JS.TryInvokeVoidAsync("Haptics.light");
+            }
 
             foreach (var topic in topics)
             {

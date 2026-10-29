@@ -1,0 +1,18 @@
+@* Plays the XP fly (motion.js) for every award, so pages only need to mark their reward badge with data-xp-source. *@
+@implements IDisposable
+@inject IGamificationService Gamification
+@inject IJSRuntime JS
+
+@code {
+    protected override void OnInitialized() => Gamification.XpAwarded += OnXpAwarded;
+
+    private async void OnXpAwarded(GamificationEvent e)
+    {
+        if (e.XpAwarded <= 0) return;
+        var from = Gamification.GetLevelProgress(e.PreviousTotalXp);
+        var to = Gamification.GetLevelProgress(e.TotalXp);
+        await JS.TryInvokeVoidAsync("XpFly.play", e.XpAwarded, from.Level, from.XpInLevel, from.XpNeeded, to.Level, to.XpInLevel, to.XpNeeded);
+    }
+
+    public void Dispose() => Gamification.XpAwarded -= OnXpAwarded;
+}

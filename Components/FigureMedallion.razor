@@ -1,0 +1,24 @@
+@* Hall of Fame card art: the figure's emblem on a coin in their colour with a gold rim. Also used as the profile avatar. *@
+
+<svg class="figure-medallion" viewBox="0 0 64 64" width="@Size" height="@Size" role="img" aria-label="@Card.Name">
+    <defs>
+        <radialGradient id="@gradId" cx="35%" cy="30%" r="75%">
+            <stop offset="0" stop-color="@Card.Color" stop-opacity=".78" />
+            <stop offset="1" stop-color="@Card.Color" />
+        </radialGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="#C9A15A" />
+    <circle cx="32" cy="32" r="27.5" fill="url(#@gradId)" />
+    <circle cx="32" cy="32" r="24" fill="none" stroke="#E9D3A3" stroke-opacity=".55" stroke-width=".8" />
+    <g transform="translate(17 17) scale(1.25)" fill="none" stroke="#FBF5E9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        @((MarkupString)Icon.PathFor(Card.Emblem))
+    </g>
+</svg>
+
+@code {
+    [Parameter, EditorRequired] public HallOfFame.AvatarCard Card { get; set; } = default!;
+    [Parameter] public int Size { get; set; } = 46;
+
+    // Two medallions of the same figure share a colour, so a clash between their gradient ids is harmless.
+    private string gradId => $"fm-{Card.Domain}-{HallOfFame.Slug(Card.Name)}";
+}

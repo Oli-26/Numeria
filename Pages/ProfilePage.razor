@@ -12,10 +12,18 @@
     <div class="profile-header card">
         <button class="profile-settings" aria-label="Settings" @onclick='() => Nav.NavigateTo("/settings")'><Icon Name="settings" Size="20" /></button>
         <div class="avatar-display">
-            <div class="avatar-circle">
-                <span class="avatar-letter">@(profile.DisplayName.Length > 0 ? profile.DisplayName[0] : '?')</span>
+            <button type="button" @key="avatarPops" class="avatar-circle @(avatarCard != null ? "has-card" : "") @(avatarPops > 0 ? "avatar-pop" : "")" aria-label="Choose your avatar" @onclick="() => pickerOpen = true">
+                @if (avatarCard != null)
+                {
+                    <FigureMedallion Card="avatarCard" Size="88" />
+                }
+                else
+                {
+                    <span class="avatar-letter">@InitialOf(profile)</span>
+                }
                 <div class="avatar-ring"></div>
-            </div>
+                <span class="avatar-edit" aria-hidden="true"><Icon Name="pencil" Size="12" /></span>
+            </button>
             <div class="level-badge">Lvl @level</div>
             @if (!string.IsNullOrEmpty(profile.SelectedTitle))
             {
@@ -343,6 +351,42 @@
             </div>
         </div>
     }
+
+    @if (pickerOpen)
+    {
+        <div class="sheet-backdrop" @onclick="() => pickerOpen = false"></div>
+        <div class="bottom-sheet" role="dialog" aria-modal="true" aria-label="Choose your avatar">
+            <div class="bottom-sheet-head">
+                <h3>Your avatar</h3>
+                <button type="button" class="btn btn-sm btn-outline" @onclick="() => pickerOpen = false">Done</button>
+            </div>
+            <div class="avatar-grid">
+                <button type="button" class="avatar-choice @(avatarCard == null ? "on" : "")" @onclick="() => ChooseAvatar(null)">
+                    <span class="avatar-initial">@InitialOf(profile)</span>
+                    <small>Your initial</small>
+                </button>
+            </div>
+            @foreach (var group in unlockedCards.GroupBy(c => c.Domain))
+            {
+                <h4 class="avatar-group">@HallOfFame.Label(group.Key)</h4>
+                <div class="avatar-grid">
+                    @foreach (var c in group)
+                    {
+                        var card = c;
+                        <button type="button" class="avatar-choice @(HallOfFame.Same(card, avatarCard) ? "on" : "")" @onclick="() => ChooseAvatar(card)">
+                            <FigureMedallion Card="card" Size="56" />
+                            <small>@card.Name</small>
+                        </button>
+                    }
+                </div>
+            }
+            @if (unlockedCards.Count == 0)
+            {
+                <p class="avatar-empty">Unlock a Hall of Fame in the Shop and its figures become cards you can wear here.</p>
+                <button type="button" class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
+            }
+        </div>
+    }
 }
 else
 {
@@ -368,6 +412,11 @@ else
 
 @code {
     private UserProfile? profile;
+    private HallOfFame.AvatarCard? avatarCard;
+    private List<HallOfFame.AvatarCard> unlockedCards = new();
+    private bool pickerOpen;
+    // Bumped on each equip; as the avatar button's @key it rebuilds the button, which replays the pop.
+    private int avatarPops;
     private List<Achievement> allAchievements = new();
     private List<Topic>? topics;
     private List<Domain>? domains;
@@ -382,11 +431,25 @@ else
     private string topicFilter = "active";
     private List<(string date, string label)> last28Days = new();
 
+    private static char InitialOf(UserProfile p) => p.DisplayName.Length > 0 ? p.DisplayName[0] : '?';
+
+    private async Task ChooseAvatar(HallOfFame.AvatarCard? card)
+    {
+        if (profile == null) return;
+        avatarCard = card;
+        profile.SelectedAvatar = card?.Id ?? "default";
+        pickerOpen = false;
+        avatarPops++;
+        await Progress.SaveProfileAsync(profile);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             profile = await Progress.GetProfileAsync();
+            avatarCard = HallOfFame.Resolve(profile.SelectedAvatar);
+            unlockedCards = HallOfFame.Unlocked(profile);
             allAchievements = await AchievementRepo.GetAchievementsAsync();
             topics = await Content.GetTopicsAsync();
             domains = await Content.GetDomainsAsync();
@@ -506,6 +569,16 @@ else
         position: absolute; inset: -5px; border-radius: 50%;
         border: 2px solid var(--border);
     }
+
+    button.avatar-circle { border: none; padding: 0; cursor: pointer; font-family: inherit; }
+    .avatar-circle.has-card { background: transparent; width: 88px; height: 88px; }
+    .avatar-circle.has-card .avatar-ring { inset: -4px; }
+    .avatar-edit {
+        position: absolute; right: -4px; top: -2px; width: 26px; height: 26px; border-radius: 50%; z-index: 2;
+        background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px var(--shadow);
+    }
+    .avatar-empty { margin: 16px 0 10px; color: var(--text-secondary); font-size: .9rem; }
 
     .level-badge {
         position: absolute; bottom: -4px; right: -8px;

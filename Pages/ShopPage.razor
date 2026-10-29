@@ -45,7 +45,14 @@
             <div class="card shop-card @(active ? "active-item" : owned && !isPowerup ? "owned-item" : "")">
                 <div class="shop-card-main">
                     <div class="shop-icon-wrap @(active ? "equipped" : "")">
-                        <Icon Name="@GetItemIcon(item)" Size="24" />
+                        @if (item.Category == "avatar" && HallOfFame.Resolve(item.Id) is { } avatarCard)
+                        {
+                            <FigureMedallion Card="avatarCard" Size="40" />
+                        }
+                        else
+                        {
+                            <Icon Name="@GetItemIcon(item)" Size="24" />
+                        }
                     </div>
                     <div class="shop-card-info">
                         <strong>@item.Name</strong>
@@ -165,11 +172,38 @@ else
     </div>
 }
 
+@if (revealDomain != null && profile != null)
+{
+    var current = HallOfFame.Resolve(profile.SelectedAvatar);
+    <div class="sheet-backdrop" @onclick="() => revealDomain = null"></div>
+    <div class="bottom-sheet" role="dialog" aria-modal="true" aria-label="New avatars unlocked">
+        <div class="bottom-sheet-head">
+            <h3>@HallOfFame.Label(revealDomain) unlocked</h3>
+            <button type="button" class="btn btn-sm btn-outline" @onclick="() => revealDomain = null">Done</button>
+        </div>
+        <p class="bottom-sheet-sub">@revealCards.Count new avatars. Tap one to wear it.</p>
+        <div class="avatar-grid">
+            @for (int i = 0; i < revealCards.Count; i++)
+            {
+                var card = revealCards[i];
+                var on = HallOfFame.Same(card, current);
+                <button type="button" @key="card.Id" class="avatar-choice card-flip @(on ? "on" : "")" style="animation-delay: @(i * 45)ms" @onclick="() => WearCard(card)">
+                    <span class="@(on ? "avatar-pop" : "")" style="display: flex"><FigureMedallion Card="card" Size="56" /></span>
+                    <small>@card.Name</small>
+                </button>
+            }
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public string? InitialTab { get; set; }
 
     private UserProfile? profile;
     private List<ShopItem> items = new();
+    // Set right after a Hall of Fame purchase: its figures flip in as avatars to try on.
+    private string? revealDomain;
+    private List<HallOfFame.AvatarCard> revealCards = new();
     private List<ShopItem> domainItems = new();
     private List<string> categories = new();
     private List<string> visibleCategories = new();
@@ -282,7 +316,7 @@ else
             "theme" => profile.SelectedTheme == item.Id.Replace("theme-", ""),
             "frame" => item.UnlockData.ContainsKey("frame") && profile.SelectedFrame == item.UnlockData["frame"],
             "flame" => item.UnlockData.ContainsKey("flame") && profile.SelectedFlame == item.UnlockData["flame"],
-            "avatar" => profile.SelectedAvatar == item.Id,
+            "avatar" => profile.SelectedAvatar == item.Id || HallOfFame.Same(HallOfFame.Resolve(profile.SelectedAvatar), HallOfFame.Resolve(item.Id)),
             "title" => item.UnlockData.ContainsKey("title") && profile.SelectedTitle == item.UnlockData["title"],
             _ => false
         };
@@ -344,8 +378,22 @@ else
                 await ActivateItem(item);
 
             profile = await Progress.GetProfileAsync();
+            var hall = HallOfFame.Domains.FirstOrDefault(d => item.Id == HallOfFame.UnlockId(d));
+            if (hall != null)
+            {
+                revealCards = HallOfFame.ForDomain(hall).OrderBy(f => f.Birth).Select(f => HallOfFame.Card(hall, f)).ToList();
+                revealDomain = revealCards.Count > 0 ? hall : null;
+            }
             StateHasChanged();
         }
+    }
+
+    private async Task WearCard(HallOfFame.AvatarCard card)
+    {
+        if (profile == null) return;
+        profile.SelectedAvatar = card.Id;
+        await Progress.SaveProfileAsync(profile);
+        await JS.TryInvokeVoidAsync("Haptics.light");
     }
 
     private async Task ActivateItem(ShopItem item)

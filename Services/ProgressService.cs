@@ -19,10 +19,20 @@ public class ProgressService : IProgressService
         _contentRepo = contentRepo;
     }
 
+    // Pages and the layout all ask for the profile during startup. Each separate load would deserialize its own copy,
+    // and saving a stale copy silently undoes what another caller saved (it reverted the daily streak), so concurrent
+    // first calls share one load and every caller holds the same instance.
+    private Task<UserProfile>? _loading;
+
     public async Task<UserProfile> GetProfileAsync()
     {
         if (_cachedProfile != null) return _cachedProfile;
+        try { return await (_loading ??= LoadProfileAsync()); }
+        catch { _loading = null; throw; }
+    }
 
+    private async Task<UserProfile> LoadProfileAsync()
+    {
         var json = await _js.InvokeAsync<string?>("localStorage.getItem", StorageKey);
         if (json != null)
         {

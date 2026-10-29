@@ -8,6 +8,8 @@ public class GamificationEvent
     public int NewLevel { get; set; }
     public int XpAwarded { get; set; }
     public int PointsAwarded { get; set; }
+    public int PreviousTotalXp { get; set; }
+    public int TotalXp { get; set; }
     public List<Achievement> NewAchievements { get; set; } = new();
 }
 
@@ -25,6 +27,8 @@ public interface IGamificationService
     LevelProgress GetLevelProgress(int totalXp);
     double GetStreakMultiplier(int streak);
     Task<GamificationEvent> AwardXpAsync(int amount);
+    // Raised after every award so the layout can animate it, whichever page made it.
+    event Action<GamificationEvent>? XpAwarded;
     Task<bool> SpendPointsAsync(int amount);
     Task<List<Achievement>> CheckAchievementsAsync();
 }

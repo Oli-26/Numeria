@@ -270,7 +270,7 @@ else
             </div>
 
             <div class="xp-earned pulse">
-                <span class="xp-badge" style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
+                <span class="xp-badge" data-xp-source style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
                 <small class="synthesis-bonus-note">Includes 1.5× synthesis bonus</small>
             </div>
 
@@ -551,9 +551,6 @@ else
 
         quizState = QuizState.Complete;
         await JS.TryInvokeVoidAsync("Sounds.playComplete");
-        await JS.TryInvokeVoidAsync("XpFloat.show", totalXpEarned, null, null);
-        if (gamificationEvent.LeveledUp)
-            await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
         if (score >= 80)
             await JS.TryInvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40);
     }

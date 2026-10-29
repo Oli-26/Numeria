@@ -17,18 +17,27 @@ public class LeaderboardService : ILeaderboardService
         _http = http;
     }
 
-    public async Task<bool> SubmitScoreAsync(string name, int score, int level, string extra)
+    public async Task<bool> SubmitScoreAsync(string name, int score, int level, string extra, string? avatar = null)
     {
         if (!IsConfigured) return false;
 
         try
         {
             var safeName = SanitizeName(name);
+            // Only a known card id is ever stored, so the field cannot carry arbitrary text.
+            var safeAvatar = HallOfFame.Resolve(avatar)?.Id;
+            var url = $"{FirebaseUrl}/leaderboard/{Uri.EscapeDataString(safeName)}.json";
 
             // Check existing score: only update if new score is higher
             var existing = await GetPlayerScoreAsync(name);
             if (existing != null && score <= existing.Score)
-                return true;
+            {
+                // A higher score under this name is someone else's (or from before a progress reset), so leave it alone.
+                if (score < existing.Score || existing.Avatar == safeAvatar) return true;
+                // Same score as posted means it is our own entry: show the new avatar. PATCH leaves the score alone.
+                var patched = await _http.PatchAsync(url, JsonContent.Create(new { avatar = safeAvatar }));
+                return patched.IsSuccessStatusCode;
+            }
 
             var entry = new LeaderboardEntry
             {
@@ -36,10 +45,10 @@ public class LeaderboardService : ILeaderboardService
                 Score = score,
                 Seconds = level,
                 Text = extra,
-                Date = DateTime.Now.ToString("yyyy-MM-dd")
+                Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                Avatar = safeAvatar
             };
 
-            var url = $"{FirebaseUrl}/leaderboard/{Uri.EscapeDataString(safeName)}.json";
             var response = await _http.PutAsJsonAsync(url, entry);
             return response.IsSuccessStatusCode;
         }

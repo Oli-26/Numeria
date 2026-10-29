@@ -1254,3 +1254,112 @@ html.sheet-open body {
     font-size: 0.78rem;
     text-decoration: none;
 }
+
+/* ── Bottom sheet (avatar picker, unlock reveal, name editor) ── */
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 2000; animation: fadeIn .2s ease; }
+.bottom-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 2001; max-height: 78vh; overflow-y: auto;
+    background: var(--bg-card); border-radius: 20px 20px 0 0; padding: 14px 16px calc(24px + env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, .25);
+    animation: sheetUp .28s var(--ease-out);
+}
+@keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } }
+.bottom-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.bottom-sheet-head h3 { margin: 0; font-size: 1.1rem; }
+.bottom-sheet-sub { margin: 0 0 10px; color: var(--text-secondary); font-size: .88rem; }
+
+.avatar-group { margin: 14px 0 6px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+.avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.avatar-choice {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 6px;
+    border: 2px solid transparent; border-radius: 14px; background: none; cursor: pointer; color: var(--text-primary); font-family: inherit;
+}
+.avatar-choice.on { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+.avatar-choice small { font-size: .72rem; line-height: 1.2; text-align: center; color: var(--text-secondary); }
+.avatar-initial {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;
+}
+
+/* A newly unlocked card turns over like a coin; the delay is set inline per card. */
+.card-flip { animation: cardFlip .55s var(--ease-out) backwards; }
+@keyframes cardFlip {
+    0% { opacity: 0; transform: perspective(400px) rotateY(-100deg) scale(.7); }
+    60% { opacity: 1; transform: perspective(400px) rotateY(12deg) scale(1.05); }
+    100% { transform: none; }
+}
+/* Equipping an avatar */
+.avatar-pop { animation: avatarPop .5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes avatarPop { 0% { scale: .8; } 55% { scale: 1.12; } 100% { scale: 1; } }
+
+/* ── XP fly: orbs leave the reward badge and land in a level ring at the top corner (motion.js) ── */
+.xp-stamp { display: inline-flex; animation: xpStamp .45s cubic-bezier(.3, 1.6, .5, 1) backwards; }
+@keyframes xpStamp { 0% { scale: 1.7; opacity: 0; } 60% { scale: .94; opacity: 1; } 100% { scale: 1; } }
+.xp-temp {
+    position: fixed; left: 50%; top: 45%; translate: -50% -50%; z-index: 1000;
+    font-size: 1.1rem; padding: 8px 16px; border-radius: 20px; background: var(--bg-card);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent), 0 8px 24px var(--shadow);
+    pointer-events: none; transition: opacity .3s;
+}
+.xp-temp.out { opacity: 0; }
+.xp-orb {
+    position: fixed; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; z-index: 1002; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, #FFF4D6, var(--accent-light, var(--accent)) 55%, var(--accent));
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+.xp-hud {
+    position: fixed; z-index: 1001; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px;
+    width: 48px; height: 48px; border-radius: 50%; background: var(--bg-card);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+    transform: translateY(-160%); opacity: 0; pointer-events: none;
+    transition: transform .35s var(--ease-out), opacity .3s;
+}
+.xp-hud.show { transform: none; opacity: 1; }
+.xp-hud.hit { animation: xpHudHit .2s ease-out; }
+@keyframes xpHudHit { 50% { scale: 1.1; } }
+.xp-hud-ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+.xp-hud-ring circle { fill: none; stroke-width: 4; }
+.xp-hud-ring .bg { stroke: var(--bg-surface); }
+.xp-hud-ring .fg { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .25s var(--ease-out); }
+.xp-hud.reset .xp-hud-ring .fg { transition: none; }
+.xp-hud-lvl { position: relative; font: 800 1.05rem Georgia, 'Times New Roman', serif; color: var(--text-primary); }
+.xp-hud.level-up { animation: xpLvlBurst .6s var(--ease-out); }
+.xp-hud.level-up::after {
+    content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent);
+    animation: xpRing .7s ease-out forwards;
+}
+@keyframes xpLvlBurst { 40% { scale: 1.3; } }
+@keyframes xpRing { from { opacity: 1; } to { opacity: 0; scale: 2.2; } }
+.xp-hud-banner {
+    position: absolute; top: calc(100% + 8px); right: 0; white-space: nowrap; padding: 6px 14px; border-radius: 14px;
+    background: var(--primary); color: #fff; font-weight: 800; font-size: .9rem; box-shadow: 0 6px 16px var(--shadow);
+    animation: xpBanner .4s cubic-bezier(.3, 1.6, .5, 1) backwards;
+}
+@keyframes xpBanner { from { opacity: 0; transform: translateY(-10px) scale(.8); } }
+
+/* ── Completion tick draws itself ── */
+.tick-draw svg path, .tick-draw svg polyline { stroke-dasharray: 80; stroke-dashoffset: 80; animation: tickDraw .7s var(--ease-out) .15s forwards; }
+.tick-draw svg polyline { animation-delay: .5s; animation-duration: .35s; }
+@keyframes tickDraw { to { stroke-dashoffset: 0; } }
+
+/* ── Streak went up today ── */
+.streak-pop {
+    position: fixed; z-index: 1001; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); translate: -50% 0;
+    display: flex; align-items: center; gap: 8px; padding: 8px 16px 8px 12px; border-radius: 22px; pointer-events: none;
+    background: var(--bg-card); border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--border));
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--warning) 30%, transparent);
+    animation: streakPop 3.2s var(--ease-out) forwards;
+}
+.streak-pop strong { color: var(--text-primary); font-size: .95rem; }
+.streak-pop .flame { display: flex; color: var(--warning); transform-origin: 50% 90%; animation: flameFlicker .22s ease-in-out 8 alternate; }
+@keyframes streakPop {
+    0% { opacity: 0; transform: translateY(-24px) scale(.85); }
+    12% { opacity: 1; transform: none; }
+    85% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateY(-16px); }
+}
+@keyframes flameFlicker {
+    from { transform: scale(1, 1) rotate(-3deg); }
+    to { transform: scale(1.1, .9) rotate(3deg); }
+}

@@ -43,10 +43,13 @@ public class GamificationService : IGamificationService
         return 1.0 + Math.Min(streak * 0.1, 1.0);
     }
 
+    public event Action<GamificationEvent>? XpAwarded;
+
     public async Task<GamificationEvent> AwardXpAsync(int amount)
     {
         var profile = await _progress.GetProfileAsync();
         var oldLevel = GetLevel(profile.TotalXp);
+        var previousTotal = profile.TotalXp;
 
         profile.TotalXp += amount;
         profile.Points += amount;
@@ -74,14 +77,18 @@ public class GamificationService : IGamificationService
 
         var newAchievements = await CheckAchievementsAsync();
 
-        return new GamificationEvent
+        var awarded = new GamificationEvent
         {
             XpAwarded = amount,
             PointsAwarded = amount,
             LeveledUp = newLevel > oldLevel,
             NewLevel = newLevel,
-            NewAchievements = newAchievements
+            NewAchievements = newAchievements,
+            PreviousTotalXp = previousTotal,
+            TotalXp = profile.TotalXp
         };
+        XpAwarded?.Invoke(awarded);
+        return awarded;
     }
 
     public async Task<bool> SpendPointsAsync(int amount)

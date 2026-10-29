@@ -380,21 +380,21 @@ else if (quizState == QuizState.Complete)
 
         <div class="results-stats stagger-in">
             <div class="stat-card correct-stat count-up">
-                <span class="stat-number">@correctCount</span>
+                <span class="stat-number" data-count>@correctCount</span>
                 <span class="stat-label">Correct</span>
             </div>
             <div class="stat-card wrong-stat count-up">
-                <span class="stat-number">@wrongCount</span>
+                <span class="stat-number" data-count>@wrongCount</span>
                 <span class="stat-label">Wrong</span>
             </div>
             <div class="stat-card score-stat count-up">
-                <span class="stat-number">@(questions.Count > 0 ? (correctCount * 100 / questions.Count) : 0)%</span>
+                <span class="stat-number" data-count>@(questions.Count > 0 ? (correctCount * 100 / questions.Count) : 0)%</span>
                 <span class="stat-label">Score</span>
             </div>
         </div>
 
         <div class="xp-earned pulse">
-            <span class="xp-badge" style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
+            <span class="xp-badge" data-xp-source style="font-size: 1.1rem; padding: 8px 16px">+@totalXpEarned XP</span>
         </div>
 
         @if (quizEvent?.LeveledUp == true)
@@ -950,12 +950,7 @@ else if (quizState == QuizState.Complete)
         quizState = QuizState.Complete;
         await SessionState.ClearSessionStateAsync();
         await JS.TryInvokeVoidAsync("Sounds.playComplete");
-        await JS.TryInvokeVoidAsync("XpFloat.show", totalXpEarned, null, null);
-        if (quizEvent.LeveledUp)
-        {
-            await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
-            await JS.TryInvokeVoidAsync("Haptics.heavy");
-        }
+        await JS.TryInvokeVoidAsync("CountUp.run", ".quiz-results", 600);
         if (quizEvent.NewAchievements.Count > 0)
         {
             await JS.TryInvokeVoidAsync("Sounds.playAchievement");
