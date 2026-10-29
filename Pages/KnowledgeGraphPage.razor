@@ -3,33 +3,37 @@
 @inject IContentRepository Content
 @inject NavigationManager Nav
 @inject IJSRuntime JS
-@inject HttpClient Http
 @inject IConnectionsService Connections
 @implements IAsyncDisposable
 
 <div class="graph-page">
     <div class="graph-header">
-        <button class="back-btn" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1><span class="graph-title-icon"><Icon Name="graph" Size="20" /></span> Knowledge Graph</h1>
-        <div class="graph-controls">
-            <select class="domain-filter" @onchange="OnLayoutChanged" value="@selectedLayout" title="Layout">
-                <option value="force">Force</option>
-                <option value="circular">Circular</option>
-                <option value="grid">Grid</option>
-                <option value="hierarchical">Hierarchical</option>
-                <option value="radial">Radial</option>
-            </select>
-            <select class="domain-filter" @onchange="OnDomainChanged" value="@selectedDomain" title="Filter">
-                <option value="all">All Domains</option>
+        <button class="back-btn" aria-label="Back" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1><span class="graph-title-icon"><Icon Name="graph" Size="16" /></span> Knowledge Graph</h1>
+        <div class="gc-layout" role="group" aria-label="Layout">
+            <button class="@(layout == "web" ? "on" : "")" aria-pressed="@(layout == "web" ? "true" : "false")" @onclick='() => SetLayout("web")'>Web</button>
+            <button class="@(layout == "layers" ? "on" : "")" aria-pressed="@(layout == "layers" ? "true" : "false")" @onclick='() => SetLayout("layers")'>Layers</button>
+        </div>
+    </div>
+
+    <div class="graph-controls">
+        <label class="gc-subject-wrap">
+            <span class="gc-dot @(scope == "all" ? "all" : "")" style="--hue: @SubjectHues.For(scope)"></span>
+            <select class="gc-subject" value="@scope" @onchange="OnScopeChanged" aria-label="Subject">
+                <option value="all">All subjects</option>
                 @foreach (var d in domains)
                 {
                     <option value="@d.Id">@d.Name</option>
                 }
             </select>
-        </div>
+            <span class="gc-caret"><Icon Name="chevron-down" Size="14" /></span>
+        </label>
+        <button class="gc-mine @(mine ? "on" : "")" aria-pressed="@(mine ? "true" : "false")" @onclick="ToggleMine">
+            <span class="gc-check"><Icon Name="check" Size="12" /></span> My topics
+        </button>
     </div>
 
-    <div class="graph-container" id="graph-container">
+    <div class="graph-container">
         <canvas id="topic-graph-canvas"></canvas>
 
         @if (!graphReady)
@@ -39,189 +43,299 @@
                 <p>Building graph…</p>
             </div>
         }
-
-        @if (selectedNodeId != null)
+        else
         {
-            <div class="node-tooltip card" @onclick="NavigateToSelected">
-                <div class="tooltip-color-bar" style="background: @GetNodeColor(selectedNodeId)"></div>
-                <div class="tooltip-body">
-                    <strong>@GetNodeName(selectedNodeId)</strong>
-                    <small>@GetNodeDomain(selectedNodeId)</small>
-                    @if (completedTopics.Contains(selectedNodeId))
+            <div class="graph-stat">@Summary</div>
+            <div class="graph-fab">
+                <button class="gk-toggle @(showKey ? "on" : "")" aria-expanded="@(showKey ? "true" : "false")" @onclick="() => showKey = !showKey">Key</button>
+                <button class="gk-fit" aria-label="Fit to screen" title="Fit to screen" @onclick="Refit"><Icon Name="target" Size="16" /></button>
+            </div>
+        }
+
+        @if (showKey)
+        {
+            <div class="graph-key card" @onclick="() => showKey = false">
+                <div class="gk-row"><span class="gk-node done"></span>Completed</div>
+                <div class="gk-row"><span class="gk-node started" style="--p: 40%"></span>In progress (ring fills as you go)</div>
+                <div class="gk-row"><span class="gk-node"></span>Not started</div>
+                @if (mine)
+                {
+                    <div class="gk-row"><span class="gk-node next"></span>Next up: linked to what you've learned</div>
+                }
+                <div class="gk-row"><span class="gk-edge prereq"></span>Needed for (arrow points onward)</div>
+                <div class="gk-row"><span class="gk-edge related"></span>Related</div>
+                <div class="gk-row gk-hint">Bigger dots have more connections. Tap a topic to see what it links to.</div>
+                @if (scope == "all")
+                {
+                    <div class="gk-subjects">
+                        @foreach (var d in domains)
+                        {
+                            <span><i style="background: @SubjectHues.For(d.Id)"></i>@d.Name</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (graphReady && mine && visible.Count == 0)
+        {
+            <div class="graph-empty card">
+                @if (started.Count + completed.Count > 0 && scope != "all")
+                {
+                    <strong>Nothing started in @ScopeName yet</strong>
+                    <p>Your topics so far are in other subjects.</p>
+                    <button class="btn btn-primary btn-sm" @onclick='() => SetScope("all")'>Show all subjects</button>
+                }
+                else
+                {
+                    <strong>No topics started yet</strong>
+                    <p>Finish a lesson and its topic shows up here, along with the topics it leads to.</p>
+                    <button class="btn btn-primary btn-sm" @onclick="ToggleMine">Show the full graph</button>
+                }
+            </div>
+        }
+
+        @if (focusedId != null && nodeById.TryGetValue(focusedId, out var focused))
+        {
+            var links = LinksFor(focusedId);
+            <div class="graph-panel card" @key="focusedId">
+                <div class="gp-head">
+                    <span class="gp-dot big @StateClass(focusedId)" style="--hue: @SubjectHues.For(focused.Domain); --p: @Pct(focusedId)%"></span>
+                    <div class="gp-title">
+                        <strong>@focused.Name</strong>
+                        <small>@DomainName(focused.Domain) · @StatusText(focusedId)</small>
+                    </div>
+                    <button class="gp-close" aria-label="Close" @onclick="ClearFocus"><Icon Name="x-mark" Size="18" /></button>
+                </div>
+                <button class="btn btn-primary btn-sm gp-open" @onclick='() => Nav.NavigateTo($"/topic/{focusedId}")'>
+                    @(completed.Contains(focusedId) ? "Review topic" : started.Contains(focusedId) ? "Continue topic" : "Open topic") <Icon Name="arrow-right" Size="14" />
+                </button>
+                <div class="gp-scroll">
+                    @if (links.Count == 0)
                     {
-                        <span class="tooltip-badge completed"><Icon Name="checkmark-circle" Size="12" /> Completed</span>
+                        <p class="gp-none">No connections recorded yet.</p>
                     }
-                    else
+                    @foreach (var group in new[] { ("Needs", "needs"), ("Leads to", "leads"), ("Related", "related") })
                     {
-                        <span class="tooltip-badge">Tap to study →</span>
-                    }
-                    @{ var links = LinksFor(selectedNodeId); }
-                    @if (links.Count > 0)
-                    {
-                        <div class="tooltip-links" @onclick:stopPropagation="true">
-                            @foreach (var (otherId, edge) in links)
-                            {
-                                <button class="tooltip-link" @onclick='() => Nav.NavigateTo($"/topic/{otherId}")'>
-                                    <span class="tooltip-link-name" style="color: @GetNodeColor(otherId)">
-                                        @(edge.Type == "prereq" ? (edge.To == selectedNodeId ? "Needs " : "Leads to ") : "Linked to ")@GetNodeName(otherId)
+                        var items = links.Where(l => l.Kind == group.Item2).ToList();
+                        if (items.Count == 0) continue;
+                        <h3 class="gp-group">@group.Item1 <span>@items.Count</span></h3>
+                        @foreach (var link in items)
+                        {
+                            var other = nodeById[link.OtherId];
+                            <button class="gp-entry" @onclick="() => FocusEntry(link.OtherId)">
+                                <span class="gp-dot @StateClass(link.OtherId)" style="--hue: @SubjectHues.For(other.Domain); --p: @Pct(link.OtherId)%"></span>
+                                <span class="gp-entry-text">
+                                    <span class="gp-entry-name">
+                                        @other.Name
+                                        @if (other.Domain != focused.Domain)
+                                        {
+                                            <em class="gp-tag">@DomainName(other.Domain)</em>
+                                        }
                                     </span>
-                                    <small>@edge.Why</small>
-                                </button>
-                            }
-                        </div>
+                                    @if (!string.IsNullOrEmpty(link.Why))
+                                    {
+                                        <small>@link.Why</small>
+                                    }
+                                </span>
+                                <span class="gp-chev"><Icon Name="chevron-right" Size="14" /></span>
+                            </button>
+                        }
                     }
                 </div>
             </div>
         }
     </div>
-
-    <div class="graph-legend">
-        @foreach (var d in domains)
-        {
-            <div class="legend-item">
-                <span class="legend-dot" style="background: @SubjectHues.For(d.Id)"></span>
-                <span class="legend-label">@d.Name</span>
-            </div>
-        }
-        <div class="legend-item legend-key">
-            <span class="legend-line prereq"></span><span class="legend-label">prereq</span>
-        </div>
-        <div class="legend-item legend-key">
-            <span class="legend-line related"></span><span class="legend-label">related</span>
-        </div>
-        <div class="legend-item legend-key">
-            <span class="legend-node filled"></span><span class="legend-label">done</span>
-        </div>
-        <div class="legend-item legend-key">
-            <span class="legend-node hollow"></span><span class="legend-label">not done</span>
-        </div>
-    </div>
 </div>
 
 @code {
-    private bool graphReady;
-    private string selectedDomain = "all";
-    private string selectedLayout = "force";
-    private string? selectedNodeId;
+    private record Link(string OtherId, string Kind, string? Why, double Strength);
 
-    private List<Topic>? allTopics;
+    private bool graphReady;
+    private string scope = "all";
+    private string layout = "web";
+    private bool mine;
+    private bool showKey;
+    private string? focusedId;
+
     private List<Domain> domains = new();
-    private HashSet<string> completedTopics = new();
+    private readonly Dictionary<string, TopicGraphNode> nodeById = new();
+    private readonly Dictionary<string, List<TopicEdge>> edgesByNode = new();
+    private readonly Dictionary<string, (int Done, int Total)> lessons = new();
+    private readonly HashSet<string> completed = new();
+    private readonly HashSet<string> started = new();
+    private HashSet<string> visible = new();
+    private HashSet<string> nextUp = new();
 
     private DotNetObjectReference<KnowledgeGraphPage>? selfRef;
-    private List<TopicEdge> edges = new();
-
-    private List<(string otherId, TopicEdge edge)> LinksFor(string id) => edges
-        .Where(e => (e.From == id || e.To == id) && !string.IsNullOrEmpty(e.Why))
-        .OrderByDescending(e => e.Strength)
-        .Take(4)
-        .Select(e => (e.From == id ? e.To : e.From, e))
-        .ToList();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        // Collect all topics and domains
-        allTopics = await Content.GetTopicsAsync();
+        var profile = await Progress.GetProfileAsync();
         domains = await Content.GetDomainsAsync();
+        var graph = await Connections.GetGraphAsync();
 
-        // Completed = topics whose progress >= 100
-        foreach (var t in allTopics)
+        foreach (var n in graph.Nodes) nodeById[n.Id] = n;
+        foreach (var e in graph.Edges)
         {
-            var pct = await Progress.GetTopicProgressAsync(t.Id);
-            if (pct >= 100) completedTopics.Add(t.Id);
+            if (!nodeById.ContainsKey(e.From) || !nodeById.ContainsKey(e.To)) continue;
+            Bucket(e.From).Add(e);
+            Bucket(e.To).Add(e);
         }
 
-        // Set initial domain filter to profile's current domain
-        selectedDomain = "all";
+        var lessonsDone = profile.LessonsCompleted.ToHashSet();
+        var topicsDone = profile.TopicsCompleted.ToHashSet();
+        foreach (var id in nodeById.Keys)
+        {
+            var ids = await Content.GetLessonIdsAsync(id);
+            var done = ids.Count(lessonsDone.Contains);
+            lessons[id] = (done, ids.Count);
+            if (topicsDone.Contains(id) || (ids.Count > 0 && done >= ids.Count)) completed.Add(id);
+            else if (done > 0) started.Add(id);
+        }
 
+        scope = domains.Any(d => d.Id == profile.CurrentDomain) ? profile.CurrentDomain : "all";
         selfRef = DotNetObjectReference.Create(this);
 
-        // Load graph JSON
-        var graphJson = await FetchGraphJson();
-        edges = (await Connections.GetGraphAsync()).Edges;
-
-        // Build colour map from topics
-        var colorMap = new Dictionary<string, string>();
-        foreach (var t in allTopics)
+        var hues = nodeById.Values.Select(n => n.Domain).Distinct().ToDictionary(d => d, SubjectHues.For);
+        var progress = nodeById.Keys.Where(id => Pct(id) > 0).ToDictionary(id => id, Pct);
+        var names = hues.Keys.ToDictionary(d => d, DomainName);
+        var slim = new
         {
-            colorMap[t.Id] = t.Color;
-        }
-        var colorMapJson = System.Text.Json.JsonSerializer.Serialize(colorMap);
+            nodes = graph.Nodes.Select(n => new { id = n.Id, name = n.Name, domain = n.Domain }),
+            edges = graph.Edges.Select(e => new { from = e.From, to = e.To, type = e.Type, strength = e.Strength })
+        };
 
-        var completedArray = completedTopics.ToList();
-
-        await JS.InvokeVoidAsync(
-            "TopicGraph.init",
-            "topic-graph-canvas",
-            graphJson,
-            completedArray,
-            selfRef
-        );
-
-        await JS.InvokeVoidAsync("TopicGraph.setColors", colorMapJson);
+        await JS.InvokeVoidAsync("TopicGraph.init", "topic-graph-canvas", slim, new { hues, progress, names }, selfRef);
+        await ApplyView();
 
         graphReady = true;
         StateHasChanged();
     }
 
-    private async Task<string> FetchGraphJson()
+    private List<TopicEdge> Bucket(string id) =>
+        edgesByNode.TryGetValue(id, out var list) ? list : edgesByNode[id] = new List<TopicEdge>();
+
+    private (HashSet<string> Visible, HashSet<string> NextUp) ComputeView(string forScope, bool onlyMine)
     {
-        try
+        var inScope = nodeById.Values.Where(n => forScope == "all" || n.Domain == forScope).Select(n => n.Id).ToHashSet();
+        if (!onlyMine) return (inScope, new HashSet<string>());
+
+        var learned = inScope.Where(id => started.Contains(id) || completed.Contains(id)).ToHashSet();
+        var next = new HashSet<string>();
+        foreach (var id in learned)
+            foreach (var e in Bucket(id))
+            {
+                var other = e.From == id ? e.To : e.From;
+                if (inScope.Contains(other) && !learned.Contains(other)) next.Add(other);
+            }
+        learned.UnionWith(next);
+        return (learned, next);
+    }
+
+    private async Task ApplyView()
+    {
+        (visible, nextUp) = ComputeView(scope, mine);
+        focusedId = null;
+        await JS.InvokeVoidAsync("TopicGraph.setView", $"{scope}|{(mine ? "mine" : "full")}", visible, nextUp, layout);
+    }
+
+    private async Task OnScopeChanged(ChangeEventArgs e) => await SetScope(e.Value?.ToString() ?? "all");
+
+    private async Task SetScope(string value)
+    {
+        scope = value;
+        await ApplyView();
+    }
+
+    private async Task ToggleMine()
+    {
+        mine = !mine;
+        await ApplyView();
+    }
+
+    private async Task SetLayout(string value)
+    {
+        if (layout == value) return;
+        layout = value;
+        await ApplyView();
+    }
+
+    private async Task Refit() => await JS.InvokeVoidAsync("TopicGraph.fit");
+
+    private async Task FocusEntry(string id)
+    {
+        if (!visible.Contains(id) && nodeById.TryGetValue(id, out var node))
         {
-            return await Http.GetStringAsync("data/topic-graph.json");
+            if (scope != "all" && node.Domain != scope) scope = node.Domain;
+            if (mine && !ComputeView(scope, true).Visible.Contains(id)) mine = false;
+            await ApplyView();
         }
-        catch
-        {
-            return "{}";
-        }
+        focusedId = id;
+        showKey = false;
+        await JS.InvokeVoidAsync("TopicGraph.focus", id);
+    }
+
+    private async Task ClearFocus()
+    {
+        focusedId = null;
+        await JS.InvokeVoidAsync("TopicGraph.focus", (string?)null);
     }
 
     [JSInvokable]
-    public void OnNodeTapped(string nodeId)
+    public void OnNodeFocused(string? nodeId)
     {
-        selectedNodeId = nodeId;
+        focusedId = nodeId;
+        if (nodeId != null) showKey = false;
         InvokeAsync(StateHasChanged);
     }
 
-    private void NavigateToSelected()
+    private List<Link> LinksFor(string id)
     {
-        if (selectedNodeId != null)
-            Nav.NavigateTo($"/topic/{selectedNodeId}");
+        var byOther = new Dictionary<string, Link>();
+        foreach (var e in Bucket(id))
+        {
+            var other = e.From == id ? e.To : e.From;
+            var kind = e.Type != "prereq" ? "related" : e.To == id ? "needs" : "leads";
+            // A pair listed as both prerequisite and related shows once, as the prerequisite.
+            if (byOther.TryGetValue(other, out var prev) && (prev.Kind != "related" || kind == "related")) continue;
+            byOther[other] = new Link(other, kind, e.Why, e.Strength);
+        }
+        return byOther.Values.OrderByDescending(l => l.Strength).ThenBy(l => nodeById[l.OtherId].Name).ToList();
     }
 
-    private async Task OnDomainChanged(ChangeEventArgs e)
+    private double Pct(string id)
     {
-        selectedDomain = e.Value?.ToString() ?? "all";
-        selectedNodeId = null;
-        await JS.InvokeVoidAsync("TopicGraph.filterDomain", selectedDomain);
+        if (completed.Contains(id)) return 100;
+        return lessons.TryGetValue(id, out var l) && l.Total > 0 ? Math.Round(100.0 * l.Done / l.Total) : 0;
     }
 
-    private async Task OnLayoutChanged(ChangeEventArgs e)
+    private string StateClass(string id) => completed.Contains(id) ? "done" : started.Contains(id) ? "started" : nextUp.Contains(id) ? "next" : "";
+
+    private string StatusText(string id)
     {
-        selectedLayout = e.Value?.ToString() ?? "force";
-        selectedNodeId = null;
-        await JS.InvokeVoidAsync("TopicGraph.setLayout", selectedLayout);
+        if (completed.Contains(id)) return "Completed";
+        var (done, total) = lessons.TryGetValue(id, out var l) ? l : (0, 0);
+        if (done > 0) return $"{done} of {total} lessons";
+        return total > 0 ? $"Not started · {total} lessons" : "Not started";
     }
 
-    private string GetNodeColor(string id)
-    {
-        var topic = allTopics?.FirstOrDefault(t => t.Id == id);
-        return topic?.Color ?? "#888";
-    }
+    private string DomainName(string id) => domains.FirstOrDefault(d => d.Id == id)?.Name ?? (id.Length > 0 ? char.ToUpper(id[0]) + id[1..] : id);
 
-    private string GetNodeName(string id)
-    {
-        var topic = allTopics?.FirstOrDefault(t => t.Id == id);
-        return topic?.Name ?? id;
-    }
+    private string ScopeName => scope == "all" ? "All subjects" : DomainName(scope);
 
-    private string GetNodeDomain(string id)
+    private string Summary
     {
-        var topic = allTopics?.FirstOrDefault(t => t.Id == id);
-        if (topic == null) return "";
-        return char.ToUpper(topic.Domain[0]) + topic.Domain[1..];
+        get
+        {
+            var shown = visible.Count - nextUp.Count;
+            var done = visible.Count(completed.Contains);
+            var going = visible.Count(started.Contains);
+            if (mine) return visible.Count == 0 ? "" : $"{done} done · {going} in progress · {nextUp.Count} next up";
+            return $"{shown} topics · {done} done · {going} in progress";
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -233,75 +347,184 @@
 }
 
 <style>
+    /* Fixed between the top of the viewport and the bottom nav (sidebar on desktop) so the canvas gets every pixel. */
+    .graph-page {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: calc(85px + env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-main);
+        z-index: 5;
+    }
+
+    .graph-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: calc(6px + env(safe-area-inset-top)) 10px 2px 4px;
+        flex-shrink: 0;
+    }
+
     .graph-header .back-btn {
         display: grid; place-items: center; min-width: 44px; min-height: 44px;
         background: none; border: none; border-radius: var(--radius-sm);
         color: var(--text-secondary); cursor: pointer;
     }
     .graph-header .back-btn:hover { background: var(--bg-surface); }
-    .tooltip-links { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 40vh; overflow-y: auto; }
-    .tooltip-link {
-        text-align: left; background: var(--bg-surface); border: 1px solid var(--border);
-        border-radius: 8px; padding: 6px 8px; cursor: pointer; font-family: inherit; color: var(--text-secondary);
-    }
-    .tooltip-link-name { display: block; font-weight: 600; font-size: 0.8rem; }
-    .tooltip-link small { display: block; font-size: 0.75rem; line-height: 1.35; }
-
-    .graph-page {
-        display: flex;
-        flex-direction: column;
-        height: 100dvh;
-        overflow: hidden;
-        padding: 0;
-    }
-
-    .graph-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 16px;
-        background: var(--bg-surface);
-        border-bottom: 1px solid var(--border);
-        flex-shrink: 0;
-        z-index: 10;
-    }
 
     .graph-header h1 {
         flex: 1;
-        font-size: 1.1rem;
+        min-width: 0;
+        font-size: 1.05rem;
         font-weight: 700;
         margin: 0;
         display: flex;
         align-items: center;
         gap: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .graph-title-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 28px;
-        height: 28px;
+        flex-shrink: 0;
+        width: 26px;
+        height: 26px;
         border-radius: 50%;
         background: var(--primary);
         color: white;
     }
 
-    .graph-controls {
-        flex-shrink: 0;
+    .gc-layout {
         display: flex;
-        gap: 6px;
+        flex-shrink: 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
     }
 
-    .domain-filter {
+    .gc-layout button {
+        border: none;
+        background: none;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        padding: 5px 11px;
+        min-height: 30px;
+        border-radius: 999px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .gc-layout button.on {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        box-shadow: 0 1px 3px var(--shadow);
+    }
+
+    .graph-controls {
+        display: flex;
+        gap: 8px;
+        padding: 6px 12px 10px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .gc-subject-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .gc-dot {
+        position: absolute;
+        left: 13px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--hue);
+        pointer-events: none;
+    }
+
+    .gc-dot.all {
+        background: conic-gradient(#5B6ABF, #4A90D9, #2ECC71, #C4813A, #E91E63, #8E63B5, #5B6ABF);
+    }
+
+    .gc-subject {
+        width: 100%;
+        min-width: 0;
+        appearance: none;
+        -webkit-appearance: none;
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
+        border-radius: 999px;
         color: var(--text-primary);
-        padding: 6px 10px;
-        font-size: 0.8rem;
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0 32px 0 31px;
+        height: 38px;
         cursor: pointer;
-        appearance: auto;
+        text-overflow: ellipsis;
+    }
+
+    .gc-caret {
+        position: absolute;
+        right: 12px;
+        display: flex;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+
+    .gc-mine {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 38px;
+        padding: 0 14px 0 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .gc-check {
+        display: grid;
+        place-items: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1.5px solid var(--text-muted);
+        color: transparent;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .gc-mine.on {
+        background: color-mix(in srgb, var(--primary) 14%, var(--bg-card));
+        border-color: var(--primary);
+    }
+
+    .gc-mine.on .gc-check {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
     }
 
     .graph-container {
@@ -319,10 +542,6 @@
         cursor: grab;
     }
 
-    #topic-graph-canvas:active {
-        cursor: grabbing;
-    }
-
     .graph-loading {
         position: absolute;
         inset: 0;
@@ -331,7 +550,7 @@
         align-items: center;
         justify-content: center;
         gap: 12px;
-        background: var(--bg-base);
+        background: var(--bg-main);
         color: var(--text-muted);
         font-size: 0.9rem;
         pointer-events: none;
@@ -348,111 +567,266 @@
 
     @@keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Node tooltip */
-    .node-tooltip {
+    .graph-stat {
         position: absolute;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: 10px;
+        left: 12px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        pointer-events: none;
+        text-shadow: 0 0 4px var(--bg-main), 0 0 2px var(--bg-main);
+    }
+
+    .graph-fab {
+        position: absolute;
+        top: 8px;
+        right: 10px;
         display: flex;
-        align-items: stretch;
-        overflow: hidden;
-        padding: 0;
+        gap: 6px;
+        z-index: 15;
+    }
+
+    .graph-fab button {
+        height: 32px;
+        min-width: 32px;
+        display: grid;
+        place-items: center;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+        color: var(--text-secondary);
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
         cursor: pointer;
-        min-width: 180px;
-        max-width: min(340px, calc(100vw - 32px));
-        animation: fadeSlideUp 0.15s ease;
-        z-index: 20;
+        box-shadow: 0 1px 4px var(--shadow);
+        -webkit-tap-highlight-color: transparent;
     }
 
-    @@keyframes fadeSlideUp {
-        from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
+    .graph-fab .gk-fit { padding: 0; width: 32px; }
+    .graph-fab .gk-toggle.on { color: var(--text-primary); border-color: var(--text-muted); }
 
-    .tooltip-color-bar {
-        width: 5px;
-        flex-shrink: 0;
-    }
-
-    .tooltip-body {
-        padding: 10px 14px;
+    .graph-key {
+        position: absolute;
+        top: 46px;
+        right: 10px;
+        width: min(290px, calc(100% - 20px));
+        padding: 12px 14px;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 8px;
+        z-index: 16;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        animation: graphFade 0.15s ease;
     }
 
-    .tooltip-body strong { font-size: 0.9rem; }
-    .tooltip-body small { color: var(--text-muted); font-size: 0.75rem; }
+    .gk-row { display: flex; align-items: center; gap: 10px; line-height: 1.3; }
+    .gk-hint { font-size: 0.74rem; color: var(--text-muted); padding-top: 2px; }
 
-    .tooltip-badge {
-        font-size: 0.75rem;
-        color: var(--primary);
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin-top: 2px;
+    .gk-node {
+        --hue: var(--primary);
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--hue) 38%, var(--bg-main));
+        border: 1px solid color-mix(in srgb, var(--hue) 50%, transparent);
     }
 
-    .tooltip-badge.completed {
-        color: var(--success);
+    .gk-node.done { background: var(--hue); border-color: var(--hue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue) 18%, transparent); }
+    .gk-node.next { background: var(--bg-main); border: 1.5px dashed var(--hue); }
+
+    .gk-node.started, .gp-dot.started {
+        border: none;
+        background:
+            radial-gradient(circle, color-mix(in srgb, var(--hue) 14%, var(--bg-card)) 54%, transparent 56%),
+            conic-gradient(var(--hue) var(--p), color-mix(in srgb, var(--hue) 25%, var(--bg-card)) 0);
     }
 
-    /* Legend */
-    .graph-legend {
+    .gk-edge {
+        flex-shrink: 0;
+        position: relative;
+        width: 16px;
+        height: 0;
+        border-top: 2px solid var(--text-muted);
+    }
+
+    .gk-edge.prereq::after {
+        content: "";
+        position: absolute;
+        right: -2px;
+        top: -6px;
+        border: 5px solid transparent;
+        border-left: 7px solid var(--text-muted);
+        border-right: none;
+    }
+
+    .gk-edge.related { border-top: 2px dashed var(--text-muted); opacity: 0.8; }
+
+    .gk-subjects {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px 14px;
-        padding: 8px 16px;
-        background: var(--bg-surface);
+        gap: 4px 10px;
+        padding-top: 8px;
         border-top: 1px solid var(--border);
-        flex-shrink: 0;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
         font-size: 0.72rem;
         color: var(--text-muted);
+    }
+
+    .gk-subjects span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .gk-subjects i { width: 8px; height: 8px; border-radius: 50%; }
+
+    .graph-empty {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(300px, calc(100% - 40px));
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        animation: graphFade 0.2s ease;
+    }
+
+    .graph-empty strong { font-size: 1rem; }
+    .graph-empty p { margin: 0 0 6px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
+
+    /* Height cap matches the inset topicGraph.js leaves free when it frames a focused topic. */
+    .graph-panel {
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        max-height: min(50%, 400px);
+        display: flex;
+        flex-direction: column;
+        padding: 12px 12px 0;
+        z-index: 20;
+        animation: panelUp 0.22s var(--ease-spring, ease);
+        box-shadow: 0 6px 24px var(--shadow);
+    }
+
+    @@keyframes panelUp { from { opacity: 0; transform: translateY(14px); } }
+    @@keyframes graphFade { from { opacity: 0; } }
+
+    .gp-head { display: flex; align-items: center; gap: 10px; }
+
+    .gp-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .gp-title strong { font-size: 1rem; line-height: 1.25; }
+    .gp-title small { font-size: 0.76rem; color: var(--text-muted); }
+
+    .gp-close {
+        display: grid; place-items: center;
+        width: 36px; height: 36px; flex-shrink: 0;
+        border: none; border-radius: 50%;
+        background: var(--bg-surface); color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .gp-open { align-self: stretch; margin: 10px 0 4px; min-height: 38px; }
+
+    .gp-dot {
+        --hue: var(--primary);
+        flex-shrink: 0;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--hue) 38%, var(--bg-card));
+        border: 1px solid color-mix(in srgb, var(--hue) 55%, transparent);
+    }
+
+    .gp-dot.big { width: 22px; height: 22px; }
+    .gp-dot.done { background: var(--hue); border-color: var(--hue); }
+    .gp-dot.next { background: transparent; border: 1.5px dashed var(--hue); }
+
+    .gp-scroll {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        margin: 0 -12px;
+        padding: 0 12px 12px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .gp-none { font-size: 0.85rem; color: var(--text-muted); margin: 10px 0 4px; }
+
+    .gp-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 12px 0 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .gp-group span {
+        font-size: 0.68rem;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        letter-spacing: 0;
+    }
+
+    .gp-entry {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        text-align: left;
+        padding: 9px 4px 9px 2px;
+        background: none;
+        border: none;
+        border-top: 1px solid var(--border);
+        font: inherit;
+        color: var(--text-primary);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .gp-group + .gp-entry { border-top: none; }
+    .gp-entry:active { background: var(--bg-surface); }
+    .gp-entry .gp-dot { margin-top: 3px; }
+
+    .gp-entry-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .gp-entry-name { font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
+    .gp-entry-text small { font-size: 0.76rem; line-height: 1.4; color: var(--text-secondary); }
+
+    .gp-tag {
+        font-style: normal;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding: 1px 6px;
+        margin-left: 4px;
+        border-radius: 999px;
+        background: var(--bg-surface);
         white-space: nowrap;
+        vertical-align: 1px;
     }
 
-    .legend-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
+    .gp-chev { display: flex; color: var(--text-muted); margin-top: 2px; }
+
+    @@media (min-width: 720px) {
+        .graph-panel {
+            left: auto;
+            top: 8px;
+            right: 8px;
+            width: 356px;
+            max-height: none;
+        }
     }
 
-    .legend-label {
-        text-transform: capitalize;
-    }
-
-    .legend-line {
-        display: inline-block;
-        width: 20px;
-        height: 2px;
-        border-radius: 1px;
-    }
-
-    .legend-line.prereq { background: var(--primary); }
-    .legend-line.related { background: rgba(180,180,180,0.5); border-top: 1px dashed rgba(180,180,180,0.5); height: 0; }
-
-    .legend-node {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        border: 2px solid var(--text-muted);
-        flex-shrink: 0;
-    }
-
-    .legend-node.filled { background: var(--text-muted); }
-    .legend-node.hollow { background: transparent; }
-
-    @@media (min-width: 768px) {
+    @@media (min-width: 1024px) {
+        .graph-page { left: 220px; bottom: 0; }
+        .graph-header { padding: 14px 20px 4px 12px; }
         .graph-header h1 { font-size: 1.3rem; }
-        .domain-filter { font-size: 0.85rem; }
+        .graph-controls { padding: 8px 20px 12px; max-width: 640px; border-bottom: none; }
     }
 </style>

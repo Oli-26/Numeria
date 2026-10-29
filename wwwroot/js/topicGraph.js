@@ -1,526 +1,1094 @@
 /**
- * TopicGraph: force-directed knowledge graph renderer
- * Uses HTML5 Canvas for 60fps rendering with touch/mouse support.
+ * TopicGraph: knowledge graph renderer on HTML5 Canvas.
+ * Layouts are computed once per view and cached; view changes, focus and camera moves animate.
  * Exposed as window.TopicGraph for Blazor JSInterop.
  */
 (function () {
   'use strict';
 
+  var TAU = Math.PI * 2;
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  function seededRandom(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = Math.imul(a ^ (a >>> 15), a | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function hashString(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+
+  function parseColor(c, fallback) {
+    c = (c || '').trim();
+    var m = /^#([0-9a-f]{3})$/i.exec(c);
+    if (m) c = '#' + m[1][0] + m[1][0] + m[1][1] + m[1][1] + m[1][2] + m[1][2];
+    m = /^#([0-9a-f]{6})/i.exec(c);
+    if (m) { var n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+    m = /^rgba?\(([^)]+)\)/i.exec(c);
+    if (m) { var p = m[1].split(/[ ,/]+/).map(parseFloat); return [p[0], p[1], p[2]]; }
+    return fallback || [136, 136, 136];
+  }
+
+  function rgba(rgb, a) {
+    return 'rgba(' + Math.round(rgb[0]) + ',' + Math.round(rgb[1]) + ',' + Math.round(rgb[2]) + ',' + a + ')';
+  }
+
+  function mix(a, b, t) {
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+
+  function luma(rgb) { return (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255; }
+
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+  function truncate(s, max) { return s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s; }
+
   class TopicGraph {
     constructor() {
       this.canvas = null;
       this.ctx = null;
+      this.dotNetRef = null;
       this.nodes = [];
       this.edges = [];
-      this.dotNetRef = null;
-      this.animFrameId = null;
-      this.running = false;
+      this._index = {};
+      this.maxDeg = 1;
 
-      // Layout
       this.w = 0;
       this.h = 0;
+      this.dpr = 1;
 
-      // Camera
+      // Camera: screen = world * scale + cam
       this.camX = 0;
       this.camY = 0;
       this.scale = 1;
+      this.fitScale = 1;
+      this._camAnim = null;
+      this._posAnim = null;
 
-      // Interaction
-      this.dragging = false;
-      this.dragNode = null;
-      this.lastPointer = { x: 0, y: 0 };
-      this.pinchDist = 0;
-      this.hoveredNode = null;
+      this.layout = 'web';
+      this.mine = false;
+      this.focusId = null;
+      this._layoutCache = {};
+      this._hasView = false;
 
-      // Simulation
-      this.simSteps = 0;
-      this.maxSimSteps = 300;
+      this._pointer = null;
+      this._pinch = null;
+      this._hovered = null;
+      this._textWidths = new Map();
+      this._themeKey = '';
 
-      // Layout mode: force | circular | grid | hierarchical | radial
-      this.layout = 'force';
+      this.running = false;
+      this.animFrameId = 0;
+      this._lastFrame = 0;
+      this._dirty = true;
 
-      // Bind handlers
       this._onMouseDown = this._onMouseDown.bind(this);
       this._onMouseMove = this._onMouseMove.bind(this);
       this._onMouseUp = this._onMouseUp.bind(this);
+      this._onMouseLeave = this._onMouseLeave.bind(this);
       this._onWheel = this._onWheel.bind(this);
       this._onTouchStart = this._onTouchStart.bind(this);
       this._onTouchMove = this._onTouchMove.bind(this);
       this._onTouchEnd = this._onTouchEnd.bind(this);
       this._onResize = this._onResize.bind(this);
       this._loop = this._loop.bind(this);
-
-      // Any input marks the canvas for a redraw; see _loop.
-      this._dirty = true;
-      ['_onMouseDown', '_onMouseMove', '_onMouseUp', '_onWheel', '_onTouchStart', '_onTouchMove', '_onTouchEnd', '_onResize'].forEach(k => {
-        var handler = this[k];
-        this[k] = e => { this._dirty = true; return handler(e); };
-      });
     }
 
     // ─── Public API (called from Blazor) ───────────────────────────────────────
 
-    init(canvasId, graphData, completedIds, dotNetRef) {
+    init(canvasId, graphData, options, dotNetRef) {
       this.canvas = document.getElementById(canvasId);
       if (!this.canvas) return;
       this.ctx = this.canvas.getContext('2d');
       this.dotNetRef = dotNetRef;
       this._resize();
-      this._loadGraph(graphData, completedIds || []);
+      this._loadGraph(graphData, options || {});
       this._attachEvents();
       this.running = true;
-      this._loop();
+      this.animFrameId = requestAnimationFrame(this._loop);
     }
 
-    updateCompleted(completedIds) {
+    // ids: visible topics; nextIds: faint "next up" neighbours (My topics view)
+    setView(key, ids, nextIds, layout) {
+      this.layout = layout === 'layers' ? 'layers' : 'web';
+      var visible = new Set(ids || []);
+      var next = new Set(nextIds || []);
+      this.mine = next.size > 0 || /\|mine$/.test(key || '');
+      this.focusId = null;
+      this._preFocusCam = null;
+
+      var list = this.nodes.filter(function (n) { return visible.has(n.id); });
+      var pos = this._layoutFor(key, list);
+      var animate = this._hasView;
+
       for (var n of this.nodes) {
-        n.completed = completedIds.includes(n.id);
-      }
-    }
-
-    filterDomain(domain) {
-      // domain === 'all' means show everything
-      for (var n of this.nodes) {
-        n.hidden = domain !== 'all' && n.domain !== domain;
-      }
-    }
-
-    setLayout(mode) {
-      this.layout = mode || 'force';
-      this._applyLayout();
-    }
-
-    _applyLayout() {
-      var visible = this.nodes.filter(function (n) { return !n.hidden; });
-      if (visible.length === 0) return;
-
-      switch (this.layout) {
-        case 'circular': this._layoutCircular(visible); break;
-        case 'grid': this._layoutGrid(visible); break;
-        case 'hierarchical': this._layoutHierarchical(visible); break;
-        case 'radial': this._layoutRadial(visible); break;
-        case 'force':
-        default: this._layoutForce(visible); break;
-      }
-      this._fit();
-    }
-
-    _layoutForce(visible) {
-      // Reseed in domain clusters and let the simulation re-run.
-      var domainOrder = this._domainOrder(visible);
-      var cx = this.w / 2, cy = this.h / 2;
-      var clusterR = Math.min(this.w, this.h) * 0.32;
-      var counts = {}, idxMap = {};
-      for (var n of visible) counts[n.domain] = (counts[n.domain] || 0) + 1;
-      for (var n of visible) {
-        var di = domainOrder.indexOf(n.domain);
-        if (di < 0) di = 0;
-        var angle = (di / domainOrder.length) * Math.PI * 2;
-        var idx = idxMap[n.domain] = (idxMap[n.domain] || 0) + 1;
-        var count = counts[n.domain];
-        var spread = (Math.PI * 2) / domainOrder.length * 0.65;
-        var localAngle = angle + spread * ((idx - 1) / Math.max(count - 1, 1) - 0.5);
-        var r = clusterR * (0.85 + Math.random() * 0.3);
-        n.x = cx + Math.cos(localAngle) * r + (Math.random() - 0.5) * 30;
-        n.y = cy + Math.sin(localAngle) * r + (Math.random() - 0.5) * 30;
-        n.vx = 0; n.vy = 0;
-      }
-      this.simSteps = 0; // re-run simulation
-    }
-
-    _layoutCircular(visible) {
-      // Sort by domain so same-domain nodes are adjacent on the ring
-      visible.sort(function (a, b) { return a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name); });
-      var cx = this.w / 2, cy = this.h / 2;
-      var R = Math.min(this.w, this.h) * 0.42;
-      for (var i = 0; i < visible.length; i++) {
-        var t = (i / visible.length) * Math.PI * 2 - Math.PI / 2;
-        var n = visible[i];
-        n.x = cx + Math.cos(t) * R;
-        n.y = cy + Math.sin(t) * R;
-        n.vx = 0; n.vy = 0;
-      }
-      this.simSteps = this.maxSimSteps; // freeze
-    }
-
-    _layoutGrid(visible) {
-      // Group by domain, lay out each domain as a row
-      var groups = {};
-      for (var n of visible) (groups[n.domain] = groups[n.domain] || []).push(n);
-      var domainKeys = Object.keys(groups).sort();
-      var marginX = 60, marginY = 60;
-      var rowH = (this.h - marginY * 2) / Math.max(domainKeys.length, 1);
-      for (var r = 0; r < domainKeys.length; r++) {
-        var arr = groups[domainKeys[r]];
-        var colW = (this.w - marginX * 2) / Math.max(arr.length, 1);
-        for (var c = 0; c < arr.length; c++) {
-          var nd = arr[c];
-          nd.x = marginX + colW * (c + 0.5);
-          nd.y = marginY + rowH * (r + 0.5);
-          nd.vx = 0; nd.vy = 0;
+        n.next = next.has(n.id);
+        var p = pos[n.id];
+        if (p) {
+          if (!animate || n.vis < 0.05) { n.x = p.x; n.y = p.y; }
+          n.fx = n.x; n.fy = n.y;
+          n.tx = n.bx = p.x; n.ty = n.by = p.y;
+          n.visT = 1;
+        } else {
+          n.fx = n.tx = n.x;
+          n.fy = n.ty = n.y;
+          n.visT = 0;
         }
       }
-      this.simSteps = this.maxSimSteps;
+      this._posAnim = animate ? { t0: performance.now(), dur: 650 } : null;
+      this._applyFocus();
+      this._fitView(animate);
+      this._hasView = true;
+      this._dirty = true;
     }
 
-    _layoutHierarchical(visible) {
-      // BFS depth from prereq edges. Roots = nodes with no incoming prereq.
-      var idx = {};
-      for (var n of visible) idx[n.id] = n;
-      var incoming = {};
-      for (var e of this.edges) {
-        if (e.type !== 'prereq') continue;
-        if (!idx[e.from] || !idx[e.to]) continue;
-        incoming[e.to] = (incoming[e.to] || 0) + 1;
-      }
-      var depth = {};
-      var queue = [];
-      for (var n of visible) {
-        if (!incoming[n.id]) { depth[n.id] = 0; queue.push(n.id); }
-      }
-      // If no roots (cycles or no prereq edges), seed all at 0
-      if (queue.length === 0) for (var n of visible) { depth[n.id] = 0; queue.push(n.id); }
-      while (queue.length) {
-        var cur = queue.shift();
-        var d = depth[cur];
-        for (var e of this.edges) {
-          if (e.type !== 'prereq' || e.from !== cur) continue;
-          var nd = depth[e.to];
-          if (nd === undefined || nd < d + 1) {
-            depth[e.to] = d + 1;
-            queue.push(e.to);
-          }
-        }
-      }
-      // Layers
-      var maxDepth = 0;
-      for (var n of visible) {
-        if (depth[n.id] === undefined) depth[n.id] = 0;
-        if (depth[n.id] > maxDepth) maxDepth = depth[n.id];
-      }
-      var layers = [];
-      for (var i = 0; i <= maxDepth; i++) layers.push([]);
-      for (var n of visible) layers[depth[n.id]].push(n);
-      var marginX = 60, marginY = 60;
-      var layerH = (this.h - marginY * 2) / Math.max(maxDepth + 1, 1);
-      for (var l = 0; l < layers.length; l++) {
-        var arr = layers[l];
-        arr.sort(function (a, b) { return a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name); });
-        var colW = (this.w - marginX * 2) / Math.max(arr.length, 1);
-        for (var c = 0; c < arr.length; c++) {
-          arr[c].x = marginX + colW * (c + 0.5);
-          arr[c].y = marginY + layerH * (l + 0.5);
-          arr[c].vx = 0; arr[c].vy = 0;
-        }
-      }
-      this.simSteps = this.maxSimSteps;
+    focus(id) {
+      var n = id ? this._index[id] : null;
+      if (n && n.visT === 0) return false;
+      this._setFocus(n);
+      return true;
     }
 
-    _layoutRadial(visible) {
-      // Center hub per domain, nodes on concentric petals
-      var groups = {};
-      for (var n of visible) (groups[n.domain] = groups[n.domain] || []).push(n);
-      var domainKeys = Object.keys(groups).sort();
-      var cx = this.w / 2, cy = this.h / 2;
-      var hubR = Math.min(this.w, this.h) * 0.18;
-      var petalR = Math.min(this.w, this.h) * 0.16;
-      for (var di = 0; di < domainKeys.length; di++) {
-        var angle = (di / domainKeys.length) * Math.PI * 2 - Math.PI / 2;
-        var hubX = cx + Math.cos(angle) * hubR * 1.2;
-        var hubY = cy + Math.sin(angle) * hubR * 1.2;
-        var arr = groups[domainKeys[di]];
-        for (var i = 0; i < arr.length; i++) {
-          var t = (i / Math.max(arr.length, 1)) * Math.PI * 2;
-          var nd = arr[i];
-          nd.x = hubX + Math.cos(t) * petalR;
-          nd.y = hubY + Math.sin(t) * petalR;
-          nd.vx = 0; nd.vy = 0;
-        }
-      }
-      this.simSteps = this.maxSimSteps;
+    fit() {
+      if (this.focusId) this._fitFocus(true);
+      else this._fitView(true);
     }
 
-    _domainOrder(visible) {
-      var seen = {};
-      var order = [];
-      for (var n of visible) if (!seen[n.domain]) { seen[n.domain] = true; order.push(n.domain); }
-      return order.length ? order : ['math','physics','chemistry','biology','geology','history','linguistics','philosophy'];
-    }
-
-    _fit() {
-      // Reset camera so the new layout is visible
-      this.camX = 0; this.camY = 0; this.scale = 1;
+    screenPos(id) {
+      var n = this._index[id];
+      if (!n) return null;
+      return { x: n.x * this.scale + this.camX, y: n.y * this.scale + this.camY };
     }
 
     destroy() {
-        cancelAnimationFrame(this.animFrameId);
-        this.animFrameId = 0;
-
-        var removeListeners = ['mousedown', 'mouseup', 'mousemove', 'mouseleave', 'touchstart', 'touchmove', 'touchend', 'wheel'];
-        for (var i = 0; i < removeListeners.length; i++) {
-            this.canvas && this.canvas.removeEventListener(removeListeners[i], this.eventProxy);
-        }
-        window.removeEventListener('resize', this.resizeProxy);
-        this.eventProxy = null;
-        this.resizeProxy = null;
-
-        this.canvas = null;
-        this.ctx = null;
-        this.nodes = null;
-        this.edges = null;
-        this.dotNetRef = null;
+      this.running = false;
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = 0;
+      this._detachEvents();
+      this.canvas = null;
+      this.ctx = null;
+      this.nodes = [];
+      this.edges = [];
+      this._index = {};
+      this.dotNetRef = null;
     }
 
     // ─── Graph loading ──────────────────────────────────────────────────────────
 
-    _loadGraph(graphData, completedIds) {
+    _loadGraph(graphData, options) {
       var data = typeof graphData === 'string' ? JSON.parse(graphData) : graphData;
-      var nodeCount = data.nodes.length;
+      var hues = options.hues || {};
+      var progress = options.progress || {};
+      this.domainNames = options.names || {};
 
-      // Place nodes in a rough domain cluster layout on a circle
-      var domainOrder = ['math','physics','chemistry','biology','geology','history','linguistics','philosophy'];
-      var domainAngles = {};
-      domainOrder.forEach(function (d, i) {
-        domainAngles[d] = (i / domainOrder.length) * Math.PI * 2;
-      });
-
-      var W = this.w, H = this.h;
-      var centerX = W / 2, centerY = H / 2;
-      var clusterR = Math.min(W, H) * 0.32;
-
-      // Count per domain
-      var domainCounts = {};
-      for (var nd of data.nodes) {
-        domainCounts[nd.domain] = (domainCounts[nd.domain] || 0) + 1;
-      }
-      var domainIdx = {};
-
-      this.nodes = data.nodes.map(function (n) {
-        var angle = domainAngles[n.domain] || 0;
-        var idx = domainIdx[n.domain] = (domainIdx[n.domain] || 0) + 1;
-        var count = domainCounts[n.domain];
-        // Spread within cluster: stagger in a smaller arc around the cluster angle
-        var spread = (Math.PI * 2) / domainOrder.length * 0.65;
-        var localAngle = angle + spread * ((idx - 1) / Math.max(count - 1, 1) - 0.5);
-        var r = clusterR * (0.85 + Math.random() * 0.3);
+      this.nodes = (data.nodes || []).map(function (n) {
         return {
-          id: n.id,
-          name: n.name,
-          domain: n.domain,
-          color: '#888',
-          x: centerX + Math.cos(localAngle) * r + (Math.random() - 0.5) * 30,
-          y: centerY + Math.sin(localAngle) * r + (Math.random() - 0.5) * 30,
-          vx: 0,
-          vy: 0,
-          completed: completedIds.includes(n.id),
-          hidden: false,
-          r: 14
+          id: n.id, name: n.name, domain: n.domain,
+          hue: parseColor(hues[n.domain], [120, 120, 140]),
+          p: progress[n.id] || 0,
+          deg: 0, links: [],
+          x: 0, y: 0, fx: 0, fy: 0, tx: 0, ty: 0, bx: 0, by: 0,
+          vis: 0, visT: 0, hl: 1, hlT: 1,
+          next: false, sx: 0, sy: 0, r: 0
         };
       });
+      this._index = {};
+      for (var node of this.nodes) this._index[node.id] = node;
 
-      this.edges = data.edges.map(function (e) {
-        return { from: e.from, to: e.to, type: e.type, strength: e.strength };
-      });
-
-      // Build index
-      this._nodeIndex = {};
-      for (var node of this.nodes) {
-        this._nodeIndex[node.id] = node;
+      // Some pairs carry both a prereq and a related edge; keep the prereq.
+      var byPair = {};
+      for (var e of data.edges || []) {
+        var a = this._index[e.from], b = this._index[e.to];
+        if (!a || !b || a === b) continue;
+        var key = a.id < b.id ? a.id + '|' + b.id : b.id + '|' + a.id;
+        var prev = byPair[key];
+        if (prev && (prev.type === 'prereq' || e.type !== 'prereq')) continue;
+        byPair[key] = { a: a, b: b, type: e.type === 'prereq' ? 'prereq' : 'related', strength: e.strength || 0.5 };
       }
-
-      this.simSteps = 0;
+      this.edges = Object.keys(byPair).map(function (k) { return byPair[k]; });
+      for (var ed of this.edges) {
+        ed.a.deg++; ed.b.deg++;
+        ed.a.links.push(ed); ed.b.links.push(ed);
+      }
+      this.maxDeg = Math.max(1, ...this.nodes.map(function (n) { return n.deg; }));
+      this._layoutCache = {};
     }
 
-    setColors(colorMap) {
-      // colorMap: { topicId -> color }
-      var map = typeof colorMap === 'string' ? JSON.parse(colorMap) : colorMap;
+    // ─── Layouts ────────────────────────────────────────────────────────────────
+
+    _layoutFor(key, list) {
+      var portrait = this.h >= this.w;
+      var cacheKey = this.layout + '|' + (portrait ? 'p' : 'l') + '|' + key;
+      if (this._layoutCache[cacheKey]) return this._layoutCache[cacheKey];
+      var pos;
+      if (this.layout === 'layers') pos = this._layersLayout(list);
+      else if (list.length === this.nodes.length) pos = this._orient(this._forceLayout(list, 'all', null), portrait);
+      else pos = this._orient(this._forceLayout(list, key, this._layoutFor('all', this.nodes)), portrait);
+      this._layoutCache[cacheKey] = pos;
+      return pos;
+    }
+
+    // Turn a layout so its long axis runs along the screen's long axis, then stretch it a little
+    // toward the screen's aspect so a round cluster still fills a tall phone.
+    _orient(pos, portrait) {
+      var ids = Object.keys(pos), n = ids.length;
+      if (n < 3) return pos;
+      var mx = 0, my = 0;
+      for (var id of ids) { mx += pos[id].x; my += pos[id].y; }
+      mx /= n; my /= n;
+      var sxx = 0, syy = 0, sxy = 0;
+      for (var id of ids) {
+        var dx = pos[id].x - mx, dy = pos[id].y - my;
+        sxx += dx * dx; syy += dy * dy; sxy += dx * dy;
+      }
+      var major = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+      var rot = (portrait ? Math.PI / 2 : 0) - major;
+      var c = Math.cos(rot), s = Math.sin(rot), out = {};
+      var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (var id of ids) {
+        var dx = pos[id].x - mx, dy = pos[id].y - my;
+        var p = out[id] = { x: dx * c - dy * s, y: dx * s + dy * c };
+        x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+      }
+      var target = Math.max(this.h - 80, 1) / Math.max(this.w - 60, 1);
+      var ratio = (y1 - y0) / Math.max(x1 - x0, 1);
+      var k = portrait ? clamp(target / ratio, 1, 1.5) : 1;
+      var kx = portrait ? 1 : clamp(ratio / target, 1, 1.5);
+      for (var id of ids) { out[id].x *= kx; out[id].y *= k; }
+      return out;
+    }
+
+    // Domains whose topics link most sit next to each other on the seed ellipse.
+    _domainOrder(list) {
+      var weight = {}, domains = [];
+      for (var n of list) if (!(n.domain in weight)) { weight[n.domain] = {}; domains.push(n.domain); }
+      for (var e of this.edges) {
+        var da = e.a.domain, db = e.b.domain;
+        if (da === db || !(da in weight) || !(db in weight)) continue;
+        weight[da][db] = (weight[da][db] || 0) + 1;
+        weight[db][da] = (weight[db][da] || 0) + 1;
+      }
+      var total = function (d) { var s = 0; for (var k in weight[d]) s += weight[d][k]; return s; };
+      domains.sort(function (x, y) { return total(y) - total(x) || (x < y ? -1 : 1); });
+      var order = domains.length ? [domains.shift()] : [];
+      while (domains.length) {
+        var last = order[order.length - 1], best = 0;
+        for (var i = 1; i < domains.length; i++) {
+          if ((weight[last][domains[i]] || 0) > (weight[last][domains[best]] || 0)) best = i;
+        }
+        order.push(domains.splice(best, 1)[0]);
+      }
+      return order;
+    }
+
+    _forceLayout(list, key, seedPos) {
+      var n = list.length, out = {};
+      if (n === 0) return out;
+      if (n === 1) { out[list[0].id] = { x: 0, y: 0 }; return out; }
+
+      var rand = seededRandom(hashString(key || 'graph'));
+      var X = new Float64Array(n), Y = new Float64Array(n);
+      var VX = new Float64Array(n), VY = new Float64Array(n);
+      var ix = {};
+      for (var i = 0; i < n; i++) ix[list[i].id] = i;
+
+      var order = this._domainOrder(list);
+      var dIdx = new Int32Array(n), D = order.length;
+      for (var i = 0; i < n; i++) dIdx[i] = order.indexOf(list[i].domain);
+
+      if (seedPos) {
+        var mx = 0, my = 0;
+        for (var i = 0; i < n; i++) { var s = seedPos[list[i].id]; mx += s.x; my += s.y; }
+        mx /= n; my /= n;
+        for (var i = 0; i < n; i++) {
+          var s = seedPos[list[i].id];
+          X[i] = (s.x - mx) * 0.6 + (rand() - 0.5) * 4;
+          Y[i] = (s.y - my) * 0.6 + (rand() - 0.5) * 4;
+        }
+      } else {
+        var R = 42 * Math.sqrt(n);
+        for (var i = 0; i < n; i++) {
+          var ang = (dIdx[i] / D) * TAU - Math.PI / 2;
+          var spread = 20 + rand() * 14 * Math.sqrt(n / D);
+          var a2 = rand() * TAU;
+          X[i] = Math.cos(ang) * R * 0.6 + Math.cos(a2) * spread;
+          Y[i] = Math.sin(ang) * R * 1.4 + Math.sin(a2) * spread;
+        }
+      }
+
+      var links = [], count = new Float64Array(n);
+      for (var e of this.edges) {
+        var ia = ix[e.a.id], ib = ix[e.b.id];
+        if (ia === undefined || ib === undefined) continue;
+        var same = e.a.domain === e.b.domain;
+        links.push({
+          a: ia, b: ib,
+          len: (e.type === 'prereq' ? 64 : 84) * (same ? 1 : 1.5),
+          k: (0.35 + 0.65 * e.strength) * (same ? 0.9 : 0.08) * (e.type === 'prereq' ? 1 : 0.7)
+        });
+        count[ia]++; count[ib]++;
+      }
+
+      var ITER = n > 120 ? 300 : 260;
+      var CHARGE = -320, MIN_D = 36;
+      var GX = 0.05, GY = 0.02, COHESION = D > 1 ? 0.2 : 0;
+      var alpha = 1, decay = 1 - Math.pow(0.002, 1 / ITER);
+      var cx = new Float64Array(D), cy = new Float64Array(D), cn = new Float64Array(D);
+
+      for (var it = 0; it < ITER; it++) {
+        for (var i = 0; i < n; i++) {
+          for (var j = i + 1; j < n; j++) {
+            var dx = X[j] - X[i], dy = Y[j] - Y[i];
+            var d2 = dx * dx + dy * dy;
+            if (d2 < 0.01) { dx = rand() - 0.5; dy = rand() - 0.5; d2 = dx * dx + dy * dy; }
+            var w = CHARGE * alpha / d2;
+            if (d2 < MIN_D * MIN_D) {
+              var d = Math.sqrt(d2);
+              w -= (MIN_D - d) / d * 0.35;
+            }
+            VX[i] += dx * w; VY[i] += dy * w;
+            VX[j] -= dx * w; VY[j] -= dy * w;
+          }
+        }
+        for (var L of links) {
+          var dx = X[L.b] + VX[L.b] - X[L.a] - VX[L.a];
+          var dy = Y[L.b] + VY[L.b] - Y[L.a] - VY[L.a];
+          var l = Math.sqrt(dx * dx + dy * dy) || 1;
+          l = (l - L.len) / l * alpha * L.k;
+          dx *= l; dy *= l;
+          var bias = count[L.a] / (count[L.a] + count[L.b]);
+          VX[L.b] -= dx * bias; VY[L.b] -= dy * bias;
+          VX[L.a] += dx * (1 - bias); VY[L.a] += dy * (1 - bias);
+        }
+        if (COHESION) {
+          cx.fill(0); cy.fill(0); cn.fill(0);
+          for (var i = 0; i < n; i++) { cx[dIdx[i]] += X[i]; cy[dIdx[i]] += Y[i]; cn[dIdx[i]]++; }
+          for (var i = 0; i < n; i++) {
+            var di = dIdx[i];
+            VX[i] += (cx[di] / cn[di] - X[i]) * COHESION * alpha;
+            VY[i] += (cy[di] / cn[di] - Y[i]) * COHESION * alpha;
+          }
+        }
+        for (var i = 0; i < n; i++) {
+          VX[i] -= X[i] * GX * alpha;
+          VY[i] -= Y[i] * GY * alpha;
+          VX[i] *= 0.6; VY[i] *= 0.6;
+          X[i] += VX[i]; Y[i] += VY[i];
+        }
+        alpha -= alpha * decay;
+      }
+
+      for (var i = 0; i < n; i++) out[list[i].id] = { x: X[i], y: Y[i] };
+      return out;
+    }
+
+    // One block per subject, packed in rows; prerequisite links mostly stay inside a subject.
+    _layersLayout(list) {
+      var order = this._domainOrder(list);
+      if (order.length <= 1) return this._layersBlock(list);
+      var GAPX = 120, GAPY = 150;
+      var blocks = order.map(function (d) {
+        var pos = this._layersBlock(list.filter(function (n) { return n.domain === d; }));
+        var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (var id in pos) {
+          x0 = Math.min(x0, pos[id].x); x1 = Math.max(x1, pos[id].x);
+          y0 = Math.min(y0, pos[id].y); y1 = Math.max(y1, pos[id].y);
+        }
+        return { pos: pos, x0: x0, y0: y0, w: x1 - x0, h: y1 - y0 };
+      }, this);
+
+      // Shelf-pack the blocks, trying several row widths and keeping the one that fits the screen largest.
+      var pack = function (maxW) {
+        var rows = [[]], rowW = 0;
+        for (var b of blocks) {
+          if (rows[rows.length - 1].length && rowW + b.w > maxW) { rows.push([]); rowW = 0; }
+          rows[rows.length - 1].push(b);
+          rowW += b.w + GAPX;
+        }
+        var width = 0, height = 0;
+        for (var row of rows) {
+          width = Math.max(width, row.reduce(function (sum, b) { return sum + b.w; }, 0) + GAPX * (row.length - 1));
+          height += Math.max.apply(null, row.map(function (b) { return b.h; })) + GAPY;
+        }
+        return { rows: rows, width: width, height: height - GAPY };
+      };
+      var widest = Math.max.apply(null, blocks.map(function (b) { return b.w; }));
+      var sumW = blocks.reduce(function (sum, b) { return sum + b.w + GAPX; }, 0);
+      var vw = Math.max(this.w - 60, 1), vh = Math.max(this.h - 80, 1);
+      var best = null, bestScale = -1;
+      for (var t = 0; t <= 16; t++) {
+        var p = pack(widest + (sumW - widest) * t / 16);
+        var sc = Math.min(vw / Math.max(p.width, 1), vh / Math.max(p.height, 1));
+        if (sc > bestScale) { bestScale = sc; best = p; }
+      }
+
+      var out = {}, y = 0;
+      for (var row of best.rows) {
+        var total = row.reduce(function (sum, b) { return sum + b.w; }, 0) + GAPX * (row.length - 1);
+        var x = -total / 2, rowH = 0;
+        for (var b of row) {
+          for (var id in b.pos) out[id] = { x: b.pos[id].x - b.x0 + x, y: b.pos[id].y - b.y0 + y };
+          x += b.w + GAPX;
+          rowH = Math.max(rowH, b.h);
+        }
+        y += rowH + GAPY;
+      }
+      return out;
+    }
+
+    // Rows by prerequisite depth: foundations at the top, what they unlock below.
+    _layersBlock(list) {
+      var n = list.length, out = {};
+      if (n === 0) return out;
+      var ix = {};
+      for (var i = 0; i < n; i++) ix[list[i].id] = i;
+      var parents = list.map(function () { return []; });
+      var children = list.map(function () { return []; });
+      var related = list.map(function () { return []; });
+      for (var e of this.edges) {
+        var ia = ix[e.a.id], ib = ix[e.b.id];
+        if (ia === undefined || ib === undefined) continue;
+        if (e.type === 'prereq') { parents[ib].push(ia); children[ia].push(ib); }
+        else { related[ia].push(ib); related[ib].push(ia); }
+      }
+
+      // Kahn order; nodes left over sit on cycles and take depth from whatever parents resolved.
+      var depth = new Int32Array(n), indeg = new Int32Array(n), done = new Uint8Array(n);
+      for (var i = 0; i < n; i++) indeg[i] = parents[i].length;
+      var queue = [];
+      for (var i = 0; i < n; i++) if (indeg[i] === 0) queue.push(i);
+      while (queue.length) {
+        var cur = queue.shift();
+        done[cur] = 1;
+        for (var c of children[cur]) {
+          if (depth[c] < depth[cur] + 1) depth[c] = depth[cur] + 1;
+          if (--indeg[c] === 0) queue.push(c);
+        }
+      }
+      for (var i = 0; i < n; i++) {
+        if (done[i]) continue;
+        var d = 0;
+        for (var p of parents[i]) if (done[p]) d = Math.max(d, depth[p] + 1);
+        depth[i] = d;
+      }
+      // Topics with no prerequisite links join the row of the topics they relate to.
+      for (var i = 0; i < n; i++) {
+        if (parents[i].length || children[i].length) continue;
+        var sum = 0, cnt = 0;
+        for (var r of related[i]) if (parents[r].length || children[r].length) { sum += depth[r]; cnt++; }
+        depth[i] = cnt ? Math.round(sum / cnt) : 0;
+      }
+
+      var maxDepth = 0;
+      for (var i = 0; i < n; i++) maxDepth = Math.max(maxDepth, depth[i]);
+      var layers = [];
+      for (var d = 0; d <= maxDepth; d++) layers.push([]);
+      for (var i = 0; i < n; i++) layers[depth[i]].push(i);
+      layers = layers.filter(function (l) { return l.length; });
+
+      var COL = 100, ROW = 64, GAP = 40;
+      var perRow = Math.max(4, Math.round(Math.sqrt(n) * 0.85));
+      var order = new Float64Array(n);
+      var y = 0;
+      for (var l = 0; l < layers.length; l++) {
+        var layer = layers[l];
+        layer.sort(function (a, b) {
+          var ba = 0, bb = 0;
+          if (l > 0) {
+            for (var p of parents[a]) ba += order[p];
+            for (var p of parents[b]) bb += order[p];
+            ba = parents[a].length ? ba / parents[a].length : 0.5;
+            bb = parents[b].length ? bb / parents[b].length : 0.5;
+          }
+          return ba - bb || (list[a].name < list[b].name ? -1 : 1);
+        });
+        var rows = Math.ceil(layer.length / perRow);
+        var cols = Math.ceil(layer.length / rows);
+        for (var k = 0; k < layer.length; k++) {
+          var row = Math.floor(k / cols), col = k % cols;
+          var inRow = Math.min(cols, layer.length - row * cols);
+          var stagger = rows > 1 && row % 2 ? COL / 2 : 0;
+          out[list[layer[k]].id] = { x: (col - (inRow - 1) / 2) * COL + stagger, y: y + row * ROW };
+          order[layer[k]] = layer.length > 1 ? k / (layer.length - 1) : 0.5;
+        }
+        y += rows * ROW + GAP;
+      }
+      return out;
+    }
+
+    // ─── Camera ─────────────────────────────────────────────────────────────────
+
+    // Screen region nodes should fit into; the focus panel covers the bottom (phone) or right (wide).
+    _viewport(focused) {
+      var v = { x0: 0, y0: 0, x1: this.w, y1: this.h };
+      if (focused) {
+        if (this.w >= 720) v.x1 = this.w - 372;
+        else v.y1 = this.h - Math.min(this.h * 0.5, 400) - 8;
+      }
+      return v;
+    }
+
+    _fitCamera(list, v, minS, maxS) {
+      return this._fitPoints(list.map(function (n) { return { x: n.tx, y: n.ty }; }), v, minS, maxS);
+    }
+
+    _fitPoints(points, v, minS, maxS) {
+      var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (var p of points) {
+        if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x;
+        if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y;
+      }
+      if (!isFinite(x0)) return { x: this.camX, y: this.camY, s: this.scale };
+      var padX = 30, padTop = 50, padBottom = 30;
+      var vw = Math.max(40, v.x1 - v.x0 - padX * 2), vh = Math.max(40, v.y1 - v.y0 - padTop - padBottom);
+      var s = clamp(Math.min(vw / Math.max(x1 - x0, 1), vh / Math.max(y1 - y0, 1)), minS, maxS);
+      var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      return {
+        x: (v.x0 + v.x1) / 2 - cx * s,
+        y: v.y0 + padTop + vh / 2 - cy * s,
+        s: s
+      };
+    }
+
+    _fitView(animate) {
+      var list = this.nodes.filter(function (n) { return n.visT === 1; });
+      var cam = this._fitCamera(list, this._viewport(false), 0.05, 1.6);
+      this.fitScale = cam.s;
+      this._moveCamera(cam, animate);
+    }
+
+    _fitFocus(animate) {
+      var f = this._index[this.focusId];
+      if (!f) return;
+      var list = [f];
+      for (var e of f.links) {
+        var o = e.a === f ? e.b : e.a;
+        if (o.visT === 1) list.push(o);
+      }
+      var v = this._viewport(true);
+      var cam;
+      if (list.length === 1) {
+        var s = Math.max(this.scale, 1.1);
+        cam = { x: (v.x0 + v.x1) / 2 - f.tx * s, y: (v.y0 + v.y1) / 2 - f.ty * s, s: s };
+      } else {
+        cam = this._fitCamera(list, v, Math.min(this.fitScale, 1), 1.5);
+      }
+      this._moveCamera(cam, animate);
+    }
+
+    _moveCamera(cam, animate) {
+      if (!animate) {
+        this._camAnim = null;
+        this.camX = cam.x; this.camY = cam.y; this.scale = cam.s;
+        return;
+      }
+      this._camAnim = { from: { x: this.camX, y: this.camY, s: this.scale }, to: cam, t0: performance.now(), dur: 600 };
+    }
+
+    _stepCamera(now) {
+      var a = this._camAnim;
+      var t = clamp((now - a.t0) / a.dur, 0, 1), e = easeInOut(t);
+      // Interpolate the world point under the screen centre and the log of the scale so zooms feel even.
+      var s = Math.exp(Math.log(a.from.s) + (Math.log(a.to.s) - Math.log(a.from.s)) * e);
+      var hw = this.w / 2, hh = this.h / 2;
+      var fcx = (hw - a.from.x) / a.from.s, fcy = (hh - a.from.y) / a.from.s;
+      var tcx = (hw - a.to.x) / a.to.s, tcy = (hh - a.to.y) / a.to.s;
+      this.scale = s;
+      this.camX = hw - (fcx + (tcx - fcx) * e) * s;
+      this.camY = hh - (fcy + (tcy - fcy) * e) * s;
+      if (t >= 1) this._camAnim = null;
+    }
+
+    _zoomAt(px, py, factor) {
+      var s = clamp(this.scale * factor, Math.min(this.fitScale * 0.5, 0.5), 4);
+      factor = s / this.scale;
+      this.camX = px - factor * (px - this.camX);
+      this.camY = py - factor * (py - this.camY);
+      this.scale = s;
+      this._camAnim = null;
+      this._dirty = true;
+    }
+
+    // ─── Focus ──────────────────────────────────────────────────────────────────
+
+    // Clearing focus returns the camera to where it was before the first topic was focused.
+    _setFocus(n) {
+      if (n && !this.focusId) {
+        var c = this._camAnim ? this._camAnim.to : { x: this.camX, y: this.camY, s: this.scale };
+        this._preFocusCam = { x: c.x, y: c.y, s: c.s };
+      }
+      var had = !!this.focusId;
+      this.focusId = n ? n.id : null;
+      this._applyFocus();
+      if (n) this._fitFocus(true);
+      else if (had && this._preFocusCam) this._moveCamera(this._preFocusCam, true);
+      if (!n) this._preFocusCam = null;
+      this._dirty = true;
+    }
+
+    _applyFocus() {
+      var f = this.focusId ? this._index[this.focusId] : null;
+      var near = new Set();
+      if (f) {
+        near.add(f);
+        for (var e of f.links) near.add(e.a === f ? e.b : e.a);
+      }
+      for (var n of this.nodes) n.hlT = !f || near.has(n) ? 1 : 0.1;
+
+      var ego = f ? this._egoPositions(f) : null;
+      var moved = false;
       for (var n of this.nodes) {
-        if (map[n.id]) n.color = map[n.id];
+        if (n.visT !== 1) continue;
+        var p = ego && ego[n.id];
+        var tx = p ? p.x : n.bx, ty = p ? p.y : n.by;
+        if (tx !== n.tx || ty !== n.ty) { n.tx = tx; n.ty = ty; moved = true; }
+      }
+      if (moved) {
+        for (var n of this.nodes) { n.fx = n.x; n.fy = n.y; }
+        this._posAnim = { t0: performance.now(), dur: 550 };
       }
     }
 
-    // ─── Physics simulation ─────────────────────────────────────────────────────
+    // Fan a focused topic's neighbours out round it: what it needs above, what it leads to below,
+    // related topics at the sides. Web positions carry no meaning so this always applies there;
+    // Layers rows encode depth, so they only fan out when neighbours would overlap.
+    _egoPositions(f) {
+      var needs = [], leads = [], related = [];
+      for (var e of f.links) {
+        var o = e.a === f ? e.b : e.a;
+        if (o.visT !== 1) continue;
+        if (e.type !== 'prereq') related.push(o);
+        else if (e.b === f) needs.push(o);
+        else leads.push(o);
+      }
+      var all = needs.concat(leads, related);
+      if (all.length === 0) return null;
 
-    _simulate() {
-      if (this.layout !== 'force') return;
-      if (this.simSteps >= this.maxSimSteps && !this.dragging) return;
-      this.simSteps++;
-
-      var nodes = this.nodes;
-      var edges = this.edges;
-      var idx = this._nodeIndex;
-      var W = this.w, H = this.h;
-      var cx = W / 2, cy = H / 2;
-
-      var REPULSE = 2200;
-      var SPRING_LEN = 90;
-      var SPRING_K = 0.012;
-      var DOMAIN_K = 0.004;
-      var DAMPEN = 0.78;
-      var CENTER_K = 0.0015;
-
-      // Domain cluster centres (same as initial placement)
-      var domainOrder = ['math','physics','chemistry','biology','geology','history','linguistics','philosophy'];
-      var clusterR = Math.min(W, H) * 0.32;
-      var domainCenters = {};
-      domainOrder.forEach(function (d, i) {
-        var angle = (i / domainOrder.length) * Math.PI * 2;
-        domainCenters[d] = { x: cx + Math.cos(angle) * clusterR, y: cy + Math.sin(angle) * clusterR };
-      });
-
-      // Repulsion between all nodes
-      for (var i = 0; i < nodes.length; i++) {
-        var ni = nodes[i];
-        if (ni.hidden || ni === this.dragNode) continue;
-        for (var j = i + 1; j < nodes.length; j++) {
-          var nj = nodes[j];
-          if (nj.hidden || nj === this.dragNode) continue;
-          var dx = ni.x - nj.x;
-          var dy = ni.y - nj.y;
-          var dist2 = dx * dx + dy * dy;
-          if (dist2 < 1) { dx = 1; dy = 1; dist2 = 2; }
-          var dist = Math.sqrt(dist2);
-          var force = REPULSE / dist2;
-          var fx = (dx / dist) * force;
-          var fy = (dy / dist) * force;
-          ni.vx += fx; ni.vy += fy;
-          nj.vx -= fx; nj.vy -= fy;
-        }
+      var v = this._viewport(true);
+      if (this.layout === 'layers') {
+        var pts = [{ x: f.bx, y: f.by }].concat(all.map(function (n) { return { x: n.bx, y: n.by }; }));
+        var fit = this._fitPoints(pts, v, Math.min(this.fitScale, 1), 1.5);
+        var minD = Infinity;
+        for (var i = 0; i < pts.length; i++)
+          for (var j = i + 1; j < pts.length; j++)
+            minD = Math.min(minD, Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y));
+        if (minD * fit.s >= 34) return null;
       }
 
-      // Spring forces along edges
-      for (var e of edges) {
-        var a = idx[e.from], b = idx[e.to];
-        if (!a || !b || a.hidden || b.hidden) continue;
-        var dx = b.x - a.x;
-        var dy = b.y - a.y;
-        var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        var targetLen = e.type === 'prereq' ? SPRING_LEN * 0.8 : SPRING_LEN * 1.2;
-        var stretch = (dist - targetLen) * SPRING_K * e.strength;
-        var fx = (dx / dist) * stretch;
-        var fy = (dy / dist) * stretch;
-        a.vx += fx; a.vy += fy;
-        b.vx -= fx; b.vy -= fy;
-      }
+      var byX = function (a, b) { return a.bx - b.bx; };
+      needs.sort(byX); leads.sort(byX).reverse(); related.sort(function (a, b) { return a.by - b.by; });
+      var half = Math.ceil(related.length / 2);
+      var ring = needs.concat(related.slice(0, half), leads, related.slice(half).reverse());
+      var N = ring.length, step = TAU / N;
+      var start;
+      if (needs.length) start = -Math.PI / 2 - (needs.length - 1) * step / 2;
+      else if (leads.length) start = Math.PI / 2 - (half + (leads.length - 1) / 2) * step;
+      else start = -Math.PI / 2;
 
-      // Domain cluster attraction + global center
-      for (var n of nodes) {
-        if (n.hidden || n === this.dragNode) continue;
-        var dc = domainCenters[n.domain];
-        if (dc) {
-          n.vx += (dc.x - n.x) * DOMAIN_K;
-          n.vy += (dc.y - n.y) * DOMAIN_K;
-        }
-        n.vx += (cx - n.x) * CENTER_K;
-        n.vy += (cy - n.y) * CENTER_K;
-
-        // Integrate
-        n.vx *= DAMPEN;
-        n.vy *= DAMPEN;
-        n.x += n.vx;
-        n.y += n.vy;
+      var s = clamp(this.scale, 0.9, 1.2);
+      var rx = Math.min((v.x1 - v.x0) / 2 - 60, 170) / s;
+      var ry = Math.min((v.y1 - v.y0 - 90) / 2, 170) / s;
+      var out = {};
+      for (var i = 0; i < N; i++) {
+        var a = start + i * step, k = N > 12 && i % 2 ? 0.6 : 1;
+        out[ring[i].id] = { x: f.bx + Math.cos(a) * rx * k, y: f.by + Math.sin(a) * ry * k };
       }
+      return out;
+    }
+
+    _notifyFocus() {
+      if (this.dotNetRef) this.dotNetRef.invokeMethodAsync('OnNodeFocused', this.focusId);
     }
 
     // ─── Rendering ──────────────────────────────────────────────────────────────
 
-    _render() {
-      var ctx = this.ctx;
-      var W = this.w, H = this.h;
-      ctx.clearRect(0, 0, W, H);
+    _readTheme() {
       var css = getComputedStyle(this.canvas);
-      var labelColor = css.getPropertyValue('--text-primary').trim() || '#fff';
-      var haloColor = css.getPropertyValue('--bg-main').trim() || '#000';
-      var edgeColor = css.getPropertyValue('--primary').trim() || '#B4552F';
-      var mutedColor = css.getPropertyValue('--text-muted').trim() || '#888';
+      var get = function (name, fb) { return css.getPropertyValue(name).trim() || fb; };
+      var key = get('--bg-main', '#F5F3EF') + get('--text-primary', '#2C2A26') + get('--bg-card', '#fff');
+      if (key === this._themeKey) return this.theme;
+      this._themeKey = key;
+      var bg = parseColor(get('--bg-main', '#F5F3EF'));
+      var dark = luma(bg) < 0.45;
+      this.theme = {
+        bg: bg,
+        card: parseColor(get('--bg-card', '#FFFFFF')),
+        text: parseColor(get('--text-primary', '#2C2A26')),
+        text2: parseColor(get('--text-secondary', '#5C5850')),
+        muted: parseColor(get('--text-muted', '#6B6458')),
+        dark: dark,
+        font: getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif'
+      };
+      // Subject hues lose contrast on dark backgrounds; lift them toward white.
+      for (var n of this.nodes) n.rgb = dark ? mix(n.hue, [255, 255, 255], 0.22) : n.hue;
+      this._textWidths.clear();
+      return this.theme;
+    }
 
-      ctx.save();
-      ctx.translate(this.camX, this.camY);
-      ctx.scale(this.scale, this.scale);
+    _radius(n, s) {
+      var base = 6.5 + 6 * Math.sqrt(n.deg / this.maxDeg);
+      var r = base * clamp(s, 0.5, 1.3);
+      if (n.p > 0) r += 2.5;
+      else if (n.next) r *= 0.8;
+      if (n.id === this.focusId) r *= 1.2;
+      return r;
+    }
 
-      // Edges
-      for (var e of this.edges) {
-        var a = this._nodeIndex[e.from];
-        var b = this._nodeIndex[e.to];
-        if (!a || !b || a.hidden || b.hidden) continue;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = e.type === 'prereq' ? edgeColor : mutedColor;
-        ctx.globalAlpha = e.type === 'prereq' ? 0.4 : 0.22;
-        ctx.lineWidth = e.type === 'prereq' ? 1.5 * e.strength + 0.5 : 1;
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      // Nodes
+    _render() {
+      var ctx = this.ctx, th = this._readTheme();
+      ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      ctx.clearRect(0, 0, this.w, this.h);
+      var s = this.scale;
       for (var n of this.nodes) {
-        if (n.hidden) continue;
-        var r = n.r;
-        var isHovered = n === this.hoveredNode;
+        n.sx = n.x * s + this.camX;
+        n.sy = n.y * s + this.camY;
+        n.r = this._radius(n, s);
+        n.on = n.vis > 0.01 && n.sx > -60 && n.sx < this.w + 60 && n.sy > -60 && n.sy < this.h + 60;
+      }
+      var focus = this.focusId ? this._index[this.focusId] : null;
+      this._drawEdges(ctx, th, focus, false);
+      if (focus) this._drawEdges(ctx, th, focus, true);
 
-        // Glow for hovered / completed
-        if (isHovered || n.completed) {
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, r + 5, 0, Math.PI * 2);
-          var glowColor = n.color + '44';
-          ctx.fillStyle = glowColor;
-          ctx.fill();
-        }
+      var dim = [], lit = [];
+      for (var n of this.nodes) if (n.on) (n.hl < 0.6 ? dim : lit).push(n);
+      for (var n of dim) this._drawNode(ctx, th, n);
+      for (var n of lit) if (n !== focus) this._drawNode(ctx, th, n);
+      if (focus && focus.on) this._drawNode(ctx, th, focus);
 
-        // Node circle
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-        if (n.completed) {
-          ctx.fillStyle = n.color;
+      this._drawLabels(ctx, th, focus);
+      ctx.globalAlpha = 1;
+    }
+
+    _drawEdges(ctx, th, focus, focusPass) {
+      var s = this.scale;
+      for (var e of this.edges) {
+        var a = e.a, b = e.b;
+        var vis = Math.min(a.vis, b.vis);
+        if (vis < 0.01 || (!a.on && !b.on)) continue;
+        if (a.next && b.next) continue;
+        var touches = focus && (a === focus || b === focus);
+        if (focusPass !== !!touches) continue;
+        var prereq = e.type === 'prereq';
+        if (!prereq && !touches && this.layout === 'layers') continue;
+
+        var alpha, width, color;
+        if (touches) {
+          alpha = prereq ? 0.9 : 0.75;
+          width = prereq ? 2.2 : 1.6;
+          color = prereq ? focus.rgb : th.text2;
         } else {
-          ctx.fillStyle = n.color + '33';
+          alpha = (prereq ? 0.34 * clamp(s * 1.6, 0.6, 1) : 0.15 * clamp(s * 1.6, 0.45, 1)) * Math.min(a.hl, b.hl) * (focus ? 0.4 : 1);
+          if (a.next || b.next) alpha *= 0.7;
+          if (th.dark) alpha *= 1.35;
+          width = prereq ? 1.3 : 1;
+          color = th.muted;
         }
-        ctx.fill();
-        ctx.strokeStyle = n.color;
-        ctx.lineWidth = isHovered ? 2.5 : 1.5;
-        ctx.stroke();
+        alpha *= vis;
+        if (alpha < 0.01) continue;
 
-        // Checkmark for completed
-        if (n.completed) {
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(n.x - 5, n.y);
-          ctx.lineTo(n.x - 1, n.y + 4);
-          ctx.lineTo(n.x + 5, n.y - 4);
+        var dx = b.sx - a.sx, dy = b.sy - a.sy;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        if (len < a.r + b.r + 2) continue;
+        var ux = dx / len, uy = dy / len;
+        var x0 = a.sx + ux * (a.r + 1.5), y0 = a.sy + uy * (a.r + 1.5);
+        var x1 = b.sx - ux * (b.r + 1.5), y1 = b.sy - uy * (b.r + 1.5);
+
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = rgba(color, 1);
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        if (prereq) {
+          var arrow = touches || (len > 40 && s >= 0.45);
+          var head = touches ? 7 : 5;
+          ctx.setLineDash([]);
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(arrow ? x1 - ux * head * 0.8 : x1, arrow ? y1 - uy * head * 0.8 : y1);
+          ctx.stroke();
+          if (arrow) {
+            ctx.fillStyle = rgba(color, 1);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 - ux * head * 1.6 - uy * head * 0.75, y1 - uy * head * 1.6 + ux * head * 0.75);
+            ctx.lineTo(x1 - ux * head * 1.6 + uy * head * 0.75, y1 - uy * head * 1.6 - ux * head * 0.75);
+            ctx.closePath();
+            ctx.fill();
+          }
+        } else {
+          // Related links bow slightly so they read apart from straight prerequisite arrows.
+          var bend = len * 0.12;
+          ctx.setLineDash(touches ? [5, 4] : [3, 4]);
+          ctx.moveTo(x0, y0);
+          ctx.quadraticCurveTo((x0 + x1) / 2 - uy * bend, (y0 + y1) / 2 + ux * bend, x1, y1);
           ctx.stroke();
         }
+      }
+      ctx.setLineDash([]);
+    }
 
-        // Label
-        var fontSize = Math.max(8, Math.min(11, 11 * this.scale)) / this.scale;
-        ctx.font = 'bold ' + fontSize + 'px system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        var text = n.name.length > 16 ? n.name.slice(0, 15) + '…' : n.name;
-        var ty = n.y + r + fontSize * 0.8;
-        // Halo in the page colour keeps labels readable where they cross edges and nodes, in light and dark themes.
-        ctx.globalAlpha = isHovered ? 1 : 0.85;
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = 3 / this.scale;
-        ctx.strokeStyle = haloColor;
-        ctx.strokeText(text, n.x, ty);
-        ctx.fillStyle = labelColor;
-        ctx.fillText(text, n.x, ty);
-        ctx.globalAlpha = 1;
+    _drawNode(ctx, th, n) {
+      var a = n.vis * n.hl;
+      if (a < 0.01) return;
+      var x = n.sx, y = n.sy, r = n.r, hue = n.rgb;
+      var isFocus = n.id === this.focusId;
+      ctx.globalAlpha = a;
+
+      if (isFocus) {
+        ctx.fillStyle = rgba(hue, 0.2);
+        ctx.beginPath();
+        ctx.arc(x, y, r + 9, 0, TAU);
+        ctx.fill();
       }
 
-      ctx.restore();
+      if (n.p >= 100) {
+        ctx.fillStyle = rgba(hue, 0.18);
+        ctx.beginPath();
+        ctx.arc(x, y, r + 3.5, 0, TAU);
+        ctx.fill();
+        ctx.fillStyle = rgba(hue, 1);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, TAU);
+        ctx.fill();
+        if (r >= 6) {
+          var k = r / 10;
+          ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+          ctx.lineWidth = Math.max(1.5, 2 * k);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(x - 4.2 * k, y + 0.2 * k);
+          ctx.lineTo(x - 1.2 * k, y + 3.2 * k);
+          ctx.lineTo(x + 4.4 * k, y - 3.2 * k);
+          ctx.stroke();
+          ctx.lineCap = 'butt';
+        }
+      } else if (n.p > 0) {
+        var ring = Math.max(2, r * 0.3);
+        ctx.fillStyle = rgba(mix(th.card, hue, 0.14), 1);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, TAU);
+        ctx.fill();
+        ctx.lineWidth = ring;
+        ctx.strokeStyle = rgba(hue, 0.25);
+        ctx.beginPath();
+        ctx.arc(x, y, r - ring / 2, 0, TAU);
+        ctx.stroke();
+        ctx.strokeStyle = rgba(hue, 1);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(x, y, r - ring / 2, -Math.PI / 2, -Math.PI / 2 + TAU * Math.max(0.06, n.p / 100));
+        ctx.stroke();
+        ctx.lineCap = 'butt';
+      } else if (n.next) {
+        ctx.fillStyle = rgba(th.bg, 1);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, TAU);
+        ctx.fill();
+        ctx.setLineDash([2.5, 2.5]);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = rgba(hue, 0.85);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        ctx.fillStyle = rgba(mix(th.bg, hue, th.dark ? 0.5 : 0.38), 1);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, TAU);
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = rgba(hue, th.dark ? 0.55 : 0.5);
+        ctx.stroke();
+      }
+
+      if (n === this._hovered && !isFocus) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = rgba(hue, 0.6);
+        ctx.beginPath();
+        ctx.arc(x, y, r + 3, 0, TAU);
+        ctx.stroke();
+      }
+    }
+
+    _textWidth(ctx, font, text) {
+      var key = font + '|' + text;
+      var w = this._textWidths.get(key);
+      if (w === undefined) { ctx.font = font; w = ctx.measureText(text).width; this._textWidths.set(key, w); }
+      return w;
+    }
+
+    // Labels go to the focused node, its neighbours and learned topics first, then subject names over
+    // their clusters; other topics only once zoomed in. A label that would overlap a placed label (or,
+    // for minor labels, a node) is tried on another side, then dropped.
+    _drawLabels(ctx, th, focus) {
+      var zoomed = this.scale >= 0.8;
+      var cands = [];
+      for (var n of this.nodes) {
+        if (!n.on || n.vis < 0.6) continue;
+        var pri;
+        if (focus) {
+          if (n === focus) pri = 0;
+          else if (n.hl > 0.5) pri = 1;
+          else continue;
+        } else if (n.p > 0) pri = 2;
+        else if (n.next && (zoomed || this.mine)) pri = 3;
+        else if (zoomed) pri = 4;
+        else continue;
+        cands.push({ n: n, pri: pri });
+      }
+      if (!focus && !zoomed) {
+        var groups = {};
+        for (var n of this.nodes) {
+          if (n.visT !== 1 || n.vis < 0.6) continue;
+          var g = groups[n.domain] || (groups[n.domain] = { x: 0, y: 0, k: 0, top: Infinity, bottom: -Infinity, rgb: n.rgb });
+          g.x += n.sx; g.y += n.sy; g.k++;
+          g.top = Math.min(g.top, n.sy - n.r); g.bottom = Math.max(g.bottom, n.sy + n.r);
+        }
+        var keys = Object.keys(groups);
+        if (keys.length > 1) {
+          for (var d of keys) {
+            var gr = groups[d];
+            if (gr.k < 3) continue;
+            cands.push({ group: gr, pri: 2.5, k: gr.k, text: this.domainNames[d] || d, x: gr.x / gr.k, y: gr.y / gr.k });
+          }
+        }
+      }
+      cands.sort(function (a, b) {
+        return a.pri - b.pri || (a.n && b.n ? b.n.p - a.n.p || b.n.deg - a.n.deg : (b.k || 0) - (a.k || 0));
+      });
+
+      var obstacles = [];
+      for (var n of this.nodes) if (n.on && n.vis > 0.5 && n.hl > 0.5) obstacles.push(n);
+      var placed = [];
+      var hits = function (x, y, w, h, self, avoidNodes) {
+        for (var p of placed) if (x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y) return true;
+        if (!avoidNodes) return false;
+        for (var o of obstacles) {
+          if (o === self) continue;
+          var nx = clamp(o.sx, x, x + w), ny = clamp(o.sy, y, y + h);
+          var ddx = o.sx - nx, ddy = o.sy - ny;
+          if (ddx * ddx + ddy * ddy < o.r * o.r) return true;
+        }
+        return false;
+      };
+      // A label must sit nearer its own node than any other, or it reads as the neighbour's.
+      var owns = function (x, y, w, h, self) {
+        var cx = x + w / 2, cy = y + h / 2;
+        var own = Math.hypot(self.sx - cx, self.sy - cy) - self.r;
+        for (var o of obstacles) {
+          if (o !== self && Math.hypot(o.sx - cx, o.sy - cy) - o.r < own - 2) return false;
+        }
+        return true;
+      };
+
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      ctx.lineJoin = 'round';
+      for (var c of cands) {
+        var nd = c.n, spots, font, text, color, alpha, size;
+        if (c.group) {
+          size = 12.5;
+          font = '700 ' + size + 'px ' + th.font;
+          text = c.text;
+          color = mix(th.text, c.group.rgb, th.dark ? 0.55 : 0.6);
+          alpha = 1;
+        } else {
+          var big = c.pri === 0;
+          size = big ? 14 : 11.5;
+          font = (big ? '700 ' : '600 ') + size + 'px ' + th.font;
+          text = big ? nd.name : truncate(nd.name, 24);
+          color = c.pri >= 3 ? th.text2 : th.text;
+          alpha = Math.min(1, (nd.vis - 0.5) * 2) * Math.min(1, nd.hl) * (c.pri >= 3 ? 0.85 : 1);
+        }
+        var w = this._textWidth(ctx, font, text) + 4, h = size + 4;
+        if (c.group) {
+          var mid = [c.x - w / 2, c.y - h / 2], above = [c.x - w / 2, c.group.top - h - 2];
+          spots = this.layout === 'layers' ? [above, mid] : [mid, above, [c.x - w / 2, c.group.bottom + 2]];
+        } else {
+          var gap = nd.r + 3, diag = nd.r * 0.7;
+          spots = [
+            [nd.sx - w / 2, nd.sy + gap],
+            [nd.sx - w / 2, nd.sy - gap - h],
+            [nd.sx + gap + 1, nd.sy - h / 2],
+            [nd.sx - gap - 1 - w, nd.sy - h / 2],
+            [nd.sx + diag, nd.sy + diag],
+            [nd.sx - diag - w, nd.sy + diag],
+            [nd.sx + diag, nd.sy - diag - h],
+            [nd.sx - diag - w, nd.sy - diag - h]
+          ];
+        }
+        var spot = null;
+        // Learned topics get a second pass on the four sides that ignores nodes, so they keep a label in dense clusters.
+        for (var pass = 0; pass < 2 && !spot; pass++) {
+          var strict = pass === 0 && !c.group;
+          if (pass === 1 && (c.group || c.pri === 1 || c.pri >= 3)) break;
+          for (var i = 0; i < (pass === 0 ? spots.length : 4); i++) {
+            var sp = spots[i];
+            if (sp[0] < 2 || sp[0] + w > this.w - 2 || sp[1] < 36 || sp[1] + h > this.h - 2) continue;
+            if (!hits(sp[0], sp[1], w, h, nd, strict) && (!strict || owns(sp[0], sp[1], w, h, nd))) { spot = sp; break; }
+          }
+        }
+        if (!spot && c.pri === 0) spot = [clamp(spots[0][0], 2, this.w - w - 2), spots[0][1]];
+        if (!spot) continue;
+        placed.push({ x: spot[0], y: spot[1], w: w, h: h });
+
+        ctx.font = font;
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = c.pri === 0 ? 4 : 3.5;
+        ctx.strokeStyle = rgba(th.bg, 0.92);
+        var tx = Math.round(spot[0] + 2), ty = Math.round(spot[1] + h / 2);
+        ctx.strokeText(text, tx, ty);
+        ctx.fillStyle = rgba(color, 1);
+        ctx.fillText(text, tx, ty);
+      }
     }
 
     // ─── Main loop ──────────────────────────────────────────────────────────────
 
-    _loop() {
+    _step(now) {
+      var active = false;
+      var dt = Math.min(64, now - (this._lastFrame || now));
+      this._lastFrame = now;
+
+      if (this._posAnim) {
+        var t = clamp((now - this._posAnim.t0) / this._posAnim.dur, 0, 1), e = easeInOut(t);
+        for (var n of this.nodes) {
+          n.x = n.fx + (n.tx - n.fx) * e;
+          n.y = n.fy + (n.ty - n.fy) * e;
+        }
+        if (t >= 1) this._posAnim = null;
+        active = true;
+      }
+      if (this._camAnim) { this._stepCamera(now); active = true; }
+
+      var k = 1 - Math.exp(-dt / 110);
+      for (var n of this.nodes) {
+        if (n.vis !== n.visT) {
+          n.vis += (n.visT - n.vis) * k;
+          if (Math.abs(n.vis - n.visT) < 0.004) n.vis = n.visT;
+          active = true;
+        }
+        if (n.hl !== n.hlT) {
+          n.hl += (n.hlT - n.hl) * k;
+          if (Math.abs(n.hl - n.hlT) < 0.004) n.hl = n.hlT;
+          active = true;
+        }
+      }
+      return active;
+    }
+
+    _loop(now) {
       if (!this.running) return;
-      var settling = this.layout === 'force' && (this.simSteps < this.maxSimSteps || this.dragging);
-      if (settling) this._simulate();
-      // Once the layout has settled, redraw only after input or an API call instead of every frame.
-      if (settling || this._dirty) {
+      var active = this._step(now || performance.now());
+      // Idle frames skip drawing; input and API calls set _dirty.
+      if (active || this._dirty) {
         this._render();
         this._dirty = false;
       }
@@ -533,182 +1101,174 @@
       var c = this.canvas;
       c.addEventListener('mousedown', this._onMouseDown);
       c.addEventListener('mousemove', this._onMouseMove);
-      c.addEventListener('mouseup', this._onMouseUp);
-      c.addEventListener('mouseleave', this._onMouseUp);
+      c.addEventListener('mouseleave', this._onMouseLeave);
+      window.addEventListener('mouseup', this._onMouseUp);
       c.addEventListener('wheel', this._onWheel, { passive: false });
       c.addEventListener('touchstart', this._onTouchStart, { passive: false });
       c.addEventListener('touchmove', this._onTouchMove, { passive: false });
       c.addEventListener('touchend', this._onTouchEnd);
       c.addEventListener('touchcancel', this._onTouchEnd);
-      window.addEventListener('resize', this._onResize);
+      if (window.ResizeObserver) {
+        this._resizeObserver = new ResizeObserver(this._onResize);
+        this._resizeObserver.observe(c.parentElement || c);
+      } else {
+        window.addEventListener('resize', this._onResize);
+      }
     }
 
     _detachEvents() {
-      if (!this.canvas) return;
       var c = this.canvas;
-      c.removeEventListener('mousedown', this._onMouseDown);
-      c.removeEventListener('mousemove', this._onMouseMove);
-      c.removeEventListener('mouseup', this._onMouseUp);
-      c.removeEventListener('mouseleave', this._onMouseUp);
-      c.removeEventListener('wheel', this._onWheel);
-      c.removeEventListener('touchstart', this._onTouchStart);
-      c.removeEventListener('touchmove', this._onTouchMove);
-      c.removeEventListener('touchend', this._onTouchEnd);
-      c.removeEventListener('touchcancel', this._onTouchEnd);
-      window.removeEventListener('resize', this._onResize);
-    }
-
-    _worldPos(clientX, clientY) {
-      var rect = this.canvas.getBoundingClientRect();
-      var px = clientX - rect.left;
-      var py = clientY - rect.top;
-      return {
-        x: (px - this.camX) / this.scale,
-        y: (py - this.camY) / this.scale
-      };
-    }
-
-    _nodeAt(wx, wy) {
-      for (var i = this.nodes.length - 1; i >= 0; i--) {
-        var n = this.nodes[i];
-        if (n.hidden) continue;
-        var dx = n.x - wx, dy = n.y - wy;
-        var hitR = Math.max(n.r, 16 / this.scale); // min 16px hit target → 32px diameter
-        if (dx * dx + dy * dy <= hitR * hitR) return n;
+      if (c) {
+        c.removeEventListener('mousedown', this._onMouseDown);
+        c.removeEventListener('mousemove', this._onMouseMove);
+        c.removeEventListener('mouseleave', this._onMouseLeave);
+        c.removeEventListener('wheel', this._onWheel);
+        c.removeEventListener('touchstart', this._onTouchStart);
+        c.removeEventListener('touchmove', this._onTouchMove);
+        c.removeEventListener('touchend', this._onTouchEnd);
+        c.removeEventListener('touchcancel', this._onTouchEnd);
       }
-      return null;
+      window.removeEventListener('mouseup', this._onMouseUp);
+      window.removeEventListener('resize', this._onResize);
+      if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+    }
+
+    _local(clientX, clientY) {
+      var rect = this.canvas.getBoundingClientRect();
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    _nodeAt(px, py) {
+      var best = null, bestD = Infinity;
+      for (var n of this.nodes) {
+        if (n.visT !== 1 || !n.on) continue;
+        var dx = n.sx - px, dy = n.sy - py;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d > Math.max(n.r + 6, 20)) continue;
+        if (n.hl > 0.5) d -= 6;
+        if (d < bestD) { bestD = d; best = n; }
+      }
+      return best;
+    }
+
+    _tap(px, py) {
+      var hit = this._nodeAt(px, py);
+      if (hit) {
+        this._setFocus(hit);
+        this._notifyFocus();
+      } else if (this.focusId) {
+        this._setFocus(null);
+        this._notifyFocus();
+      }
+    }
+
+    _pan(dx, dy) {
+      this.camX += dx;
+      this.camY += dy;
+      this._camAnim = null;
+      this._dirty = true;
     }
 
     _onMouseDown(e) {
-      var wp = this._worldPos(e.clientX, e.clientY);
-      var hit = this._nodeAt(wp.x, wp.y);
-      if (hit) {
-        this.dragNode = hit;
-        this.simSteps = 0; // re-energise sim
-      }
-      this.dragging = true;
-      this.lastPointer = { x: e.clientX, y: e.clientY };
+      if (e.button !== 0) return;
+      this._pointer = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false };
     }
 
     _onMouseMove(e) {
-      var wp = this._worldPos(e.clientX, e.clientY);
-      this.hoveredNode = this._nodeAt(wp.x, wp.y);
-      this.canvas.style.cursor = this.hoveredNode ? 'pointer' : 'grab';
-
-      if (!this.dragging) return;
-      var dx = e.clientX - this.lastPointer.x;
-      var dy = e.clientY - this.lastPointer.y;
-      if (this.dragNode) {
-        this.dragNode.x += dx / this.scale;
-        this.dragNode.y += dy / this.scale;
-        this.dragNode.vx = 0; this.dragNode.vy = 0;
-      } else {
-        this.camX += dx;
-        this.camY += dy;
+      var p = this._pointer;
+      if (p) {
+        if (Math.abs(e.clientX - p.sx) + Math.abs(e.clientY - p.sy) > 5) p.moved = true;
+        if (p.moved) {
+          this._pan(e.clientX - p.x, e.clientY - p.y);
+          this.canvas.style.cursor = 'grabbing';
+        }
+        p.x = e.clientX; p.y = e.clientY;
+        return;
       }
-      this.lastPointer = { x: e.clientX, y: e.clientY };
+      var l = this._local(e.clientX, e.clientY);
+      var hover = this._nodeAt(l.x, l.y);
+      if (hover !== this._hovered) {
+        this._hovered = hover;
+        this.canvas.style.cursor = hover ? 'pointer' : 'grab';
+        this._dirty = true;
+      }
     }
 
     _onMouseUp(e) {
-      if (this.dragNode) {
-        // Click: check if pointer barely moved
-        var wp = this._worldPos(e.clientX, e.clientY);
-        var dn = this.dragNode;
-        var moved = Math.abs(e.clientX - this.lastPointer.x) + Math.abs(e.clientY - this.lastPointer.y);
-        if (moved < 6 && this.dotNetRef) {
-          this.dotNetRef.invokeMethodAsync('OnNodeTapped', dn.id);
-        }
+      var p = this._pointer;
+      this._pointer = null;
+      if (!p || !this.canvas) return;
+      this.canvas.style.cursor = this._hovered ? 'pointer' : 'grab';
+      if (!p.moved) {
+        var l = this._local(e.clientX, e.clientY);
+        this._tap(l.x, l.y);
       }
-      this.dragging = false;
-      this.dragNode = null;
+    }
+
+    _onMouseLeave() {
+      if (this._hovered) { this._hovered = null; this._dirty = true; }
     }
 
     _onWheel(e) {
       e.preventDefault();
-      var factor = e.deltaY > 0 ? 0.9 : 1.1;
-      var rect = this.canvas.getBoundingClientRect();
-      var px = e.clientX - rect.left;
-      var py = e.clientY - rect.top;
-      // Zoom around cursor
-      this.camX = px - factor * (px - this.camX);
-      this.camY = py - factor * (py - this.camY);
-      this.scale = Math.max(0.3, Math.min(4, this.scale * factor));
+      var l = this._local(e.clientX, e.clientY);
+      this._zoomAt(l.x, l.y, Math.exp(-e.deltaY * 0.0015));
     }
 
     _onTouchStart(e) {
       e.preventDefault();
       if (e.touches.length === 1) {
         var t = e.touches[0];
-        var wp = this._worldPos(t.clientX, t.clientY);
-        var hit = this._nodeAt(wp.x, wp.y);
-        this.dragNode = hit || null;
-        this.dragging = true;
-        this.lastPointer = { x: t.clientX, y: t.clientY };
-        this._touchStartPos = { x: t.clientX, y: t.clientY };
-        this._touchStartTime = Date.now();
-        if (hit) this.simSteps = 0;
+        this._pointer = { x: t.clientX, y: t.clientY, sx: t.clientX, sy: t.clientY, moved: false, t0: Date.now() };
+        this._pinch = null;
       } else if (e.touches.length === 2) {
-        this.dragging = false;
-        this.dragNode = null;
-        var dx = e.touches[0].clientX - e.touches[1].clientX;
-        var dy = e.touches[0].clientY - e.touches[1].clientY;
-        this.pinchDist = Math.sqrt(dx * dx + dy * dy);
-        this._pinchMid = {
-          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
-        };
+        this._pointer = null;
+        var a = e.touches[0], b = e.touches[1];
+        this._pinch = { dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) || 1 };
       }
     }
 
     _onTouchMove(e) {
       e.preventDefault();
-      if (e.touches.length === 1 && this.dragging) {
-        var t = e.touches[0];
-        var dx = t.clientX - this.lastPointer.x;
-        var dy = t.clientY - this.lastPointer.y;
-        if (this.dragNode) {
-          this.dragNode.x += dx / this.scale;
-          this.dragNode.y += dy / this.scale;
-          this.dragNode.vx = 0; this.dragNode.vy = 0;
-        } else {
-          this.camX += dx;
-          this.camY += dy;
-        }
-        this.lastPointer = { x: t.clientX, y: t.clientY };
-      } else if (e.touches.length === 2) {
-        var dx2 = e.touches[0].clientX - e.touches[1].clientX;
-        var dy2 = e.touches[0].clientY - e.touches[1].clientY;
-        var newDist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        var factor = newDist / (this.pinchDist || newDist);
-        var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        var rect = this.canvas.getBoundingClientRect();
-        var px = midX - rect.left, py = midY - rect.top;
-        this.camX = px - factor * (px - this.camX);
-        this.camY = py - factor * (py - this.camY);
-        this.scale = Math.max(0.3, Math.min(4, this.scale * factor));
-        this.pinchDist = newDist;
+      if (e.touches.length === 1 && this._pointer) {
+        var t = e.touches[0], p = this._pointer;
+        if (Math.abs(t.clientX - p.sx) + Math.abs(t.clientY - p.sy) > 8) p.moved = true;
+        if (p.moved) this._pan(t.clientX - p.x, t.clientY - p.y);
+        p.x = t.clientX; p.y = t.clientY;
+      } else if (e.touches.length === 2 && this._pinch) {
+        var a = e.touches[0], b = e.touches[1];
+        var dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) || 1;
+        var mid = this._local((a.clientX + b.clientX) / 2, (a.clientY + b.clientY) / 2);
+        if (this._pinch.mid) this._pan(mid.x - this._pinch.mid.x, mid.y - this._pinch.mid.y);
+        this._zoomAt(mid.x, mid.y, dist / this._pinch.dist);
+        this._pinch.dist = dist;
+        this._pinch.mid = mid;
       }
     }
 
     _onTouchEnd(e) {
       if (e.touches.length === 0) {
-        // Check for tap (short duration, tiny movement)
-        var moved = this._touchStartPos
-          ? Math.abs(this.lastPointer.x - this._touchStartPos.x) + Math.abs(this.lastPointer.y - this._touchStartPos.y)
-          : 99;
-        var dt = Date.now() - (this._touchStartTime || 0);
-        if (moved < 10 && dt < 300 && this.dragNode && this.dotNetRef) {
-          this.dotNetRef.invokeMethodAsync('OnNodeTapped', this.dragNode.id);
+        var p = this._pointer;
+        this._pointer = null;
+        this._pinch = null;
+        if (p && !p.moved && Date.now() - p.t0 < 500 && this.canvas) {
+          var l = this._local(p.x, p.y);
+          this._tap(l.x, l.y);
         }
-        this.dragging = false;
-        this.dragNode = null;
+      } else if (e.touches.length === 1) {
+        // Lifting one finger of a pinch continues as a pan, never a tap.
+        var t = e.touches[0];
+        this._pinch = null;
+        this._pointer = { x: t.clientX, y: t.clientY, sx: t.clientX, sy: t.clientY, moved: true, t0: 0 };
       }
     }
 
     _onResize() {
+      var w = this.w, h = this.h;
       this._resize();
-      this.simSteps = 0;
+      if (!this._hasView || (w === this.w && h === this.h)) return;
+      if (this.focusId) this._fitFocus(false);
+      else this._fitView(false);
     }
 
     _resize() {
@@ -717,42 +1277,42 @@
       var dpr = window.devicePixelRatio || 1;
       var w = parent.clientWidth;
       var h = parent.clientHeight || window.innerHeight * 0.75;
-      this.canvas.width = w * dpr;
-      this.canvas.height = h * dpr;
+      this.canvas.width = Math.round(w * dpr);
+      this.canvas.height = Math.round(h * dpr);
       this.canvas.style.width = w + 'px';
       this.canvas.style.height = h + 'px';
-      this.ctx.scale(dpr, dpr);
+      this.dpr = dpr;
       this.w = w;
       this.h = h;
+      this._dirty = true;
     }
   }
 
-  // Singleton instance
   var _instance = null;
 
   function touch() { if (_instance) _instance._dirty = true; }
 
   window.TopicGraph = {
-    init: function (canvasId, graphData, completedIds, dotNetRef) {
+    init: function (canvasId, graphData, options, dotNetRef) {
       if (_instance) _instance.destroy();
       _instance = new TopicGraph();
-      _instance.init(canvasId, graphData, completedIds, dotNetRef);
+      _instance.init(canvasId, graphData, options, dotNetRef);
     },
-    setColors: function (colorMap) {
-      if (_instance) _instance.setColors(colorMap);
+    setView: function (key, ids, nextIds, layout) {
+      if (_instance) _instance.setView(key, ids, nextIds, layout);
       touch();
     },
-    updateCompleted: function (completedIds) {
-      if (_instance) _instance.updateCompleted(completedIds);
+    focus: function (id) {
+      var ok = _instance ? _instance.focus(id) : false;
+      touch();
+      return ok;
+    },
+    fit: function () {
+      if (_instance) _instance.fit();
       touch();
     },
-    filterDomain: function (domain) {
-      if (_instance) _instance.filterDomain(domain);
-      touch();
-    },
-    setLayout: function (mode) {
-      if (_instance) _instance.setLayout(mode);
-      touch();
+    screenPos: function (id) {
+      return _instance ? _instance.screenPos(id) : null;
     },
     destroy: function () {
       if (_instance) { _instance.destroy(); _instance = null; }
