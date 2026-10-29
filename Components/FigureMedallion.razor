@@ -1,18 +1,38 @@
-@* Hall of Fame card art: the figure's emblem on a coin in their colour with a gold rim. Also used as the profile avatar. *@
+@* Avatar art: a Hall of Fame figure's emblem on a coin in their colour with a gold rim, or an earned topic card's art in a tier-coloured rim. *@
 
 <svg class="figure-medallion" viewBox="0 0 64 64" width="@Size" height="@Size" role="img" aria-label="@Card.Name">
-    <defs>
-        <radialGradient id="@gradId" cx="35%" cy="30%" r="75%">
-            <stop offset="0" stop-color="@Card.Color" stop-opacity=".78" />
-            <stop offset="1" stop-color="@Card.Color" />
-        </radialGradient>
-    </defs>
-    <circle cx="32" cy="32" r="30" fill="#C9A15A" />
-    <circle cx="32" cy="32" r="27.5" fill="url(#@gradId)" />
-    <circle cx="32" cy="32" r="24" fill="none" stroke="#E9D3A3" stroke-opacity=".55" stroke-width=".8" />
-    <g transform="translate(17 17) scale(1.25)" fill="none" stroke="#FBF5E9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-        @((MarkupString)Icon.PathFor(Card.Emblem))
-    </g>
+    @if (Card.TopicId != null)
+    {
+        <defs>
+            <linearGradient id="@rimId" x1="0" y1="0" x2="1" y2="1">
+                @foreach (var (offset, colour) in RimStops)
+                {
+                    <stop offset="@offset" stop-color="@colour" />
+                }
+            </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="url(#@rimId)" />
+        <circle cx="32" cy="32" r="27" fill="#FBF6EC" />
+        <circle cx="32" cy="32" r="27" fill="@Card.Color" fill-opacity=".14" />
+        <g transform="translate(15 15) scale(1.06)" style="color: @Card.Color">
+            @((MarkupString)TopicArt.Inner(Card.TopicId))
+        </g>
+    }
+    else
+    {
+        <defs>
+            <radialGradient id="@gradId" cx="35%" cy="30%" r="75%">
+                <stop offset="0" stop-color="@Card.Color" stop-opacity=".78" />
+                <stop offset="1" stop-color="@Card.Color" />
+            </radialGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="#C9A15A" />
+        <circle cx="32" cy="32" r="27.5" fill="url(#@gradId)" />
+        <circle cx="32" cy="32" r="24" fill="none" stroke="#E9D3A3" stroke-opacity=".55" stroke-width=".8" />
+        <g transform="translate(17 17) scale(1.25)" fill="none" stroke="#FBF5E9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            @((MarkupString)Icon.PathFor(Card.Emblem))
+        </g>
+    }
 </svg>
 
 @code {
@@ -21,4 +41,14 @@
 
     // Two medallions of the same figure share a colour, so a clash between their gradient ids is harmless.
     private string gradId => $"fm-{Card.Domain}-{HallOfFame.Slug(Card.Name)}";
+    private string rimId => $"fm-rim-{Card.Tier}";
+
+    // Same metals as the Hall of Cards frames.
+    private (string, string)[] RimStops => Card.Tier switch
+    {
+        "prismatic" => new[] { ("0", "#E8B4CB"), (".35", "#B7C6EF"), (".65", "#B4E5D1"), ("1", "#F2E2A3") },
+        "gold" => new[] { ("0", "#F4D893"), (".5", "#B8862F"), ("1", "#F7DE9E") },
+        "silver" => new[] { ("0", "#F1EDE6"), (".5", "#A59D90"), ("1", "#E4DFD6") },
+        _ => new[] { ("0", "#DDAE82"), (".5", "#9A6338"), ("1", "#E3B78D") }
+    };
 }

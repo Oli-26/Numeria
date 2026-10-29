@@ -1,0 +1,46 @@
+@* A Hall of Cards collectible: the topic's art on a tinted face, framed by its tier. Mini draws just the frame and art. *@
+
+<div class="tcard tier-@tier @(Mini ? "mini" : "") @(Flipped ? "flipped" : "")" style="--tc: @Topic.Color">
+    <div class="tcard-face tcard-front">
+        <div class="tcard-inner">
+            <div class="tcard-art">
+                <svg class="tcard-rings" viewBox="0 0 100 100" aria-hidden="true">
+                    <circle cx="50" cy="50" r="18" /><circle cx="50" cy="50" r="28" /><circle cx="50" cy="50" r="38" /><circle cx="50" cy="50" r="48" />
+                </svg>
+                <span class="tcard-icon">@((MarkupString)TopicArt.For(Topic.Id))</span>
+            </div>
+            @if (!Mini)
+            {
+                <div class="tcard-body">
+                    <strong class="tcard-name">@Topic.Name</strong>
+                    <div class="tcard-foot"><span class="tcard-tier">@tier</span><span>@EarnedLabel</span></div>
+                </div>
+            }
+        </div>
+    </div>
+    @if (!Mini)
+    {
+        <div class="tcard-face tcard-back">
+            <div class="tcard-inner">
+                <small class="tcard-domain">@DomainName</small>
+                <strong class="tcard-name">@Topic.Name</strong>
+                <p class="tcard-desc">@Topic.Description</p>
+                <div class="tcard-stamp">Mastered @EarnedLabel</div>
+                @BackActions
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Topic Topic { get; set; } = default!;
+    [Parameter] public string DomainName { get; set; } = "";
+    [Parameter] public string? EarnedDate { get; set; }
+    [Parameter] public bool Flipped { get; set; }
+    [Parameter] public bool Mini { get; set; }
+    [Parameter] public RenderFragment? BackActions { get; set; }
+
+    private string tier => TopicArt.Tier(Topic.Difficulty);
+
+    private string EarnedLabel => DateTime.TryParse(EarnedDate, out var d) ? d.ToString("d MMM yyyy") : "";
+}

@@ -1363,3 +1363,58 @@ html.sheet-open body {
     from { transform: scale(1, 1) rotate(-3deg); }
     to { transform: scale(1.1, .9) rotate(3deg); }
 }
+
+/* ── Hall of Cards collectible (TopicCard.razor); --tc is the topic colour ── */
+.tcard { position: relative; aspect-ratio: 5 / 7; perspective: 900px; }
+.tcard-face {
+    position: absolute; inset: 0; border-radius: 14px; padding: 5px; backface-visibility: hidden;
+    box-shadow: 0 3px 12px var(--shadow); transition: transform .55s var(--ease-out);
+}
+.tcard-back { transform: rotateY(180deg); }
+.tcard.flipped .tcard-front { transform: rotateY(-180deg); }
+.tcard.flipped .tcard-back { transform: rotateY(0deg); }
+.tier-bronze .tcard-face { background: linear-gradient(145deg, #DDAE82, #9A6338 45%, #E3B78D 70%, #8E5A33); }
+.tier-silver .tcard-face { background: linear-gradient(145deg, #F1EDE6, #A59D90 45%, #F5F2EC 70%, #8F8778); }
+.tier-gold .tcard-face { background: linear-gradient(145deg, #F4D893, #B8862F 45%, #F7DE9E 70%, #A57726); }
+.tier-prismatic .tcard-face { background: linear-gradient(135deg, #E8B4CB, #B7C6EF 30%, #B4E5D1 55%, #F2E2A3 80%, #E8B4CB); background-size: 300% 300%; animation: prism 6s ease-in-out infinite alternate; }
+@keyframes prism { to { background-position: 100% 100%; } }
+.tcard-inner { position: relative; height: 100%; border-radius: 10px; overflow: hidden; background: var(--bg-card); display: flex; flex-direction: column; }
+/* Foil sheen across the top corner */
+.tcard-inner::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(125deg, rgba(255, 255, 255, .35) 0%, rgba(255, 255, 255, 0) 32%);
+}
+.tcard-art {
+    position: relative; flex: 1; min-height: 0; margin: 6px 6px 0; border-radius: 8px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; color: var(--tc);
+    background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--tc) 24%, var(--bg-card)), color-mix(in srgb, var(--tc) 9%, var(--bg-card)) 75%);
+    border: 1px solid color-mix(in srgb, var(--tc) 28%, transparent);
+}
+.tcard-rings { position: absolute; width: 130%; height: 130%; fill: none; stroke: currentColor; stroke-width: .6; opacity: .16; }
+.tcard-icon { position: relative; width: 56%; aspect-ratio: 1; display: block; filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--tc) 35%, transparent)); }
+.tcard-body { padding: 8px 9px 8px; text-align: center; }
+.tcard-domain { display: block; font-size: .56rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+.tcard-name {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 2.3em; margin-top: 2px; font: 700 .84rem/1.15 Georgia, 'Times New Roman', serif; color: var(--text-primary);
+}
+.tcard-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: .56rem; color: var(--text-muted); }
+.tcard-tier { font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.tier-bronze .tcard-tier { color: #9A6338; }
+.tier-silver .tcard-tier { color: #857D6F; }
+.tier-gold .tcard-tier { color: #A57726; }
+.tier-prismatic .tcard-tier { color: #8A6AAE; }
+.tcard-back .tcard-inner { padding: 12px 11px 10px; text-align: center; }
+.tcard-desc {
+    flex: 1; min-height: 0; margin: 8px 0; font-size: .68rem; line-height: 1.4; color: var(--text-secondary);
+    display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden;
+}
+.tcard-stamp {
+    align-self: center; padding: 3px 9px; border-radius: 12px; font-size: .6rem; font-weight: 800; letter-spacing: .06em;
+    color: var(--success); border: 1.5px solid currentColor; transform: rotate(-4deg); margin-bottom: 8px;
+}
+.tcard.mini { width: 30px; }
+.tcard.mini .tcard-face { padding: 2px; border-radius: 5px; box-shadow: 0 1px 4px var(--shadow); }
+.tcard.mini .tcard-inner { border-radius: 4px; }
+.tcard.mini .tcard-art { margin: 2px; border-radius: 3px; }
+.tcard.mini .tcard-icon { width: 70%; }

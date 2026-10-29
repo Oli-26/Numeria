@@ -50,4 +50,57 @@ public class HallOfFameCardTests
         Assert.Single(cards, c => c.Name == "Euler");
         Assert.Empty(HallOfFame.Unlocked(new UserProfile { ShopPurchases = new() }));
     }
+
+    private static readonly Dictionary<string, Topic> Topics = new()
+    {
+        ["calculus"] = new Topic { Id = "calculus", Name = "Calculus", Domain = "math", Color = "#4A90D9", Difficulty = "Advanced → Graduate" },
+        ["bio-cell"] = new Topic { Id = "bio-cell", Name = "Cell Biology", Domain = "biology", Color = "#5B8A3C", Difficulty = "Beginner → Intermediate" },
+    };
+
+    [Fact]
+    public void TopicCardIds_ResolveOnlyAgainstKnownTopics()
+    {
+        var card = HallOfFame.Resolve("card:calculus", Topics);
+        Assert.NotNull(card);
+        Assert.Equal(("calculus", "gold"), (card!.TopicId, card.Tier));
+        Assert.Null(HallOfFame.Resolve("card:calculus"));
+        Assert.Null(HallOfFame.Resolve("card:not-a-topic", Topics));
+    }
+
+    [Theory]
+    [InlineData("card:calculus", "card:calculus")]
+    [InlineData("hof:math/euler", "hof:math/euler")]
+    [InlineData("card:<script>", null)]
+    [InlineData("card:", null)]
+    [InlineData("default", null)]
+    public void PostableId_KeepsOnlyWellFormedIds(string id, string? expected) => Assert.Equal(expected, HallOfFame.PostableId(id));
+
+    [Fact]
+    public void EarnedTopicCards_NewestFirst_SkippingRetiredTopics()
+    {
+        var profile = new UserProfile { CompletionCards = new()
+        {
+            new CompletionCard { TopicId = "bio-cell", EarnedDate = "2026-09-01" },
+            new CompletionCard { TopicId = "retired-topic", EarnedDate = "2026-10-01" },
+            new CompletionCard { TopicId = "calculus", EarnedDate = "2026-10-20" },
+        } };
+
+        var cards = HallOfFame.EarnedTopicCards(profile, Topics);
+
+        Assert.Equal(new[] { "calculus", "bio-cell" }, cards.Select(c => c.TopicId));
+        Assert.True(HallOfFame.Same(cards[0], HallOfFame.Resolve("card:calculus", Topics)));
+        Assert.False(HallOfFame.Same(cards[0], cards[1]));
+    }
+
+    [Fact]
+    public void TopicArtInner_DropsTheSvgWrapper()
+    {
+        foreach (var id in Topics.Keys.Append("unknown-topic"))
+        {
+            var inner = TopicArt.Inner(id);
+            Assert.DoesNotContain("<svg", inner);
+            Assert.DoesNotContain("</svg>", inner);
+            Assert.NotEmpty(inner);
+        }
+    }
 }

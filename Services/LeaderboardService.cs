@@ -25,7 +25,7 @@ public class LeaderboardService : ILeaderboardService
         {
             var safeName = SanitizeName(name);
             // Only a known card id is ever stored, so the field cannot carry arbitrary text.
-            var safeAvatar = HallOfFame.Resolve(avatar)?.Id;
+            var safeAvatar = HallOfFame.PostableId(avatar);
             var url = $"{FirebaseUrl}/leaderboard/{Uri.EscapeDataString(safeName)}.json";
 
             // Check existing score: only update if new score is higher

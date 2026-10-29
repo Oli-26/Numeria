@@ -5,8 +5,24 @@ namespace MathVoyager.Services;
 
 public static partial class HallOfFame
 {
-    // A figure as collectable card art; Id is what UserProfile.SelectedAvatar stores.
-    public record AvatarCard(string Id, string Name, string Domain, string Color, string Emblem);
+    // A wearable avatar; Id is what UserProfile.SelectedAvatar stores. TopicId is set for an earned Hall of Cards card,
+    // which draws the topic's art in a tier-coloured rim instead of a figure's emblem.
+    public record AvatarCard(string Id, string Name, string Domain, string Color, string Emblem, string? TopicId = null, string? Tier = null);
+
+    private const string TopicCardPrefix = "card:";
+    private static readonly Regex TopicCardIdPattern = new("^card:[a-z0-9-]{1,60}$");
+
+    public static AvatarCard TopicCard(Topic t) =>
+        new(TopicCardPrefix + t.Id, t.Name, t.Domain, t.Color, "", t.Id, TopicArt.Tier(t.Difficulty));
+
+    // Topic cards the player has earned, newest first.
+    public static List<AvatarCard> EarnedTopicCards(UserProfile profile, IReadOnlyDictionary<string, Topic> topics) =>
+        profile.CompletionCards.OrderByDescending(c => c.EarnedDate).Select(c => c.TopicId).Distinct()
+            .Where(topics.ContainsKey).Select(id => TopicCard(topics[id])).ToList();
+
+    // The id to send to the leaderboard, or null. Topic card ids are checked by shape, so posting never waits on content.
+    public static string? PostableId(string? id) =>
+        id != null && TopicCardIdPattern.IsMatch(id) ? id : Resolve(id)?.Id;
 
     public static readonly string[] Domains =
         { "math", "philosophy", "physics", "biology", "chemistry", "geology", "history", "linguistics", "materials", "cs", "misc", "politics", "economics", "media", "literature" };
@@ -18,10 +34,13 @@ public static partial class HallOfFame
     public static AvatarCard Card(string domain, Figure f) =>
         new($"hof:{domain}/{Slug(f.Name)}", f.Name, domain, f.Color, emblems.GetValueOrDefault($"{domain}/{f.Name}", DomainEmblem(domain)));
 
-    // The card for a saved avatar id, or null for the default initial. Takes Hall of Fame ids and older shop avatar ids.
-    public static AvatarCard? Resolve(string? id)
+    // The card for a saved avatar id, or null for the default initial. Takes Hall of Fame ids, older shop avatar ids,
+    // and topic card ids (these resolve only when the topics are passed in).
+    public static AvatarCard? Resolve(string? id, IReadOnlyDictionary<string, Topic>? topics = null)
     {
         if (string.IsNullOrEmpty(id)) return null;
+        if (id.StartsWith(TopicCardPrefix))
+            return topics != null && topics.TryGetValue(id[TopicCardPrefix.Length..], out var topic) ? TopicCard(topic) : null;
         if (id.StartsWith("hof:"))
         {
             var parts = id[4..].Split('/', 2);
@@ -48,7 +67,8 @@ public static partial class HallOfFame
     }
 
     // A legacy shop id and a Hall of Fame id can name the same figure.
-    public static bool Same(AvatarCard? a, AvatarCard? b) => a != null && b != null && a.Domain == b.Domain && a.Name == b.Name;
+    public static bool Same(AvatarCard? a, AvatarCard? b) =>
+        a != null && b != null && (a.TopicId != null || b.TopicId != null ? a.Id == b.Id : a.Domain == b.Domain && a.Name == b.Name);
 
     private static string DomainEmblem(string domain) => domain switch
     {

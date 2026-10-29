@@ -4,6 +4,7 @@
 @inject IProgressService Progress
 @inject IGamificationService Gamification
 @inject IJSRuntime JS
+@inject IContentRepository Content
 
 <div class="lb-page">
 <div class="page-header lb-head">
@@ -60,7 +61,7 @@ else
 
     @if (profile != null)
     {
-        var myCard = HallOfFame.Resolve(profile.SelectedAvatar);
+        var myCard = HallOfFame.Resolve(profile.SelectedAvatar, topicIndex);
         var move = myIndex >= 0 ? LeaderboardRanks.Moved(previousRanks, entries[myIndex].Name, myRank) : null;
         <div class="card lb-you">
             <div class="you-row">
@@ -181,6 +182,7 @@ else
     private LeaderboardEntry? above;
     private int belowXp;
     private Dictionary<string, int>? previousRanks;
+    private Dictionary<string, Topic> topicIndex = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -190,6 +192,7 @@ else
             playerName = profile.DisplayName;
             myLevel = Gamification.GetLevel(profile.TotalXp);
             previousRanks = ParseRanks(await JS.TryInvokeAsync<string?>("localStorage.getItem", RanksKey));
+            topicIndex = (await Content.GetTopicsAsync()).ToDictionary(t => t.Id);
 
             await ReloadLeaderboard();
             loading = false;
@@ -231,7 +234,7 @@ else
     }
 
     private bool UpToDate => profile != null && myIndex >= 0 && entries[myIndex].Score >= profile.TotalXp
-        && HallOfFame.Resolve(entries[myIndex].Avatar)?.Id == HallOfFame.Resolve(profile.SelectedAvatar)?.Id;
+        && HallOfFame.PostableId(entries[myIndex].Avatar) == HallOfFame.PostableId(profile.SelectedAvatar);
 
     private string PostLabel
     {
@@ -338,7 +341,7 @@ else
     // Entries come from other players' devices, so the avatar id is resolved here rather than trusted.
     private RenderFragment Avatar(LeaderboardEntry e, int rank, int size, bool isYou) => __builder =>
     {
-        var card = HallOfFame.Resolve(isYou && profile != null ? profile.SelectedAvatar : e.Avatar);
+        var card = HallOfFame.Resolve(isYou && profile != null ? profile.SelectedAvatar : e.Avatar, topicIndex);
         if (card != null)
         {
             <FigureMedallion Card="card" Size="size" />

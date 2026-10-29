@@ -62,7 +62,16 @@
     <!-- Hall of Cards banner -->
     <div class="card cards-banner card-clickable" @onclick='() => Nav.NavigateTo("/cards")'>
         <div class="cards-banner-left">
-            <span class="cards-banner-icon">🃏</span>
+            <span class="cards-fan" aria-hidden="true">
+                @if (recentCardTopics.Count == 0)
+                {
+                    <span class="cards-fan-empty"></span>
+                }
+                @foreach (var t in recentCardTopics)
+                {
+                    <TopicCard Topic="t" Mini="true" />
+                }
+            </span>
             <div>
                 <strong>Hall of Cards</strong>
                 <small>@profile.CompletionCards.Count collected</small>
@@ -366,6 +375,20 @@
                     <small>Your initial</small>
                 </button>
             </div>
+            @if (topicCards.Count > 0)
+            {
+                <h4 class="avatar-group">Your topic cards</h4>
+                <div class="avatar-grid">
+                    @foreach (var c in topicCards)
+                    {
+                        var card = c;
+                        <button type="button" class="avatar-choice @(HallOfFame.Same(card, avatarCard) ? "on" : "")" @onclick="() => ChooseAvatar(card)">
+                            <FigureMedallion Card="card" Size="56" />
+                            <small>@card.Name</small>
+                        </button>
+                    }
+                </div>
+            }
             @foreach (var group in unlockedCards.GroupBy(c => c.Domain))
             {
                 <h4 class="avatar-group">@HallOfFame.Label(group.Key)</h4>
@@ -380,9 +403,9 @@
                     }
                 </div>
             }
-            @if (unlockedCards.Count == 0)
+            @if (unlockedCards.Count == 0 && topicCards.Count == 0)
             {
-                <p class="avatar-empty">Unlock a Hall of Fame in the Shop and its figures become cards you can wear here.</p>
+                <p class="avatar-empty">Finish every lesson in a topic to earn its card, or unlock a Hall of Fame in the Shop. Either becomes an avatar you can wear here.</p>
                 <button type="button" class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
             }
         </div>
@@ -414,6 +437,8 @@ else
     private UserProfile? profile;
     private HallOfFame.AvatarCard? avatarCard;
     private List<HallOfFame.AvatarCard> unlockedCards = new();
+    private List<Topic> recentCardTopics = new();
+    private List<HallOfFame.AvatarCard> topicCards = new();
     private bool pickerOpen;
     // Bumped on each equip; as the avatar button's @key it rebuilds the button, which replays the pop.
     private int avatarPops;
@@ -448,8 +473,11 @@ else
         if (firstRender)
         {
             profile = await Progress.GetProfileAsync();
-            avatarCard = HallOfFame.Resolve(profile.SelectedAvatar);
+            var topicIndex = (await Content.GetTopicsAsync()).ToDictionary(t => t.Id);
+            avatarCard = HallOfFame.Resolve(profile.SelectedAvatar, topicIndex);
             unlockedCards = HallOfFame.Unlocked(profile);
+            topicCards = HallOfFame.EarnedTopicCards(profile, topicIndex);
+            recentCardTopics = topicCards.Take(3).Select(c => topicIndex[c.TopicId!]).Reverse().ToList();
             allAchievements = await AchievementRepo.GetAchievementsAsync();
             topics = await Content.GetTopicsAsync();
             domains = await Content.GetDomainsAsync();
@@ -535,7 +563,12 @@ else
     }
     .cards-banner:hover { transform: none; }
     .cards-banner-left { display: flex; align-items: center; gap: 12px; }
-    .cards-banner-icon { font-size: 1.6rem; }
+    .cards-fan { display: flex; align-items: center; width: 74px; height: 46px; padding-left: 4px; }
+    .cards-fan .tcard { flex-shrink: 0; margin-left: -12px; }
+    .cards-fan .tcard:first-child { margin-left: 0; transform: rotate(-12deg); }
+    .cards-fan .tcard:nth-child(2) { transform: rotate(-2deg) translateY(-2px); }
+    .cards-fan .tcard:nth-child(3) { transform: rotate(9deg); }
+    .cards-fan-empty { width: 30px; height: 42px; border-radius: 5px; border: 2px dashed var(--border); }
     .cards-banner-left strong { display: block; font-size: 0.95rem; }
     .cards-banner-left small { color: var(--text-muted); font-size: 0.8rem; }
     .cards-banner-arrow { font-size: 1.2rem; color: var(--text-muted); }
