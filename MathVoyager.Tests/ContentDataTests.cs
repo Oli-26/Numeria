@@ -157,4 +157,24 @@ public class ContentDataTests
             Assert.All(cookies, c => Assert.DoesNotContain('\u2014', c.Text));
         }
     }
+
+    // A later citation pass once renumbered from 1 and replaced a concept's existing sources, leaving markers pointing at
+    // the wrong citation. Each concept's markers must read 1..n in order and match its citation list exactly.
+    [Fact]
+    public void Citations_MarkersMatchEachConceptsSourceList()
+    {
+        var marker = new System.Text.RegularExpressions.Regex("<sup class=\"cite\" data-cite=\"([^\"]+)\">([^<]*)</sup>");
+        foreach (var topic in Topics.Where(t => File.Exists(Path.Combine(Data, t.Id, "citations.json"))))
+        {
+            var cites = Load<Dictionary<string, List<Citation>>>(Path.Combine(topic.Id, "citations.json"));
+            foreach (var concept in Lessons(topic.Id).SelectMany(l => l.Concepts))
+            {
+                var marks = marker.Matches(concept.ContentHtml).Select(m => (Id: m.Groups[1].Value, Label: m.Groups[2].Value)).ToList();
+                var expected = Enumerable.Range(1, cites.GetValueOrDefault(concept.Id)?.Count ?? 0).Select(i => i.ToString()).ToList();
+                Assert.True(marks.Select(m => m.Id).SequenceEqual(expected), $"{concept.Id}: markers [{string.Join(",", marks.Select(m => m.Id))}] vs {expected.Count} citations");
+                Assert.All(marks, m => Assert.Equal(m.Id, m.Label));
+                Assert.Equal(expected, cites.GetValueOrDefault(concept.Id)?.Select(c => c.Id).ToList() ?? new List<string>());
+            }
+        }
+    }
 }
