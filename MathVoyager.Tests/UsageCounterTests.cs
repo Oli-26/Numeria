@@ -59,6 +59,19 @@ public class UsageCounterTests
         Assert.Contains("2000-01-01", storage.Items["nous-usage"]);
     }
 
+    [Fact]
+    public async Task NoConnection_FailsSilently_AndKeepsTheTally()
+    {
+        var (counter, storage, http) = Make(share: true, tally: """{"Day":"2000-01-01","Counts":{"topic:scratch-fire":2}}""");
+        http.Offline = true;
+
+        await counter.FlushAsync();
+        await counter.CountAsync("topic", "scratch-water");
+
+        Assert.Contains("\"topic:scratch-fire\":2", storage.Items["nous-usage"]);
+        Assert.Contains("\"topic:scratch-water\":1", storage.Items["nous-usage"]);
+    }
+
     private static (UsageCounter, MemoryStorage, RecordingHandler) Make(bool share, string? tally)
     {
         var storage = new MemoryStorage();
@@ -98,9 +111,11 @@ public class UsageCounterTests
     {
         public List<string> Bodies { get; } = new();
         public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
+        public bool Offline { get; set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (Offline) throw new HttpRequestException("No such host is known.");
             Bodies.Add(await request.Content!.ReadAsStringAsync(cancellationToken));
             return new HttpResponseMessage(Status);
         }
