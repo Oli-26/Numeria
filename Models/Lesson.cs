@@ -11,4 +11,6 @@ public class Lesson
     public List<Concept> Concepts { get; set; } = new();
     public List<string> QuizQuestionIds { get; set; } = new();
     public string? PuzzleId { get; set; }
+    // From Scratch lessons end with one real-world task the learner can tick off (Pages/LessonPage.razor).
+    public string? TryIt { get; set; }
 }

@@ -10,12 +10,17 @@
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>What If? Playground</h1>
     </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase the "What If? Playground" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
+    <LockedFeature ItemId="unlock-playground" OnUnlocked="() => unlocked = true">
+        <Preview>
+            <ul class="lf-list">
+                @foreach (var e in experiments.Take(3))
+                {
+                    <li>@e.Title</li>
+                }
+            </ul>
+            <p class="lf-count">@experiments.Count experiments</p>
+        </Preview>
+    </LockedFeature>
 }
 else if (unlocked)
 {

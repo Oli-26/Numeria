@@ -60,6 +60,9 @@ public class UserProfile
     // Guided paths the learner has started; step completion is derived from LessonsCompleted
     public List<string> PathsStarted { get; set; } = new();
 
+    // Lesson ids whose From Scratch field task the learner has ticked as done; each pays its bonus once.
+    public List<string> TryItsDone { get; set; } = new();
+
     // Explain-it-back notebook: conceptId -> the learner's own summary
     public Dictionary<string, ConceptNote> ConceptNotes { get; set; } = new();
 

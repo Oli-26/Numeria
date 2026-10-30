@@ -43,17 +43,6 @@
             <small class="xp-detail">@xpInLevel / @xpNeeded XP</small>
         </div>
 
-        <div class="quick-stats">
-            <div class="quick-stat">
-                <span class="streak-fire"><Icon Name="fire" Size="16" /></span> <strong>@profile.CurrentStreak</strong> day streak
-            </div>
-            <div class="quick-stat">
-                <span><Icon Name="star-filled" Size="16" Fill="currentColor" /></span> <strong>@profile.TotalXp</strong> XP
-            </div>
-            <div class="quick-stat">
-                <span><Icon Name="target" Size="16" /></span> <strong>@overallAccuracy%</strong> accuracy
-            </div>
-        </div>
         <button class="btn btn-sm btn-outline share-profile-btn" @onclick='() => Nav.NavigateTo("/share")'>
             <Icon Name="trending-up" Size="14" /> Share Progress
         </button>
@@ -118,44 +107,64 @@
             </div>
             <div class="stat-tile card">
                 <span class="stat-icon"><Icon Name="target" Size="20" /></span>
-                <span class="stat-value" id="cnt-acc">@overallAccuracy%</span>
+                @* No answers yet means no accuracy, not 0%. *@
+                <span class="stat-value" id="cnt-acc">@(profile.TotalQuestionsAnswered > 0 ? $"{overallAccuracy}%" : "–")</span>
                 <span class="stat-name">Accuracy</span>
             </div>
         </div>
 
-        <div class="section">
-            <h3>Detailed Stats</h3>
-            <div class="detail-stats">
-                <div class="detail-row">
-                    <span><Icon Name="fire" Size="16" /> Longest Streak</span>
-                    <strong>@profile.LongestStreak days</strong>
-                </div>
-                <div class="detail-row">
-                    <span><Icon Name="pencil" Size="16" /> Quizzes Taken</span>
-                    <strong>@profile.TotalQuizCount</strong>
-                </div>
-                <div class="detail-row">
-                    <span><Icon Name="trophy" Size="16" /> Best Quiz Score</span>
-                    <strong>@profile.BestQuizScore%</strong>
-                </div>
-                <div class="detail-row">
-                    <span><Icon Name="trending-up" Size="16" /> Average Score</span>
-                    <strong>@profile.AverageQuizScore%</strong>
-                </div>
-                <div class="detail-row">
-                    <span><Icon Name="clock" Size="16" /> Study Time</span>
-                    <strong>@FormatTime(profile.TotalStudyMinutes)</strong>
-                </div>
-                <div class="detail-row">
-                    <span><Icon Name="award" Size="16" /> Perfect Quizzes</span>
-                    <strong>@profile.PerfectQuizCount</strong>
-                </div>
-                <div class="detail-row">
-                    <span><Icon Name="lightbulb" Size="16" /> Hints Used</span>
-                    <strong>@profile.HintsUsed</strong>
+        @* A stat appears once there is something to show, so a new profile is not a list of zeros. *@
+        @if (profile.TotalQuizCount > 0 || profile.LongestStreak > 1 || profile.TotalStudyMinutes > 0)
+        {
+            <div class="section">
+                <h3>Detailed Stats</h3>
+                <div class="detail-stats">
+                    @if (profile.LongestStreak > 1)
+                    {
+                        <div class="detail-row">
+                            <span><Icon Name="fire" Size="16" /> Longest Streak</span>
+                            <strong>@profile.LongestStreak days</strong>
+                        </div>
+                    }
+                    @if (profile.TotalQuizCount > 0)
+                    {
+                        <div class="detail-row">
+                            <span><Icon Name="pencil" Size="16" /> Quizzes Taken</span>
+                            <strong>@profile.TotalQuizCount</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span><Icon Name="trophy" Size="16" /> Best Quiz Score</span>
+                            <strong>@profile.BestQuizScore%</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span><Icon Name="trending-up" Size="16" /> Average Score</span>
+                            <strong>@profile.AverageQuizScore%</strong>
+                        </div>
+                    }
+                    @if (profile.TotalStudyMinutes > 0)
+                    {
+                        <div class="detail-row">
+                            <span><Icon Name="clock" Size="16" /> Study Time</span>
+                            <strong>@FormatTime(profile.TotalStudyMinutes)</strong>
+                        </div>
+                    }
+                    @if (profile.PerfectQuizCount > 0)
+                    {
+                        <div class="detail-row">
+                            <span><Icon Name="award" Size="16" /> Perfect Quizzes</span>
+                            <strong>@profile.PerfectQuizCount</strong>
+                        </div>
+                    }
+                    @if (profile.HintsUsed > 0)
+                    {
+                        <div class="detail-row">
+                            <span><Icon Name="lightbulb" Size="16" /> Hints Used</span>
+                            <strong>@profile.HintsUsed</strong>
+                        </div>
+                    }
                 </div>
             </div>
-        </div>
+        }
 
         <!-- Activity heatmap -->
         <div class="section">
@@ -307,7 +316,7 @@
                             </div>
                         </div>
                         <div class="history-info">
-                            <strong style="color: @topicColor">@topicName</strong>
+                            <strong class="topic-ink" style="--topic-c: @topicColor">@topicName</strong>
                             <small>@quiz.CorrectCount/@quiz.QuestionsCount correct</small>
                         </div>
                         <div class="history-right">
@@ -514,7 +523,8 @@ else
             await JS.InvokeVoidAsync("AnimCounter.run", "cnt-streak", profile.CurrentStreak, 500, "", "");
             await JS.InvokeVoidAsync("AnimCounter.run", "cnt-lessons", profile.LessonsCompleted.Count, 600, "", "");
             await JS.InvokeVoidAsync("AnimCounter.run", "cnt-questions", profile.TotalQuestionsAnswered, 700, "", "");
-            await JS.InvokeVoidAsync("AnimCounter.run", "cnt-acc", overallAccuracy, 600, "", "%");
+            if (profile.TotalQuestionsAnswered > 0)
+                await JS.InvokeVoidAsync("AnimCounter.run", "cnt-acc", overallAccuracy, 600, "", "%");
         }
         catch (Exception ex) { await JS.LogErrorAsync("ProfilePage.AnimCounter", ex); }
     }
@@ -634,14 +644,6 @@ else
     .xp-bar-labels small, .xp-detail { color: var(--text-muted); font-size: 0.75rem; }
     .xp-detail { display: block; text-align: center; margin-top: 4px; }
 
-    .quick-stats {
-        display: flex; justify-content: center; gap: 16px; margin-top: 16px;
-        padding-top: 16px; border-top: 1px solid var(--border);
-    }
-    .quick-stat {
-        display: flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--text-secondary);
-    }
-    .quick-stat strong { color: var(--text-primary); }
 
     /* Tabs */
     .tab-bar {

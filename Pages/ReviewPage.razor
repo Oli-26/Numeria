@@ -22,10 +22,20 @@
 else if (state == ReviewState.Empty)
 {
     <div class="empty-state card">
-        <div class="empty-icon"><Icon Name="checkmark-circle" Size="40" /></div>
-        <h2>All caught up!</h2>
-        <p>No cards due for review. Keep learning and questions will appear here based on how well you remember them.</p>
-        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Back to Home</button>
+        @if (neverStudied)
+        {
+            <div class="empty-icon"><Icon Name="book" Size="40" /></div>
+            <h2>Nothing to review yet</h2>
+            <p>Finish a lesson and its questions come back here just before you would forget them.</p>
+            <StartLessonButton />
+        }
+        else
+        {
+            <div class="empty-icon"><Icon Name="checkmark-circle" Size="40" /></div>
+            <h2>All caught up!</h2>
+            <p>No cards due for review. Keep learning and questions will appear here based on how well you remember them.</p>
+            <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Back to Home</button>
+        }
     </div>
 }
 else if (state == ReviewState.Active)
@@ -170,6 +180,7 @@ else if (state == ReviewState.Complete)
     private int currentIndex;
     private Question? currentQuestion;
     private bool revealed;
+    private bool neverStudied;
     private int rememberedCount;
     private int forgotCount;
     private int xpEarned;
@@ -181,6 +192,7 @@ else if (state == ReviewState.Complete)
             dueCards = await ReviewService.GetDueCardsAsync(15);
             if (dueCards.Count == 0)
             {
+                neverStudied = (await Progress.GetProfileAsync()).LessonsCompleted.Count == 0;
                 state = ReviewState.Empty;
             }
             else

@@ -5,6 +5,7 @@
 @inject IGamificationService Gamification
 @inject IThemeService ThemeService
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <div class="shop-header">
     <div class="shop-title-wrap">
@@ -25,7 +26,7 @@
 
 @if (profile != null)
 {
-    <div class="tab-bar">
+    <div class="tab-bar scroll-row">
         @foreach (var cat in visibleCategories)
         {
             <button class="tab @(activeCategory == cat ? "active" : "")" @onclick="() => SwitchCategory(cat)">
@@ -63,6 +64,11 @@
                     @if (active)
                     {
                         <span class="equipped-badge">Equipped</span>
+                    }
+                    else if (owned && item.Category == "feature")
+                    {
+                        @* A feature unlock is a place to go, not something to wear. *@
+                        <button class="btn btn-sm btn-outline equip-btn" @onclick="() => Nav.NavigateTo(FeatureRoute(item))">Open</button>
                     }
                     else if (owned && !isPowerup)
                     {
@@ -308,7 +314,17 @@ else
         };
     }
 
-    private bool IsActive(ShopItem item)
+    private static string FeatureRoute(ShopItem item) => item.UnlockData.GetValueOrDefault("feature") switch
+    {
+        "halloffame" => "/hall-of-fame",
+        "proofs" => "/proofs",
+        "mistakes" => "/mistakes",
+        "playground" => "/playground",
+        "compendium" => "/compendium",
+        _ => "/"
+    };
+
+        private bool IsActive(ShopItem item)
     {
         if (profile == null) return false;
         return item.Category switch

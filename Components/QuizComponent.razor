@@ -343,33 +343,42 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
 
         @if (answerSubmitted)
         {
-            <div class="feedback @(lastCorrect ? "feedback-correct anim-correct" : "feedback-incorrect anim-incorrect")">
-                <span class="feedback-icon">@if (lastCorrect) { <Icon Name="check" Size="18" /> } else { <Icon Name="x-mark" Size="18" /> }</span>
-                <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
+            @* Room to scroll the answered question clear of the sheet. *@
+            <div class="feedback-sheet-spacer"></div>
+            <div class="feedback-sheet @(lastCorrect ? "is-correct" : "is-incorrect")" role="status">
+                <div class="feedback @(lastCorrect ? "feedback-correct anim-correct" : "feedback-incorrect anim-incorrect")">
+                    <span class="feedback-icon">@if (lastCorrect) { <Icon Name="check" Size="18" /> } else { <Icon Name="x-mark" Size="18" /> }</span>
+                    <span>@(lastCorrect ? "Correct!" : "Incorrect")</span>
+                </div>
                 @if (!lastCorrect && q.CorrectAnswer != null)
                 {
-                    <span class="correct-answer">Answer: @(q.Type == QuestionType.FindTheError ? $"step {q.CorrectAnswer}" : q.CorrectAnswer)</span>
+                    <div class="correct-answer"><span class="correct-answer-label">Answer</span>@(q.Type == QuestionType.FindTheError ? $"step {q.CorrectAnswer}" : q.CorrectAnswer)</div>
                 }
+                @if (q.Explanation != null)
+                {
+                    <div class="explanation">@q.Explanation</div>
+                }
+                @if (!lastCorrect && ((TopicId != null && q.LessonId != null) || secondChanceTokens > 0))
+                {
+                    <div class="feedback-extras">
+                        @if (TopicId != null && q.LessonId != null)
+                        {
+                            <button class="btn btn-sm btn-outline" @onclick="() => ReviewConcept(q.LessonId)">
+                                <Icon Name="book" Size="16" /> Review concept
+                            </button>
+                        }
+                        @if (secondChanceTokens > 0)
+                        {
+                            <button class="btn btn-sm btn-outline" @onclick="UseSecondChance">
+                                <Icon Name="rotate" Size="16" /> Second chance (@secondChanceTokens)
+                            </button>
+                        }
+                    </div>
+                }
+                <button class="btn btn-primary btn-lg feedback-continue" @onclick="NextQuestion">
+                    @(currentIndex < questions.Count - 1 ? "Continue" : "See Results")
+                </button>
             </div>
-            @if (q.Explanation != null)
-            {
-                <div class="explanation">@q.Explanation</div>
-            }
-            @if (!lastCorrect && TopicId != null && q.LessonId != null)
-            {
-                <button class="btn btn-sm btn-outline review-concept-btn" @onclick="() => ReviewConcept(q.LessonId)">
-                    <Icon Name="book" Size="16" /> Review this concept
-                </button>
-            }
-            @if (!lastCorrect && secondChanceTokens > 0)
-            {
-                <button class="btn btn-sm btn-outline" style="width: 100%; margin-top: 8px" @onclick="UseSecondChance">
-                    <Icon Name="rotate" Size="16" /> Second Chance (@secondChanceTokens left)
-                </button>
-            }
-            <button class="btn btn-primary" style="width: 100%; margin-top: 8px" @onclick="NextQuestion">
-                @(currentIndex < questions.Count - 1 ? "Next Question" : "See Results")
-            </button>
         }
     </div>
 }
@@ -1409,11 +1418,6 @@ else if (quizState == QuizState.Complete)
     .error-step.correct .error-step-num { background: var(--success); color: white; }
     .error-step.incorrect .error-step-num { background: var(--error); color: white; }
 
-    .review-concept-btn {
-        width: 100%;
-        margin-top: 8px;
-        border-style: dashed;
-    }
 
 
     .hint-btn {

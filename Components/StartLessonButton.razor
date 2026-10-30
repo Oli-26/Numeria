@@ -1,0 +1,42 @@
+@* One concrete next lesson for an empty screen, rather than a vague "start learning". *@
+@inject IConnectionsService Connections
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+@if (pick != null)
+{
+    <button class="btn btn-primary start-lesson-btn" @onclick='() => Nav.NavigateTo($"/topic/{pick.Topic.Id}/lesson/{pick.Lesson.Id}")'>
+        <small>@pick.Reason</small>
+        <strong>@pick.Lesson.Title</strong>
+    </button>
+}
+else if (loaded)
+{
+    <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Find a lesson</button>
+}
+
+@code {
+    private DailyPick? pick;
+    private bool loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { pick = await Connections.GetStartingLessonAsync(await Progress.GetProfileAsync()); }
+        catch { pick = null; }
+        loaded = true;
+    }
+}
+
+<style>
+    .start-lesson-btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        max-width: 100%;
+        padding: 10px 20px;
+        line-height: 1.3;
+    }
+    .start-lesson-btn small { font-size: 0.75rem; font-weight: 600; opacity: 0.85; }
+    .start-lesson-btn strong { font-size: 1rem; color: inherit; }
+</style>

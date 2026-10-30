@@ -10,7 +10,7 @@
     <h1>Share Progress</h1>
 </div>
 
-<div class="style-picker">
+<div class="style-picker scroll-row">
     @foreach (var s in styles)
     {
         var style = s;
@@ -23,6 +23,14 @@
 
 <div class="share-preview">
     <canvas id="share-canvas" width="600" height="400"></canvas>
+</div>
+
+@* The chosen avatar as SVG, copied onto the canvas by drawShareCard (index.html). *@
+<div id="share-avatar" class="share-avatar-src" aria-hidden="true">
+    @if (avatarCard != null)
+    {
+        <FigureMedallion Card="avatarCard" Size="128" />
+    }
 </div>
 
 <div class="share-actions">
@@ -41,6 +49,7 @@
 
 @code {
     private UserProfile? profile;
+    private HallOfFame.AvatarCard? avatarCard;
     private int level;
     private int topicCount;
     private int lessonTotal;
@@ -67,6 +76,7 @@
             profile = await Progress.GetProfileAsync();
             level = Gamification.GetLevel(profile.TotalXp);
             var topics = await Content.GetTopicsAsync();
+            avatarCard = HallOfFame.Resolve(profile.SelectedAvatar, topics.ToDictionary(t => t.Id));
             topicCount = topics.Count;
             lessonTotal = 0;
             foreach (var t in topics)
@@ -98,6 +108,7 @@
             textColor = s.TextColor,
             accent = s.AccentColor,
             name = profile.DisplayName,
+            initial = profile.DisplayName.Length > 0 ? profile.DisplayName[..1].ToUpperInvariant() : "?",
             level,
             xp = profile.TotalXp,
             streak = profile.CurrentStreak,
@@ -178,6 +189,7 @@
         margin-bottom: 16px;
     }
     .share-preview canvas { width: 100%; display: block; }
+    .share-avatar-src { position: absolute; width: 0; height: 0; overflow: hidden; }
 
     .share-actions { display: flex; gap: 10px; }
 

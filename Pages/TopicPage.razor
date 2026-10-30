@@ -6,8 +6,8 @@
 @inject IJSRuntime JS
 
 <div class="page-header">
-    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-    <h1 style="color: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
+    <button class="back-btn" aria-label="@(FromScratch.IsScratch(topic) ? "Back to From Scratch" : "Back to home")" @onclick='() => Nav.NavigateTo(FromScratch.IsScratch(topic) ? "/from-scratch" : "/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1 class="topic-ink" style="--topic-c: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
 </div>
 
 @if (topic != null && IsTopicLocked())
@@ -43,27 +43,37 @@
 }
 else if (lessons != null && topic != null)
 {
-    @if (HasWorkedExamples(TopicId))
+    var next = NextLesson();
+    @if (next != null)
     {
-        <button class="btn btn-outline worked-examples-btn" @onclick='() => Nav.NavigateTo($"/worked-examples/{TopicId}")'>
-            <Icon Name="pencil" Size="16" /> Worked Examples
+        var started = lessons.Any(l => profile?.LessonsCompleted.Contains(l.Id) == true);
+        <button class="btn btn-primary btn-lg topic-continue" @onclick="() => OpenLesson(next, false)">
+            <small>@(started ? "Continue" : "Start") · Lesson @next.Order</small>
+            <strong>@next.Title</strong>
         </button>
     }
 
-    @if (HasChallenges(TopicId))
-    {
-        <button class="btn btn-outline challenges-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/challenges")'>
-            <Icon Name="sword" Size="16" /> Challenges
-        </button>
-    }
-
-    <button class="btn btn-outline run-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/run")'>
-        <Icon Name="crown" Size="16" /> Topic Run
-        @if (profile?.RunSeals.Contains(TopicId) == true)
+    <div class="topic-extras">
+        @if (HasWorkedExamples(TopicId))
         {
-            <span class="run-seal-pip" title="Run Seal earned">⊛</span>
+            <button class="btn btn-outline btn-sm" @onclick='() => Nav.NavigateTo($"/worked-examples/{TopicId}")'>
+                <Icon Name="pencil" Size="16" /> Worked Examples
+            </button>
         }
-    </button>
+        @if (HasChallenges(TopicId))
+        {
+            <button class="btn btn-outline btn-sm" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/challenges")'>
+                <Icon Name="sword" Size="16" /> Challenges
+            </button>
+        }
+        <button class="btn btn-outline btn-sm run-btn" @onclick='() => Nav.NavigateTo($"/topic/{TopicId}/run")'>
+            <Icon Name="crown" Size="16" /> Topic Run
+            @if (profile?.RunSeals.Contains(TopicId) == true)
+            {
+                <span class="run-seal-pip" title="Run Seal earned">⊛</span>
+            }
+        </button>
+    </div>
 
     @foreach (var stage in GroupLessonsByStage(lessons))
     {
@@ -106,17 +116,24 @@ else if (lessons != null && topic != null)
                                 {
                                     <span class="xp-badge stub-badge">Coming soon</span>
                                 }
+                                else if (isCompleted)
+                                {
+                                    <span class="xp-badge done-badge">Done</span>
+                                }
                                 else
                                 {
                                     <span class="xp-badge">+@lesson.XpReward XP</span>
                                 }
                             </div>
                         </div>
-                        @if (!isLocked)
-                        {
+                        @{
                             var conceptsDone = lesson.Concepts.Count(c => profile?.ConceptsViewed.Contains(c.Id) ?? false);
                             var total = lesson.Concepts.Count;
                             var pct = total > 0 ? (double)conceptsDone / total * 100 : 0;
+                        }
+                        @* Only a lesson part-way through gets a bar; finished ones say Done and untouched ones need none. *@
+                        @if (!isLocked && !isCompleted && conceptsDone > 0)
+                        {
                             <div class="lesson-progress-row">
                                 <div class="progress-bar-container">
                                     <div class="progress-bar-fill animate-in" style="width: @pct.ToString("F0")%; background: @topic.Color"></div>
@@ -406,6 +423,9 @@ else
         return prev != null && profile.LessonsCompleted.Contains(prev.Id);
     }
 
+    private Lesson? NextLesson() =>
+        lessons?.OrderBy(l => l.Order).FirstOrDefault(l => l.Concepts.Count > 0 && profile?.LessonsCompleted.Contains(l.Id) != true && CanAccessLesson(l));
+
     private void OpenLesson(Lesson lesson, bool isLocked)
     {
         if (isLocked) return;
@@ -448,14 +468,19 @@ else
 }
 
 <style>
-    .worked-examples-btn { width: 100%; margin-bottom: 12px; border-style: dashed; }
-    .challenges-btn { width: 100%; margin-bottom: 12px; border-style: dashed; }
-    .run-btn {
+    .topic-continue {
         width: 100%; margin-bottom: 12px;
-        border-style: dashed;
+        display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.3;
+    }
+    .topic-continue small { font-size: 0.78rem; font-weight: 600; opacity: 0.85; }
+    .topic-continue strong { color: inherit; }
+    .topic-extras { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .topic-extras .btn { flex: 1 1 auto; justify-content: center; }
+    .run-btn {
         background: color-mix(in srgb, var(--accent) 6%, transparent);
         border-color: color-mix(in srgb, var(--accent) 50%, transparent);
     }
+    .done-badge { background: color-mix(in srgb, var(--success) 15%, transparent) !important; color: var(--success) !important; }
     .run-seal-pip { margin-left: 6px; color: var(--accent); font-weight: 700; }
 
     .lessons-list {

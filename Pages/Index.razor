@@ -50,7 +50,7 @@
                             <div class="card card-clickable topic-tile" @onclick="() => NavigateToTopic(topic.Id)">
                                 @if (suggestedTopics.Any(s => s.Id == topic.Id))
                                 {
-                                    <div class="suggested-label" style="color: @topic.Color">Start here</div>
+                                    <div class="suggested-label topic-ink" style="--topic-c: @topic.Color">Start here</div>
                                 }
                                 <div class="topic-tile-icon" style="color: @topic.Color">
                                     @if (done)
@@ -62,7 +62,7 @@
                                         @((MarkupString)TopicArt.For(topic.Id))
                                     }
                                 </div>
-                                <strong>@topic.Name</strong>
+                                <strong class="@(topic.Name.Length > 26 ? "long-name" : "")">@topic.Name</strong>
                                 <small class="topic-tile-meta">@topic.LessonCount lessons</small>
                                 <p class="topic-tile-desc">@topic.Description</p>
                                 @if (pct > 0 && !done)
@@ -369,6 +369,8 @@
     }
 
     .topic-tile strong { font-size: 0.85rem; position: relative; }
+    /* Long names ("Africa's Classical & Medieval Kingdoms") wrap to three lines rather than four. */
+    .topic-tile strong.long-name { font-size: 0.76rem; }
     .topic-tile-meta { color: var(--text-muted); font-size: 0.75rem; position: relative; }
     .topic-tile-desc { display: none; }
 

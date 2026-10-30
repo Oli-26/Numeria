@@ -119,6 +119,17 @@
                             }
                         }
                     </div>
+                    @if (!string.IsNullOrEmpty(lesson.TryIt) && currentConceptIndex == lesson.Concepts.Count - 1)
+                    {
+                        var taskDone = profile?.TryItsDone.Contains(lesson.Id) == true;
+                        <div class="field-task @(taskDone ? "done" : "")">
+                            <small><Icon Name="compass-rose" Size="14" /> Field task</small>
+                            <p>@lesson.TryIt</p>
+                            <button class="btn btn-sm @(taskDone ? "btn-outline" : "btn-primary")" disabled="@taskDone" @onclick="MarkFieldTaskDone">
+                                @(taskDone ? "Done it" : $"I've done it (+{FieldTaskXp} XP)")
+                            </button>
+                        </div>
+                    }
                     @if (concept.Citations.Count > 0)
                     {
                         <details class="sources">
@@ -321,6 +332,19 @@ else
 
     private Lesson? lesson;
     private UserProfile? profile;
+    private const int FieldTaskXp = 25;
+
+    // Honour system: the task happens off-screen, so a tick is all the evidence there can be.
+    private async Task MarkFieldTaskDone()
+    {
+        if (lesson == null) return;
+        var p = await Progress.GetProfileAsync();
+        if (p.TryItsDone.Contains(lesson.Id)) return;
+        p.TryItsDone.Add(lesson.Id);
+        await Progress.SaveProfileAsync(p);
+        await Gamification.AwardXpAsync(FieldTaskXp);
+        profile = await Progress.GetProfileAsync();
+    }
     private int currentConceptIndex;
     private bool showQuiz;
 

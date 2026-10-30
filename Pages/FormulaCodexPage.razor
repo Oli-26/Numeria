@@ -21,7 +21,7 @@
     </div>
 
     <!-- Domain selector -->
-    <div class="codex-filters">
+    <div class="codex-filters scroll-row">
         <button class="codex-filter @(activeDomain == null ? "active" : "")" @onclick="() => SelectDomain(null)">All Domains</button>
         @foreach (var dom in domains.OrderBy(d => d.Name))
         {
@@ -44,7 +44,7 @@
             .Where(t => t != null)
             .OrderBy(t => t!.Name)
             .ToList();
-        <div class="codex-filters codex-filters-sub">
+        <div class="codex-filters codex-filters-sub scroll-row">
             <button class="codex-filter codex-filter-sub @(activeTopic == null ? "active" : "")" @onclick="() => SelectTopic(null)">All Topics</button>
             @foreach (var t in topicsInDomain)
             {

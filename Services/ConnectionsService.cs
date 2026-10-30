@@ -13,6 +13,7 @@ public interface IConnectionsService
     Task<List<Resource>> GetResourcesAsync();
     Task<List<Echo>> GetEchoesAsync(string topicId, int take = 2);
     Task<DailyPick?> GetDailyPickAsync(UserProfile profile, DateTime date);
+    Task<DailyPick?> GetStartingLessonAsync(UserProfile profile);
 }
 
 public class ConnectionsService : IConnectionsService
@@ -98,6 +99,26 @@ public class ConnectionsService : IConnectionsService
                 ? $"Next up in {topic.Name}"
                 : profile.TopicStatistics.Count > 0 ? $"One step beyond what you know: {topic.Name}" : $"A good place to start: {topic.Name}";
             return new DailyPick { Topic = topic, Lesson = lesson, Hook = hook, Reason = reason };
+        }
+        return null;
+    }
+
+    // The one lesson an empty screen should point at: the topic in progress, else the first beginner topic in the
+    // learner's subject, else what onboarding suggested.
+    public async Task<DailyPick?> GetStartingLessonAsync(UserProfile profile)
+    {
+        var topics = await _content.GetTopicsAsync();
+        var domain = string.IsNullOrEmpty(profile.CurrentDomain) ? "math" : profile.CurrentDomain;
+        var candidates = Recommender.Continue(topics, profile, 5).OrderBy(t => t.Domain == domain ? 0 : 1)
+            .Concat(topics.Where(t => t.Domain == domain && t.Tier <= 1 && !profile.TopicsCompleted.Contains(t.Id)))
+            .Concat(topics.Where(t => profile.SuggestedTopicIds.Contains(t.Id)))
+            .DistinctBy(t => t.Id);
+        foreach (var topic in candidates)
+        {
+            var lesson = Recommender.NextLesson(await _content.GetLessonsAsync(topic.Id), profile);
+            if (lesson == null) continue;
+            var started = profile.TopicStatistics.ContainsKey(topic.Id);
+            return new DailyPick { Topic = topic, Lesson = lesson, Hook = lesson.Description, Reason = started ? $"Next up in {topic.Name}" : $"Start here: {topic.Name}" };
         }
         return null;
     }

@@ -23,12 +23,17 @@
             <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
             <h1>Hall of Fame: @DomainLabel</h1>
         </div>
-        <div class="card" style="text-align: center; padding: 40px 24px">
-            <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-            <h2 style="margin-top: 12px">Locked</h2>
-            <p style="color: var(--text-secondary)">Purchase "Hall of Fame: @DomainLabel" from the Shop to unlock.</p>
-            <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-        </div>
+        <LockedFeature ItemId="@($"unlock-halloffame-{currentDomain}")" OnUnlocked="() => unlocked = true">
+            <Preview>
+                <div class="lf-chips">
+                    @foreach (var f in figures.Take(5))
+                    {
+                        <FigureMedallion Card="HallOfFame.Card(currentDomain, f)" Size="46" />
+                    }
+                </div>
+                <p class="lf-count">@figures.Count figures to meet</p>
+            </Preview>
+        </LockedFeature>
     }
     else
     {

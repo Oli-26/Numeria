@@ -9,12 +9,17 @@
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>Compendium of Constants</h1>
     </div>
-    <div class="card" style="text-align: center; padding: 40px 24px">
-        <Icon Name="lock" Size="40" Stroke="var(--text-muted)" />
-        <h2 style="margin-top: 12px">Locked</h2>
-        <p style="color: var(--text-secondary)">Purchase the "Compendium of Constants" from the Shop to unlock.</p>
-        <button class="btn btn-accent" @onclick='() => Nav.NavigateTo("/shop")'>Go to Shop</button>
-    </div>
+    <LockedFeature ItemId="unlock-compendium" OnUnlocked="() => unlocked = true">
+        <Preview>
+            <div class="lf-chips">
+                @foreach (var c in constants.Take(8))
+                {
+                    <span class="lf-chip">@c.Symbol</span>
+                }
+            </div>
+            <p class="lf-count">@constants.Count constants, each with its story</p>
+        </Preview>
+    </LockedFeature>
 }
 else if (unlocked)
 {

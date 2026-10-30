@@ -1,0 +1,158 @@
+@page "/from-scratch"
+@inject IContentRepository Content
+@inject IProgressService Progress
+@inject NavigationManager Nav
+
+<div class="fs-page">
+    <div class="page-header">
+        <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+        <h1 class="fs-title">From Scratch</h1>
+    </div>
+
+    @if (profile != null)
+    {
+        <div class="fs-journal">
+            <small class="fs-kicker">Survival journal</small>
+            <div class="fs-day">Day @days</div>
+            <p class="fs-mood">@FromScratch.Mood(days)</p>
+            <div class="fs-year" aria-label="@days of 365 days survived">
+                <div class="fs-year-fill" style="width: @((days / 365.0 * 100).ToString("F1"))%"></div>
+                <span style="left: @((3 / 365.0 * 100).ToString("F1"))%"></span>
+                <span style="left: @((30 / 365.0 * 100).ToString("F1"))%"></span>
+            </div>
+            <p class="fs-premise">Stranded in the wild, or the lights went out for good. Each skill you learn keeps you alive a little longer, then lets you rebuild.</p>
+        </div>
+
+        @foreach (var ch in FromScratch.Chapters)
+        {
+            <section class="fs-chapter">
+                <div class="fs-chapter-head">
+                    <small>Chapter @ch.Number · @ch.Span</small>
+                    <h2>@ch.Title</h2>
+                </div>
+                <div class="fs-trail">
+                    @foreach (var (skill, i) in ch.Skills.Select((s, i) => (s, i)))
+                    {
+                        var state = StateOf(skill);
+                        var lessons = lessonsByTopic.GetValueOrDefault(skill.TopicId);
+                        var done = lessons?.Count(l => profile.LessonsCompleted.Contains(l.Id)) ?? 0;
+                        <button class="fs-node fs-@state @(i % 2 == 0 ? "fs-left" : "fs-right")" style="--node-c: @skill.Color"
+                                disabled="@(state is "soon" or "locked")" @onclick='() => Nav.NavigateTo($"/topic/{skill.TopicId}")'>
+                            <span class="fs-disc">
+                                @if (state == "done")
+                                {
+                                    <Icon Name="check" Size="26" />
+                                }
+                                else
+                                {
+                                    @((MarkupString)TopicArt.For(skill.TopicId))
+                                }
+                            </span>
+                            <span class="fs-node-text">
+                                <strong>@skill.Name</strong>
+                                <small>
+                                    @switch (state)
+                                    {
+                                        case "done": <text>Mastered</text> break;
+                                        case "open": <text>@(done > 0 ? $"{done} of {lessons!.Count} lessons" : $"{lessons!.Count} lessons")</text> break;
+                                        case "locked": <text>Needs @string.Join(" and ", skill.Needs.Select(n => FromScratch.Find(n)?.Name ?? n))</text> break;
+                                        default: <text>Coming soon</text> break;
+                                    }
+                                </small>
+                            </span>
+                        </button>
+                    }
+                </div>
+            </section>
+        }
+    }
+</div>
+
+@code {
+    private UserProfile? profile;
+    private Dictionary<string, List<Lesson>> lessonsByTopic = new();
+    private int days;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var topics = await Content.GetTopicsAsync();
+        foreach (var t in topics.Where(FromScratch.IsScratch))
+            lessonsByTopic[t.Id] = await Content.GetLessonsAsync(t.Id);
+        profile = await Progress.GetProfileAsync();
+        days = FromScratch.DaysSurvived(profile, lessonsByTopic);
+    }
+
+    private string StateOf(FromScratch.Skill s)
+    {
+        if (!lessonsByTopic.ContainsKey(s.TopicId)) return "soon";
+        if (profile!.TopicsCompleted.Contains(s.TopicId)) return "done";
+        return FromScratch.IsOpen(s, profile) ? "open" : "locked";
+    }
+}
+
+<style>
+    .fs-page {
+        --paper: color-mix(in srgb, #C9A46A 14%, var(--bg-card));
+        --ink-brown: color-mix(in oklab, #8A5A2B 75%, var(--text-primary));
+    }
+    .fs-title { font-family: Georgia, 'Times New Roman', serif; letter-spacing: 0.01em; }
+
+    .fs-journal {
+        position: relative;
+        padding: 18px 18px 16px;
+        border-radius: var(--radius-lg);
+        background:
+            repeating-linear-gradient(to bottom, transparent 0 27px, color-mix(in srgb, #8A5A2B 10%, transparent) 27px 28px),
+            var(--paper);
+        border: 1px solid color-mix(in srgb, #8A5A2B 25%, transparent);
+        box-shadow: 0 6px 18px var(--shadow);
+        margin-bottom: 22px;
+    }
+    .fs-kicker { text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; font-size: 0.72rem; color: var(--ink-brown); }
+    .fs-day { font-family: Georgia, serif; font-size: 2.6rem; font-weight: 700; line-height: 1.1; color: var(--text-primary); margin-top: 2px; }
+    .fs-mood { font-family: Georgia, serif; font-style: italic; color: var(--text-secondary); margin: 4px 0 12px; }
+    .fs-year { position: relative; height: 8px; border-radius: 999px; background: color-mix(in srgb, #8A5A2B 15%, transparent); overflow: visible; }
+    .fs-year-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #C8562B, #C9971E); min-width: 8px; }
+    .fs-year span { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--ink-brown); opacity: 0.5; }
+    .fs-premise { margin: 12px 0 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .fs-chapter { margin-bottom: 26px; }
+    .fs-chapter-head small { text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-size: 0.72rem; color: var(--ink-brown); }
+    .fs-chapter-head h2 { font-family: Georgia, serif; margin: 2px 0 10px; font-size: 1.35rem; }
+
+    /* A dashed trail down the middle with skills stepping off it to either side. */
+    .fs-trail { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 6px 0; }
+    .fs-trail::before {
+        content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 0;
+        border-left: 3px dashed color-mix(in srgb, #8A5A2B 35%, transparent);
+        transform: translateX(-50%);
+    }
+    .fs-node {
+        position: relative; z-index: 1;
+        display: flex; align-items: center; gap: 12px;
+        width: 62%; padding: 10px 12px;
+        border-radius: 999px; border: 2px solid color-mix(in srgb, var(--node-c) 45%, var(--border));
+        background: var(--bg-card); color: var(--text-primary);
+        text-align: left; cursor: pointer; font: inherit;
+        box-shadow: 0 3px 10px var(--shadow);
+        transition: transform 0.15s ease;
+    }
+    .fs-node:active:not(:disabled) { transform: scale(0.97); }
+    .fs-left { align-self: flex-start; }
+    .fs-right { align-self: flex-end; flex-direction: row-reverse; text-align: right; }
+    .fs-disc {
+        flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%; padding: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--node-c); background: color-mix(in srgb, var(--node-c) 14%, var(--bg-card));
+        border: 2px solid var(--node-c);
+    }
+    .fs-node-text { display: flex; flex-direction: column; min-width: 0; }
+    .fs-node-text strong { font-size: 0.98rem; }
+    .fs-node-text small { color: var(--text-muted); font-size: 0.78rem; }
+    .fs-done .fs-disc { background: var(--node-c); color: #fff; }
+    .fs-open { border-color: var(--node-c); }
+    .fs-locked, .fs-soon { cursor: default; box-shadow: none; }
+    .fs-locked .fs-disc, .fs-soon .fs-disc { filter: grayscale(1); opacity: 0.45; }
+    .fs-soon { border-style: dashed; background: var(--bg-surface); }
+    .fs-soon .fs-node-text strong, .fs-locked .fs-node-text strong { color: var(--text-secondary); }
+</style>

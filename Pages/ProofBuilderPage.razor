@@ -15,14 +15,17 @@ else if (!unlocked)
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
         <h1>Proof Builder</h1>
     </div>
-    <div class="locked-feature card">
-        <div class="locked-icon"><Icon Name="lock" Size="36" /></div>
-        <h2>Locked</h2>
-        <p>Purchase the Proof Builder from the Shop to unlock.</p>
-        <button class="btn btn-accent btn-lg" @onclick='() => Nav.NavigateTo("/shop")'>
-            <Icon Name="phi" Size="18" /> Go to Shop
-        </button>
-    </div>
+    <LockedFeature ItemId="unlock-proofs" OnUnlocked="UnlockedAsync">
+        <Preview>
+            <ul class="lf-list">
+                @foreach (var c in (challenges ?? new()).Take(3))
+                {
+                    <li>@c.Title</li>
+                }
+            </ul>
+            <p class="lf-count">@(challenges?.Count ?? 0) proofs to build</p>
+        </Preview>
+    </LockedFeature>
 }
 else if (activeChallenge == null)
 {
@@ -227,9 +230,9 @@ else
         {
             var profile = await Progress.GetProfileAsync();
             unlocked = profile.ShopPurchases.Contains("unlock-proofs");
+            challenges = await ChallengeRepo.GetProofChallengesAsync();
             if (!unlocked) { loaded = true; StateHasChanged(); return; }
 
-            challenges = await ChallengeRepo.GetProofChallengesAsync();
             completedIds = profile.ChallengesCompleted.ToHashSet();
 
             if (ChallengeId != null)
@@ -252,6 +255,12 @@ else
     {
         revealed = false;
         InitChallenge(c);
+    }
+
+    private async Task UnlockedAsync()
+    {
+        unlocked = true;
+        completedIds = (await Progress.GetProfileAsync()).ChallengesCompleted.ToHashSet();
     }
 
     private void InitChallenge(ProofChallenge c)
@@ -347,13 +356,6 @@ else
 }
 
 <style>
-    .locked-feature {
-        text-align: center; padding: 40px 24px;
-    }
-    .locked-feature:hover { transform: none; }
-    .locked-icon { color: var(--text-muted); margin-bottom: 12px; }
-    .locked-feature h2 { margin-bottom: 8px; }
-    .locked-feature p { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
 
     .pb-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
 

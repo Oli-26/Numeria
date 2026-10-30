@@ -3,13 +3,16 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<div class="app-container">
+<div class="app-container @(Focus ? "focus-mode" : "")">
     <main class="main-content">
         <div class="page-shell" @key="currentUri">
             @Body
         </div>
     </main>
-    <NavBar />
+    @if (!Focus)
+    {
+        <NavBar />
+    }
 </div>
 
 <div id="toast-container"></div>
@@ -19,6 +22,14 @@
 @code {
     private string currentUri = "";
     private DotNetObjectReference<MainLayout>? _selfRef;
+
+    // Lessons, quizzes, runs and onboarding get the whole screen: no bottom nav to tap away from mid-question.
+    // Every page listed here has its own back button (run encounters rely on the system back gesture).
+    private static readonly System.Text.RegularExpressions.Regex FocusRoute = new(
+        @"^/(topic/[^/]+/lesson/|topic/[^/]+/run/encounter/|quiz/|mastery/|synthesis/[^/]+$|welcome$|daily$|review$)",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    private bool Focus => FocusRoute.IsMatch(new Uri(currentUri).AbsolutePath);
 
     protected override void OnInitialized()
     {

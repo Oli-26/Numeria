@@ -489,7 +489,7 @@
         }
 
         // Share card renderer
-        function drawShareCard(opts) {
+        async function drawShareCard(opts) {
             var c = document.getElementById('share-canvas');
             if (!c) return;
             var ctx = c.getContext('2d');
@@ -514,15 +514,40 @@
             ctx.font = 'bold 14px system-ui';
             ctx.fillText('NOUS', 30, 36);
 
+            // Avatar: the chosen figure's medallion (rendered as SVG by SharePage), else the initial on a disc.
+            var av = { x: 30, y: 48, size: 66 };
+            var svg = document.querySelector('#share-avatar svg');
+            var img = null;
+            if (svg) {
+                img = await new Promise(function (resolve) {
+                    var i = new Image();
+                    i.onload = function () { resolve(i); };
+                    i.onerror = function () { resolve(null); };
+                    i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+                });
+            }
+            if (img) {
+                ctx.drawImage(img, av.x, av.y, av.size, av.size);
+            } else {
+                ctx.fillStyle = opts.accent;
+                ctx.beginPath(); ctx.arc(av.x + av.size / 2, av.y + av.size / 2, av.size / 2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 30px system-ui';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(opts.initial || '?', av.x + av.size / 2, av.y + av.size / 2 + 1);
+                ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+            }
+            var textX = av.x + av.size + 16;
+
             // User name
             ctx.fillStyle = opts.textColor;
             ctx.font = 'bold 28px system-ui';
-            ctx.fillText(opts.name, 30, 80);
+            ctx.fillText(opts.name, textX, 80);
 
             // Level badge
             ctx.font = 'bold 16px system-ui';
             ctx.fillStyle = opts.accent;
-            ctx.fillText('Level ' + opts.level, 30, 108);
+            ctx.fillText('Level ' + opts.level, textX, 106);
 
             // Divider line
             ctx.strokeStyle = opts.accent;

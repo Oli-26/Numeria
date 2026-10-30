@@ -9,7 +9,7 @@
     <h1>Daily Challenge</h1>
 </div>
 
-@if (pick != null && !started)
+@if (pick != null && !started && ready)
 {
     <div class="card card-clickable pick-card" @onclick='() => Nav.NavigateTo($"/topic/{pick.Topic.Id}/lesson/{pick.Lesson.Id}")'>
         <div class="pick-label"><Icon Name="sparkles" Size="14" /> Today's pick</div>
@@ -51,9 +51,9 @@ else
 {
     <div class="card done-state">
         <div class="done-icon"><Icon Name="book" Size="32" /></div>
-        <h2>Complete Some Lessons First</h2>
-        <p>Finish at least one topic's lessons to unlock the daily challenge.</p>
-        <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/")'>Start Learning</button>
+        <h2>Finish one lesson to unlock</h2>
+        <p>The daily challenge draws its questions from lessons you have finished.</p>
+        <StartLessonButton />
     </div>
 }
 

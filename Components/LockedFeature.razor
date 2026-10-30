@@ -1,0 +1,128 @@
+@* The locked state of a shop-gated feature: a peek at what is inside, the price, and a one-tap unlock. *@
+@inject IShopRepository ShopRepo
+@inject IProgressService Progress
+@inject IGamificationService Gamification
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="card lf-card">
+    @if (Preview != null)
+    {
+        <div class="lf-preview" aria-hidden="true">@Preview</div>
+    }
+    <div class="lf-body">
+        <span class="lf-badge"><Icon Name="lock" Size="16" /> Locked</span>
+        <h2>@(item?.Name ?? "")</h2>
+        @if (!string.IsNullOrEmpty(Pitch ?? DefaultPitch))
+        {
+            <p class="lf-pitch">@(Pitch ?? DefaultPitch)</p>
+        }
+        @if (item != null)
+        {
+            if (points >= item.Price)
+            {
+                <button class="btn btn-primary btn-lg lf-unlock" disabled="@busy" @onclick="Unlock">
+                    Unlock for <Icon Name="phi" Size="18" /> @item.Price
+                </button>
+                <small class="lf-balance">You have @points Φ</small>
+            }
+            else
+            {
+                <button class="btn btn-lg lf-unlock lf-short" disabled>
+                    <Icon Name="phi" Size="18" /> @item.Price to unlock
+                </button>
+                <small class="lf-balance">You have @points Φ. Lessons and quizzes earn the other @(item.Price - points).</small>
+                <button class="btn btn-outline btn-sm lf-earn" @onclick='() => Nav.NavigateTo("/")'>Earn Φ with a lesson</button>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string ItemId { get; set; } = "";
+    [Parameter] public string? Pitch { get; set; }
+    [Parameter] public RenderFragment? Preview { get; set; }
+    [Parameter] public EventCallback OnUnlocked { get; set; }
+
+    private ShopItem? item;
+
+    // Shop descriptions read "Unlock the Compendium: explore the numbers..."; the part after the colon is the pitch.
+    private string? DefaultPitch
+    {
+        get
+        {
+            var d = item?.Description;
+            if (string.IsNullOrEmpty(d)) return null;
+            var colon = d.IndexOf(": ", StringComparison.Ordinal);
+            var pitch = colon >= 0 ? d[(colon + 2)..] : d;
+            return char.ToUpperInvariant(pitch[0]) + pitch[1..] + (pitch.EndsWith('.') ? "" : ".");
+        }
+    }
+    private int points;
+    private bool busy;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        item = (await ShopRepo.GetShopItemsAsync()).FirstOrDefault(i => i.Id == ItemId);
+        points = (await Progress.GetProfileAsync()).Points;
+    }
+
+    private async Task Unlock()
+    {
+        if (item == null || busy) return;
+        busy = true;
+        if (await Gamification.SpendPointsAsync(item.Price))
+        {
+            var profile = await Progress.GetProfileAsync();
+            if (!profile.ShopPurchases.Contains(item.Id)) profile.ShopPurchases.Add(item.Id);
+            await Progress.SaveProfileAsync(profile);
+            await JS.TryInvokeVoidAsync("showToast", $"Unlocked {item.Name}!", "");
+            await JS.TryInvokeVoidAsync("Sounds.playPurchase");
+            await JS.TryInvokeVoidAsync("Confetti.launch", 30);
+            await OnUnlocked.InvokeAsync();
+        }
+        busy = false;
+    }
+}
+
+<style>
+    .lf-card { padding: 0; overflow: hidden; text-align: center; }
+    .lf-card:hover { transform: none; }
+    .lf-preview {
+        position: relative;
+        padding: 18px 16px 26px;
+        background: var(--bg-surface);
+        opacity: 0.75;
+        pointer-events: none;
+        -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+        mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    }
+    .lf-body { padding: 4px 20px 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .lf-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 10px; border-radius: 999px;
+        background: var(--bg-surface); color: var(--text-muted);
+        font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .lf-body h2 { margin: 2px 0 0; font-size: 1.25rem; }
+    .lf-pitch { margin: 0; color: var(--text-secondary); line-height: 1.5; max-width: 34ch; }
+    .lf-unlock { margin-top: 8px; min-width: 220px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .lf-short { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border); }
+    .lf-balance { color: var(--text-muted); max-width: 30ch; line-height: 1.4; }
+    .lf-earn { margin-top: 4px; }
+
+    .lf-count { margin: 10px 0 0; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+    .lf-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .lf-chip {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 44px; height: 44px; padding: 0 12px; border-radius: var(--radius-md);
+        background: var(--bg-card); border: 1px solid var(--border);
+        font-family: Georgia, serif; font-size: 1.2rem; color: var(--text-primary);
+    }
+    .lf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; text-align: left; }
+    .lf-list li {
+        padding: 10px 12px; border-radius: var(--radius-sm);
+        background: var(--bg-card); border: 1px solid var(--border);
+        font-weight: 600; font-size: 0.9rem; color: var(--text-primary);
+    }
+</style>

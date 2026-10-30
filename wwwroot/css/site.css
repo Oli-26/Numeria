@@ -431,7 +431,188 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 }
 
 .feedback-icon { font-size: 1.2rem; }
-.correct-answer { margin-left: auto; font-weight: 500; }
+
+/* From Scratch field-guide callouts (lesson HTML, see FROMSCRATCH.md) and the field task card (Pages/LessonPage.razor). */
+.field-steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 14px 0;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, #8A5A2B 8%, var(--bg-card));
+    border: 1px dashed color-mix(in srgb, #8A5A2B 45%, transparent);
+}
+.field-steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 34px;
+    margin: 8px 0;
+}
+.field-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #8A5A2B;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.safety-card, .myth-check {
+    margin: 14px 0;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    line-height: 1.55;
+}
+.safety-card {
+    background: color-mix(in srgb, var(--error) 9%, var(--bg-card));
+    border-left: 4px solid var(--error);
+}
+.safety-card strong:first-child { color: var(--error); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8rem; margin-right: 6px; }
+.myth-check {
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg-card));
+    border-left: 4px solid var(--accent);
+}
+.myth-check strong { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.78rem; margin-right: 4px; }
+.field-task {
+    margin: 16px 0 6px;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border: 2px dashed color-mix(in srgb, #8A5A2B 55%, transparent);
+    background: color-mix(in srgb, #8A5A2B 6%, var(--bg-card));
+}
+.field-task small { display: flex; align-items: center; gap: 6px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: color-mix(in oklab, #A0662F 70%, var(--text-primary)); }
+.field-task p { margin: 6px 0 10px; font-weight: 600; color: var(--text-primary); }
+.field-task.done { border-style: solid; border-color: var(--success); }
+
+/* Diagrams drawn inline in From Scratch lessons. They use these classes rather than colours, so every theme recolours
+   them: lines and labels follow the text colour, fills come from a small named palette. */
+.diagram { margin: 16px 0; padding: 12px; border-radius: var(--radius-md); background: var(--bg-surface); text-align: center; }
+.diagram svg { width: 100%; height: auto; max-height: 360px; color: var(--text-primary); overflow: visible; }
+.diagram figcaption { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+.diagram .ln { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.diagram .ln-thin { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; }
+.diagram .dash { stroke-dasharray: 4 4; }
+.diagram .lbl { fill: currentColor; font-size: 12px; font-family: inherit; }
+.diagram .lbl-b { fill: currentColor; font-size: 12px; font-weight: 700; font-family: inherit; }
+.diagram .lbl-muted { fill: var(--text-muted); font-size: 11px; font-family: inherit; }
+.diagram .f-soft { fill: color-mix(in srgb, var(--text-primary) 8%, transparent); }
+.diagram .f-paper { fill: var(--bg-card); }
+.diagram .f-fire { fill: #E0703A; }
+.diagram .f-ember { fill: #C8382B; }
+.diagram .f-hot { fill: #E8B23A; }
+.diagram .f-water { fill: #3A8CC4; }
+.diagram .f-sky { fill: color-mix(in srgb, #3A8CC4 22%, transparent); }
+.diagram .f-earth { fill: #9A6B3F; }
+.diagram .f-sand { fill: #D9B77A; }
+.diagram .f-plant { fill: #5B8F3A; }
+.diagram .f-metal { fill: #8A939C; }
+.diagram .f-blood { fill: #B8323A; }
+.diagram .s-fire { stroke: #E0703A; }
+.diagram .s-water { stroke: #3A8CC4; }
+.diagram .s-plant { stroke: #5B8F3A; }
+.diagram .s-earth { stroke: #9A6B3F; }
+.diagram .s-hot { stroke: #E8B23A; }
+.diagram .s-blood { stroke: #B8323A; }
+
+/* The door into From Scratch (Pages/DomainsPage.razor) and its icon in the Today hub. */
+.fs-promo {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    margin: 4px 0 20px; padding: 14px 16px;
+    border-radius: var(--radius-lg); font: inherit; text-align: left; cursor: pointer;
+    color: var(--text-primary);
+    background:
+        repeating-linear-gradient(to bottom, transparent 0 23px, color-mix(in srgb, #8A5A2B 9%, transparent) 23px 24px),
+        color-mix(in srgb, #C9A46A 16%, var(--bg-card));
+    border: 1px solid color-mix(in srgb, #8A5A2B 35%, transparent);
+    box-shadow: 0 4px 14px var(--shadow);
+}
+.fs-promo-icon { flex-shrink: 0; width: 46px; height: 46px; padding: 8px; border-radius: 50%; color: #C8562B; background: color-mix(in srgb, #C8562B 14%, var(--bg-card)); border: 2px solid #C8562B; }
+.fs-promo-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.fs-promo-text small { text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-size: 0.7rem; color: color-mix(in oklab, #8A5A2B 75%, var(--text-primary)); }
+.fs-promo-text strong { font-family: Georgia, serif; font-size: 1.15rem; color: inherit; }
+.fs-promo-text span { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; }
+.hub-scratch-icon { color: #C8562B; width: 22px; height: 22px; display: inline-flex; }
+
+/* Icons keep their size in flex rows; without this a long paragraph beside one squeezes it to a dot. */
+.icon { flex-shrink: 0; }
+
+/* Topic colours as text: pulled toward the theme's text colour, so a dark brown title stays readable on a
+   dark theme and a pale yellow one on a light theme. Set --topic-c to the topic's colour. */
+.topic-ink { color: color-mix(in oklab, var(--topic-c) 72%, var(--text-primary)); }
+
+/* Rows of chips or tabs that scroll sideways: fade the right edge so a clipped label reads as "more this way". */
+.scroll-row {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row > * { scroll-snap-align: start; flex-shrink: 0; }
+.scroll-row::after { content: ""; flex: 0 0 24px; }
+
+/* Answer feedback slides up from the bottom (Components/QuizComponent.razor) so Continue is always in reach. */
+.feedback-sheet {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 900px;
+    max-height: 62vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 120;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    background: var(--bg-card);
+    border-top: 3px solid var(--success);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -8px 28px var(--shadow);
+    animation: sheetUp 0.22s var(--ease-out);
+}
+
+.feedback-sheet.is-incorrect { border-top-color: var(--error); }
+.feedback-sheet .feedback { margin-top: 0; padding: 0; border: none; background: none; font-size: 1.1rem; }
+.feedback-sheet-spacer { height: 42vh; }
+
+.correct-answer {
+    margin-top: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.45;
+}
+
+.correct-answer-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.feedback-extras { display: flex; gap: 8px; margin-top: 10px; }
+.feedback-extras .btn { flex: 1; }
+.feedback-continue { width: 100%; margin-top: 12px; }
+
+@keyframes sheetUp {
+    from { transform: translate(-50%, 100%); }
+    to { transform: translate(-50%, 0); }
+}
+
+/* Focus mode (Layout/MainLayout.razor) has no bottom nav, so nothing is reserved for it. */
+body:has(.focus-mode) { padding-bottom: 0; }
+.focus-mode .main-content { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+body:has(.feedback-sheet) .notepad-wrapper { display: none; }
+.focus-mode .notepad-wrapper { bottom: calc(20px + env(safe-area-inset-bottom)); }
 
 .explanation {
     background: var(--bg-surface);
