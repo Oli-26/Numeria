@@ -4,179 +4,331 @@
     "topicId": "soc-networks",
     "order": 1,
     "title": "Society as a Graph",
-    "description": "From Simmel's dyads to sociometry: why social life is structurally relational",
-    "xpReward": 100,
+    "description": "From Simmel's dyads and triads to Moreno's sociograms and the basic numbers of a network",
+    "xpReward": 160,
     "concepts": [
       {
         "id": "soc-net-01-c1",
-        "title": "Simmel and the Form of Social Life",
-        "contentHtml": "<p>Writing around 1900, Georg Simmel argued that sociology should study the <strong>forms</strong> of interaction, the geometric patterns of association that recur across cultures and centuries, and leave its contents aside.</p><p>His most famous distinction is between the dyad (two people) and the triad (three). A dyad is fragile. If you're one half of it and the other person leaves, the relationship vanishes.<sup class=\"cite\" data-cite=\"1\">1</sup> A triad can sustain coalitions, mediation, and the <em>tertius gaudens</em> ('the rejoicing third') who profits from the conflict of the other two.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Add a single third person and the moral and strategic landscape changes. Simmel took this as evidence that structure has its own causal power, since the same individuals behave differently in differently shaped groups. Network science begins from this insight. Society is a pattern of ties, and the pattern itself does work.</p>",
+        "title": "Simmel: Why Three Is Not Two Plus One",
+        "contentHtml": "<p>Start with the smallest possible society: two people. The German sociologist <strong>Georg Simmel</strong> argued that sociology should study the <strong>forms</strong> of interaction, the recurring shapes of association, apart from their contents (the classical theory topic covers his wider work). In <em>Soziologie</em> (1908) he showed how much the bare number of members changes a group.</p><p>A <strong>dyad</strong>, a group of two, has a peculiar fragility. Simmel put it starkly: a dyad needs both members to live but only one to die.<sup class=\"cite\" data-cite=\"1\">1</sup> If either partner walks away, the group is gone, so each member faces the relationship directly, with nobody in between. That, he thought, gives two-person relationships their intensity, and makes the dyad the chief seat of jealousy.</p><p>Add a third person and you get a <strong>triad</strong>, a structure of a new kind. Each member now stands between the other two and can either unite or separate them.<sup class=\"cite\" data-cite=\"2\">2</sup> Simmel described three roles that are impossible with only two people:</p><ul><li><strong>The mediator or non-partisan</strong>, who brings two quarrelling parties together or arbitrates between them.</li><li><strong>The tertius gaudens</strong>, \"the third who enjoys\", who profits from the quarrel of the other two, like a buyer facing two competing offers.</li><li><strong>Divide et impera</strong>, divide and rule, where the third deliberately keeps the other two apart.</li></ul><p>He quoted an old proverb: \"He who has one child is his slave; he who has more is their master.\" Simmel thought the decisive jump is from two to three; adding a fourth or fifth member expands these forms without creating new types. Notice that nothing about the individuals has changed, only the shape. That is the founding claim of network analysis: the pattern of ties has effects of its own. The triad will keep returning in this topic, as Granovetter's forbidden triad and as the broker who spans a structural hole.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-01-c2",
-        "title": "Moreno's Sociometry",
-        "contentHtml": "<p>Studying a New York girls' reformatory, Jacob Moreno mapped friendship choices and showed that runaway clusters could be predicted from the network structure. His book <em>Who Shall Survive?</em> (1934) introduced the <strong>sociogram</strong>, a hand-drawn diagram representing people as points and their relationships as lines.</p><p>Sociometry was the first systematic attempt to <em>measure</em> social structure. Moreno asked subjects whom they'd choose for tasks, lunch, or roommates, then tallied stars (highly chosen individuals), isolates (chosen by no one), and cliques (mutually connected groups).</p><p>With it, sociology moved beyond pure narrative description. Moreno demonstrated that intervention required structural knowledge: rearranging which dorms held which residents, based on the sociogram, reduced conflict. Network analysis still uses his core move, translating relational data into a graph and reading the graph as a map of social forces.</p>",
+        "title": "Moreno's Sociograms",
+        "contentHtml": "<p>The first person to draw society systematically as dots and lines was <strong>Jacob Moreno</strong>, a psychiatrist working in New York. In <em>Who Shall Survive?</em> (1934) he and his collaborator <strong>Helen Jennings</strong> set out <strong>sociometry</strong>: ask every member of a group whom they would choose as a seatmate, housemate or work partner, then draw each person as a point and each choice as an arrow. The drawing is a <strong>sociogram</strong>.</p><p>In classrooms at Public School 181 in Brooklyn the maps showed structures nobody had noticed. Some pupils were chosen by no one, some chose each other in mutual pairs, triangles or chains, and a few drew so many choices that Moreno called them <strong>stars</strong>. Teachers turned out to be poor judges of this hidden order. Their accuracy in picking the most popular and most isolated pupils was highest in kindergarten and first grade and fell to its lowest point in the seventh grade.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>Moreno's largest study covered a whole community, the New York State Training School for Girls at Hudson, home to 505 girls. Each girl could make five choices. Only 2,285 of the 2,525 possible choices were made, and 75 girls (15%) ended up chosen by nobody. In the autumn of 1932 Hudson had an epidemic of runaways: 14 girls in two weeks, about 30 times the usual rate. Moreno argued that the runaways' positions in the network, not just their personalities, explained who left. He traced one escape by two girls, cut off from the main currents of their cottage and tied only to each other, who slipped away while a third girl staged a faint at a Halloween party. The act of running away, he wrote, could frequently be foretold if positions were mapped at regular intervals.</p><p>Moreno also acted on his maps, reassigning girls to cottages in line with their choices. Network analysis still makes his basic move: turn relationships into data, then read the structure as a map of social forces.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-01-c3",
-        "title": "Nodes, Edges, and Density",
-        "contentHtml": "<p>Draw a social network and you get a <strong>graph</strong>, a set of <em>nodes</em> (also called vertices or actors) connected by <em>edges</em> (ties, links, relations). Edges may be directed (advice flows from A to B) or undirected (A and B are friends), and may carry weights for strength or frequency.</p><p>Three properties matter immediately. Reciprocity is the proportion of directed ties that are mutual. High reciprocity in advice networks suggests trust, and low reciprocity suggests hierarchy.</p><p>Transitivity asks whether A is tied to C when A is tied to B and B is tied to C. Social networks are far more transitive than random graphs, so friends of friends really do tend to be friends.</p><p>Density is the fraction of possible ties that are actually present. Most social networks are <em>sparse</em>, with densities of 1–5%. That's few ties, yet nearly everyone stays reachable through short chains.</p>",
-        "mathExpressions": [],
+        "title": "Nodes, Edges, Degree and Density",
+        "contentHtml": "<p>A sociogram becomes mathematics with a few words. People are <strong>nodes</strong> (also called vertices or actors) and relationships are <strong>edges</strong> (ties). Moreno's choices were <strong>directed</strong>: A can choose B without B choosing A. Facebook friendship is <strong>undirected</strong>, since both sides must accept. Edges can also carry <strong>weights</strong> for how often people meet or how close they feel. The graph theory topic covers the formal machinery; these are the four numbers sociologists reach for first.</p><ul><li><strong>Degree</strong>: how many ties a node has. In a directed network, in-degree (choices received) measures popularity and out-degree (choices made) measures expansiveness.</li><li><strong>Reciprocity</strong>: the share of directed ties that are returned, like Moreno's mutual pairs.</li><li><strong>Density</strong>: the share of all possible ties that actually exist.</li><li><strong>Distance</strong>: the number of steps on the shortest path between two nodes.</li></ul><p>For an undirected network with \\(n\\) nodes and \\(m\\) edges there are \\(n(n-1)/2\\) possible ties, which gives the density formula below. Each edge adds one to the degree of both its ends, so the mean degree is \\(2m/n\\), and density equals the mean degree divided by \\(n-1\\). That identity explains why real social networks are so sparse. People keep roughly the same number of friends however large the population, so density must fall as a network grows.</p><p>The figures bear this out. At Hudson, 2,285 directed choices among 505 girls give a density of under 1%. In 2011 the average Facebook user had around 190 friends among about 721 million active users,<sup class=\"cite\" data-cite=\"1\">1</sup> a density of roughly 0.00003%. Yet, as later lessons show, networks this sparse are still astonishingly well connected.</p>",
+        "mathExpressions": [
+          "d = \\frac{2m}{n(n-1)}",
+          "\\bar{k} = \\frac{2m}{n} = (n-1)\\,d"
+        ],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["soc-net-q01", "soc-net-q02", "soc-net-q03", "soc-net-q04", "soc-net-q05"],
+    "quizQuestionIds": [
+      "soc-net-q01",
+      "soc-net-q02",
+      "soc-net-q03",
+      "soc-net-q04",
+      "soc-net-q05",
+      "soc-net-q06",
+      "soc-net-q07",
+      "soc-net-q08"
+    ],
     "puzzleId": null
   },
   {
     "id": "soc-net-02",
     "topicId": "soc-networks",
     "order": 2,
-    "title": "The Strength of Weak Ties",
-    "description": "Granovetter's argument that distant acquaintances move information",
-    "xpReward": 100,
+    "title": "Asking Who Knows Whom",
+    "description": "How sociologists collect network data, why a famous finding about lost confidants unravelled, and the 150 limit",
+    "xpReward": 170,
     "concepts": [
       {
         "id": "soc-net-02-c1",
-        "title": "Granovetter's Insight",
-        "contentHtml": "<p>Mark Granovetter's 1973 paper <em>The Strength of Weak Ties</em> is one of the most cited articles in social science. Its claim is counter-intuitive: the relationships that matter most for moving information through a society are not your closest friends but your <strong>weak ties</strong>, acquaintances, former colleagues, friends-of-friends.</p><p>Granovetter defined tie strength informally as a combination of time spent, emotional intensity, intimacy, and reciprocal services. He then made a structural argument. Strong ties tend to <strong>cluster</strong>: your close friends are usually friends with each other. So information circulating among them quickly becomes redundant: they all know what you know.</p><p>Weak ties, by contrast, often connect you to people in <em>different</em> social circles. They are the channels through which novel information enters your life. The paradox is sharp: distant relationships, precisely because they are distant, carry more news than intimate ones.</p>",
+        "title": "Name Generators and Whole Networks",
+        "contentHtml": "<p>Networks are invisible until someone measures them, and the method shapes what you find. Sociologists use two main designs.</p><p>A <strong>whole network</strong> (or sociocentric) study maps every tie inside a bounded group, as Moreno did at Hudson. Its large modern descendant is the US National Longitudinal Study of Adolescent Health, known as <strong>Add Health</strong>, first surveyed in 1994–95. Teenagers named their friends, and because many of the friends were also surveyed, researchers could link each pupil's answers to those of the people they named.<sup class=\"cite\" data-cite=\"1\">1</sup> Whole networks reveal structure such as cliques and bridges, but only inside the boundary: a friend at another school simply drops off the map.</p><p>An <strong>ego network</strong> study samples individuals from a large population and asks each about their own contacts. The tool is a <strong>name generator</strong>, a question that elicits names, followed by <strong>name interpreters</strong>, questions about each person named and about how those people know each other. The best known asks whom you have discussed important matters with over the last six months; the US General Social Survey (GSS) put it to a national sample in 1985. Ego data cannot show the whole structure, but they can come from a random sample of an entire country.</p><p>Both designs depend on wording. Different generators pick out different networks: confidants, advisers, people you socialise with, people you could borrow money from. They also expose sharp social patterns. In one national probability sample, only 8% of adults who named two or more confidants named anyone of another race.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>A third source now sits beside surveys: digital traces such as Facebook friendships, email logs or LinkedIn connections. They are enormous and precise, but they record a click or a message, not necessarily a relationship, and the platform, not the researcher, decides what counts as a tie.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-02-c2",
-        "title": "Bridges and the Forbidden Triad",
-        "contentHtml": "<p>Granovetter formalised his intuition with a structural claim. Suppose A has a strong tie to B and a strong tie to C. He argued that B and C are then very likely to be at least weakly tied themselves: strong ties produce closure. The <strong>forbidden triad</strong> (A strongly tied to both B and C, but B and C with no tie at all) is empirically rare.</p><p>It follows that <strong>bridges</strong>, ties that are the only path between two parts of the network, must be <em>weak</em>. A strong tie cannot be a bridge, because closure would have produced a shortcut around it.</p><p>If you want information to cross a community boundary, it must travel along a weak tie. The result reframes social capital: bridging weak ties carry the diffusion of jobs, gossip, and innovation.</p>",
+        "title": "Did Americans Lose Their Confidants?",
+        "contentHtml": "<p>In June 2006 a study in the <em>American Sociological Review</em> made headlines. Miller McPherson, Lynn Smith-Lovin and Matthew Brashears compared answers to the GSS \"important matters\" question in 1985 and 2004 and found a near tripling in the share of Americans who discussed important matters with no one.<sup class=\"cite\" data-cite=\"1\">1</sup> USA Today announced \"Study: 25% of Americans Have No One to Confide In\". It seemed to confirm a familiar story of modern loneliness.</p><p>Then came the doubts. Claude Fischer of the University of California, Berkeley called the findings highly implausible: the change was far larger than any other measure of social life showed, and some subgroups moved absurdly, with the share of respondents holding postgraduate degrees who named no confidant rising from 1 to 16 percent.<sup class=\"cite\" data-cite=\"2\">2</sup> A December 2008 erratum corrected a coding error affecting 41 responses. The original authors replied that the question was identical in both years, that the oddities came from very small subsamples, and that their statistical models still showed a significant decline.</p><p>Independent data helped. A 2009 Pew Research Center survey found that 12% of Americans had no discussion confidant,<sup class=\"cite\" data-cite=\"3\">3</sup> and only 6% had neither a confidant nor anyone \"especially significant\" in their life. Compared with 1985 that was a small-to-modest change, although average network size had fallen by about a third. In 2017 Byungkyu Lee and Peter Bearman proposed a mechanism. The 2004 survey was fielded during a highly polarised presidential election, and reported network size dropped sharply around the first presidential debate, as if respondents heard \"important matters\" as political matters. They concluded that inferences of rising isolation from the 2004 data are unwarranted.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>The lesson is about method. A name generator records an answer to one question, asked at one moment, by one interviewer. For the record, when Pew asked 5,057 US adults in July 2023 about close friends, 8% said they had none.<sup class=\"cite\" data-cite=\"5\">5</sup></p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-02-c3",
-        "title": "Getting a Job",
-        "contentHtml": "<p>In <em>Getting a Job</em> (1974), Granovetter tested the theory empirically. He surveyed professional and managerial workers in the Boston suburb of Newton who had recently changed jobs, asking how they found their new position.</p><p>Among those who heard about their job through a personal contact, only about 17% described that contact as someone they saw 'often'. Roughly 28% saw the contact 'occasionally', and the majority, over 55%, had seen the contact 'rarely', often only once or twice a year.</p><p>The contacts who delivered the most useful job leads were therefore weak ties. Strong ties shared the same information pool already known to the job-seeker; weak ties bridged into pools the seeker could not otherwise reach.</p><p>The finding has been replicated across labour markets and recently re-examined at LinkedIn scale by Rajkumar and colleagues (2022), who found that moderately weak ties produced the most job mobility, which confirms the fifty-year-old theory.</p>",
+        "title": "Is There a Limit of 150?",
+        "contentHtml": "<p>How many relationships can one person keep up? The most famous answer is <strong>Dunbar's number</strong>, about 150, from papers Robin Dunbar published in 1992 and 1993. It comes from primates. Species with a larger neocortex relative to the rest of the brain live in larger groups, and extending that regression line to the size of the human brain predicts groups of around 150.</p><p>Supporters point to human groups that cluster between 100 and 200 members: hunter–gatherer communities, military units, businesses, 18th-century and Neolithic villages, information from the Domesday Book and even Christmas card networks. The idea travelled far beyond science. The Swedish Tax Authority restructured its offices to stay within a 150-person limit.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>In 2021 Patrik Lindenfors, Andreas Wartel and Johan Lind reran the primate analysis with more data and modern phylogenetic methods. Depending on the method, the predicted human group size came out at 69–109 or 16–42, and the 95% confidence intervals were enormous, 4 to 520 and 2 to 336.<sup class=\"cite\" data-cite=\"2\">2</sup> Their conclusion was blunt: specifying any one number is futile, and a cognitive limit on human group size cannot be derived this way. A number that many people treat as a measured fact rests on an extrapolation with huge uncertainty.</p><p>Network data rarely produce one number either. Moreno saw interest fade as girls kept choosing: of Hudson's 505 girls, 500 made a first choice, 460 a second, 420 a third and 375 a fourth, while only 300 had interest left for a fifth. Digital networks are far larger and very uneven. In 2011 the median Facebook user had 99 friends, while a small minority had many hundreds or even thousands. How many ties a person \"has\" depends on which ties the name generator asks about, which is why the search for a single human limit keeps slipping away.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["soc-net-q06", "soc-net-q07", "soc-net-q08", "soc-net-q09", "soc-net-q10"],
+    "quizQuestionIds": [
+      "soc-net-q09",
+      "soc-net-q10",
+      "soc-net-q11",
+      "soc-net-q12",
+      "soc-net-q13",
+      "soc-net-q14",
+      "soc-net-q15",
+      "soc-net-q16"
+    ],
     "puzzleId": null
   },
   {
     "id": "soc-net-03",
     "topicId": "soc-networks",
     "order": 3,
-    "title": "Structural Holes and Centrality",
-    "description": "Burt's brokers and Freeman's measures of network position",
-    "xpReward": 100,
+    "title": "The Strength of Weak Ties",
+    "description": "Granovetter's 1973 argument, the job-hunting evidence and the LinkedIn experiment that tested it",
+    "xpReward": 180,
     "concepts": [
       {
         "id": "soc-net-03-c1",
-        "title": "Burt's Structural Holes",
-        "contentHtml": "<p>Ronald Burt's <em>Structural Holes</em> (1992) sharpened Granovetter's argument. A <strong>structural hole</strong> is a gap between two clusters that lack a direct connection. The actor whose ties span the hole becomes a <strong>broker</strong>, controlling the flow of information and opportunity between otherwise disconnected groups.</p><p>Burt revived Simmel's <em>tertius gaudens</em>: the third who benefits from the disconnection of the other two. Brokers enjoy three advantages: <strong>access</strong> to non-redundant information, <strong>timing</strong> (they hear about opportunities first), and <strong>arbitrage</strong> (they can play one side against the other or translate between them).</p><p>Burt's empirical work in firms, most notably at Raytheon, showed that managers whose networks were rich in structural holes received better performance reviews, generated more good ideas, and were promoted faster. The structural position was a stronger predictor than human capital.</p>",
+        "title": "Granovetter's Argument",
+        "contentHtml": "<p>In 1973 <strong>Mark Granovetter</strong>, a sociologist at Johns Hopkins University, published \"The Strength of Weak Ties\" in the <em>American Journal of Sociology</em>. Its aim was ambitious: to link the micro level of individual relationships to the macro level of how information, influence and opportunity move through a whole society.</p><p>He began by defining <strong>tie strength</strong> as a combination of four things: the amount of time two people spend together, the emotional intensity, the intimacy (mutual confiding) and the reciprocal services that characterise the tie.<sup class=\"cite\" data-cite=\"1\">1</sup> Strong ties are close friends and family; weak ties are acquaintances.</p><p>Then came a structural claim. The stronger the tie between two people, the more their circles of friends overlap. If A has strong ties to both B and C, then B and C will probably meet and come to know each other. Granovetter deliberately sharpened this into a rule by supposing that one triad never occurs: A strongly tied to B and to C, with no tie at all between B and C. This is the <strong>forbidden triad</strong>, and the tendency behind it is now called <strong>triadic closure</strong>.</p><p>The payoff is a short proof. A <strong>bridge</strong> is a tie that provides the only path between two parts of a network. Suppose A–B were a strong bridge. If A has any other strong friend C, the forbidden triad forces a tie between C and B, and the path A–C–B means A–B is no longer the only route. So, Granovetter concluded, no strong tie is a bridge except in unlikely conditions, and all bridges are weak ties.<sup class=\"cite\" data-cite=\"2\">2</sup> Weak ties are where news from distant circles enters your life; strong ties mostly recirculate what your group already knows.</p><p>In large networks true bridges are rare, so he also allowed <strong>local bridges</strong>: ties that are far shorter routes between two groups than any alternative. The same logic applies to them.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-03-c2",
-        "title": "Degree, Closeness, and Betweenness",
-        "contentHtml": "<p>Linton Freeman's 1979 synthesis defined three foundational <strong>centrality</strong> measures, each capturing a different idea of what it means to be central.</p><p><strong>Degree centrality</strong> is simply the number of ties a node has. A high-degree node is locally popular and well-connected.</p><p><strong>Closeness centrality</strong> measures how short the average path is from a node to everyone else. A high-closeness node hears news quickly and can reach others efficiently.</p><p><strong>Betweenness centrality</strong> counts how often a node lies on the shortest path between other pairs. High-betweenness nodes are gatekeepers and brokers, controlling the flow between other nodes even when they are not themselves popular.</p><p>The three need not coincide. A celebrity may have huge degree but low betweenness if their followers are themselves well-connected. A receptionist may have modest degree but enormous betweenness if every internal communication routes through her. Asking <em>which</em> centrality matters forces you to specify what is flowing.</p>",
+        "title": "Jobs, Neighbourhoods and Honest Speculation",
+        "contentHtml": "<p>Granovetter tested the idea on job hunting. In a random sample of recent professional, technical and managerial job changers living in a Boston suburb, he asked those who had found work through a personal contact how often they had seen that contact at the time. You might expect close friends, who care most about you, to be the ones who help. Mostly they were not. Of those who found jobs through contacts, 16.7% saw the contact often (at least twice a week), 55.6% occasionally and 27.8% rarely (once a year or less).<sup class=\"cite\" data-cite=\"1\">1</sup> The contacts were often marginal figures, such as an old college friend or a former workmate or employer. The sample was small, 54 people, but the skew towards weak ties was clear, and Granovetter read it as a sign that position in the network mattered more than motivation to help.</p><p>He then turned the theory on a puzzle about communities. The Italian community of Boston's West End, described by the sociologist Herbert Gans as cohesive, failed even to form an organisation against the \"urban renewal\" that eventually destroyed it. Nearby Charlestown, also working class, fought the same city's plan successfully.<sup class=\"cite\" data-cite=\"2\">2</sup> Granovetter's explanation was structural. If West Enders' ties were mostly strong, the community would break into tight cliques with few bridges between them, so no leader could reach, or be trusted by, enough people. Charlestown had a rich organisational life and most of its men worked locally, giving many settings in which bridging weak ties could form.</p><p>Notice what Granovetter himself admitted: \"In the absence of actual network data, all this is speculation.\" The weak-ties argument began as an elegant hypothesis backed by one small job survey. A proper causal test would take nearly half a century and the data of a social media platform.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-03-c3",
-        "title": "Eigenvector Centrality and PageRank",
-        "contentHtml": "<p>The deepest centrality measure asks not just <em>how many</em> ties a node has but <em>whose</em> ties. <strong>Eigenvector centrality</strong> assigns each node a score proportional to the sum of its neighbours' scores. The result is the principal eigenvector of the adjacency matrix: a node is important if it is connected to other important nodes.</p><p>Phillip Bonacich introduced eigenvector centrality to sociology in 1972. It captures social intuitions about prestige: an introduction from a well-connected person counts more than the same introduction from an isolate.</p><p>Eigenvector centrality became globally famous when Sergey Brin and Larry Page adapted it for the web in 1998. <strong>PageRank</strong> treats hyperlinks as endorsements and computes a damped eigenvector to rank pages. Their PhD project became Google. The bridge from Bonacich's sociology paper to the trillion-dollar search engine is direct: a centrality measure designed to capture social prestige turned out to capture web authority too.</p>",
+        "title": "A Causal Test on 20 Million People",
+        "contentHtml": "<p>Granovetter's evidence was correlational. Perhaps people with many acquaintances simply differ from others, in personality, industry or ambition, and that is why they change jobs. To show that weak ties <em>cause</em> job moves, you would need to hand some people more weak ties at random. In 2022 Karthik Rajkumar, Sinan Aral, Erik Brynjolfsson and colleagues did exactly that, with LinkedIn.</p><p>LinkedIn's \"People You May Know\" algorithm recommends new connections. Over five years, randomised experiments varied the prevalence of weak ties in the networks of more than 20 million members, who formed 2 billion new ties and 600,000 new jobs in that time.<sup class=\"cite\" data-cite=\"1\">1</sup> Because the variation was random, later differences in job mobility could be traced to the network itself rather than to the kind of person who collects acquaintances.</p><p>The results supported the strength of weak ties, with three revisions:</p><ul><li><strong>The effect is nonlinear.</strong> Tie strength and job transmission followed an inverted U: weaker ties helped, but only up to a point, after which extra weakness brought diminishing returns.</li><li><strong>Measurement matters.</strong> Measured by mutual connections, moderately weak ties created the most job mobility; measured by interaction intensity, the weakest ties did.</li><li><strong>Industry matters.</strong> Weak ties increased job mobility in more digital industries, while strong ties did so in less digital ones.<sup class=\"cite\" data-cite=\"2\">2</sup></li></ul><p>Weak ties are not best for everything. A 2012 randomised experiment on 61 million Facebook users during the US congressional elections found that a get-out-the-vote message spread to friends and friends of friends, and nearly all of that social transmission ran between close friends who probably knew each other face to face.<sup class=\"cite\" data-cite=\"3\">3</sup> Weak ties seem to carry news; strong ties seem to carry the push to act on it, a contrast lesson 7 returns to.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["soc-net-q11", "soc-net-q12", "soc-net-q13", "soc-net-q14", "soc-net-q15"],
+    "quizQuestionIds": [
+      "soc-net-q17",
+      "soc-net-q18",
+      "soc-net-q19",
+      "soc-net-q20",
+      "soc-net-q21",
+      "soc-net-q22",
+      "soc-net-q23",
+      "soc-net-q24"
+    ],
     "puzzleId": null
   },
   {
     "id": "soc-net-04",
     "topicId": "soc-networks",
     "order": 4,
-    "title": "Small Worlds and Scale-Free Networks",
-    "description": "Six degrees, clustering, and the rich-get-richer dynamics of real networks",
-    "xpReward": 100,
+    "title": "Brokers and Centrality",
+    "description": "Burt's structural holes, the evidence on brokers, and the measures that say who is central",
+    "xpReward": 190,
     "concepts": [
       {
         "id": "soc-net-04-c1",
-        "title": "Milgram's Six Degrees",
-        "contentHtml": "<p>In 1967 Stanley Milgram ran his now-famous chain-letter experiment. Volunteers in Nebraska and Kansas were asked to forward a folder to a stockbroker in Boston, but only by passing it to someone they knew on a first-name basis. Each recipient repeated the rule.</p><p>For chains that completed, the median number of intermediaries was around <strong>five or six</strong>: the origin of the phrase 'six degrees of separation', popularised by John Guare's 1990 play.</p><p>Milgram's experiment had genuine flaws: most chains never completed, and Judith Kleinfeld later showed that the original sample was small and selected. Yet larger studies have broadly confirmed the qualitative finding. A 2011 Facebook study covering 721 million users measured an average distance of about 4.7. Despite seven billion people and dense local clustering, almost everyone is reachable through a handful of hops.</p>",
+        "title": "Burt's Structural Holes",
+        "contentHtml": "<p>Granovetter asked which ties carry new information. <strong>Ronald Burt</strong>, in <em>Structural Holes</em> (1992), shifted the question to which <em>positions</em> do. A <strong>structural hole</strong> is a gap between groups whose members have few direct contacts with each other. It does not mean the groups are unaware of one another, only that each is focused on its own activities. Burt's image: holes are buffers, like an insulator in an electric circuit, so people on either side circulate in different flows of information.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>Someone whose ties span a hole is a <strong>broker</strong>, Simmel's tertius gaudens in modern dress, with access to information others lack and a hand in what passes between the groups. Burt measures the opposite of brokerage with <strong>network constraint</strong>, an index of how far a person's contacts are redundant because they are all tied to each other. In one illustration, two managers, Robert and James, have the same volume of connections, but Robert's ties reach into two other groups. James has a constraint score twice Robert's, 30.9 against 14.8.</p><p>Does brokerage pay? Burt studied 673 managers who ran the supply chain in 2001 for one of America's largest electronics companies.<sup class=\"cite\" data-cite=\"2\">2</sup> A web survey asked each for an idea to improve the supply chain and, through name generators, about the people they discussed such matters with; 455 completed the network questions. Compensation, positive performance evaluations, promotions and good ideas were disproportionately in the hands of people whose networks spanned structural holes. Brokers were more likely to voice ideas, less likely to have them dismissed, and more likely to have them judged valuable.<sup class=\"cite\" data-cite=\"3\">3</sup> An earlier study, of senior managers at an electronics manufacturer in 1989, found that the less constrained were promoted earlier.</p><p>The data are correlational, and Burt himself raised a reputation effect: a manager known to be well networked may come to be expected to have good ideas. Brokerage also has a rival theory, closure, which lesson 7 takes up.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-04-c2",
-        "title": "Watts and Strogatz",
-        "contentHtml": "<p>Why is the world a small world? Duncan Watts and Steven Strogatz answered in a 1998 <em>Nature</em> paper that became one of the founding documents of network science.</p><p>They considered a regular ring lattice in which each node connects only to its nearest neighbours. Such a graph has high <strong>clustering</strong> (your neighbours' neighbours are mostly your neighbours) but long average path lengths. A purely random graph has the opposite: short paths but almost no clustering.</p><p>Watts and Strogatz showed that <em>rewiring</em> just a tiny fraction of the lattice's edges to random distant nodes collapses the average path length dramatically while leaving clustering largely intact. The result is the <strong>small-world</strong> regime: high clustering plus short paths.</p><p>Real social networks live there. A few long-range shortcuts (the friend who moved abroad, the conference acquaintance) are enough to fuse densely-clustered local communities into a globally connected whole.</p>",
-        "mathExpressions": [],
+        "title": "Three Ways to Be Central",
+        "contentHtml": "<p>Who is most important in a network? Analysts answer with <strong>centrality</strong>, an idea introduced for human communication by Bavelas in 1948.<sup class=\"cite\" data-cite=\"1\">1</sup> At the Group Networks Laboratory at MIT, small groups solved problems by passing messages through fixed patterns, such as a star, where everyone could reach only a hub, or a circle. Centralised structures such as the star tended to beat the circle, because peripheral members channelled information to the central person, who worked out the answer.</p><p>In 1979 Linton Freeman pointed out that the hub of a star is special in three distinct ways, and each became a measure:<sup class=\"cite\" data-cite=\"2\">2</sup></p><ul><li><strong>Degree centrality</strong>: the number of direct ties. It captures activity, being \"in the thick of things\".</li><li><strong>Closeness centrality</strong>: how near a node is to everyone else, usually the inverse of its total shortest-path distance. Close nodes can reach the whole network quickly.</li><li><strong>Betweenness centrality</strong>: how often a node lies on the shortest paths between other pairs. Freeman proposed it in 1977, and it captures potential control over what flows.</li></ul><p>In a star the three agree; in real networks they often diverge. Burt's broker Robert had the highest betweenness in his network, 47.0, against 5.2 for James, though both had the same number of ties.<sup class=\"cite\" data-cite=\"3\">3</sup> A gatekeeper can have modest degree yet huge betweenness. A 1993 study by Padgett and Ansell argued that the Medici's rise to power in fifteenth-century Florence owed much to their high betweenness in the networks of marriages and business dealings among elite families.</p><p>Centrality also predicts timing. During an outbreak, people near the centre of a social network tend to be infected sooner than those at the periphery,<sup class=\"cite\" data-cite=\"4\">4</sup> a fact lesson 6 turns into an early-warning trick.</p>",
+        "mathExpressions": [
+          "C_D(v) = \\deg(v)",
+          "C_C(v) = \\frac{n-1}{\\sum_u d(v,u)}",
+          "C_B(v) = \\sum_{s \\ne v \\ne t} \\frac{\\sigma_{st}(v)}{\\sigma_{st}}"
+        ],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-04-c3",
-        "title": "Barabási–Albert and Power Laws",
-        "contentHtml": "<p>The other surprising fact about real networks is that their degree distributions are extremely uneven. A few nodes have enormously many ties; most have very few. Albert-László Barabási and Réka Albert showed in 1999 that this <strong>scale-free</strong> structure follows a <em>power-law</em>: the probability of having degree k is proportional to roughly k to the negative gamma, with gamma typically between 2 and 3.</p><p>Their explanation was a generative model with two ingredients: <strong>growth</strong> (nodes join over time) and <strong>preferential attachment</strong> (new nodes prefer to connect to nodes that are already well-connected). Together these produce 'the rich get richer': a Yule–Simon process rediscovered for networks.</p><p>Scale-free networks are robust to random failure but vulnerable to targeted attack on hubs. They diffuse information rapidly through hubs but exhibit large inequalities in influence. Power-law fits are sometimes overstated (Aaron Clauset and colleagues argue many networks fit log-normal distributions equally well), but the qualitative point survives: real social networks have a few very highly connected hubs and many nodes with few ties.</p>",
-        "mathExpressions": [],
+        "title": "Status from Status: Eigenvector Centrality and PageRank",
+        "contentHtml": "<p>Degree treats every tie as equal, but a nod from a well-connected person usually counts for more than one from an isolate. <strong>Eigenvector centrality</strong> builds in that intuition: your score is proportional to the sum of your neighbours' scores. The definition is circular, but linear algebra resolves it. Write the network as an adjacency matrix \\(A\\), with \\(A_{ij} = 1\\) when \\(i\\) and \\(j\\) are tied. The scores \\(x\\) must satisfy \\(Ax = \\lambda x\\), so \\(x\\) is an eigenvector of \\(A\\), the one belonging to its largest eigenvalue. The spectral lesson in the graph theory topic shows how such eigenvectors encode a network's structure.</p><p>You can also picture it as a process. Give everyone equal status, then repeatedly give each person the sum of their friends' status and rescale. Status flows along ties and settles where many well-connected paths converge. Moreno's stars were stars by in-degree; eigenvector centrality also asks whether the people choosing them are stars.</p><p>The most famous variant ranks web pages. In 1998 Sergey Brin and Lawrence Page of Stanford described <strong>PageRank</strong> in the paper that introduced Google. They treated links like academic citations, but PageRank does not count all links equally. Each page passes on rank in proportion to its own rank, divided by the number of links on that page.<sup class=\"cite\" data-cite=\"1\">1</sup> A damping factor \\(d\\), which they usually set to 0.85, mixes in random jumps. They described the result as a model of user behaviour: a random surfer keeps clicking links, eventually gets bored and starts again on a random page, and the probability that the surfer visits a page is its PageRank.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Every centrality assumes something about what flows. PageRank models attention moving along links, so it suits prestige and influence that pass from person to person. It is a poor guide when what matters is control of a bottleneck, which is betweenness territory.</p>",
+        "mathExpressions": [
+          "x_i = \\frac{1}{\\lambda} \\sum_j A_{ij}\\, x_j",
+          "\\begin{gathered} PR(p) = (1-d) \\\\ + d \\sum_{q \\to p} \\frac{PR(q)}{C(q)} \\end{gathered}"
+        ],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["soc-net-q16", "soc-net-q17", "soc-net-q18", "soc-net-q19", "soc-net-q20"],
+    "quizQuestionIds": [
+      "soc-net-q25",
+      "soc-net-q26",
+      "soc-net-q27",
+      "soc-net-q28",
+      "soc-net-q29",
+      "soc-net-q30",
+      "soc-net-q31",
+      "soc-net-q32"
+    ],
     "puzzleId": null
   },
   {
     "id": "soc-net-05",
     "topicId": "soc-networks",
     "order": 5,
-    "title": "Diffusion, Homophily, and Social Capital",
-    "description": "How behaviours spread, why birds of a feather flock, and what networks give us",
-    "xpReward": 100,
+    "title": "Small Worlds",
+    "description": "Milgram's chains and how few arrived, the email and Facebook replications, and the Watts–Strogatz model",
+    "xpReward": 200,
     "concepts": [
       {
         "id": "soc-net-05-c1",
-        "title": "Simple and Complex Contagion",
-        "contentHtml": "<p>Ideas, behaviours, and diseases spread through networks, but not all in the same way. <strong>Simple contagion</strong> (information, viruses) can be transmitted by a single contact. <strong>Complex contagion</strong> (costly or controversial behaviours: protest, vaccination, lifestyle change) typically requires <em>multiple</em> independent sources of social reinforcement before adoption.</p><p>Mark Granovetter modelled this in 1978 with <strong>threshold models</strong>: each individual has a personal threshold, the fraction of contacts who must adopt before they do. A small distribution change can flip a population from quiescence to a full cascade.</p><p>Damon Centola's experiments (2010 onward) show empirically that complex contagions actually spread <em>better</em> through clustered networks than through small-world shortcuts: the opposite of simple contagion. Long-range weak ties carry information well but social proof poorly.</p>",
+        "title": "Milgram's Folders",
+        "contentHtml": "<p>In his 1929 short story \"Chains\", the writer Frigyes Karinthy imagined a bet: link any person on Earth to any other through no more than five acquaintances. Decades later the psychologist <strong>Stanley Milgram</strong>, also famous for the obedience experiments in the social psychology topic, tried it for real with his \"small world method\", described in 1967 and reported in full by Jeffrey Travers and Milgram in <em>Sociometry</em> in 1969.</p><p>The design was simple. There were 296 volunteer starters: 196 in Nebraska, of whom 100 owned blue-chip stocks, and 100 recruited through an advertisement in a Boston newspaper. Each received a folder naming a target, a stockbroker who lived in Sharon, Massachusetts and worked in Boston. The rule: you may pass it only to someone you know on a first-name basis, choosing whoever seems likelier to know the target. Business reply cards let the researchers track every step, including chains that died.</p><p>Of the 296 starters, 217 actually sent the folder on, and 64 folders, 29% of those sent, reached the target.<sup class=\"cite\" data-cite=\"1\">1</sup> Among completed chains the mean number of intermediaries was 5.2, fewer for Boston starters (4.4) than for Nebraskans (5.7). Chains also converged. Almost half of them, 48%, passed through the same three people just before reaching the target, sociometric stars in Moreno's sense.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>An average of about five intermediaries, roughly six steps, became the phrase \"six degrees of separation\", fixed in popular culture by John Guare's 1990 play.<sup class=\"cite\" data-cite=\"3\">3</sup> But look again at the numbers. Most chains never arrived, and the famous average describes only the ones that did.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-05-c2",
-        "title": "Birds of a Feather",
-        "contentHtml": "<p>Miller McPherson, Lynn Smith-Lovin, and James Cook's 2001 review article 'Birds of a Feather' established <strong>homophily</strong>, the tendency of similar people to associate, as one of the most robust regularities in social science. Across race, age, religion, education, occupation, and gender, ties are far more likely than chance among similar individuals.</p><p>They distinguished <strong>baseline homophily</strong> (induced by demographic availability: you can only befriend who is around) from <strong>inbreeding homophily</strong> (preference beyond what mere availability would predict).</p><p>Homophily segregates information, reinforces inequality, and explains why advice, opportunity, and culture move along demographic lines. McPherson and colleagues argue that homophily is the structural source of much of what looks like prejudice: the world is sorted before any individual chooses. Understanding homophily is therefore prerequisite to understanding why bridging weak ties are so rare and so consequential when they exist.</p>",
+        "title": "How Small Is the World, Really?",
+        "contentHtml": "<p>In 2002 Judith Kleinfeld of the University of Alaska Fairbanks went through the Milgram papers at Yale and argued that \"six degrees\" might be the academic equivalent of an urban myth. She found an unpublished first study in which 60 starters in Wichita, Kansas, recruited by a newspaper advertisement, tried to reach the wife of a divinity student in Cambridge. Just 3 of the 60 folders (5%) arrived, after passing through an average of 8 people.<sup class=\"cite\" data-cite=\"1\">1</sup> The advertisement, she noted, was worded to attract unusually sociable people, and the Nebraska \"random\" group had in fact come from a mailing list. Her point was not that the world is big, but that Milgram's evidence could not settle the question.</p><p>Email made a far larger test possible. In a study published in 2003, Peter Sheridan Dodds, Roby Muhamad and Duncan Watts recorded 61,168 people in 166 countries trying to reach one of 18 targets in 13 countries, among them an archival inspector in Estonia and a veterinarian in the Norwegian army. Attrition was brutal: only 384 of 24,163 chains reached their targets, and lack of interest, not difficulty, was the main reason chains stopped.<sup class=\"cite\" data-cite=\"2\">2</sup> Correcting for the dropouts, the team estimated that searches could reach targets in a median of five to seven steps. Successful chains ran mainly through intermediate and weak ties and professional relationships, and did not need highly connected hubs.</p><p>Complete maps answer a different question. In 2011 the whole Facebook network of about 721 million active users had an average distance of 4.74 steps, or 3.74 intermediaries.<sup class=\"cite\" data-cite=\"3\">3</sup> By 2016, with 1.59 billion people active on Facebook, the company reported an average of 3.57 intermediaries.<sup class=\"cite\" data-cite=\"4\">4</sup> Those are shortest paths found by a computer that sees every link. Milgram's starters had to find a route with only local knowledge, which is why the searchable world of folders and emails looks longer, and far less reliable, than the mathematical one.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       },
       {
         "id": "soc-net-05-c3",
-        "title": "Social Capital: Bonding and Bridging",
-        "contentHtml": "<p><strong>Social capital</strong>, the resources individuals access through their network ties, has been theorised in three influential strands.</p><p>James Coleman emphasised <em>closure</em>: dense networks enforce norms and trust, making cooperation possible. Pierre Bourdieu treated social capital as a class resource, alongside economic and cultural capital. Nan Lin saw it as instrumental access to resources embedded in others.</p><p>Robert Putnam's <em>Bowling Alone</em> (2000) drew the distinction that has stuck: <strong>bonding</strong> social capital connects similar people within a group (family, ethnic enclave), while <strong>bridging</strong> social capital connects across difference. Bonding helps you 'get by'; bridging helps you 'get ahead'. Putnam argued that American civic life had eroded across the late twentieth century, with declining membership in clubs, churches, and bowling leagues: the title's image.</p><p>Critics including Claude Fischer challenge Putnam's measurements, but the bonding-bridging distinction has become standard. It maps directly onto network structure: bonding is dense closure, bridging is weak ties spanning structural holes.</p>",
+        "title": "Watts and Strogatz: Clustered Yet Close",
+        "contentHtml": "<p>How can the world be both cliquish and small? Your friends tend to know each other, which ought to make paths long, since each step mostly loops back into the same circle. In a 1998 paper in <em>Nature</em>, Duncan Watts and Steven Strogatz showed how both properties can coexist, using two numbers:</p><ul><li>The <strong>clustering coefficient</strong> \\(C\\): for each node, the fraction of possible ties among its neighbours that actually exist, averaged over all nodes. It measures cliquishness.</li><li>The <strong>characteristic path length</strong> \\(L\\): the typical number of steps between two nodes.</li></ul><p>Start with a ring lattice, where everyone is tied only to near neighbours: \\(C\\) is high but \\(L\\) is long, growing in proportion to the number of nodes. A random graph of the same size has the opposite profile: \\(L\\) grows only with the logarithm of the size, but \\(C\\) is tiny. Watts and Strogatz rewired each lattice edge to a random node with probability \\(p\\). A few rewired edges act as shortcuts, and \\(L\\) collapses almost at once while \\(C\\) barely moves. That middle regime is highly clustered like a lattice yet has short paths like a random graph.<sup class=\"cite\" data-cite=\"1\">1</sup> They called it a <strong>small-world network</strong>. The network of 225,226 film actors linked by shared films fits: its \\(L\\) was 3.65, against 2.99 for a comparable random graph, while its \\(C\\) was 0.79, against 0.00027.</p><p>Shortcuts speed rumours and viruses, but not everything. In a 2010 experiment, Damon Centola built online health communities with either clustered or random structures of the same size. Individuals were much more likely to adopt a health behaviour when several neighbours reinforced it, and it spread farther and faster in the clustered networks.<sup class=\"cite\" data-cite=\"2\">2</sup> A behaviour that needs social proof travels better through overlapping ties than through long-range shortcuts.</p>",
+        "mathExpressions": [
+          "C_v = \\frac{2\\,e_v}{k_v(k_v - 1)}",
+          "L_{\\text{random}} \\approx \\frac{\\ln n}{\\ln k}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "soc-net-q33",
+      "soc-net-q34",
+      "soc-net-q35",
+      "soc-net-q36",
+      "soc-net-q37",
+      "soc-net-q38",
+      "soc-net-q39",
+      "soc-net-q40"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "soc-net-06",
+    "topicId": "soc-networks",
+    "order": 6,
+    "title": "Hubs, Power Laws and the Friendship Paradox",
+    "description": "Preferential attachment, the debate over how common scale-free networks are, and why your friends seem more popular",
+    "xpReward": 210,
+    "concepts": [
+      {
+        "id": "soc-net-06-c1",
+        "title": "Preferential Attachment",
+        "contentHtml": "<p>In a random network, degrees cluster around the average, much as human heights cluster around a typical height: nobody is ten times taller than anyone else. When Albert-László Barabási's team mapped a sample of the World Wide Web in 1998, they saw something very different. Some pages, such as the Google and Yahoo home pages, were linked to vastly more often than others,<sup class=\"cite\" data-cite=\"1\">1</sup> and the degree distribution looked like a <strong>power law</strong>: the probability that a node has degree \\(k\\) falls off as \\(k\\) raised to a negative power.</p><p>A power law has no typical scale, which is why such networks are called <strong>scale-free</strong>. Most nodes still have few links, but hubs with enormous numbers of links appear at every scale. In 1999 Barabási and his student Réka Albert proposed a mechanism with two ingredients: growth, as new nodes keep joining, and preferential attachment, as newcomers link to nodes that are already well connected.<sup class=\"cite\" data-cite=\"2\">2</sup> In Quanta Magazine's phrase, the rich get richer and the hubs get hubbier. Their model produces a power law with exponent 3, as the graph theory topic notes.</p><p>The idea spread fast. Barabási's team argued in 2000 that scale-free networks are robust to random failures, since most nodes are minor, but vulnerable to targeted attacks on their hubs. The cover of Nature called this the \"Achilles' heel of the internet\", a characterisation internet experts have since roundly disputed.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>For social networks the real question is whether a few people hold a vast share of all ties. Facebook in 2011 shows the shape: the median user had 99 friends and the mean was about 190, while a small population had many hundreds or even thousands. A mean far above the median is the signature of a right-skewed distribution. Whether that skew is a true power law is a separate and fiercely debated question.</p>",
+        "mathExpressions": [
+          "P(k) \\propto k^{-\\gamma}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "soc-net-06-c2",
+        "title": "Are Scale-Free Networks Rare?",
+        "contentHtml": "<p>For two decades, papers declared one network after another scale-free, often by plotting degrees on log-log axes, where a power law becomes a straight line, and judging the fit by eye. \"There must be a thousand papers,\" Aaron Clauset later said, \"in which people plot the degree distribution, put a line through it and say it's scale-free without really doing the careful statistical work.\"</p><p>In 2018 Clauset and his graduate student Anna Broido, at the University of Colorado Boulder, posted a severe test, published in <em>Nature Communications</em> in 2019. They applied rigorous statistical tools to nearly 1,000 social, biological, technological, transportation and information networks, comparing power laws with alternatives such as the log-normal distribution. Strongly scale-free structure turned out to be rare: only about 4% of networks passed the strictest test.<sup class=\"cite\" data-cite=\"1\">1</sup> For about two-thirds, including Facebook friendship networks, no power law fitted well enough to be plausible, and for most networks log-normal distributions fitted as well as or better than power laws. Social networks were at best weakly scale-free.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The response split the field. Barabási argued that real networks carry other processes on top of preferential attachment, like air resistance on a falling feather; ignore it and \"you would conclude that gravitation is wrong.\" Alessandro Vespignani said the useful properties, such as robustness to failure and vulnerability to attack, hold for the broader class of <strong>heavy-tailed</strong> networks, so the important question is whether a network has a heavy tail. Critics answered that vague terms make the claim unfalsifiable. Duncan Watts called the move \"shifting the goal posts\".<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>The agreed core is narrower than the early excitement. Many real networks have hubs and strongly skewed degrees, but few follow a strict power law, and social networks least of all.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "soc-net-06-c3",
+        "title": "Why Your Friends Have More Friends Than You",
+        "contentHtml": "<p>Skewed degrees produce a surprising fact. In 1991 the sociologist Scott Feld showed that, on average, your friends have more friends than you do. This <strong>friendship paradox</strong> is not about anyone being unpopular; it is a sampling effect. Popular people appear on many friend lists, so when you average over friends you count high-degree people many times over.</p><p>The maths is short. If degrees in a network have mean \\(\\mu\\) and variance \\(\\sigma^2\\), a randomly chosen friend has average degree \\(\\mu + \\sigma^2/\\mu\\), not \\(\\mu\\). The gap grows with the variance, so the more unequal the network, the stronger the paradox.<sup class=\"cite\" data-cite=\"1\">1</sup> In a network where everyone has exactly the same degree, it vanishes.</p><p>In practice it is very strong. In the 2011 Facebook graph, 92.7% of users had fewer friends than the average friend count of their friends, and 83.6% had fewer than the median of their friends.<sup class=\"cite\" data-cite=\"2\">2</sup> So most users found that more than half of their friends had more friends than they did.</p><p>The paradox is also a tool. In late 2009 Nicholas Christakis and James Fowler followed 744 Harvard College students through a flu outbreak: one group chosen at random and a second group made up of friends whom the first group named. Friends are more central, so they should catch a contagious disease earlier, and they did. Based on clinical diagnoses, the epidemic in the friend group ran 13.9 days ahead of the random group,<sup class=\"cite\" data-cite=\"3\">3</sup> and the lead was already detectable on day 16, a full 46 days before the peak in daily cases. Monitoring the friends of randomly chosen people, with no need to map the whole network, offers a cheap early-warning system for outbreaks.</p>",
+        "mathExpressions": [
+          "\\mathbb{E}[k_{\\text{friend}}] = \\mu + \\frac{\\sigma^2}{\\mu}"
+        ],
+        "visualizationType": null,
+        "visualizationConfig": null
+      }
+    ],
+    "quizQuestionIds": [
+      "soc-net-q41",
+      "soc-net-q42",
+      "soc-net-q43",
+      "soc-net-q44",
+      "soc-net-q45",
+      "soc-net-q46",
+      "soc-net-q47",
+      "soc-net-q48"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "soc-net-07",
+    "topicId": "soc-networks",
+    "order": 7,
+    "title": "Homophily, Contagion and Social Capital",
+    "description": "Why similar people connect, whether behaviour really spreads through ties, and what networks are worth",
+    "xpReward": 220,
+    "concepts": [
+      {
+        "id": "soc-net-07-c1",
+        "title": "Birds of a Feather",
+        "contentHtml": "<p>\"Similarity breeds connection.\" So begins a 2001 review of <strong>homophily</strong> by Miller McPherson, Lynn Smith-Lovin and James Cook. The observation is ancient (Aristotle noted that people \"love those who are like themselves\"), but network data made it measurable. Homophily structures ties of every type: marriage, friendship, work, advice, support and information.</p><p>Lazarsfeld and Merton distinguished two kinds in 1954. <strong>Status homophily</strong> is similarity of position, in race, ethnicity, sex, age, religion, education or occupation. <strong>Value homophily</strong> is similarity of values, attitudes and beliefs. McPherson and colleagues found that race and ethnicity create the strongest divides in personal networks, followed roughly in order by age, religion, education, occupation and gender.<sup class=\"cite\" data-cite=\"1\">1</sup> It starts early. In the Southern towns and urban neighbourhoods where researchers tracked it, third-graders had about two-thirds of the cross-race friendships expected by chance, and racial homophily rose until only 10% of expected cross-race friendships were observed in middle school.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Where does it come from? The review separates <strong>baseline homophily</strong>, produced by the make-up of the pool of people you could meet, from <strong>inbreeding homophily</strong>, similarity over and above that opportunity set. Geography, families, organisations and similar positions in social systems all create settings in which similar people meet, and ties form where people meet. Choice then adds more.</p><p>The consequences are large. Information, opportunities and attitudes flow mostly within social categories, so the bridges of lesson 3 are scarcest exactly where they could matter most. Not every trait sorts people equally, though. The 2011 Facebook study found a strong effect of age on friendship but no strong gender homophily.<sup class=\"cite\" data-cite=\"3\">3</sup> And homophily creates a deep problem for anyone trying to show that behaviour spreads through networks, the subject of the next concept.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "soc-net-07-c2",
+        "title": "Is Obesity Contagious?",
+        "contentHtml": "<p>In 2007 Nicholas Christakis and James Fowler analysed 12,067 people in the Framingham Heart Study, assessed repeatedly from 1971 to 2003, and argued that obesity spreads through social ties. A person's chance of becoming obese rose by 57% if a friend became obese in the same period, with a wide confidence interval of 6 to 123%.<sup class=\"cite\" data-cite=\"1\">1</sup> The figure was 40% for an adult sibling and 37% for a spouse, and there was no effect for neighbours living nearby. Clusters of obesity reached out to three degrees of separation. Later papers made similar claims for smoking cessation, happiness and loneliness, and the findings became famous.</p><p>Critics pointed to a basic difficulty. Friends can resemble each other because one influences the other (<strong>contagion</strong>), because similar people befriend each other (<strong>homophily</strong>), or because they share an environment, such as a fast-food restaurant opening near their school. Ethan Cohen-Cole and Jason Fletcher applied standard methods to Add Health data and found apparent network effects for acne, headaches and even height, which became uniformly smaller and insignificant once environmental confounders were controlled.<sup class=\"cite\" data-cite=\"2\">2</sup> Cosma Shalizi and Andrew Thomas showed that homophily and contagion are generically confounded in observational network studies. Russell Lyons argued that the original conclusions did not follow from the statistics at all.</p><p>The defence was not routed. Tyler VanderWeele's sensitivity analysis found the effects for obesity and smoking cessation reasonably robust to plausible hidden homophily or confounding, though those for happiness and loneliness less so.<sup class=\"cite\" data-cite=\"3\">3</sup> Bigger data sharpened the picture: in an instant-messaging network of 27.4 million users, Sinan Aral and colleagues found that earlier methods overestimated peer influence on adopting a mobile service by 300–700%, and that homophily explained more than half of the apparent contagion.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>The cleanest answers come from experiments. During the 2010 US congressional elections, a randomised Facebook message showing friends who had voted raised turnout directly by about 60,000 votes and, through those friends, by another 280,000.<sup class=\"cite\" data-cite=\"5\">5</sup> Influence is real; measuring it from observational data is the hard part.</p>",
+        "mathExpressions": [],
+        "visualizationType": null,
+        "visualizationConfig": null
+      },
+      {
+        "id": "soc-net-07-c3",
+        "title": "Social Capital: Closure, Bridges and Bowling Alone",
+        "contentHtml": "<p><strong>Social capital</strong> is the idea that relationships are a resource, like money or skills. For Pierre Bourdieu it was one form of capital alongside economic and cultural capital, rooted in a durable network of relationships of mutual acquaintance and recognition (see the modern theory topic). Network sociologists divide over which structure creates it. James Coleman's <strong>closure</strong> argument holds that social capital is created by a network of strongly interconnected people. Burt's brokerage argument, from lesson 4, says it comes from spanning structural holes. Burt's own synthesis: brokerage across structural holes is the source of value added, but closure can be critical to realising that value.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The political scientist <strong>Robert Putnam</strong> took the concept to whole communities, treating social capital as networks, norms and trust that let people act together. The literature now distinguishes <strong>bonding</strong> ties among people in similar situations, <strong>bridging</strong> ties that bring together people from different groups, and <strong>linking</strong> ties across very different groups. In <em>Bowling Alone</em> (2000), drawing on nearly 500,000 interviews over a quarter of a century, Putnam argued that Americans had become steadily more disconnected: they signed fewer petitions, belonged to fewer organisations that meet, knew their neighbours less, met friends less often and even socialised less with their families. The title captures a vivid detail. More Americans were bowling than ever before, but they were not bowling in leagues.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Critics question the meaning more than the data. Claude Fischer notes that most of the changes Putnam reported were of modest size and his analysis nuanced, while readers took home a starker story of shrivelling community.<sup class=\"cite\" data-cite=\"3\">3</sup> Alejandro Portes warned of a downside: dense ties that support members can exclude outsiders and make heavy demands on insiders.<sup class=\"cite\" data-cite=\"4\">4</sup> Since social capital is usually measured through proxies such as membership counts, Portes also urged a clear line between its sources and its results.</p><p>Newer evidence is mixed. American Time Use Survey data show that average time spent at home by American adults rose by 1 hour 39 minutes a day between 2003 and 2022,<sup class=\"cite\" data-cite=\"5\">5</sup> which fits worries about withdrawal, though staying home is not the same as isolation.</p>",
         "mathExpressions": [],
         "visualizationType": null,
         "visualizationConfig": null
       }
     ],
-    "quizQuestionIds": ["soc-net-q21", "soc-net-q22", "soc-net-q23", "soc-net-q24", "soc-net-q25"],
+    "quizQuestionIds": [
+      "soc-net-q49",
+      "soc-net-q50",
+      "soc-net-q51",
+      "soc-net-q52",
+      "soc-net-q53",
+      "soc-net-q54",
+      "soc-net-q55",
+      "soc-net-q56"
+    ],
     "puzzleId": null
   }
 ]

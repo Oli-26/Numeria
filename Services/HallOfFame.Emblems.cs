@@ -5,6 +5,19 @@ public static partial class HallOfFame
     // Emblem per figure ("domain/name"), chosen from the Icon set to stand for their best-known work.
     private static readonly Dictionary<string, string> emblems = new()
     {
+        ["art/Albrecht Dürer"] = "pencil",
+        ["art/Artemisia Gentileschi"] = "sword",
+        ["art/Caravaggio"] = "moon",
+        ["art/Claude Monet"] = "lotus",
+        ["art/Frida Kahlo"] = "heart",
+        ["art/Hilma af Klint"] = "spiral",
+        ["art/Hokusai"] = "wave",
+        ["art/Leonardo da Vinci"] = "blueprint",
+        ["art/Michelangelo"] = "temple",
+        ["art/Pablo Picasso"] = "triangle",
+        ["art/Rembrandt"] = "mirror",
+        ["art/Vincent van Gogh"] = "star-filled",
+        ["art/Wang Xizhi"] = "quill",
         ["biology/Aristotle"] = "fish",
         ["biology/Crick"] = "dna-strand",
         ["biology/Darwin"] = "tree-evolution",

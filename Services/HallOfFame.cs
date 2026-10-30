@@ -29,6 +29,7 @@ public static partial class HallOfFame
         "economics" => economicsFigures,
         "media" => mediaFigures,
         "literature" => literatureFigures,
+        "art" => artFigures,
         _ => new List<Figure>()
     };
 
@@ -48,6 +49,7 @@ public static partial class HallOfFame
         "economics" => "Economists",
         "media" => "Media Pioneers",
         "literature" => "Writers",
+        "art" => "Artists",
         _ => "Mathematicians"
     };
 
@@ -1119,5 +1121,86 @@ public static partial class HallOfFame
             "<strong>Ficciones</strong> (1944), <strong>El Aleph</strong> (1949): short stories that read like philosophical thought experiments: infinite libraries, forking paths, impossible maps. Helped invent magic realism.",
             "He taught the late 20th century how to write metafiction. Garcia Marquez, Eco, Calvino, Pavic, and most postmodern fiction descend from his playbook.",
             "Went blind in his late 50s while director of the National Library of Argentina, with 800,000 books he could no longer read. Memorized Anglo-Saxon poetry by ear instead.")
+    };
+
+    private static readonly List<Figure> artFigures = new()
+    {
+        new("Wang Xizhi", "303-361", "China", "#3E4A3D",
+            "Sage of Calligraphy",
+            "<strong>Preface to the Orchid Pavilion</strong> (353): a short preface dashed off at a spring gathering of poets, the most revered work in Chinese calligraphy.",
+            "Chinese tradition calls him the Sage of Calligraphy. For sixteen centuries students have learned running script by copying him, and emperors collected his letters like relics.",
+            "No original survives. Tradition says Emperor Taizong of Tang loved the Orchid Pavilion preface so much that it was buried with him; every version today is a copy or a tracing."),
+
+        new("Leonardo da Vinci", "1452-1519", "Italy", "#7A6A3A",
+            "The restless universal mind",
+            "<strong>Mona Lisa</strong> and <strong>The Last Supper</strong>: the smoky softness of sfumato, plus thousands of notebook pages on anatomy, flight, water and machines.",
+            "Only a handful of paintings are securely his, yet they changed how painters handle light, shadow and the human face.",
+            "The Last Supper began flaking in his own lifetime, because he painted it on a dry wall in an experimental mix instead of true fresco."),
+
+        new("Albrecht Dürer", "1471-1528", "Germany", "#6B4F2A",
+            "Master of the print",
+            "<strong>Melencolia I</strong> and <strong>Knight, Death and the Devil</strong> (1513-14): engravings of astonishing detail. His prints carried the Renaissance across Europe.",
+            "He turned printmaking into high art, sold it across a continent, and guarded his famous AD monogram like a brand.",
+            "His 1515 woodcut of a rhinoceros was made from a written description and a sketch: he never saw the animal. It still shaped how Europeans pictured rhinos for generations."),
+
+        new("Michelangelo", "1475-1564", "Italy", "#8A5A44",
+            "The sculptor who painted a ceiling",
+            "<strong>David</strong> (1501-1504) and the <strong>Sistine Chapel ceiling</strong> (1508-1512): the heroic human body in marble and in fresco.",
+            "He set the standard for the human figure for centuries, and was the first artist whose biography was published while he was still alive.",
+            "He saw himself as a sculptor and took on the ceiling reluctantly. As a young man his nose was broken by a fellow student, Pietro Torrigiano, and it shows in every portrait of him."),
+
+        new("Caravaggio", "1571-1610", "Italy", "#3B2A2A",
+            "Light out of darkness",
+            "<strong>The Calling of Saint Matthew</strong> (1599-1600): sacred stories acted by street-real people, cut through by a single raking beam of light.",
+            "Within a generation painters from Utrecht to Naples were copying his dramatic lighting, and Rembrandt and Velázquez both learned from it.",
+            "In 1606 he killed a man, Ranuccio Tomassoni, in a brawl in Rome, and spent his last years on the run through Naples, Malta and Sicily. He died in 1610, aged 38."),
+
+        new("Artemisia Gentileschi", "1593-~1656", "Italy", "#9E3D2C",
+            "Baroque's fiercest storyteller",
+            "<strong>Judith Slaying Holofernes</strong> (about 1620): a biblical beheading painted with brutal physical force. She built a career in Florence, Rome, Naples and London.",
+            "In 1616 she became the first woman admitted to Florence's Accademia delle Arti del Disegno, and she painted for the Medici and for Charles I.",
+            "At 18 she testified at the 1612 trial of the painter Agostino Tassi for raping her, and was tortured with thumbscrews to test her account. Tassi was convicted, but his sentence was never enforced."),
+
+        new("Rembrandt", "1606-1669", "Dutch Republic", "#5C4022",
+            "Painter of the inner life",
+            "<strong>The Night Watch</strong> (1642) and dozens of self-portraits: light, shadow and ageing faces studied with unmatched honesty.",
+            "His self-portraits form an autobiography across four decades, from confident young success to bankrupt old age.",
+            "He went bankrupt in 1656 and his house and collection were sold. The Night Watch was later trimmed on all four sides, in 1715, to fit a wall in Amsterdam's town hall."),
+
+        new("Hokusai", "1760-1849", "Japan", "#2F5D8A",
+            "The old man mad about painting",
+            "<strong>Under the Wave off Kanagawa</strong> (about 1831), from Thirty-six Views of Mount Fuji: a woodblock print made in thousands of impressions.",
+            "Imported Prussian blue gave the Great Wave its colour, and Japanese prints like his helped spark Japonisme among Monet, Van Gogh and Degas.",
+            "He used more than 30 names in his career. In his seventies he wrote that by the age of 110 every dot and line he drew would be alive."),
+
+        new("Claude Monet", "1840-1926", "France", "#4F7A5A",
+            "Named a movement by accident",
+            "<strong>Impression, Sunrise</strong> (1872) gave Impressionism its name; his haystacks, cathedrals and <strong>Water Lilies</strong> paint one subject in changing light.",
+            "He took painting outdoors and made light itself the subject. The giant Water Lilies murals in Paris's Orangerie point the way to abstraction.",
+            "A critic coined \"Impressionists\" as a jibe after seeing Impression, Sunrise. In old age cataracts dulled and yellowed his colour vision, and he had surgery in 1923."),
+
+        new("Vincent van Gogh", "1853-1890", "Netherlands", "#C9952B",
+            "A decade that changed painting",
+            "<strong>The Starry Night</strong> (1889) and the <strong>Sunflowers</strong>: thick, directional brushwork and colour pushed for feeling, in a career of barely ten years.",
+            "Hundreds of his letters to his brother Theo survive: one of the great records of an artist thinking aloud.",
+            "He painted The Starry Night while staying at the asylum in Saint-Rémy, working from memory of the view from his bedroom window."),
+
+        new("Hilma af Klint", "1862-1944", "Sweden", "#B07A9E",
+            "Abstraction before abstraction",
+            "<strong>Paintings for the Temple</strong> (1906-1915): a cycle of abstract works including The Ten Largest, huge canvases of spirals, petals and geometry.",
+            "She was painting abstracts years before Kandinsky, Malevich and Mondrian, who usually get the credit. Her work only reached the public in the 1980s.",
+            "Guided, she believed, by spirits contacted in séances, she asked that her abstract works not be shown until 20 years after her death."),
+
+        new("Pablo Picasso", "1881-1973", "Spain", "#3D5A80",
+            "Broke the picture apart",
+            "<strong>Les Demoiselles d'Avignon</strong> (1907) and <strong>Guernica</strong> (1937): with Georges Braque he invented Cubism, showing several viewpoints at once.",
+            "Across seven decades he moved through Blue and Rose periods, Cubism, collage, classicism and Surrealism, and was one of the most prolific artists who ever lived.",
+            "In 1911 police questioned him over the theft of the Mona Lisa, after statuettes stolen from the Louvre were traced to his circle."),
+
+        new("Frida Kahlo", "1907-1954", "Mexico", "#B23A48",
+            "Herself as the subject",
+            "<strong>The Two Fridas</strong> (1939) and dozens of self-portraits that mix Mexican folk art, Surrealist strangeness and pain.",
+            "She made her own body and identity the subject of modern art, and is now one of the most recognised painters of the 20th century.",
+            "A bus crash in 1925, when she was 18, left her with lifelong injuries. She began painting in bed, with a mirror fixed above her."),
     };
 }

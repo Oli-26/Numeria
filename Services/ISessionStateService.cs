@@ -19,6 +19,13 @@ public class QuizSessionState
     public int WrongCount { get; set; }
     public List<string> UserAnswers { get; set; } = new();
     public List<bool> Results { get; set; } = new();
+
+    // How many saved answers to keep on resume, which is also the question to resume at. The state is saved as soon
+    // as a question is answered but CurrentIndex only moves on Next, so a quiz closed between the two would come back
+    // on an answered question; answering it again duplicated the result, and a later restore indexed past the end.
+    // Resuming at the first unanswered question (never past the last) keeps one result per question.
+    public int AnswersToResume(int questionCount) =>
+        Math.Max(0, Math.Min(Math.Min(UserAnswers.Count, Results.Count), questionCount - 1));
 }
 
 public interface ISessionStateService

@@ -25,7 +25,7 @@ public static partial class HallOfFame
         id != null && TopicCardIdPattern.IsMatch(id) ? id : Resolve(id)?.Id;
 
     public static readonly string[] Domains =
-        { "math", "philosophy", "physics", "biology", "chemistry", "geology", "history", "linguistics", "materials", "cs", "misc", "politics", "economics", "media", "literature" };
+        { "math", "philosophy", "physics", "biology", "chemistry", "geology", "history", "linguistics", "materials", "cs", "misc", "politics", "economics", "media", "literature", "art" };
 
     public static string UnlockId(string domain) => $"unlock-halloffame-{domain}";
 
@@ -86,6 +86,7 @@ public static partial class HallOfFame
         "economics" => "coin",
         "media" => "antenna",
         "literature" => "quill",
+        "art" => "palette",
         _ => "integral"
     };
 }

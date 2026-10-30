@@ -522,12 +522,13 @@ else if (quizState == QuizState.Complete)
                     if (restoredQuestions.Count == qs.QuestionIds.Count)
                     {
                         questions = restoredQuestions;
-                        currentIndex = qs.CurrentIndex;
-                        correctCount = qs.CorrectCount;
-                        wrongCount = qs.WrongCount;
+                        var kept = qs.AnswersToResume(questions.Count);
+                        currentIndex = kept;
+                        correctCount = qs.Results.Take(kept).Count(r => r);
+                        wrongCount = kept - correctCount;
 
                         // Rebuild results from saved data
-                        for (int i = 0; i < Math.Min(qs.UserAnswers.Count, qs.Results.Count); i++)
+                        for (int i = 0; i < kept; i++)
                         {
                             results.Add(new QuizResult
                             {
