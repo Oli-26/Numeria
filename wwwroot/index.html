@@ -117,6 +117,7 @@
     <script src="js/notepadDrag.js"></script>
     <script src="js/sheet.js"></script>
     <script src="js/cite.js"></script>
+    <script src="js/figureZoom.js"></script>
     <script>
         // Capacitor native polish: runs once if Capacitor is present.
         (function () {
@@ -135,6 +136,10 @@
                     app.addListener('backButton', function () {
                         if (window.NousSheet && window.NousSheet.isOpen) {
                             window.NousSheet.requestClose();
+                            return;
+                        }
+                        if (window.NousFigureZoom && window.NousFigureZoom.isOpen) {
+                            window.NousFigureZoom.close();
                             return;
                         }
                         var atRoot = window.location.pathname === '/' || window.location.pathname === '';
