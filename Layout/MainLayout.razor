@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject IUsageCounter Usage
 
 <div class="app-container @(Focus ? "focus-mode" : "")">
     <main class="main-content">
@@ -40,6 +41,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
+        _ = Usage.FlushAsync();
         try
         {
             // Cold-start deep link: a notification tap or shortcut stashes the

@@ -3,6 +3,7 @@
 @inject IContentRepository Content
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject IUsageCounter Usage
 
 <div class="page-header">
     <h1>Subjects</h1>
@@ -79,6 +80,7 @@
         var profile = await Progress.GetProfileAsync();
         profile.CurrentDomain = domainId;
         await Progress.SaveProfileAsync(profile);
+        await Usage.CountAsync("subject", domainId);
         await JS.TryInvokeVoidAsync("applyDomain", domainId);
         var name = domains.FirstOrDefault(d => d.Id == domainId)?.Name ?? domainId;
         await JS.TryInvokeVoidAsync("showToast", $"Switched to {name}", "");

@@ -98,6 +98,8 @@ public class UserProfile
 
     // Notifications
     public bool NotificationsEnabled { get; set; }
+    // Anonymous daily topic counts (Services/UsageCounter.cs); on unless the player turns it off in Settings.
+    public bool ShareUsageCounts { get; set; } = true;
     public string DailyReminderTime { get; set; } = "19:00"; // HH:mm
     public bool StreakReminderEnabled { get; set; } = true;
     public bool ReviewReminderEnabled { get; set; } = true;

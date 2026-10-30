@@ -2,6 +2,7 @@
 @inject IContentRepository Content
 @inject IProgressService Progress
 @inject NavigationManager Nav
+@inject IUsageCounter Usage
 
 <div class="fs-page">
     <div class="page-header">
@@ -75,6 +76,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Usage.CountAsync("course", "from-scratch");
         var topics = await Content.GetTopicsAsync();
         foreach (var t in topics.Where(FromScratch.IsScratch))
             lessonsByTopic[t.Id] = await Content.GetLessonsAsync(t.Id);

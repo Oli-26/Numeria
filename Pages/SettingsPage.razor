@@ -2,6 +2,7 @@
 @inject IProgressService Progress
 @inject IThemeService ThemeService
 @inject IJSRuntime JS
+@inject IUsageCounter Usage
 @inject NavigationManager Nav
 @inject INotificationService NotificationSvc
 @inject ITtsService TtsService
@@ -218,6 +219,18 @@
 
     <div class="card settings-item">
         <div class="settings-row">
+            <div class="settings-icon"><Icon Name="shield" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Share Anonymous Usage Counts</h3>
+                <p>@(shareUsage ? "On" : "Off"): counts which topics get opened, sent once a day with no ID or account</p>
+            </div>
+            <button class="toggle-btn @(shareUsage ? "on" : "")" aria-label="@(shareUsage ? "Stop sharing usage counts" : "Share usage counts")" @onclick="ToggleUsage">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+    </div>
+    <div class="card settings-item">
+        <div class="settings-row">
             <div class="settings-icon"><Icon Name="trending-up" Size="24" /></div>
             <div class="settings-info">
                 <h3>Export Stats</h3>
@@ -340,6 +353,7 @@
     private string activeTheme = "nous";
     private bool confirmReset;
     private bool soundEnabled = true;
+    private bool shareUsage = true;
     private string currentName = "";
     private string newName = "";
     private bool editingName;
@@ -374,6 +388,7 @@
             showHints = profile.ShowHintsByDefault;
             fontSize = profile.FontSize ?? "medium";
             notificationsEnabled = profile.NotificationsEnabled;
+            shareUsage = profile.ShareUsageCounts;
             streakReminderEnabled = profile.StreakReminderEnabled;
             reviewReminderEnabled = profile.ReviewReminderEnabled;
             dailyReminderTime = profile.DailyReminderTime ?? "19:00";
@@ -431,6 +446,15 @@
         [System.Text.Json.Serialization.JsonPropertyName("source")] public string Source { get; set; } = "";
         [System.Text.Json.Serialization.JsonPropertyName("message")] public string Message { get; set; } = "";
         [System.Text.Json.Serialization.JsonPropertyName("stack")] public string Stack { get; set; } = "";
+    }
+
+    private async Task ToggleUsage()
+    {
+        shareUsage = !shareUsage;
+        var profile = await Progress.GetProfileAsync();
+        profile.ShareUsageCounts = shareUsage;
+        await Progress.SaveProfileAsync(profile);
+        if (!shareUsage) await Usage.ClearAsync();
     }
 
     private async Task ToggleSound()

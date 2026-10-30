@@ -7,6 +7,7 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject IConnectionsService Connections
+@inject IUsageCounter Usage
 @implements IDisposable
 
 <div class="page-header">
@@ -672,6 +673,7 @@ else
         }
 
         await Progress.MarkLessonCompletedAsync(lesson.Id);
+        await Usage.CountAsync("lesson", lesson.Id);
 
         var topics = await Content.GetTopicsAsync();
         var topic = topics.FirstOrDefault(t => t.Id == TopicId);

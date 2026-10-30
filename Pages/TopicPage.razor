@@ -4,6 +4,7 @@
 @inject NavigationManager Nav
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject IUsageCounter Usage
 
 <div class="page-header">
     <button class="back-btn" aria-label="@(FromScratch.IsScratch(topic) ? "Back to From Scratch" : "Back to home")" @onclick='() => Nav.NavigateTo(FromScratch.IsScratch(topic) ? "/from-scratch" : "/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -306,6 +307,7 @@ else
             topic = await Content.GetTopicAsync(TopicId);
             lessons = await Content.GetLessonsAsync(TopicId);
             profile = await Progress.GetProfileAsync();
+            if (topic != null) await Usage.CountAsync("topic", topic.Id);
             try
             {
                 allTopics = await Http.GetFromJsonAsync<List<Topic>>("data/topics.json");
