@@ -63,6 +63,9 @@ public class UserProfile
     // Lesson ids whose From Scratch field task the learner has ticked as done; each pays its bonus once.
     public List<string> TryItsDone { get; set; } = new();
 
+    // Paid courses (courses.json entries with a price) the learner owns; free courses never need an entry.
+    public List<string> CoursesOwned { get; set; } = new();
+
     // Explain-it-back notebook: conceptId -> the learner's own summary
     public Dictionary<string, ConceptNote> ConceptNotes { get; set; } = new();
 

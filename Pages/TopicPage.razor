@@ -1,13 +1,14 @@
 @page "/topic/{TopicId}"
 @inject IContentRepository Content
 @inject IProgressService Progress
+@inject ICourseService Courses
 @inject NavigationManager Nav
 @inject HttpClient Http
 @inject IJSRuntime JS
 @inject IUsageCounter Usage
 
 <div class="page-header">
-    <button class="back-btn" aria-label="@(FromScratch.IsScratch(topic) ? "Back to From Scratch" : "Back to home")" @onclick='() => Nav.NavigateTo(FromScratch.IsScratch(topic) ? "/from-scratch" : "/")'><Icon Name="arrow-left" Size="18" /></button>
+    <button class="back-btn" aria-label="@(course != null ? $"Back to {course.Title}" : "Back to home")" @onclick='() => Nav.NavigateTo(course != null ? $"/course/{course.Id}" : "/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1 class="topic-ink" style="--topic-c: @(topic?.Color ?? "var(--text-primary)")">@(topic?.Name ?? "Topic")</h1>
 </div>
 
@@ -286,6 +287,8 @@ else
     [Parameter] public string TopicId { get; set; } = "";
 
     private Topic? topic;
+    // The course this topic belongs to, if any; its back link returns to the course map instead of home.
+    private Course? course;
     private List<Lesson>? lessons;
     private UserProfile? profile;
     private List<Topic>? allTopics;
@@ -305,6 +308,7 @@ else
         if (firstRender)
         {
             topic = await Content.GetTopicAsync(TopicId);
+            course = await Courses.GetCourseForTopicAsync(topic);
             lessons = await Content.GetLessonsAsync(TopicId);
             profile = await Progress.GetProfileAsync();
             if (topic != null) await Usage.CountAsync("topic", topic.Id);

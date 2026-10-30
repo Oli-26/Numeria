@@ -28,5 +28,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITtsService, TtsService>();
 builder.Services.AddScoped<IRunService, RunService>();
 builder.Services.AddScoped<IConnectionsService, ConnectionsService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ICourseEntitlements, CourseEntitlements>();
 
 await builder.Build().RunAsync();

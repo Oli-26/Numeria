@@ -1,30 +1,50 @@
+@page "/course/{CourseId}"
+@* The old From Scratch address still opens its course. *@
 @page "/from-scratch"
 @inject IContentRepository Content
 @inject IProgressService Progress
+@inject ICourseService Courses
+@inject ICourseEntitlements Entitlements
 @inject NavigationManager Nav
 @inject IUsageCounter Usage
 
 <div class="fs-page">
     <div class="page-header">
         <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1 class="fs-title">From Scratch</h1>
+        <h1 class="fs-title">@(course?.Title ?? "Course")</h1>
     </div>
 
-    @if (profile != null)
+    @if (profile != null && course == null)
     {
+        <p class="fs-premise">This course could not be found.</p>
+    }
+    else if (profile != null && course != null)
+    {
+        var meter = course.Meter;
+        var max = course.MeterMax;
         <div class="fs-journal">
-            <small class="fs-kicker">Survival journal</small>
-            <div class="fs-day">Day @days</div>
-            <p class="fs-mood">@FromScratch.Mood(days)</p>
-            <div class="fs-year" aria-label="@days of 365 days survived">
-                <div class="fs-year-fill" style="width: @((days / 365.0 * 100).ToString("F1"))%"></div>
-                <span style="left: @((3 / 365.0 * 100).ToString("F1"))%"></span>
-                <span style="left: @((30 / 365.0 * 100).ToString("F1"))%"></span>
+            <small class="fs-kicker">@meter.Kicker</small>
+            <div class="fs-day">@meter.Format(meter.Label, value, max)</div>
+            <p class="fs-mood">@Courses.Mood(course, value)</p>
+            <div class="fs-year" aria-label="@meter.Format(meter.AriaLabel, value, max)">
+                <div class="fs-year-fill" style="width: @((value / (double)max * 100).ToString("F1"))%@FillVars(meter)"></div>
+                @foreach (var tick in course.MeterTicks)
+                {
+                    <span style="left: @((tick / (double)max * 100).ToString("F1"))%"></span>
+                }
             </div>
-            <p class="fs-premise">Stranded in the wild, or the lights went out for good. Each skill you learn keeps you alive a little longer, then lets you rebuild.</p>
+            <p class="fs-premise">@course.Premise</p>
+            @if (!owned)
+            {
+                @* Paid course not bought yet: the map is a preview. Billing is not wired up, so the button stays disabled. *@
+                <button class="fs-buy" disabled>
+                    <Icon Name="lock" Size="16" />
+                    <span>Coming soon@(string.IsNullOrEmpty(course.Price?.Display) ? "" : $" · {course.Price.Display}")</span>
+                </button>
+            }
         </div>
 
-        @foreach (var ch in FromScratch.Chapters)
+        @foreach (var ch in course.Chapters)
         {
             <section class="fs-chapter">
                 <div class="fs-chapter-head">
@@ -37,10 +57,10 @@
                         var state = StateOf(skill);
                         var lessons = lessonsByTopic.GetValueOrDefault(skill.TopicId);
                         var done = lessons?.Count(l => profile.LessonsCompleted.Contains(l.Id)) ?? 0;
-                        <button class="fs-node fs-@state @(i % 2 == 0 ? "fs-left" : "fs-right")" style="--node-c: @skill.Color"
-                                disabled="@(state is "soon" or "locked")" @onclick='() => Nav.NavigateTo($"/topic/{skill.TopicId}")'>
+                        <button class="fs-node fs-@state.ToString().ToLowerInvariant() @(i % 2 == 0 ? "fs-left" : "fs-right")" style="--node-c: @skill.Color"
+                                disabled="@(!owned || state is SkillState.Soon or SkillState.Locked)" @onclick='() => Nav.NavigateTo($"/topic/{skill.TopicId}")'>
                             <span class="fs-disc">
-                                @if (state == "done")
+                                @if (state == SkillState.Done)
                                 {
                                     <Icon Name="check" Size="26" />
                                 }
@@ -52,12 +72,19 @@
                             <span class="fs-node-text">
                                 <strong>@skill.Name</strong>
                                 <small>
-                                    @switch (state)
+                                    @if (!owned)
                                     {
-                                        case "done": <text>Mastered</text> break;
-                                        case "open": <text>@(done > 0 ? $"{done} of {lessons!.Count} lessons" : $"{lessons!.Count} lessons")</text> break;
-                                        case "locked": <text>Needs @string.Join(" and ", skill.Needs.Select(n => FromScratch.Find(n)?.Name ?? n))</text> break;
-                                        default: <text>Coming soon</text> break;
+                                        <text>In the full course</text>
+                                    }
+                                    else
+                                    {
+                                        switch (state)
+                                        {
+                                            case SkillState.Done: <text>Mastered</text> break;
+                                            case SkillState.Open: <text>@(done > 0 ? $"{done} of {lessons!.Count} lessons" : $"{lessons!.Count} lessons")</text> break;
+                                            case SkillState.Locked: <text>Needs @string.Join(" and ", skill.Needs.Select(n => course.FindSkill(n)?.Name ?? n))</text> break;
+                                            default: <text>Coming soon</text> break;
+                                        }
                                     }
                                 </small>
                             </span>
@@ -70,26 +97,36 @@
 </div>
 
 @code {
+    [Parameter] public string? CourseId { get; set; }
+
+    private Course? course;
     private UserProfile? profile;
     private Dictionary<string, List<Lesson>> lessonsByTopic = new();
-    private int days;
+    private int value;
+    private bool owned;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await Usage.CountAsync("course", "from-scratch");
-        var topics = await Content.GetTopicsAsync();
-        foreach (var t in topics.Where(FromScratch.IsScratch))
-            lessonsByTopic[t.Id] = await Content.GetLessonsAsync(t.Id);
+        course = await Courses.GetCourseAsync(CourseId ?? "from-scratch");
+        lessonsByTopic = new();
+        if (course != null)
+        {
+            var topics = await Content.GetTopicsAsync();
+            foreach (var t in topics.Where(t => t.Domain == course.Domain))
+                lessonsByTopic[t.Id] = await Content.GetLessonsAsync(t.Id);
+            owned = await Entitlements.IsOwnedAsync(course.Id);
+            await Usage.CountAsync("course", course.Id);
+        }
         profile = await Progress.GetProfileAsync();
-        days = FromScratch.DaysSurvived(profile, lessonsByTopic);
+        value = course == null ? 0 : Courses.MeterValue(course, profile, lessonsByTopic);
     }
 
-    private string StateOf(FromScratch.Skill s)
-    {
-        if (!lessonsByTopic.ContainsKey(s.TopicId)) return "soon";
-        if (profile!.TopicsCompleted.Contains(s.TopicId)) return "done";
-        return FromScratch.IsOpen(s, profile) ? "open" : "locked";
-    }
+    // An unowned course previews every skill as locked.
+    private SkillState StateOf(CourseSkill s) => owned ? Courses.StateOf(s, profile!, lessonsByTopic) : SkillState.Locked;
+
+    // The stylesheet falls back to From Scratch's ember-to-gold fill when a course names no colours of its own.
+    private static string FillVars(CourseMeter m) =>
+        m.Fill.Count >= 2 ? $"; --fill-a: {m.Fill[0]}; --fill-b: {m.Fill[1]}" : "";
 }
 
 <style>
@@ -114,9 +151,14 @@
     .fs-day { font-family: Georgia, serif; font-size: 2.6rem; font-weight: 700; line-height: 1.1; color: var(--text-primary); margin-top: 2px; }
     .fs-mood { font-family: Georgia, serif; font-style: italic; color: var(--text-secondary); margin: 4px 0 12px; }
     .fs-year { position: relative; height: 8px; border-radius: 999px; background: color-mix(in srgb, #8A5A2B 15%, transparent); overflow: visible; }
-    .fs-year-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #C8562B, #C9971E); min-width: 8px; }
+    .fs-year-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--fill-a, #C8562B), var(--fill-b, #C9971E)); min-width: 8px; }
     .fs-year span { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--ink-brown); opacity: 0.5; }
     .fs-premise { margin: 12px 0 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+    .fs-buy {
+        display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px;
+        border-radius: 999px; border: 2px dashed color-mix(in srgb, #8A5A2B 35%, transparent);
+        background: var(--bg-surface); color: var(--text-secondary); font: inherit; font-weight: 700; cursor: default;
+    }
 
     .fs-chapter { margin-bottom: 26px; }
     .fs-chapter-head small { text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-size: 0.72rem; color: var(--ink-brown); }

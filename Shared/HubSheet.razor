@@ -1,6 +1,7 @@
 @implements IAsyncDisposable
 @inject IProgressService Progress
 @inject IContentRepository Content
+@inject ICourseService Courses
 @inject IReviewService ReviewService
 @inject IConnectionsService Connections
 @inject NavigationManager Nav
@@ -56,10 +57,14 @@
                     <span class="hub-action-icon" style="color: var(--primary)"><Icon Name="network" Size="22" /></span>
                     <span>Synthesis</span>
                 </button>
-                <button class="hub-action" @onclick='() => Go("/from-scratch")'>
-                    <span class="hub-action-icon hub-scratch-icon">@((MarkupString)TopicArt.For("scratch-fire"))</span>
-                    <span>From Scratch</span>
-                </button>
+                @foreach (var c in courses)
+                {
+                    var url = $"/course/{c.Id}";
+                    <button class="hub-action" @onclick='() => Go(url)'>
+                        <span class="hub-action-icon hub-scratch-icon" style="--course-c: @c.Accent">@((MarkupString)TopicArt.For(c.Icon))</span>
+                        <span>@c.Title</span>
+                    </button>
+                }
             </div>
 
             @if (dailyPick != null || upNext.Count > 0)
@@ -120,6 +125,7 @@
     private DailyPick? dailyPick;
     private List<UpNextRow> upNext = new();
     private List<Domain> allDomains = new();
+    private List<Course> courses = new();
 
     private string DomainName(string id) => allDomains.FirstOrDefault(d => d.Id == id)?.Name ?? id;
 
@@ -165,6 +171,12 @@
         profile = await Progress.GetProfileAsync();
         dailyDone = profile.DailyChallengeDoneOn(DateTime.Now);
         reviewDueCount = await ReviewService.GetDueCountAsync();
+        try { courses = await Courses.GetCoursesAsync(); }
+        catch (Exception ex)
+        {
+            courses = new();
+            Console.Error.WriteLine($"HubSheet courses: {ex.Message}");
+        }
         StateHasChanged();
 
         try { dailyPick = await Connections.GetDailyPickAsync(profile, DateTime.Now); }
