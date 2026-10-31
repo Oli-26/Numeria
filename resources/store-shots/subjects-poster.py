@@ -51,13 +51,13 @@ for k, ((a, b), n) in enumerate(sorted(links.items(), key=lambda x: x[1])):
     op = 0.14 + 0.56 * (n / top) ** 0.5
     edges.append(f'<linearGradient id="g{k}" gradientUnits="userSpaceOnUse" x1="{x1:.0f}" y1="{y1:.0f}" x2="{x2:.0f}" y2="{y2:.0f}">'
                  f'<stop offset="0" stop-color="{hues[a]}"/><stop offset="1" stop-color="{hues[b]}"/></linearGradient>'
-                 f'<path d="M{x1:.0f},{y1:.0f} Q{qx:.0f},{qy:.0f} {x2:.0f},{y2:.0f}" stroke="url(#g{k})" stroke-width="{w:.1f}" stroke-opacity="{op:.2f}" fill="none" stroke-linecap="round"/>')
+                 f'<path class="edge" data-a="{a}" data-b="{b}" data-n="{n}" d="M{x1:.0f},{y1:.0f} Q{qx:.0f},{qy:.0f} {x2:.0f},{y2:.0f}" stroke="url(#g{k})" stroke-width="{w:.1f}" stroke-opacity="{op:.2f}" fill="none" stroke-linecap="round"/>')
 
 nodes = []
 for d in domains:
     x, y = pos[d['id']]; hue = hues.get(d['id'], '#5B6ABF')
     name = short.get(d['id'], d['name'])
-    nodes.append(f'<g transform="translate({x:.0f},{y:.0f})">'
+    nodes.append(f'<g class="node" data-id="{d["id"]}" transform="translate({x:.0f},{y:.0f})">'
                  f'<circle r="{DISC + 7}" fill="#FBF8F2" filter="url(#sh)"/><circle r="{DISC}" fill="{hue}"/>'
                  f'<svg x="-27" y="-27" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" style="color:#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{icons.get(d["icon"], "")}</svg>'
                  f'<text y="{DISC + 40}" class="nm">{name}</text><text y="{DISC + 70}" class="ct">{topics[d["id"]]} topics</text></g>')
