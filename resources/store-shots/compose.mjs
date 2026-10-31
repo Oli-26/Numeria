@@ -49,6 +49,13 @@ const browser = await chromium.launch({ executablePath: process.env.HOME + '/.ca
 try {
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   for (const [i, shot] of cfg.shots.entries()) {
+    // A poster is a finished full-frame page (its own caption and artwork) rather than a phone screen.
+    if (shot.poster) {
+      await page.goto(pathToFileURL(path.resolve(HERE, shot.poster)).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
+      await sharp(await page.screenshot({ type: 'png' })).flatten({ background: '#000' }).removeAlpha().png().toFile(path.join(outDir, `${i + 1}.png`));
+      console.log(`${i + 1}.png  ${shot.title.replace(/\*/g, '')} (poster)`);
+      continue;
+    }
     const meta = await sharp(path.resolve(HERE, shot.src)).metadata();
     const tmp = path.join(outDir, `_page${i + 1}.html`);
     fs.writeFileSync(tmp, html(shot, meta.width));

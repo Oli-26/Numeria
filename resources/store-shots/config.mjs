@@ -12,10 +12,10 @@ export default {
   },
   shots: [
     { src: 'raw/art.png', title: 'Stories the textbooks *skip*', sub: 'Hidden skulls, lost gospels, cargo cults' },
+    { poster: 'posters/subjects.html', title: 'Nineteen subjects, *all connected*' },
     { src: 'raw/scratch.png', title: 'Survive, then *rebuild*', sub: 'A survival course: fire, water, shelter, metal, power' },
     { src: 'raw/diagram.png', title: 'See how it *works*', sub: 'Clear diagrams, from knots to batteries' },
     { src: 'raw/guess.png', title: 'Guess first, *then learn why*', sub: 'Predictions that make ideas stick' },
-    { src: 'raw/subjects.png', title: 'Nineteen subjects, *one app*', sub: 'From calculus to the history of religion' },
     { src: 'raw/sources.png', title: 'Facts you can *check*', sub: '4,600 citations to papers, books and museums' },
     { src: 'raw/bigq.png', title: 'Chase the *big questions*', sub: 'Where physics, biology and philosophy meet' },
     { src: 'raw/home.png', title: 'A fresh *pick every day*', sub: 'Streaks, XP and a daily challenge' },
