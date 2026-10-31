@@ -17,13 +17,14 @@ await new Promise(r => srv.listen(0, '127.0.0.1', r));
 const base = 'http://127.0.0.1:' + srv.address().port;
 const browser = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell' });
 const SHOTS = [
-  ['home', '/'],
-  ['subjects', '/domains'],
-  ['strange', '/topic/religion-cargo-cults/lesson/rcrg-01'],
+  ['art', '/topic/art-looking/lesson/artlook-06', '!img[src$="the-ambassadors.webp"]', 16],
+  ['scratch', '/from-scratch', null, 0, 3500],
+  ['diagram', '/topic/scratch-metal/lesson/smetal-02', '.diagram', 14],
   ['guess', '/topic/chem-atoms/lesson/chem-atom-01'],
-  ['tryit', '/topic/econ-micro/lesson/econ-micro-01', '!.try-it-card', 470],
+  ['subjects', '/domains'],
+  ['sources', '/topic/scratch-power/lesson/spower-02', 'details.sources', 330, 2600, "document.querySelectorAll('details.sources').forEach(d => d.open = true)"],
   ['bigq', '/big-questions'],
-  ['graph', '/graph', null, 0, 8000],
+  ['home', '/'],
 ];
 const settle = async (page, ms = 1800) => { await page.waitForSelector('#splash', { state: 'detached', timeout: 60000 }).catch(() => {}); await page.waitForTimeout(ms); };
 try {
@@ -45,14 +46,15 @@ try {
   await page.evaluate(() => {
     const p = JSON.parse(localStorage.getItem('mathvoyager_profile'));
     Object.assign(p, { totalXp: 640, points: 420, currentStreak: 6, longestStreak: 9, totalQuestionsAnswered: 58, totalCorrectAnswers: 47, totalStudyMinutes: 95,
-      lessonsCompleted: ['calc-01', 'calc-02', 'phys-part-01', 'econ-micro-01', 'bio-eco-01', 'hpre-01', 'rcrg-01'], pathsStarted: ['earth-old'],
+      lessonsCompleted: ['calc-01', 'calc-02', 'phys-part-01', 'econ-micro-01', 'bio-eco-01', 'hpre-01', 'rcrg-01', 'sfire-01', 'sfire-02', 'sfire-03', 'sfire-04', 'sfire-05', 'said-01', 'sshelter-01', 'sshelter-02', 'sshelter-03', 'sshelter-04', 'sshelter-05', 'swater-01', 'swater-02', 'swater-03'], topicsCompleted: ['scratch-fire', 'scratch-shelter'], pathsStarted: ['earth-old'],
       currentDomain: 'history', lastActivityDate: new Date().toISOString().slice(0, 10) });
     localStorage.setItem('mathvoyager_profile', JSON.stringify(p));
   });
-  const css = '*:focus,*:focus-visible{outline:none!important}';
+  const css = '*:focus,*:focus-visible{outline:none!important}.web-banner{display:none!important}';
   const shots = process.argv[2] === 'explore' ? JSON.parse(process.argv[3]) : SHOTS;
-  for (let [n, u, sel, off, wait] of shots) {
+  for (let [n, u, sel, off, wait, js] of shots) {
     await page.goto(base + u); await settle(page, wait || 2200);
+    if (js) { await page.evaluate(js); await page.waitForTimeout(400); }
     await page.addStyleTag({ content: css });
     await page.evaluate(() => document.activeElement && document.activeElement.blur());
     if (sel && sel.startsWith('!')) {

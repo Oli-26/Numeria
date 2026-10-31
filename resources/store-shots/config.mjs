@@ -11,12 +11,13 @@ export default {
     rim: 'rgba(42,33,27,.10)', bezel: '#2A211B', shadow: 'rgba(70,45,25,.22)',
   },
   shots: [
-    { src: 'raw/strange.png', title: 'Stories the textbooks *skip*', sub: 'Cargo cults, phantom islands, lost gospels' },
-    { src: 'raw/bigq.png', title: 'Chase the *big questions*', sub: 'Where physics, biology and philosophy meet' },
-    { src: 'raw/subjects.png', title: 'Sixteen subjects, *one app*', sub: 'From calculus to the history of religion' },
+    { src: 'raw/art.png', title: 'Stories the textbooks *skip*', sub: 'Hidden skulls, lost gospels, cargo cults' },
+    { src: 'raw/scratch.png', title: 'Survive, then *rebuild*', sub: 'A survival course: fire, water, shelter, metal, power' },
+    { src: 'raw/diagram.png', title: 'See how it *works*', sub: 'Clear diagrams, from knots to batteries' },
     { src: 'raw/guess.png', title: 'Guess first, *then learn why*', sub: 'Predictions that make ideas stick' },
-    { src: 'raw/tryit.png', title: 'Play with *live simulators*', sub: 'Drag a slider, watch the idea move' },
-    { src: 'raw/graph.png', title: 'Everything is *connected*', sub: 'Every topic on one map of knowledge' },
+    { src: 'raw/subjects.png', title: 'Nineteen subjects, *one app*', sub: 'From calculus to the history of religion' },
+    { src: 'raw/sources.png', title: 'Facts you can *check*', sub: '4,600 citations to papers, books and museums' },
+    { src: 'raw/bigq.png', title: 'Chase the *big questions*', sub: 'Where physics, biology and philosophy meet' },
     { src: 'raw/home.png', title: 'A fresh *pick every day*', sub: 'Streaks, XP and a daily challenge' },
   ],
 };
