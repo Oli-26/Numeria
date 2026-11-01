@@ -17,6 +17,9 @@ public class Course
     public CoursePrice? Price { get; set; }
     // "bundled" ships in wwwroot/data; "remote" is reserved for paid content downloaded after purchase.
     public string Source { get; set; } = "bundled";
+    // Heading and Icon name for a lesson's tryIt card.
+    public string TaskLabel { get; set; } = "Field task";
+    public string TaskIcon { get; set; } = "compass-rose";
     public CourseMeter Meter { get; set; } = new();
     public List<CourseChapter> Chapters { get; set; } = new();
 

@@ -48,6 +48,8 @@ Field notes:
 
 - `icon` is a `TopicArt` key. Reusing one of the course's topic ids is the easy choice; until `Services/TopicArt.cs` has art for it, the fallback icon is drawn.
 - `accent` colours the course's icon on the Subjects card and in the Today hub.
+- `taskLabel` and `taskIcon` (optional, default "Field task" and `compass-rose`) head the card for a lesson's `tryIt`
+  task; Memory Palace uses "Memory drill" and `brain`.
 - `needs` lists topic ids in the same course. A skill opens once every skill it needs is finished (`TopicsCompleted`), and is shown as locked until then.
 - The meter runs from 0 to the last chapter's `end`. Each chapter fills its `start` to `end` share as its lessons are done, and inner chapter ends are drawn as ticks on the bar. `{n}` and `{max}` in `label` and `ariaLabel` are the current value and the end. `lessonsPerSkill` is the lesson count assumed for a skill whose topic has not landed yet, so the meter does not jump when it does.
 - `moods` are checked in order: the first one whose `below` is above the current value is shown. Leave `below` off the last one.

@@ -8,6 +8,7 @@
 @inject NavigationManager Nav
 @inject IConnectionsService Connections
 @inject IUsageCounter Usage
+@inject ICourseService Courses
 @implements IDisposable
 
 <div class="page-header">
@@ -124,7 +125,7 @@
                     {
                         var taskDone = profile?.TryItsDone.Contains(lesson.Id) == true;
                         <div class="field-task @(taskDone ? "done" : "")">
-                            <small><Icon Name="compass-rose" Size="14" /> Field task</small>
+                            <small><Icon Name="@(course?.TaskIcon ?? "compass-rose")" Size="14" /> @(course?.TaskLabel ?? "Field task")</small>
                             <p>@lesson.TryIt</p>
                             <button class="btn btn-sm @(taskDone ? "btn-outline" : "btn-primary")" disabled="@taskDone" @onclick="MarkFieldTaskDone">
                                 @(taskDone ? "Done it" : $"I've done it (+{FieldTaskXp} XP)")
@@ -333,6 +334,7 @@ else
 
     private Lesson? lesson;
     private UserProfile? profile;
+    private Course? course;
     private const int FieldTaskXp = 25;
 
     // Honour system: the task happens off-screen, so a tick is all the evidence there can be.
@@ -426,6 +428,8 @@ else
             depth = profile.ContentDepth is "simple" or "deep" ? profile.ContentDepth : "standard";
             if (lesson != null)
             {
+                course = string.IsNullOrEmpty(lesson.TryIt) ? null
+                    : await Courses.GetCourseForTopicAsync((await Content.GetTopicsAsync()).FirstOrDefault(t => t.Id == TopicId));
                 simulators = SimulatorCatalog.PlaceInLesson(lesson, TopicId);
                 // Guess-first only on a first read; revisits go straight to the text.
                 foreach (var c in lesson.Concepts.Where(c => c.Discovery != null && profile.ConceptsViewed.Contains(c.Id)))

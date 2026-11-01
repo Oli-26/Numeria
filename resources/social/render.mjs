@@ -58,13 +58,17 @@ function slidesFor(post, size) {
     ? page(size, `<div class="frame">${sl.kicker ? `<div class="kicker">${esc(sl.kicker)}</div>` : ''}<h1>${esc(sl.title)}</h1>${sl.body ? `<div class="rule"></div><p>${esc(sl.body)}</p>` : ''}</div>${brand}<div class="swipe">Swipe →</div>`)
     : page(size, `<div class="count">${i + 1} / ${total}</div><div class="frame"><h2>${esc(sl.title)}</h2>${String(sl.body).split('\n').map(b => `<p>${esc(b)}</p>`).join('')}</div>${brand}`));
   const lessons = lessonIndex[post.topicId]?.length;
+  // A post's own "cta" replaces the closing pitch, for example for a course that is not out yet.
+  const pitch = post.cta
+    ? `<div class="kicker">${esc(post.cta.kicker)}</div><h2>${esc(post.cta.title)}</h2><p>${esc(post.cta.body)}</p>`
+    : `<div class="kicker">Want the full story?</div>
+    <h2>${esc(topic?.name ?? 'Stories the textbooks skip')}</h2>
+    <p>${lessons ? `${lessons} short lessons on this in Nous.` : 'Hundreds of short lessons in Nous.'} Free, no account needed.</p>`;
   out.push(page(size, `<div class="count">${total} / ${total}</div><div class="frame">
     <img class="cta-mark" src="${file('wwwroot/nous-mark.svg')}">
-    <div class="kicker">Want the full story?</div>
-    <h2>${esc(topic?.name ?? 'Stories the textbooks skip')}</h2>
-    <p>${lessons ? `${lessons} short lessons on this in Nous.` : 'Hundreds of short lessons in Nous.'} Free, no account needed.</p>
+    ${pitch}
     <div class="link">${WEB_URL}</div>
-    <div class="muted">Follow for more stories the textbooks skip</div></div>`));
+    <div class="muted">${esc(post.cta?.muted ?? 'Follow for more stories the textbooks skip')}</div></div>`));
   return out;
 }
 
@@ -127,7 +131,7 @@ try {
         'CAPTION (TikTok / Instagram)', `${post.caption}\n\n${post.hashtags.map(h => '#' + h).join(' ')}`, '',
         'X', `${post.xPost}\n${WEB_URL}`, '',
         'REDDIT TITLE', post.redditTitle, '',
-        'LINKS', `This topic on the web: https://${WEB_URL}/topic/${post.topicId}`, `Web: https://${WEB_URL}`, `Google Play: ${PLAY_URL}`, ''].join('\n'));
+        'LINKS', ...(post.cta ? [] : [`This topic on the web: https://${WEB_URL}/topic/${post.topicId}`]), `Web: https://${WEB_URL}`, `Google Play: ${PLAY_URL}`, ''].join('\n'));
       console.log(`${name}: ${post.slides.length + 1} slides`);
     }
   }

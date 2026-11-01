@@ -26,6 +26,7 @@ public static class SubjectHues
         "psychology" => "#C0509E",
         "sociology" => "#D4A017",
         "scratch" => "#C8562B",
+        "memory" => "#5B4B9A",
         "art" => "#6F8F3A",
         _ => Fallback
     };

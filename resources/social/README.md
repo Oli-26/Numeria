@@ -36,5 +36,7 @@ Files are dated a second apart in that order, so phone galleries show them in se
 }
 ```
 
-The first slide is the cover. The renderer adds a final slide pointing to the topic in Nous.
+The first slide is the cover. The renderer adds a final slide pointing to the topic in Nous. An optional
+`"cta": {"kicker", "title", "body", "muted"}` replaces that pitch (and drops the topic link from the captions), for
+content that is not out yet: see `posts/memory-palace.json`.
 Every claim must come from the app's own lessons (which are fact-checked); no em dashes; US spelling.
