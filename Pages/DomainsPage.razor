@@ -12,16 +12,24 @@
 
 <p class="domains-intro">Pick what you're learning. Each subject has its own topics and hands-on labs.</p>
 
-@* Courses (courses.json) are not subjects: each gets a door here but never becomes the current subject. *@
-@foreach (var c in courses)
+@* Courses (courses.json) are not subjects: they get a door here but never become the current subject. Several share one door into /courses. *@
+@if (courses.Count == 1)
 {
-    var id = c.Id;
-    <button class="fs-promo card-clickable" style="--course-c: @c.Accent" @onclick='() => Nav.NavigateTo($"/course/{id}")'>
-        <span class="fs-promo-icon">@((MarkupString)TopicArt.For(c.Icon))</span>
+    <CourseDoor Course="courses[0]" />
+}
+else if (courses.Count > 1)
+{
+    <button class="fs-promo card-clickable" @onclick='() => Nav.NavigateTo("/courses")'>
+        <span class="fs-promo-stack">
+            @foreach (var c in courses.Take(3))
+            {
+                <span class="fs-promo-icon" style="--course-c: @c.Accent">@((MarkupString)TopicArt.For(c.Icon))</span>
+            }
+        </span>
         <span class="fs-promo-text">
-            <small>@c.Kicker</small>
-            <strong>@c.Title</strong>
-            <span>@c.Blurb</span>
+            <small>Special courses</small>
+            <strong>@courses.Count courses</strong>
+            <span>@CourseNames()</span>
         </span>
         <Icon Name="chevron-right" Size="18" />
     </button>
@@ -67,6 +75,12 @@
     protected override async Task OnInitializedAsync()
     {
         courses = await Courses.GetCoursesAsync();
+    }
+
+    private string CourseNames()
+    {
+        var names = courses.Select(c => c.Title).ToList();
+        return names.Count < 2 ? string.Concat(names) : string.Join(", ", names.SkipLast(1)) + " and " + names[^1];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

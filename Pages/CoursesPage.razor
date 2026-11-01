@@ -1,0 +1,23 @@
+@page "/courses"
+@inject ICourseService Courses
+@inject NavigationManager Nav
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to subjects" @onclick='() => Nav.NavigateTo("/domains")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Special courses</h1>
+</div>
+
+<p class="domains-intro">Real skills you can use, each one a map of short lessons beside the subjects.</p>
+
+<div class="courses-list">
+    @foreach (var c in courses)
+    {
+        <CourseDoor Course="c" />
+    }
+</div>
+
+@code {
+    private List<Course> courses = new();
+
+    protected override async Task OnInitializedAsync() => courses = await Courses.GetCoursesAsync();
+}

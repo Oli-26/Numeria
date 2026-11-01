@@ -57,13 +57,23 @@
                     <span class="hub-action-icon" style="color: var(--primary)"><Icon Name="network" Size="22" /></span>
                     <span>Synthesis</span>
                 </button>
-                @foreach (var c in courses)
+                @if (courses.Count > 1)
                 {
-                    var url = $"/course/{c.Id}";
-                    <button class="hub-action" @onclick='() => Go(url)'>
-                        <span class="hub-action-icon hub-scratch-icon" style="--course-c: @c.Accent">@((MarkupString)TopicArt.For(c.Icon))</span>
-                        <span>@c.Title</span>
+                    <button class="hub-action" @onclick='() => Go("/courses")'>
+                        <span class="hub-action-icon" style="color: #8A5A2B"><Icon Name="compass-rose" Size="22" /></span>
+                        <span>Courses</span>
                     </button>
+                }
+                else
+                {
+                    @foreach (var c in courses)
+                    {
+                        var url = $"/course/{c.Id}";
+                        <button class="hub-action" @onclick='() => Go(url)'>
+                            <span class="hub-action-icon hub-scratch-icon" style="--course-c: @c.Accent">@((MarkupString)TopicArt.For(c.Icon))</span>
+                            <span>@c.Title</span>
+                        </button>
+                    }
                 }
             </div>
 

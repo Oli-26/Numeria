@@ -1,0 +1,15 @@
+@inject NavigationManager Nav
+
+<button class="fs-promo card-clickable" style="--course-c: @Course.Accent" @onclick='() => Nav.NavigateTo($"/course/{Course.Id}")'>
+    <span class="fs-promo-icon">@((MarkupString)TopicArt.For(Course.Icon))</span>
+    <span class="fs-promo-text">
+        <small>@Course.Kicker</small>
+        <strong>@Course.Title</strong>
+        <span>@Course.Blurb</span>
+    </span>
+    <Icon Name="chevron-right" Size="18" />
+</button>
+
+@code {
+    [Parameter, EditorRequired] public Course Course { get; set; } = default!;
+}
