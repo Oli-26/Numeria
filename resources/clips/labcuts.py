@@ -133,6 +133,8 @@ def pi():
 CUTS = {'evolution-sim': evolution, 'era-map': era_map, 'market-sim': market, 'trolley-lab': trolley,
         'reaction-bench': reaction, 'molecule-builder': molecule, 'phase-diagram': phase, 'cell-tour': cell,
         'algorithm-race': race, 'particle-sandbox': particle, 'cosmic-scale': cosmic, 'playground': pi}
+for mod in ('labcuts_words', 'labcuts_society', 'labcuts_earth'):
+    CUTS.update(__import__(mod).cuts(S))
 
 for name in sys.argv[2:] or CUTS:
     c = CUTS[name]()

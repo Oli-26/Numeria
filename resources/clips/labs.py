@@ -32,16 +32,25 @@ END = shot('end', DARK + (".c{position:absolute;inset:0;display:flex;flex-direct
 
 # (recording, t0, t1, subject, what you do, zoom, centre y as a fraction); centres keep the window above the app's bottom nav
 LABS = [
-    ('cut-particle', 2.6, 4.4, 'Physics', 'smash particles', 1.0, .28),
-    ('cut-evolution', 5.0, 8.0, 'Biology', 'watch moths evolve', 1.0, .41),
-    ('cut-era-map', 4.0, 9.0, 'History', 'watch empires\nrise and fall', 1.0, .36),
     ('cut-reaction', 1.6, 3.4, 'Chemistry', 'drop potassium in water', 1.3, .37),
-    ('cut-pi', 4.6, 9.6, 'Mathematics', 'what if pi was 4?', 1.0, .53),
-    ('cut-market', 7.3, 10.4, 'Economics', 'tax a market', 1.0, .45),
+    ('cut-particle', 2.6, 4.4, 'Physics', 'smash particles', 1.0, .28),
+    ('cut-power-map', 3.1, 5.0, 'Politics', 'count the vote', 1.0, .42),
+    ('cut-evolution', 5.0, 8.0, 'Biology', 'watch moths evolve', 1.0, .41),
+    ('cut-cipher', 11.7, 14.3, 'Esoterica', 'crack a cipher', 1.0, .40),
     ('cut-race', 0.4, 3.0, 'Computer Science', 'hear the sorts race', 1.0, .55),
+    ('cut-rock-id', 0.5, 3.6, 'Geology', 'make limestone fizz', 1.0, .33),
+    ('cut-era-map', 4.0, 9.0, 'History', 'watch empires\nrise and fall', 1.0, .36),
+    ('cut-sound-shift', 0.7, 3.4, 'Linguistics', 'watch sounds shift', 1.0, .35),
+    ('cut-market', 7.3, 10.4, 'Economics', 'tax a market', 1.0, .45),
+    ('cut-front-page', 7.8, 9.6, 'Media', 'print the slant', 1.0, .48),
     ('cut-phase', 0.5, 4.6, 'Material Science', 'melt, boil, freeze', 1.0, .30),
-    ('cut-cell', 0.4, 3.0, 'Biology', 'tour a cell', 1.0, .47),
+    ('cut-pi', 4.6, 9.6, 'Mathematics', 'what if pi was 4?', 1.0, .53),
+    ('cut-plot', 4.6, 7.6, 'Literature', 'hear the arc', 1.0, .55),
     ('cut-molecule', 6.4, 9.0, 'Chemistry', 'build ethanol', 1.0, .45),
+    ('cut-trade-routes', 1.0, 7.4, 'History', 'trace the Silk Road', 1.0, .49),
+    ('cut-cell', 0.4, 3.0, 'Biology', 'tour a cell', 1.0, .47),
+    ('cut-etymology', 0.7, 2.9, 'Linguistics', 'trace a word back', 1.0, .56),
+    ('cut-deep-time', 8.6, 12.0, 'Geology', 'drill down to today', 1.0, .31),
     ('cut-trolley', 0.6, 3.0, 'Philosophy', 'pull the lever?', 1.0, .42),
     ('cut-cosmic', 0.5, 6.2, 'Physics', 'zoom out to\nthe universe', 1.0, .33),
 ]
@@ -49,7 +58,7 @@ LABS = [
 segs = [Card(HOOK1, 0.5, punch=1.15, flash=0.0), Card(HOOK2, 0.7, punch=1.10)]
 for rec, t0, t1, subject, line, zoom, cy in LABS:
     cy = min(cy, .44)   # a full-width window centred lower than this reaches the app's bottom nav
-    segs.append(Clip(Source(os.path.join(REC, rec)), t0, t1, dur=min(t1 - t0, 1.7), view=((0, zoom, .5, cy), (1, zoom * 1.06, .5, cy)),
+    segs.append(Clip(Source(os.path.join(REC, rec)), t0, t1, dur=min(t1 - t0, 1.5 if t1 - t0 > 4 else 1.2), view=((0, zoom, .5, cy), (1, zoom * 1.06, .5, cy)),
                      overlays=[Caption(subject, 0.05, style='pill', y=300), Caption(line, 0.2, style='tiktok', y=1600)]))
 segs.append(Card(END, 1.8, punch=1.2, flash=0.6))
 silent = os.path.join(CARDS, 'video.mp4')
