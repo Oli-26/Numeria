@@ -1,5 +1,6 @@
 @page "/front-page"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @{
     var s = stories[storyIndex];
@@ -34,7 +35,7 @@
         @foreach (var o in s.Headlines)
         {
             var opt = o;
-            <button class="fp-option @(headline?.Text == opt.Text ? "picked" : "")" @onclick="() => headline = opt">@opt.Text</button>
+            <button class="fp-option @(headline?.Text == opt.Text ? "picked" : "")" @onclick="() => Pick(0, opt)">@opt.Text</button>
         }
     </div>
 </div>
@@ -45,7 +46,7 @@
         @foreach (var o in s.Captions)
         {
             var opt = o;
-            <button class="fp-option @(caption?.Text == opt.Text ? "picked" : "")" @onclick="() => caption = opt">@opt.Text</button>
+            <button class="fp-option @(caption?.Text == opt.Text ? "picked" : "")" @onclick="() => Pick(1, opt)">@opt.Text</button>
         }
     </div>
 </div>
@@ -56,7 +57,7 @@
         @foreach (var o in s.Quotes)
         {
             var opt = o;
-            <button class="fp-option @(quote?.Text == opt.Text ? "picked" : "")" @onclick="() => quote = opt">@opt.Text</button>
+            <button class="fp-option @(quote?.Text == opt.Text ? "picked" : "")" @onclick="() => Pick(2, opt)">@opt.Text</button>
         }
     </div>
 </div>
@@ -85,15 +86,54 @@
         ? ("Accurate: nothing contradicts the facts", "#2ECC71")
         : ($"Misstates the facts: {string.Join(", ", misstated)}", "#E74C3C");
 
-    <div class="card fp-mock">
+    <div class="card fp-mock" @ref="mockEl">
         <small class="fp-stamp">Mock front page</small>
-        <h2 class="fp-headline">@headline.Text</h2>
-        <p class="fp-caption">"@caption.Text"</p>
-        <blockquote class="fp-quote">@quote.Text</blockquote>
+        <div class="fp-paper">
+            <div class="fp-masthead">The Daily Nous</div>
+            <div class="fp-dateline"><span>Late edition</span><span>@s.Topic</span><span>50¢</span></div>
+            <h2 class="fp-headline">@headline.Text</h2>
+            <div class="fp-cols">
+                <figure class="fp-photo">
+                    <div class="fp-halftone" aria-hidden="true"></div>
+                    <figcaption class="fp-caption">@caption.Text</figcaption>
+                </figure>
+                <div class="fp-col">
+                    <blockquote class="fp-quote">@quote.Text</blockquote>
+                    <div class="fp-type" aria-hidden="true"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card fp-rating">
         <h3>Newsroom assessment</h3>
+        <div class="fp-gauge" @ref="gaugeEl" role="img" aria-label="@($"Slant gauge: {leanLabel.Item1}")">
+            <svg viewBox="0 0 240 134">
+                @foreach (var (from, to, ink) in Zones)
+                {
+                    <path d="@Arc(from, to, 101)" class="fp-zone" style="@($"opacity:{N(ink)}")" />
+                }
+                <path d="@Arc(LeanMin, LeanMax, 94)" class="fp-dial-rule" />
+                @for (int v = LeanMin; v <= LeanMax; v++)
+                {
+                    <path d="@Spoke(v, 87, 94)" class="fp-mark" />
+                }
+                @foreach (var edge in new[] { -3.5, -0.5, 0.5, 3.5 })
+                {
+                    <path d="@Spoke(edge, 82, 104)" class="fp-mark major" />
+                }
+                <text x="12" y="131" class="fp-dial-word">Critical</text>
+                <text x="120" y="12" class="fp-dial-word" text-anchor="middle">Balanced</text>
+                <text x="228" y="131" class="fp-dial-word" text-anchor="end">Supportive</text>
+                <g transform="translate(120 118)">
+                    <g class="fp-needle-arm" transform="rotate(-90)">
+                        <path d="M -1.6 12 L -0.9 -84 L 0 -92 L 0.9 -84 L 1.6 12 Z" />
+                    </g>
+                    <circle r="6.5" class="fp-hub" />
+                    <circle r="2" class="fp-hub-pin" />
+                </g>
+            </svg>
+        </div>
         <div class="fp-rate-row">
             <span>Frame</span>
             <strong style="@($"color:{leanLabel.Item2}")">@leanLabel.Item1</strong>
@@ -124,7 +164,53 @@
     private int storyIndex;
     private NewsOption? headline, caption, quote;
 
-    private void Reset() { headline = null; caption = null; quote = null; }
+    private ElementReference mockEl, gaugeEl;
+    private bool pressPending;
+
+    private void Reset() { headline = null; caption = null; quote = null; pressPending = false; }
+
+    private void Pick(int slot, NewsOption o)
+    {
+        var current = slot == 0 ? headline : slot == 1 ? caption : quote;
+        if (current == o) return;
+        if (slot == 0) headline = o; else if (slot == 1) caption = o; else quote = o;
+        pressPending = headline != null && caption != null && quote != null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!pressPending || headline == null || caption == null || quote == null) return;
+        pressPending = false;
+        await JS.TryInvokeVoidAsync("FrontPage.update", mockEl, gaugeEl,
+            headline.Lean + caption.Lean + quote.Lean, headline.Sensation + caption.Sensation + quote.Sensation);
+    }
+
+    // The slant gauge spans the widest possible lean; its zones match the frame labels' thresholds, darker toward the ends.
+    private const int LeanMin = -7, LeanMax = 7;
+    private static readonly (double From, double To, double Ink)[] Zones =
+        { (-7, -3.5, 0.55), (-3.5, -0.5, 0.24), (-0.5, 0.5, 0.06), (0.5, 3.5, 0.24), (3.5, 7, 0.55) };
+
+    private static string N(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static (double X, double Y) DialPoint(double lean, double r)
+    {
+        var a = Math.PI * (lean - LeanMin) / (LeanMax - LeanMin);
+        return (120 - r * Math.Cos(a), 118 - r * Math.Sin(a));
+    }
+
+    private static string Arc(double from, double to, double r)
+    {
+        var (x0, y0) = DialPoint(from, r);
+        var (x1, y1) = DialPoint(to, r);
+        return $"M {N(x0)} {N(y0)} A {N(r)} {N(r)} 0 0 1 {N(x1)} {N(y1)}";
+    }
+
+    private static string Spoke(double lean, double r0, double r1)
+    {
+        var (x0, y0) = DialPoint(lean, r0);
+        var (x1, y1) = DialPoint(lean, r1);
+        return $"M {N(x0)} {N(y0)} L {N(x1)} {N(y1)}";
+    }
 
     private record NewsOption(string Text, int Lean, int Sensation, bool Accurate, string Why);
     private record Story(string Topic, string Subject, string Event, string LessonAfter, List<NewsOption> Headlines, List<NewsOption> Captions, List<NewsOption> Quotes);
@@ -229,9 +315,30 @@
     .fp-option.picked { background: color-mix(in srgb, var(--primary) 10%, transparent); border-color: var(--primary); color: var(--text-primary); }
 
     .fp-mock { padding: 14px; }
-    .fp-headline { font-family: 'Cinzel', Georgia, serif; font-size: 1.4rem; line-height: 1.15; margin: 4px 0 10px; color: var(--text-primary); }
-    .fp-caption { font-size: 0.85rem; color: var(--text-secondary); font-style: italic; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-    .fp-quote { margin: 0; padding-left: 12px; border-left: 3px solid var(--accent); font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
+    .fp-paper { --ink: var(--text-primary); background: color-mix(in srgb, var(--bg-surface) 65%, var(--bg-card)); color: var(--ink); padding: 10px 12px 12px; border: 1px solid var(--border); border-radius: 3px; box-shadow: 0 1px 3px var(--shadow); }
+    .fp-masthead { font-family: 'IM Fell English', Georgia, serif; font-size: 1.85rem; line-height: 1.05; text-align: center; border-top: 3px double var(--ink); padding-top: 6px; letter-spacing: 0.01em; }
+    .fp-dateline { display: flex; justify-content: space-between; margin-top: 5px; padding: 3px 0; border-top: 1px solid var(--ink); border-bottom: 2px solid var(--ink); font-family: Georgia, serif; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); }
+    .fp-headline { font-family: 'Cinzel', Georgia, serif; font-size: 1.32rem; line-height: 1.12; margin: 10px 0 8px; color: var(--ink); text-align: center; text-wrap: balance; }
+    .fp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid var(--ink); padding-top: 8px; }
+    .fp-photo { margin: 0; }
+    .fp-halftone { aspect-ratio: 4 / 3; border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+        background: radial-gradient(circle, color-mix(in srgb, var(--ink) 38%, transparent) 0.9px, transparent 1.3px) 0 0 / 4px 4px,
+            linear-gradient(160deg, color-mix(in srgb, var(--ink) 4%, transparent), color-mix(in srgb, var(--ink) 22%, transparent)); }
+    .fp-caption { font-family: Georgia, serif; font-size: 0.72rem; color: var(--text-secondary); font-style: italic; line-height: 1.35; margin: 5px 0 0; }
+    .fp-col { border-left: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); padding-left: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .fp-quote { margin: 0; font-family: Georgia, serif; font-size: 0.8rem; font-style: italic; color: var(--ink); line-height: 1.4; padding-bottom: 7px; border-bottom: 1px solid var(--ink); }
+    .fp-type { flex: 1; min-height: 40px; background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--ink) 22%, transparent) 0 2px, transparent 2px 7px); }
+
+    .fp-gauge { max-width: 250px; margin: 0 auto 6px; }
+    .fp-gauge svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .fp-zone { fill: none; stroke: var(--text-primary); stroke-width: 6; }
+    .fp-dial-rule { fill: none; stroke: var(--text-primary); stroke-width: 1; }
+    .fp-mark { stroke: var(--text-primary); stroke-width: 1; }
+    .fp-mark.major { stroke-width: 1.6; }
+    .fp-dial-word { font-family: Georgia, serif; font-size: 9px; font-style: italic; fill: var(--text-secondary); }
+    .fp-needle-arm path { fill: var(--text-primary); }
+    .fp-hub { fill: var(--bg-card); stroke: var(--text-primary); stroke-width: 1.6; }
+    .fp-hub-pin { fill: var(--text-primary); }
 
     .fp-rating { padding: 14px; }
     .fp-rating h3 { margin: 0 0 10px; font-size: 0.95rem; }

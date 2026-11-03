@@ -1,5 +1,6 @@
 @page "/sound-shift"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @{
     var preset = CurrentPreset();
@@ -21,7 +22,7 @@
     <div class="ss-laws">
         @foreach (var l in lawNames)
         {
-            <button class="ss-law @(law == l.Law ? "active" : "")" @onclick="() => law = l.Law">@l.Name</button>
+            <button class="ss-law @(law == l.Law ? "active" : "")" @onclick="() => SetLaw(l.Law)">@l.Name</button>
         }
     </div>
 
@@ -35,6 +36,14 @@
         }
     </div>
 
+    <div class="ss-stage @(derivation.Source.Count == 0 ? "ss-stage-empty" : "")">
+        <div class="ss-stage-word ss-ipa" aria-hidden="true" @ref="stageEl"></div>
+        <div class="ss-stage-foot">
+            <span class="ss-stage-cap" aria-hidden="true"></span>
+            <button class="ss-replay" @onclick="Replay"><Icon Name="rotate" Size="14" /> @(playedSig == Sig() ? "Replay" : "Play")</button>
+        </div>
+    </div>
+
     @if (law == Grimm)
     {
         <input class="ss-input ss-ipa" @bind="input" @bind:event="oninput" placeholder="e.g. pṓds" maxlength="40" aria-label="PIE form" autocapitalize="off" autocomplete="off" spellcheck="false" />
@@ -45,13 +54,13 @@
                     <span class="ss-pal-label">@row.Label</span>
                     @foreach (var sym in row.Symbols)
                     {
-                        <button class="ss-sym ss-ipa" @onclick="() => input += sym">@sym</button>
+                        <button class="ss-sym ss-ipa" @onclick="() => Type(input + sym)">@sym</button>
                     }
                 </div>
             }
             <div class="ss-pal-row">
                 <button class="ss-sym ss-sym-wide" aria-label="Delete last sound" @onclick="Backspace">⌫</button>
-                <button class="ss-sym ss-sym-wide" @onclick='() => input = ""'>Clear</button>
+                <button class="ss-sym ss-sym-wide" @onclick='() => Type("")'>Clear</button>
             </div>
         </div>
         <label class="ss-toggle"><input type="checkbox" @bind="verner" /> Apply Verner's Law after Grimm</label>
@@ -114,7 +123,7 @@
             {
                 @NoChange(d)
             }
-            <div class="ss-rule @(st.IsOther ? "ss-rule-other" : "") @(st.Fired ? "" : "ss-rule-idle")">
+            <div class="ss-rule @(st.IsOther ? "ss-rule-other" : "") @(st.Fired ? "" : "ss-rule-idle")" data-step="@n">
                 <div class="ss-rule-head">
                     <span class="ss-num">@(st.IsOther ? "+" : (++stepNo).ToString())</span>
                     <strong>@st.Name</strong>
@@ -258,14 +267,80 @@
         if (law == Grimm) input = p.Source;
         else if (law == VowelShift) vowelPreset = p;
         else germanPreset = p;
+        Replay();
     }
 
-    private void Backspace()
+    private void SetLaw(SoundShiftEngine.Law l)
+    {
+        law = l;
+        Replay();
+    }
+
+    private async Task Type(string next)
+    {
+        input = next;
+        await JS.TryInvokeVoidAsync("SoundShift.key");
+    }
+
+    private async Task Backspace()
     {
         var segs = SoundShiftEngine.Tokenize(input, pie: true);
         if (segs.Count == 0) return;
         segs.RemoveAt(segs.Count - 1);
-        input = SoundShiftEngine.Join(segs);
+        await Type(SoundShiftEngine.Join(segs));
+    }
+
+    // ---- the stage: the derivation played back on one word (sound-shift.js) ----
+    private ElementReference stageEl;
+    private string? stagedSig, playedSig;
+    private bool playNext;
+
+    private string Sig() => $"{law}|{verner}|{(law == Grimm ? input : CurrentPreset()?.Word)}";
+
+    private void Replay()
+    {
+        playNext = true;
+        playedSig = Sig();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var sig = Sig();
+        if (sig == stagedSig && !playNext) return;
+        var play = playNext;
+        playNext = false;
+        stagedSig = sig;
+        await JS.TryInvokeVoidAsync("SoundShift.stage", stageEl, StageData(), play);
+    }
+
+    private object StageData()
+    {
+        var preset = CurrentPreset();
+        var d = Derive(preset);
+        string[] Shown(IEnumerable<string> segs) => segs.Select(SoundShiftEngine.Show).ToArray();
+        var (open, close) = law == VowelShift ? ("/", "/") : law == Grimm ? ("*", "") : ("", "");
+        var label = law switch
+        {
+            Grimm when preset is not null && verner => $"Proto-Germanic, English {preset.Word}",
+            Grimm => verner ? "After Grimm and Verner" : "After Grimm alone",
+            VowelShift => $"Modern English {preset!.Word}",
+            _ => $"Old High German, modern German {preset!.Sister}",
+        };
+        return new
+        {
+            open, close,
+            srcOpen = law == VowelShift ? "/" : "*",
+            srcClose = law == VowelShift ? "/" : "",
+            src = Shown(d.Source),
+            srcLabel = SourceLabel,
+            label,
+            steps = d.Steps.Select((st, n) => (st, n)).Where(x => x.st.Fired).Select(x => new
+            {
+                x.n, name = x.st.Name,
+                before = Shown(x.st.Before), after = Shown(x.st.After),
+                cb = x.st.ChangedBefore, ca = x.st.ChangedAfter,
+            }).ToArray(),
+        };
     }
 
     private static string SegClass(int k, IReadOnlyList<int> hits, string hitClass, IReadOnlyList<int>? bad) =>
@@ -306,6 +381,18 @@
     .ss-toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary); }
 
     .ss-result { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+
+    .ss-stage { margin-top: 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 12px 8px; text-align: center; }
+    .ss-stage-empty { display: none; }
+    .ss-stage-word { font-size: 2.5rem; line-height: 1.25; min-height: 1.25em; color: var(--text-primary); display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; }
+    .ss-stage-word.ss-sz-m { font-size: 2rem; }
+    .ss-stage-word.ss-sz-s { font-size: 1.5rem; }
+    .ss-sg { display: inline-block; padding: 0 1px; border-radius: 6px; white-space: pre; }
+    .ss-sg.ss-new { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+    .ss-mark { color: var(--text-muted); }
+    .ss-stage-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; min-height: 30px; }
+    .ss-stage-cap { font-size: 0.78rem; color: var(--text-secondary); text-align: left; line-height: 1.35; }
+    .ss-replay { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); font-size: 0.78rem; font-family: inherit; cursor: pointer; }
     .ss-blurb { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
     .ss-blurb p { margin: 0 0 8px; }
     .ss-blurb p:last-child { margin-bottom: 0; }
@@ -326,7 +413,8 @@
     .ss-bad { color: var(--error); text-decoration: underline wavy var(--error); }
     .ss-kept { border: 1px dashed var(--border); padding: 0 4px; margin-right: 2px; }
 
-    .ss-rule { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+    .ss-rule { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s; }
+    .ss-rule.ss-live { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background-color: color-mix(in srgb, var(--accent) 7%, transparent); }
     .ss-rule-other { border-style: dashed; background: color-mix(in srgb, var(--warning) 6%, transparent); }
     .ss-rule-idle { opacity: 0.7; }
     .ss-rule-head { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-primary); }

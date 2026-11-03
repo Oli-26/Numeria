@@ -1,5 +1,6 @@
 @page "/power-map"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -14,7 +15,7 @@
 <div class="card pm-controls">
     <div class="pm-row">
         <label>Voters</label>
-        <select @bind="distribution" @bind:after="Resimulate">
+        <select @bind="distribution" @bind:after="Recount">
             <option value="normal">Bell-curve electorate</option>
             <option value="bimodal">Polarized (bimodal)</option>
             <option value="left-skew">Left-leaning (long right tail)</option>
@@ -23,7 +24,7 @@
     </div>
     <div class="pm-row">
         <label>Candidates</label>
-        <select @bind="numCandidates" @bind:after="RefreshCandidates">
+        <select @bind="numCandidates" @bind:after="CandidatesChanged">
             <option value="2">2 candidates</option>
             <option value="3">3 candidates</option>
             <option value="5">5 candidates</option>
@@ -31,23 +32,23 @@
     </div>
     <div class="pm-row">
         <label>System</label>
-        <select @bind="system">
+        <select @bind="system" @bind:after="QueueCount">
             <option value="plurality">First past the post</option>
             <option value="approval">Approval (within 25%)</option>
             <option value="proportional">Proportional (10 seats, D'Hondt)</option>
             <option value="irv">Instant-runoff (ranked choice)</option>
         </select>
     </div>
-    <button class="btn btn-outline pm-resetbtn" @onclick="Resimulate">Resimulate voters</button>
+    <button class="btn btn-outline pm-resetbtn" @onclick="Recount">Resimulate voters</button>
 </div>
 
-<div class="card pm-stage">
+<div class="card pm-stage" @ref="stageEl">
     <div class="pm-axis-labels">
         <span>← Left</span><span>Center</span><span>Right →</span>
     </div>
     <svg viewBox="0 0 320 200" class="pm-svg">
         @{
-            var bins = 32;
+            var bins = Bins;
             var hist = Histogram(bins);
             var maxBin = hist.Max();
         }
@@ -57,14 +58,16 @@
             var w = 280.0 / bins - 1;
             var h = (hist[i] * 90.0 / Math.Max(1, maxBin));
             var col = WinningColorAtBin(i, bins);
-            <rect x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="@((130 - h).ToString(System.Globalization.CultureInfo.InvariantCulture))" width="@w.ToString(System.Globalization.CultureInfo.InvariantCulture)" height="@h.ToString(System.Globalization.CultureInfo.InvariantCulture)" fill="@col" opacity="0.55"/>
+            <rect class="pm-bin" x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="@((130 - h).ToString(System.Globalization.CultureInfo.InvariantCulture))" width="@w.ToString(System.Globalization.CultureInfo.InvariantCulture)" height="@h.ToString(System.Globalization.CultureInfo.InvariantCulture)" fill="@col" opacity="0.55"/>
         }
         <line x1="20" y1="130" x2="300" y2="130" stroke="var(--text-muted)" stroke-width="1"/>
+        <line class="pm-front" x1="0" y1="34" x2="0" y2="134" />
+        <text class="pm-round" x="160" y="22" text-anchor="middle"></text>
 
         @foreach (var c in candidates)
         {
             var cx = 20 + c.Position * 280;
-            <g style="cursor:pointer" @onclick="() => Selected(c)">
+            <g class="pm-cand" style="cursor:pointer" @onclick="() => Selected(c)">
                 <circle cx="@cx.ToString(System.Globalization.CultureInfo.InvariantCulture)" cy="160" r="11" fill="@c.Color" stroke="white" stroke-width="2"/>
                 <text x="@cx.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="184" font-size="9" text-anchor="middle" fill="var(--text-secondary)">@c.Label</text>
             </g>
@@ -73,10 +76,10 @@
 
     <label class="pm-slider-label">@(selected?.Label ?? "Select a candidate"): @((selected?.Position * 100).GetValueOrDefault().ToString("0"))</label>
     <input type="range" min="0" max="1" step="0.01" disabled="@(selected == null)"
-           @bind="SelectedPos" @bind:event="oninput" />
+           @bind="SelectedPos" @bind:event="oninput" @onchange="SliderReleased" />
 </div>
 
-<div class="card pm-results">
+<div class="card pm-results" @ref="resultsEl">
     <h3>@ResultHeading</h3>
     @{ var res = Compute(); }
     <div class="pm-bars">
@@ -87,12 +90,25 @@
                 <span style="@($"color:{c.Color}")">●</span>
                 <span class="pm-bar-name">@c.Label</span>
                 <div class="pm-bar"><div class="pm-bar-fill" style="@($"background:{c.Color};width:{pct * 100:0.#}%")"></div></div>
-                <strong>@BarText(res, c.Label, pct)</strong>
+                <strong><span class="pm-pct">@($"{pct * 100:0.#}%")</span>@SeatText(res, c.Label)</strong>
             </div>
         }
     </div>
+    @if (res.SeatOrder != null)
+    {
+        <div class="pm-seats" aria-hidden="true">
+            @foreach (var c in candidates.OrderBy(x => x.Position))
+            {
+                for (int s = 0; s < res.SeatOrder.Count; s++)
+                {
+                    if (res.SeatOrder[s] != c.Label) continue;
+                    <span class="pm-seat" data-order="@s" style="@($"background:{c.Color}")"></span>
+                }
+            }
+        </div>
+    }
     <div class="pm-readout">
-        <strong>@res.Winner</strong>
+        <strong class="pm-winner">@res.Winner</strong>
         <p>@SystemBlurb</p>
             @if (res.Detail != null) { <p class="pm-detail">@res.Detail</p> }
     </div>
@@ -100,6 +116,7 @@
 
 @code {
     private const int Seats = 10;
+    private const int Bins = 32;
     private const double ApprovalRadius = 0.25;
     private const double Eps = 1e-9;
 
@@ -110,11 +127,14 @@
     private Candidate? selected;
     private double[] voters = Array.Empty<double>();
     private Random rng = new(7);
+    private ElementReference stageEl, resultsEl;
+    private bool countPending;
+    private CancellationTokenSource? releaseCts;
 
     private double SelectedPos
     {
         get => selected?.Position ?? 0.5;
-        set { if (selected != null) selected.Position = Math.Clamp(value, 0, 1); }
+        set { releaseCts?.Cancel(); if (selected != null) selected.Position = Math.Clamp(value, 0, 1); }
     }
 
     private string ResultHeading => system switch
@@ -133,15 +153,78 @@
         _ => "Whoever gets the most votes wins. Duverger's Law: this collapses to 2-party competition over time."
     };
 
-    private record Result(Dictionary<string, double> Bars, Dictionary<string, int>? Seats, string Winner, string? Detail);
+    private record Result(Dictionary<string, double> Bars, Dictionary<string, int>? Seats, string Winner, string? Detail, List<string>? SeatOrder = null);
 
-    private static string BarText(Result res, string label, double pct) =>
-        res.Seats != null ? $"{pct * 100:0.#}% / {res.Seats.GetValueOrDefault(label)}" : $"{pct * 100:0.#}%";
+    private static string SeatText(Result res, string label) => res.Seats != null ? $" / {res.Seats.GetValueOrDefault(label)}" : "";
 
     protected override void OnInitialized()
     {
         Resimulate();
         RefreshCandidates();
+    }
+
+    private void Recount() { Resimulate(); countPending = true; }
+    private void CandidatesChanged() { RefreshCandidates(); countPending = true; }
+    private void QueueCount() => countPending = true;
+
+    // A drag only ticks; the full count runs once the slider has been let go for a moment.
+    private async Task SliderReleased()
+    {
+        releaseCts?.Cancel();
+        var cts = releaseCts = new CancellationTokenSource();
+        try { await Task.Delay(300, cts.Token); } catch (TaskCanceledException) { return; }
+        countPending = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await JS.TryInvokeVoidAsync("PowerMap.attach", stageEl);
+        if (!countPending) return;
+        countPending = false;
+        await JS.TryInvokeVoidAsync("PowerMap.count", stageEl, resultsEl, CountPlan());
+    }
+
+    // What the count animation needs: voters per bin, each bin's share of every candidate's final bar, and for
+    // instant-runoff the histogram colors after each elimination.
+    private object CountPlan()
+    {
+        var hist = Histogram(Bins);
+        var colors = Enumerable.Range(0, Bins).Select(b => WinningColorAtBin(b, Bins)).ToArray();
+        var contrib = Enumerable.Range(0, Bins).Select(_ => new double[candidates.Count]).ToArray();
+        foreach (var v in voters)
+        {
+            var row = contrib[Math.Min(Bins - 1, (int)(v * Bins))];
+            if (system == "approval")
+            {
+                for (int i = 0; i < candidates.Count; i++)
+                    if (Math.Abs(candidates[i].Position - v) < ApprovalRadius) row[i] += 1.0 / voters.Length;
+            }
+            else
+            {
+                var near = Nearest(candidates, v);
+                foreach (var c in near) row[candidates.IndexOf(c)] += 1.0 / near.Count / voters.Length;
+            }
+        }
+        var rounds = new List<object>();
+        string? final = null;
+        if (system == "irv")
+        {
+            var (outs, winner, share) = IrvSteps();
+            var alive = candidates.ToList();
+            for (int r = 0; r < outs.Count; r++)
+            {
+                alive.Remove(outs[r]);
+                var left = alive.ToList();
+                rounds.Add(new
+                {
+                    label = $"Round {r + 2}: {outs[r].Label} out",
+                    cand = candidates.IndexOf(outs[r]),
+                    colors = Enumerable.Range(0, Bins).Select(b => Closest(left, (b + 0.5) / Bins)?.Color ?? "").ToArray()
+                });
+            }
+            if (outs.Count > 0) final = $"Final round: {winner} {share * 100:0}%";
+        }
+        return new { hist, total = voters.Length, colors, contrib, rounds, final };
     }
 
     private void Resimulate()
@@ -215,12 +298,13 @@
         return h;
     }
 
-    private string WinningColorAtBin(int bin, int bins)
+    private string WinningColorAtBin(int bin, int bins) => Closest(candidates, (bin + 0.5) / bins)?.Color ?? "var(--bg-card)";
+
+    private static Candidate? Closest(IEnumerable<Candidate> pool, double pos)
     {
-        var pos = (bin + 0.5) / bins;
         Candidate? best = null; double bestD = double.MaxValue;
-        foreach (var c in candidates) { var d = Math.Abs(pos - c.Position); if (d < bestD) { bestD = d; best = c; } }
-        return best?.Color ?? "var(--bg-card)";
+        foreach (var c in pool) { var d = Math.Abs(pos - c.Position); if (d < bestD) { bestD = d; best = c; } }
+        return best;
     }
 
     // Equidistant voters split evenly between the tied candidates.
@@ -275,15 +359,17 @@
             {
                 var shares = Normalise(Tally(candidates));
                 var seats = shares.ToDictionary(kv => kv.Key, _ => 0);
+                var order = new List<string>();
                 for (int s = 0; s < Seats; s++)
                 {
                     var next = shares.OrderByDescending(kv => kv.Value / (seats[kv.Key] + 1.0)).First().Key;
                     seats[next]++;
+                    order.Add(next);
                 }
                 var summary = string.Join(", ", seats.Where(kv => kv.Value > 0).OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key} {kv.Value}"));
                 var lead = seats.OrderByDescending(kv => kv.Value).First();
                 var detail = lead.Value * 2 > Seats ? $"{lead.Key} holds a majority." : "No candidate holds a majority: a coalition is needed.";
-                return new Result(shares, seats, $"Seats ({Seats}, D'Hondt): {summary}", detail);
+                return new Result(shares, seats, $"Seats ({Seats}, D'Hondt): {summary}", detail, order);
             }
             case "irv":
                 return ComputeIrv();
@@ -298,23 +384,28 @@
     private Result ComputeIrv()
     {
         var first = Normalise(Tally(candidates));
+        var (eliminated, winner, _) = IrvSteps();
+        var detail = eliminated.Count == 0
+            ? "Won a majority in round 1."
+            : $"Eliminated in order: {string.Join(", ", eliminated.Select(c => c.Label))}.";
+        return new Result(first, null, $"Winner under instant-runoff: {winner}", detail);
+    }
+
+    // Eliminates the last-place candidate until someone holds a majority; Share is the winner's final-round share.
+    private (List<Candidate> Out, string Winner, double Share) IrvSteps()
+    {
         var alive = candidates.ToList();
-        var eliminated = new List<string>();
-        string winner;
+        var eliminated = new List<Candidate>();
         while (true)
         {
             var tally = Tally(alive);
             var top = tally.OrderByDescending(kv => kv.Value).First();
-            if (alive.Count == 1 || top.Value * 2 > voters.Length) { winner = top.Key; break; }
+            if (alive.Count == 1 || top.Value * 2 > voters.Length) return (eliminated, top.Key, top.Value / voters.Length);
             var low = tally.Values.Min();
             var loser = alive.First(c => tally[c.Label] - low < Eps);
-            eliminated.Add(loser.Label);
+            eliminated.Add(loser);
             alive.Remove(loser);
         }
-        var detail = eliminated.Count == 0
-            ? "Won a majority in round 1."
-            : $"Eliminated in order: {string.Join(", ", eliminated)}.";
-        return new Result(first, null, $"Winner under instant-runoff: {winner}", detail);
     }
 
     private class Candidate
@@ -346,11 +437,17 @@
     .pm-results { padding: 14px; }
     .pm-results h3 { margin: 0 0 10px; font-size: 0.95rem; }
     .pm-bars { display: flex; flex-direction: column; gap: 6px; }
-    .pm-bar-row { display: grid; grid-template-columns: 14px 60px 1fr 50px; align-items: center; gap: 6px; font-size: 0.78rem; }
+    .pm-bar-row { display: grid; grid-template-columns: 14px 60px 1fr minmax(50px, auto); align-items: center; gap: 6px; font-size: 0.78rem; }
     .pm-bar-name { color: var(--text-secondary); font-weight: 600; }
     .pm-bar { height: 8px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; }
     .pm-bar-fill { height: 100%; transition: width 0.3s ease; }
-    .pm-bar-row strong { text-align: right; font-variant-numeric: tabular-nums; }
+    .pm-bar-row strong { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    .pm-front { stroke: var(--text-primary); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .pm-round { font-size: 9.5px; font-weight: 700; fill: var(--text-secondary); letter-spacing: 0.02em; }
+
+    .pm-seats { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+    .pm-seat { width: 15px; height: 15px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-primary) 18%, transparent); }
 
     .pm-readout { margin-top: 12px; padding: 10px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); }
     .pm-readout strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }

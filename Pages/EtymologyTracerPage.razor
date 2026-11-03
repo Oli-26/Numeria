@@ -67,10 +67,11 @@
                     var w = maxX - minX;
                     var h = layout.Height;
                 }
-                <svg class="etym-tree" viewBox="@($"{minX} 0 {w} {h}")" preserveAspectRatio="xMidYMin meet" style="@($"min-width:{Math.Max((int)w, 320)}px;height:{(int)h}px")">
+                <svg class="etym-tree etym-armed" @key="selectedWord" @ref="treeEl" viewBox="@($"{minX} 0 {w} {h}")" preserveAspectRatio="xMidYMin meet" style="@($"min-width:{Math.Max((int)w, 320)}px;height:{(int)h}px")">
                     @foreach (var e in layout.Edges)
                     {
-                        <line x1="@e.X1.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                        <g class="etym-e" data-child="@e.ChildId">
+                        <line class="etym-line" x1="@e.X1.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                               y1="@e.Y1.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                               x2="@e.X2.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                               y2="@e.Y2.ToString(System.Globalization.CultureInfo.InvariantCulture)"
@@ -79,7 +80,7 @@
                         {
                             var midX = e.X2;
                             var midY = e.Y2 - 14;
-                            <g>
+                            <g class="etym-lbl">
                                 <rect x="@((midX - 60).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                                       y="@((midY - 9).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                                       width="120" height="18" rx="6"
@@ -89,13 +90,14 @@
                                       text-anchor="middle" font-size="9" fill="var(--text-secondary)">@Truncate(e.Label, 22)</text>
                             </g>
                         }
+                        </g>
                     }
                     @foreach (var n in layout.Nodes)
                     {
                         var fill = n.IsMain ? "var(--primary)" : (n.IsRoot ? "var(--accent)" : "var(--bg-card)");
                         var textColor = n.IsMain || n.IsRoot ? "white" : "var(--text-primary)";
                         var subColor = n.IsMain || n.IsRoot ? "rgba(255,255,255,0.85)" : "var(--text-muted)";
-                        <g>
+                        <g class="etym-n" data-id="@n.Id" data-parent="@n.ParentId" data-depth="@n.Depth" data-main="@(n.IsMain ? "1" : null)">
                             <rect x="@((n.X - 75).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                                   y="@((n.Y - 24).ToString(System.Globalization.CultureInfo.InvariantCulture))"
                                   width="150" height="48" rx="8"
@@ -143,11 +145,21 @@
 @code {
     private string searchText = string.Empty;
     private string? selectedWord;
+    private bool traceNext;
+    private ElementReference treeEl;
 
     private void Pick(string w)
     {
         selectedWord = w;
         searchText = string.Empty;
+        traceNext = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!traceNext) return;
+        traceNext = false;
+        await JS.TryInvokeVoidAsync("Etymology.trace", treeEl);
     }
 
     private IEnumerable<string> Suggestions() =>
@@ -163,8 +175,8 @@
     private record Node(string Id, string LangPeriod, string Form, string Meaning, string? ParentId, string? EdgeLabel, bool IsMain = false, bool IsRoot = false);
     private record Family(string Root, string Gloss, string? Note, List<Node> Nodes);
 
-    private record PosNode(double X, double Y, string LangPeriod, string Form, string Meaning, bool IsMain, bool IsRoot);
-    private record PosEdge(double X1, double Y1, double X2, double Y2, string? Label);
+    private record PosNode(string Id, string? ParentId, int Depth, double X, double Y, string LangPeriod, string Form, string Meaning, bool IsMain, bool IsRoot);
+    private record PosEdge(string ChildId, double X1, double Y1, double X2, double Y2, string? Label);
     private record TreeLayout(List<PosNode> Nodes, List<PosEdge> Edges, double Height);
 
     private TreeLayout Layout(Family family)
@@ -175,6 +187,7 @@
         var children = family.Nodes.Where(n => n.ParentId != null)
             .GroupBy(n => n.ParentId!).ToDictionary(g => g.Key, g => g.ToList());
         var posMap = new Dictionary<string, (double X, double Y)>();
+        var depthOf = new Dictionary<string, int>();
         double nextLeaf = 0;
         int maxDepth = 0;
 
@@ -189,6 +202,7 @@
             }
             else x = nextLeaf++ * slotW;
             posMap[n.Id] = (x, 40 + depth * rowH);
+            depthOf[n.Id] = depth;
             return x;
         }
 
@@ -196,7 +210,7 @@
             Place(root, 0);
 
         var posNodes = family.Nodes.Select(n => new PosNode(
-            posMap[n.Id].X, posMap[n.Id].Y, n.LangPeriod, n.Form, n.Meaning, n.IsMain, n.IsRoot
+            n.Id, n.ParentId, depthOf[n.Id], posMap[n.Id].X, posMap[n.Id].Y, n.LangPeriod, n.Form, n.Meaning, n.IsMain, n.IsRoot
         )).ToList();
 
         var posEdges = new List<PosEdge>();
@@ -206,7 +220,7 @@
             {
                 var p = posMap[n.ParentId];
                 var c = posMap[n.Id];
-                posEdges.Add(new PosEdge(p.X, p.Y + 24, c.X, c.Y - 24, n.EdgeLabel));
+                posEdges.Add(new PosEdge(n.Id, p.X, p.Y + 24, c.X, c.Y - 24, n.EdgeLabel));
             }
         }
 
@@ -483,6 +497,14 @@
         padding: 8px 0; margin-bottom: 12px;
     }
     .etym-tree { display: block; }
+    .etym-n { transform-box: fill-box; transform-origin: center; }
+    .etym-e.etym-trace .etym-line { stroke: var(--accent); stroke-width: 2.5; }
+    .etym-armed .etym-n:not(.on), .etym-armed .etym-e:not(.on) { opacity: 0; animation: etym-late 0.3s 5s forwards; }
+    .etym-armed .etym-n.on { animation: etym-pop 0.34s cubic-bezier(.3,1.5,.6,1) both; }
+    .etym-armed .etym-e.on .etym-lbl { animation: etym-late 0.3s 0.1s both; }
+    .etym-armed.etym-still .etym-n.on, .etym-armed.etym-still .etym-e.on .etym-lbl { animation: none; }
+    @@keyframes etym-pop { from { opacity: 0; transform: scale(0.55); } to { opacity: 1; transform: none; } }
+    @@keyframes etym-late { from { opacity: 0; } to { opacity: 1; } }
 
     .etym-legend {
         display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;

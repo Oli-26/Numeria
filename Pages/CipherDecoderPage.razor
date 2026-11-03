@@ -1,5 +1,6 @@
 @page "/cipher-decoder"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @{
     var p = puzzles[index];
@@ -22,7 +23,7 @@
     </div>
     @if (p.Kind == CipherKind.Pigpen)
     {
-        <div class="cd-cipher cd-glyphs" role="img" aria-label="Pigpen cipher glyphs">
+        <div class="cd-cipher cd-glyphs" role="img" aria-label="Pigpen cipher glyphs" @key="index" @ref="cipherEl">
             @foreach (var g in p.Glyphs)
             {
                 if (g is { } glyph) { <span class="cd-glyph">@((MarkupString)Ciphers.PigpenSvg(glyph, 30))</span> }
@@ -41,11 +42,11 @@
     }
     else
     {
-        <div class="cd-cipher">@p.Ciphertext</div>
+        <div class="cd-cipher" @key="index" @ref="cipherEl">@p.Ciphertext</div>
     }
     <div class="cd-hint">@((MarkupString)p.Hint)</div>
 
-    <input class="cd-input @(feedback == "wrong" ? "cd-wrong" : "")" placeholder="Plaintext..."
+    <input class="cd-input @(feedback == "wrong" ? "cd-wrong" : "")" placeholder="Plaintext..." @ref="inputEl"
            @bind="answer" @bind:event="oninput" @onkeyup="OnKey"/>
 
     <div class="cd-actions">
@@ -79,20 +80,49 @@
     private string answer = "";
     private string? feedback;
     private bool revealed;
+    private bool decoded;
+    private string? pendingFx;
+    private ElementReference cipherEl, inputEl;
 
     private void OnKey(KeyboardEventArgs e) { if (e.Key == "Enter") Check(); }
 
     private void Check()
     {
-        feedback = puzzles[index].Accepts(answer) ? "right" : "wrong";
+        var right = puzzles[index].Accepts(answer);
+        feedback = right ? "right" : "wrong";
+        pendingFx = !right ? "wrong" : decoded ? "again" : "decode";
+        decoded |= right;
     }
 
-    private void ShowReveal() => revealed = true;
+    private void ShowReveal()
+    {
+        revealed = true;
+        if (!decoded) { decoded = true; pendingFx = "decode"; }
+    }
 
-    private void Move(int delta)
+    private async Task Move(int delta)
     {
         index = Math.Clamp(index + delta, 0, puzzles.Count - 1);
-        answer = ""; feedback = null; revealed = false;
+        answer = ""; feedback = null; revealed = false; decoded = false;
+        await JS.TryInvokeVoidAsync("CipherDecoder.cancel");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (pendingFx is not { } fx) return;
+        pendingFx = null;
+        var p = puzzles[index];
+        if (fx == "wrong") await JS.TryInvokeVoidAsync("CipherDecoder.wrong", inputEl);
+        else if (fx == "again") await JS.TryInvokeVoidAsync("CipherDecoder.solvedAgain");
+        else if (p.Kind == CipherKind.Pigpen) await JS.TryInvokeVoidAsync("CipherDecoder.flip", cipherEl, p.Plaintext);
+        else
+        {
+            // A layered puzzle stops on its middle layer (Atbash undone, Caesar still on) before the plaintext.
+            var layers = p.Kind == CipherKind.Layered
+                ? new[] { p.Ciphertext, Ciphers.Atbash(p.Ciphertext), p.Plaintext }
+                : new[] { p.Ciphertext, p.Plaintext };
+            await JS.TryInvokeVoidAsync("CipherDecoder.decode", cipherEl, layers);
+        }
     }
 
     private static readonly IReadOnlyList<CipherPuzzle> puzzles = CipherPuzzles.All;
@@ -107,11 +137,19 @@
     .cd-tag { padding: 3px 10px; background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary); border-radius: 10px; font-size: 0.75rem; font-weight: 700; }
     .cd-progress { font-size: 0.75rem; color: var(--text-muted); }
 
-    .cd-cipher { font-family: 'Roboto Mono', monospace; font-size: 1.05rem; letter-spacing: 0.1em; padding: 14px; background: var(--bg-surface); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; color: var(--text-primary); margin-bottom: 10px; }
+    .cd-cipher { font-family: 'Roboto Mono', monospace; font-size: 1.2rem; letter-spacing: 0.1em; padding: 14px; background: var(--bg-surface); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; color: var(--text-primary); margin-bottom: 10px; }
     .cd-hint { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 12px; }
 
     .cd-input { width: 100%; padding: 10px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Roboto Mono', monospace; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 8px; text-transform: uppercase; }
     .cd-input.cd-wrong { border-color: var(--error); }
+    .cd-input.cd-flash { animation: cd-flash 0.6s ease-out; }
+    @@keyframes cd-flash { 0%, 30% { border-color: var(--error); box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 30%, transparent); } 100% { box-shadow: 0 0 0 3px transparent; } }
+
+    .cd-w { white-space: nowrap; }
+    .cd-l { display: inline-block; min-width: 1ch; }
+    .cd-l.cd-mid { color: var(--text-secondary); }
+    .cd-l.cd-plain { color: var(--accent); font-weight: 700; }
+    .cd-rolled .cd-glyph { width: 30px; height: 30px; line-height: 30px; justify-content: center; align-items: center; }
 
     .cd-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .cd-reveal { color: var(--text-muted); font-size: 0.78rem; margin-left: 4px; }

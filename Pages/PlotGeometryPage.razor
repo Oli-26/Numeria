@@ -1,5 +1,7 @@
 @page "/plot-geometry"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
+@implements IDisposable
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -23,42 +25,32 @@
     <h3>@selected.Title <small>@selected.Author</small></h3>
     <p class="pg-summary">@selected.Summary</p>
 
-    <svg viewBox="0 0 360 220" class="pg-svg">
+    <svg viewBox="0 0 360 220" class="pg-svg" @ref="plotSvg">
         <line x1="20" y1="200" x2="340" y2="200" stroke="var(--text-muted)" stroke-width="1"/>
 
-        @{
-            string Path()
-            {
-                if (selected.Beats.Count < 2) return "";
-                var sb = new System.Text.StringBuilder();
-                for (int i = 0; i < selected.Beats.Count; i++)
-                {
-                    var b = selected.Beats[i];
-                    var x = 20 + (i / (double)(selected.Beats.Count - 1)) * 320;
-                    var y = 200 - b.Tension * 1.7;
-                    sb.Append(i == 0 ? "M" : " L");
-                    sb.Append(x.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture));
-                    sb.Append(',');
-                    sb.Append(y.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture));
-                }
-                return sb.ToString();
-            }
-        }
-        <path d="@Path()" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <path class="pg-ghost" d="@Path()" />
+        <path class="pg-line" d="@Path()" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <line class="pg-head" x1="0" y1="14" x2="0" y2="200" />
 
+        @{ var peak = PeakIndex(); }
         @for (int i = 0; i < selected.Beats.Count; i++)
         {
             var bi = i;
             var b = selected.Beats[i];
-            var x = 20 + (i / (double)(selected.Beats.Count - 1)) * 320;
-            var y = 200 - b.Tension * 1.7;
-            <circle cx="@x.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" cy="@y.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" r="5" fill="@(selectedBeat == i ? "var(--primary)" : "var(--accent)")" stroke="white" stroke-width="2"
-                style="cursor:pointer" @onclick="() => selectedBeat = bi"/>
+            var anchor = i == 0 ? "start" : i == selected.Beats.Count - 1 ? "end" : "middle";
+            <g>
+                <text class="pg-lab @(i == peak ? "peak" : "")" x="@F(X(i) + (i == 0 ? -4 : i == selected.Beats.Count - 1 ? 4 : 0))" y="@F(Valley(i) ? Y(b) + 17 : Y(b) - 11)" text-anchor="@anchor">@b.Stage</text>
+                <circle class="pg-pt" data-t="@b.Tension" data-peak="@(i == peak ? "1" : "0")" cx="@F(X(i))" cy="@F(Y(b))" r="5" fill="@(selectedBeat == i ? "var(--primary)" : "var(--accent)")" stroke="white" stroke-width="2"
+                    style="cursor:pointer" @onclick="() => selectedBeat = bi"/>
+            </g>
         }
+        <circle class="pg-head-dot" cx="0" cy="0" r="3.5" />
 
         <text x="20" y="216" font-size="9" fill="var(--text-muted)">opening</text>
         <text x="340" y="216" font-size="9" fill="var(--text-muted)" text-anchor="end">close</text>
     </svg>
+
+    <button class="pg-play" @onclick="PlayArc"><Icon Name="play" Size="13" /> Play the arc</button>
 
     @{ var beat = selected.Beats[Math.Clamp(selectedBeat, 0, selected.Beats.Count - 1)]; }
     <div class="pg-beat">
@@ -80,11 +72,55 @@
 @code {
     private int selectedBeat;
     private Work selected = works[0];
+    private ElementReference plotSvg;
+    private DotNetObjectReference<PlotGeometryPage>? selfRef;
+    private bool playPending, morphPending;
 
     private void SelectWork(Work w)
     {
+        morphPending = !ReferenceEquals(selected, w);
         selected = w;
         selectedBeat = 0;
+        playPending = true;
+    }
+
+    private void PlayArc() { morphPending = false; playPending = true; }
+
+    [JSInvokable]
+    public void FollowBeat(int i)
+    {
+        if (i < 0 || i >= selected.Beats.Count) return;
+        selectedBeat = i;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            selfRef = DotNetObjectReference.Create(this);
+            await JS.TryInvokeVoidAsync("PlotLab.attach", plotSvg, Points());
+        }
+        if (!playPending) return;
+        playPending = false;
+        await JS.TryInvokeVoidAsync("PlotLab.play", plotSvg, Points(), morphPending, selfRef);
+    }
+
+    public void Dispose() => selfRef?.Dispose();
+
+    private double X(int i) => 20 + (i / (double)(selected.Beats.Count - 1)) * 320;
+    private static double Y(Beat b) => 200 - b.Tension * 1.7;
+    private static string F(double v) => v.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+    // A beat lower than both neighbors takes its label underneath, clear of the two lines running into it.
+    private bool Valley(int i) => i > 0 && i < selected.Beats.Count - 1
+        && selected.Beats[i].Tension < selected.Beats[i - 1].Tension && selected.Beats[i].Tension < selected.Beats[i + 1].Tension;
+    private int PeakIndex() => selected.Beats.IndexOf(selected.Beats.MaxBy(b => b.Tension)!);
+    private object[] Points() => selected.Beats.Select((b, i) => (object)new { x = X(i), y = Y(b), t = b.Tension }).ToArray();
+
+    private string Path()
+    {
+        if (selected.Beats.Count < 2) return "";
+        return string.Join(" ", selected.Beats.Select((b, i) => (i == 0 ? "M" : "L") + F(X(i)) + "," + F(Y(b))));
     }
 
     private record Beat(string Stage, string Title, int Tension, string Note);
@@ -186,7 +222,14 @@
     .pg-stage h3 small { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; margin-left: 6px; }
     .pg-summary { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 10px; }
 
-    .pg-svg { width: 100%; height: auto; max-height: 250px; display: block; }
+    .pg-svg { width: 100%; height: auto; max-height: 250px; display: block; overflow: visible; }
+    .pg-ghost { fill: none; stroke: var(--accent); stroke-width: 2.5; opacity: 0.22; }
+    .pg-head { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0; pointer-events: none; }
+    .pg-head-dot { fill: var(--primary); opacity: 0; pointer-events: none; }
+    .pg-pt { transform-box: fill-box; transform-origin: center; }
+    .pg-lab { font-size: 8.5px; font-weight: 600; fill: var(--text-muted); pointer-events: none; }
+    .pg-lab.peak { font-weight: 800; fill: color-mix(in oklab, var(--accent) 70%, var(--text-primary)); }
+    .pg-play { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px; min-height: 34px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 16px; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
 
     .pg-beat { background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); margin-top: 10px; }
     .pg-beat-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }

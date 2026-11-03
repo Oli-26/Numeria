@@ -1,5 +1,7 @@
 @page "/deep-time"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -10,21 +12,12 @@
     <Icon Name="scroll" Size="14" /> Scroll down through 4.54 billion years of Earth's history. Row spacing here is compressed, not to scale: the Precambrian (Hadean, Archean and Proterozoic) is about 88% of Earth's history. The strip below shows the true proportions.
 </p>
 
-<div class="dt-strip" role="img" aria-label="Earth's history to scale: Hadean 12%, Archean 33%, Proterozoic 43%, Phanerozoic 12%. Humans are a hairline at the end.">
-    <div class="dt-strip-bar">
-        @foreach (var span in eonSpans)
-        {
-            <div class="dt-strip-seg" style="width: @(SpanPct(span.StartMya, span.EndMya))%; background: @span.Color"></div>
-        }
-        <div class="dt-strip-humans"></div>
-    </div>
-    <div class="dt-strip-legend">
-        @foreach (var span in eonSpans)
-        {
-            <span><i style="background: @span.Color"></i>@span.Name @(SpanPct(span.StartMya, span.EndMya))%</span>
-        }
-        <span><i class="dt-strip-hair"></i>Humans: thinner than a hairline</span>
-    </div>
+<div class="dt-strip-legend">
+    @foreach (var span in eonSpans)
+    {
+        <span><i style="background: @span.Color"></i>@span.Name @(SpanPct(span.StartMya, span.EndMya))%</span>
+    }
+    <span><i class="dt-strip-hair"></i>Humans: thinner than a hairline</span>
 </div>
 
 <div class="dt-filter">
@@ -35,7 +28,27 @@
     <button class="chip @(eonFilter == "phanerozoic" ? "chip-active" : "")" @onclick='() => eonFilter = "phanerozoic"'>Phanerozoic</button>
 </div>
 
-<div class="dt-scroller">
+<div class="dt-gauge-slot" id="dt-gauge-slot">
+<div class="dt-gauge" id="dt-gauge">
+    <div class="dt-g-top">
+        <div class="dt-g-age" aria-live="off"><b id="dt-g-num">4.54</b> <span id="dt-g-unit">billion years ago</span></div>
+        <span class="dt-g-eon" id="dt-g-eon" style="background: color-mix(in oklab, #1a1a1a 65%, black)">Hadean eon</span>
+    </div>
+    <div class="dt-g-bar" id="dt-g-bar" role="img" aria-label="Earth's history to scale: Hadean 12%, Archean 33%, Proterozoic 43%, Phanerozoic 12%. Humans are a hairline at the end.">
+        @foreach (var band in coreBands)
+        {
+            <div class="dt-g-seg" data-start="@Inv(band.StartMya)" data-end="@Inv(band.EndMya)"
+                 style="left: @Inv((4540 - band.StartMya) / 45.4)%; width: @Inv((band.StartMya - band.EndMya) / 45.4)%; background: @band.Color"></div>
+        }
+        <div class="dt-g-humans" id="dt-g-humans"></div>
+        <div class="dt-g-mark" id="dt-g-mark"></div>
+    </div>
+    <div class="dt-g-scale"><span id="dt-g-scale">All 4.54 billion years, to scale</span><span class="dt-g-hum">Humans</span></div>
+    <div class="dt-g-line" aria-hidden="true"></div>
+</div>
+</div>
+
+<div class="dt-scroller" id="dt-scroller">
     <div class="dt-axis"></div>
     @{
         string? lastEon = null;
@@ -55,7 +68,7 @@
             </div>
         }
 
-        <div class="dt-row" style="--band: @color; min-height: @(VisualSpacing(ev))px">
+        <div class="dt-row" data-age="@Inv(ev.YearsAgo)" data-eon="@ev.Eon" style="--band: @color; min-height: @(VisualSpacing(ev))px">
             <div class="dt-band" style="background: @color"></div>
             <div class="dt-marker" style="background: @color"></div>
             <div class="dt-card card">
@@ -77,9 +90,23 @@
         <span>End of the timeline. The next entry hasn't happened yet.</span>
     </div>
 </div>
+<div class="dt-runout" aria-hidden="true"></div>
 
 @code {
     private string? eonFilter;
+
+    protected override Task OnAfterRenderAsync(bool firstRender) => JS.TryInvokeVoidAsync("DeepTime.init").AsTask();
+
+    public ValueTask DisposeAsync() => JS.TryInvokeVoidAsync("DeepTime.dispose");
+
+    private static string Inv(double v) => v.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+
+    // The gauge's core: the four eons, with the Phanerozoic split into its eras so the bands match the cards.
+    private static readonly (string Color, double StartMya, double EndMya)[] coreBands =
+    {
+        ("#1a1a1a", 4540, 4000), ("#4a4a4a", 4000, 2500), ("#7B3FA0", 2500, 539),
+        ("#2E8B57", 539, 252), ("#E67E22", 252, 66), ("#F1C40F", 66, 0)
+    };
 
     private IEnumerable<DeepEvent> GetFilteredEvents() => events;
 
@@ -89,7 +116,7 @@
         ("Hadean", "#1a1a1a", 4540, 4000),
         ("Archean", "#4a4a4a", 4000, 2500),
         ("Proterozoic", "#7B3FA0", 2500, 539),
-        ("Phanerozoic", "#3498DB", 539, 0)
+        ("Phanerozoic", "linear-gradient(90deg, #2E8B57, #E67E22, #F1C40F)", 539, 0)
     };
 
     private static string SpanPct(double startMya, double endMya) =>
@@ -149,7 +176,7 @@
     private static readonly List<DeepEvent> allEvents = new()
     {
         new(4_540_000_000, "4.54 Gya", "hadean", "Earth forms from the solar nebula",
-            "Dust and gas around the young Sun accrete into a molten proto-Earth. The planet is a hellish ocean of magma, bombarded by leftover planetesimals. No crust, no atmosphere we'd recognise."),
+            "Dust and gas around the young Sun accrete into a molten proto-Earth. The planet is a hellish ocean of magma, bombarded by leftover planetesimals. No crust, no atmosphere we'd recognize."),
         new(4_510_000_000, "4.51 Gya", "hadean", "Theia impact creates the Moon",
             "A Mars-sized body called Theia smashes into the proto-Earth. The debris coalesces in orbit to form the Moon. The collision strips Earth's early atmosphere and resets the surface to molten rock."),
         new(4_400_000_000, "4.4 Gya", "hadean", "Oldest known minerals (Jack Hills zircons)",
@@ -157,7 +184,7 @@
         new(4_280_000_000, "4.28 Gya", "hadean", "Possible earliest crust",
             "Rocks from the Nuvvuagittuq belt in Quebec may date from this period. Earth begins to look more like a planet and less like a lava lamp, with proto-continents forming and reforming."),
         new(4_100_000_000, "4.1 Gya", "hadean", "Late Heavy Bombardment intensifies",
-            "A spike in asteroid and comet impacts batters the inner solar system. The Moon's largest craters date from this time. Earth's surface is repeatedly sterilised and remade."),
+            "A spike in asteroid and comet impacts batters the inner solar system. The Moon's largest craters date from this time. Earth's surface is repeatedly sterilized and remade."),
         new(3_800_000_000, "3.8 Gya", "archean", "Earliest possible life",
             "Carbon isotope ratios in rocks from Greenland suggest biological activity. Whatever was alive was simple, single-celled, and probably anaerobic, living off chemistry rather than sunlight."),
         new(3_500_000_000, "3.5 Gya", "archean", "Stromatolites: early microbial mats",
@@ -201,7 +228,7 @@
         new(150_000_000, "150 Mya", "mesozoic", "Archaeopteryx",
             "A feathered dinosaur the size of a raven, preserved in Jurassic limestone in Bavaria, shows that birds are essentially small flying dinosaurs. They will outlive the rest of the lineage."),
         new(125_000_000, "125 Mya", "mesozoic", "Flowering plants diversify",
-            "Angiosperms had appeared earlier, but in the Cretaceous they explode in diversity. Co-evolution with insects produces flowers, fruits, and the green world we'd recognise."),
+            "Angiosperms had appeared earlier, but in the Cretaceous they explode in diversity. Co-evolution with insects produces flowers, fruits, and the green world we'd recognize."),
         new(66_000_000, "66 Mya", "mesozoic", "K-Pg asteroid impact",
             "A 10-kilometer asteroid slams into what is now the Yucatan. The blast, fires, and impact winter wipe out the non-avian dinosaurs and around 75% of species. Mammals inherit the wreckage."),
         new(55_000_000, "55 Mya", "cenozoic", "PETM warming event",
@@ -241,32 +268,74 @@
         border-left: 3px solid var(--primary);
     }
 
-    .dt-strip { margin-bottom: 14px; }
-    .dt-strip-bar {
-        position: relative; display: flex; height: 14px; border-radius: 3px;
-        border: 1px solid var(--border);
-    }
-    .dt-strip-seg { height: 100%; }
-    .dt-strip-seg:first-child { border-radius: 2px 0 0 2px; }
-    .dt-strip-humans {
-        position: absolute; right: 0; top: -4px; bottom: -4px; width: 1px; background: var(--accent);
-    }
     .dt-strip-legend {
-        display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px;
+        display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
         font-size: 0.7rem; color: var(--text-muted);
     }
     .dt-strip-legend span { display: inline-flex; align-items: center; gap: 4px; }
     .dt-strip-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; border: 1px solid var(--border); }
     .dt-strip-legend i.dt-strip-hair { width: 1px; height: 10px; border: 0; background: var(--accent); border-radius: 0; }
 
-    .dt-filter {
-        display: flex; gap: 10px 6px; margin-bottom: 16px; flex-wrap: wrap;
-        position: sticky; top: 0; z-index: 5;
-        background: var(--bg-card); padding: 8px 0;
-        border-bottom: 1px solid var(--border);
-    }
+    .dt-filter { display: flex; gap: 10px 6px; margin-bottom: 10px; flex-wrap: wrap; }
     .dt-filter .chip { padding: 7px 11px; }
     .dt-filter .chip-active { background: var(--primary) !important; color: var(--on-primary) !important; }
+
+    .dt-gauge-slot { margin-bottom: 18px; }
+    .dt-gauge {
+        position: relative; z-index: 6;
+        margin: 0 -16px; padding: 10px 16px 8px;
+        background: var(--bg-main);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 6px 14px -10px var(--shadow);
+    }
+    .dt-g-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+    .dt-g-age { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+    .dt-g-age b {
+        font-family: var(--font-heading); font-size: 1.75rem; font-weight: 800; color: var(--text-primary);
+        font-variant-numeric: tabular-nums; letter-spacing: -0.5px;
+    }
+    .dt-g-eon {
+        flex-shrink: 0; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 3px 9px; border-radius: 10px;
+        text-transform: uppercase; letter-spacing: 0.6px; transform-origin: 50% 50%;
+    }
+    .dt-g-eon.dt-flip { animation: dt-flip 0.38s var(--ease-spring); }
+    @@keyframes dt-flip { from { transform: perspective(200px) rotateX(-90deg); opacity: 0.2; } }
+    .dt-g-bar {
+        position: relative; height: 18px; border-radius: 4px; overflow: hidden;
+        border: 1px solid var(--border); background: var(--bg-surface);
+    }
+    .dt-g-seg { position: absolute; top: 0; bottom: 0; }
+    .dt-gauge.dt-pinned { position: fixed; top: 0; margin: 0; }
+    .dt-g-humans { position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: var(--accent); z-index: 1; }
+    .dt-zoomed .dt-g-humans { background: #161616; }
+    .dt-g-mark { transition: opacity 0.3s ease; }
+    .dt-zoomed .dt-g-mark { opacity: 0; }
+    .dt-g-mark {
+        position: absolute; top: -1px; bottom: -1px; left: 0; width: 3px; margin-left: -1.5px; z-index: 2;
+        background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.65); border-radius: 1px;
+    }
+    .dt-g-scale { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-size: 0.7rem; color: var(--text-muted); }
+    .dt-g-hum {
+        display: none; position: relative; padding-right: 2px; font-weight: 800; color: var(--text-primary);
+    }
+    .dt-g-hum::after {
+        content: ""; position: absolute; right: -4px; top: -7px;
+        border-bottom: 6px solid var(--text-primary); border-left: 5px solid transparent; border-right: 5px solid transparent;
+    }
+    .dt-zoomed .dt-g-hum { display: inline; }
+    .dt-g-line {
+        position: absolute; left: 6px; top: calc(100% + 26px); width: 30px; height: 3px; border-radius: 2px;
+        background: var(--text-primary); pointer-events: none;
+    }
+    .dt-g-line::after {
+        content: ""; position: absolute; right: -6px; top: -3.5px;
+        border-left: 7px solid var(--text-primary); border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    }
+    .dt-row.dt-now .dt-marker { transform: scale(1.3); box-shadow: 0 0 0 2px var(--text-primary); }
+    .dt-row.dt-now .dt-card { box-shadow: 0 2px 10px var(--shadow), 0 0 0 1px var(--band); }
+    .dt-marker { transition: transform 0.18s ease; }
+    .dt-runout { height: max(0px, calc(100vh - 480px)); }
+    @@media (prefers-reduced-motion: reduce) { .dt-g-eon.dt-flip { animation: none; } }
 
     .dt-scroller {
         position: relative;
@@ -298,7 +367,6 @@
         display: flex; align-items: center; gap: 8px;
         font-size: 0.8rem; color: var(--text-primary);
         text-transform: uppercase; letter-spacing: 1px;
-        position: sticky; top: 50px; z-index: 4;
     }
     .dt-eon-header strong { font-weight: 700; }
     .dt-eon-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
