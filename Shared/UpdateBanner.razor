@@ -1,0 +1,33 @@
+@inject IJSRuntime JS
+@implements IDisposable
+
+@if (ready && !dismissed && !Hidden)
+{
+    <div class="update-banner" role="status">
+        <p><strong>A new version of Nous is ready.</strong> Restart to start using it.</p>
+        <button class="btn btn-sm btn-primary" @onclick="Restart">Restart</button>
+        <button class="ub-close" aria-label="Not now" @onclick="() => dismissed = true"><Icon Name="x-mark" Size="18" /></button>
+    </div>
+}
+
+@code {
+    // True on screens that must not be interrupted (lessons, quizzes, onboarding); the banner waits until they are left.
+    [Parameter] public bool Hidden { get; set; }
+
+    private bool ready, dismissed;
+    private DotNetObjectReference<UpdateBanner>? selfRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        selfRef = DotNetObjectReference.Create(this);
+        await JS.TryInvokeVoidAsync("NousUpdate.check", selfRef);
+    }
+
+    [JSInvokable]
+    public Task OnUpdateReady() => InvokeAsync(() => { ready = true; StateHasChanged(); });
+
+    private async Task Restart() => await JS.TryInvokeVoidAsync("NousUpdate.restart");
+
+    public void Dispose() => selfRef?.Dispose();
+}

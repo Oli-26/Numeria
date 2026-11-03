@@ -1,0 +1,116 @@
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject IProgressService Progress
+@inject NavigationManager Nav
+@implements IAsyncDisposable
+
+@if (entry != null && !Hidden)
+{
+    <div class="sheet-backdrop" @onclick="Close"></div>
+    <div class="bottom-sheet wn-sheet" role="dialog" aria-modal="true" aria-label="What's new" tabindex="-1" @ref="sheetEl">
+        <div class="wn-kicker"><Icon Name="sparkles" Size="14" /> What's new in @WhatsNew.Short(entry.Version)</div>
+        <h3 class="wn-title">@entry.Title</h3>
+        <ul class="wn-items">
+            @foreach (var item in entry.Items)
+            {
+                <li>
+                    <span class="wn-icon"><Icon Name="@(item.Icon ?? "check")" Size="20" /></span>
+                    <div>
+                        <p>@item.Text</p>
+                        @if (item.Link != null)
+                        {
+                            <button class="wn-go" @onclick="() => Go(item.Link)">@(item.Action ?? "Take a look") <Icon Name="chevron-right" Size="14" /></button>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+        @if (earlier.Count > 0)
+        {
+            <div class="wn-earlier">
+                <small>Also new recently</small>
+                @foreach (var e in earlier)
+                {
+                    <button class="wn-earlier-row" @onclick='() => Go("/whats-new")'>
+                        <span>@e.Title</span><small>@WhatsNew.Short(e.Version)</small>
+                    </button>
+                }
+            </div>
+        }
+        <div class="wn-actions">
+            <button class="btn btn-primary" @onclick="Close">Got it</button>
+            <button class="btn btn-outline" @onclick='() => Go("/whats-new")'>All updates</button>
+        </div>
+    </div>
+}
+
+@code {
+    // True on screens that must not be interrupted (lessons, quizzes, onboarding); the sheet waits until they are left.
+    [Parameter] public bool Hidden { get; set; }
+
+    private const string SeenKey = "nous-whatsnew-seen";
+    private WhatsNewEntry? entry;
+    private List<WhatsNewEntry> earlier = new();
+    private ElementReference sheetEl;
+    private DotNetObjectReference<WhatsNewSheet>? selfRef;
+    private bool bound;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await DecideAsync();
+        if (entry != null && !Hidden && !bound)
+        {
+            bound = true;
+            selfRef ??= DotNetObjectReference.Create(this);
+            await JS.TryInvokeVoidAsync("NousSheet.open", selfRef, sheetEl);
+        }
+        else if (bound && Hidden)
+        {
+            bound = false;
+            await JS.TryInvokeVoidAsync("NousSheet.close");
+        }
+    }
+
+    private async Task DecideAsync()
+    {
+        try
+        {
+            var entries = await Http.GetFromJsonAsync<List<WhatsNewEntry>>("data/whatsnew.json") ?? new();
+            if (entries.Count == 0) return;
+            // The installed app reports its own version; the web build is always the newest release.
+            var native = await JS.InvokeAsync<string?>("appVersion");
+            var current = WhatsNew.Clean(native ?? entries.OrderByDescending(e => e, Comparer<WhatsNewEntry>.Create((a, b) => WhatsNew.Compare(a.Version, b.Version))).First().Version);
+            var seen = await JS.InvokeAsync<string?>("localStorage.getItem", SeenKey);
+            var profile = await Progress.GetProfileAsync();
+            var newPlayer = profile.TotalXp == 0 && profile.DisplayName == "Mathematician";
+            (entry, earlier) = WhatsNew.Pending(entries, current, seen, newPlayer);
+            // Marked seen as soon as it is decided, so a sheet that is closed by quitting the app is not shown again.
+            await JS.InvokeVoidAsync("localStorage.setItem", SeenKey, current);
+            if (entry != null) StateHasChanged();
+        }
+        catch (Exception ex) { await JS.LogErrorAsync("WhatsNewSheet.decide", ex); }
+    }
+
+    [JSInvokable]
+    public Task RequestClose() => Close();
+
+    private async Task Close()
+    {
+        entry = null;
+        if (bound) { bound = false; await JS.TryInvokeVoidAsync("NousSheet.close"); }
+        StateHasChanged();
+    }
+
+    private async Task Go(string url)
+    {
+        await Close();
+        Nav.NavigateTo(url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (bound) await JS.TryInvokeVoidAsync("NousSheet.close");
+        selfRef?.Dispose();
+    }
+}

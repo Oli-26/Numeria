@@ -1766,3 +1766,45 @@ html.sheet-open body {
 }
 .ts-aurora b { color: #EAF0FF; }
 .ts-aurora i { background: #5BF2B0; }
+
+/* ── What's new: the sheet after an update (Shared/WhatsNewSheet.razor) and its buttons, shared with /whats-new ── */
+.wn-sheet { padding-top: 18px; }
+.wn-kicker {
+    display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--primary);
+}
+.wn-title { margin: 4px 0 12px; font-size: 1.35rem; }
+.wn-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.wn-items li { display: flex; gap: 12px; align-items: flex-start; }
+.wn-items p { margin: 0; color: var(--text-secondary); line-height: 1.5; font-size: 0.93rem; }
+.wn-icon {
+    flex-shrink: 0; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.wn-go {
+    display: inline-flex; align-items: center; gap: 2px; margin-top: 4px; padding: 6px 0; min-height: 32px;
+    background: none; border: none; color: var(--primary); font: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+}
+.wn-earlier { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+.wn-earlier > small { color: var(--text-muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.wn-earlier-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 40px; padding: 6px 0;
+    background: none; border: none; color: var(--text-primary); font: inherit; font-weight: 600; text-align: left; cursor: pointer;
+}
+.wn-earlier-row small { color: var(--text-muted); font-weight: 600; }
+.wn-actions { display: flex; gap: 10px; margin-top: 18px; }
+.wn-actions .btn { flex: 1; }
+
+/* ── Update ready banner (Shared/UpdateBanner.razor): sits above the tab bar until restarted or dismissed ── */
+.update-banner {
+    position: fixed; left: 12px; right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 150;
+    display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; border-radius: 14px;
+    background: var(--bg-card); border: 1px solid var(--border); box-shadow: 0 8px 24px var(--shadow), 0 2px 6px rgba(0, 0, 0, 0.12);
+    animation: sheetUp 0.28s var(--ease-out);
+}
+.update-banner p { flex: 1; margin: 0; font-size: 0.88rem; color: var(--text-primary); line-height: 1.35; }
+.update-banner .ub-close {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+}
+@media (min-width: 1024px) { .update-banner { left: auto; width: 380px; bottom: 24px; } }
