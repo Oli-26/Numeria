@@ -158,7 +158,7 @@ else
                     <p class="matching-hint">
                         @if (selectedLeft == null)
                         {
-                            <span>Tap an item on the left to start matching</span>
+                            <span>Tap an item to start matching</span>
                         }
                         else
                         {
@@ -575,6 +575,17 @@ else
         "linguistics" => "Linguistics",
         "philosophy" => "Philosophy",
         "misc" => "Esoterica",
+        "religion" => "Religion",
+        "materials" => "Materials",
+        "cs" => "Computer Science",
+        "psychology" => "Psychology",
+        "sociology" => "Sociology",
+        "politics" => "Politics",
+        "economics" => "Economics",
+        "media" => "Media",
+        "literature" => "Literature",
+        "art" => "Art",
+        _ when domainId.Length > 0 => char.ToUpperInvariant(domainId[0]) + domainId[1..],
         _ => domainId
     };
 }
@@ -685,7 +696,7 @@ else
         padding: 2px 8px;
         border-radius: 10px;
         background: color-mix(in srgb, var(--quiz-theme) 12%, transparent);
-        color: var(--quiz-theme, var(--primary));
+        color: color-mix(in oklab, var(--quiz-theme, var(--primary)) 60%, var(--text-primary));
         font-size: 0.72rem;
         font-weight: 600;
         border: 1px solid color-mix(in srgb, var(--quiz-theme) 25%, transparent);

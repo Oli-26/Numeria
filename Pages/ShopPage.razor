@@ -6,6 +6,7 @@
 @inject IThemeService ThemeService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@implements IAsyncDisposable
 
 <div class="shop-header">
     <div class="shop-title-wrap">
@@ -36,6 +37,32 @@
     </div>
 
     <div class="shop-grid stagger-in tab-content" @key="activeCategory">
+        @if (activeCategory == "theme")
+        {
+            @* The default theme is free and always owned, so wearing another one never strands you. *@
+            var nousOn = profile.SelectedTheme is "nous" or "default" or "";
+            <div class="card shop-card @(nousOn ? "active-item" : "owned-item")">
+                <div class="shop-card-main">
+                    <div class="shop-icon-wrap swatch @(nousOn ? "equipped" : "")">
+                        <span class="theme-swatch ts-nous" aria-hidden="true"><b>Aa</b><i></i></span>
+                    </div>
+                    <div class="shop-card-info">
+                        <strong>Nous</strong>
+                        <small>The original: cream paper and terracotta</small>
+                    </div>
+                </div>
+                <div class="shop-card-action">
+                    @if (nousOn)
+                    {
+                        <span class="equipped-badge">Equipped</span>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-primary equip-btn" @onclick="WearNous">Equip</button>
+                    }
+                </div>
+            </div>
+        }
         @foreach (var item in domainItems.Where(i => i.Category == activeCategory))
         {
             var owned = profile.ShopPurchases.Contains(item.Id);
@@ -45,10 +72,14 @@
 
             <div class="card shop-card @(active ? "active-item" : owned && !isPowerup ? "owned-item" : "")">
                 <div class="shop-card-main">
-                    <div class="shop-icon-wrap @(active ? "equipped" : "")">
+                    <div class="shop-icon-wrap @(active ? "equipped" : "") @(item.Category == "theme" ? "swatch" : "")">
                         @if (item.Category == "avatar" && HallOfFame.Resolve(item.Id) is { } avatarCard)
                         {
                             <FigureMedallion Card="avatarCard" Size="40" />
+                        }
+                        else if (item.Category == "theme")
+                        {
+                            <span class="theme-swatch ts-@item.Id.Replace("theme-", "")" aria-hidden="true"><b>Aa</b><i></i></span>
                         }
                         else
                         {
@@ -76,6 +107,11 @@
                     }
                     else
                     {
+                        @if (item.Category == "theme")
+                        {
+                            var trying = tryingTheme == item.Id;
+                            <button class="btn btn-sm btn-outline try-btn" @onclick="() => TryTheme(item)">@(trying ? "Stop" : "Try")</button>
+                        }
                         <button class="btn btn-sm buy-btn @(canAfford ? "affordable" : "unaffordable")"
                                 disabled="@(!canAfford)"
                                 @onclick="() => BuyItem(item)">
@@ -412,9 +448,35 @@ else
         await JS.TryInvokeVoidAsync("Haptics.light");
     }
 
+    private async Task WearNous()
+    {
+        if (profile == null) return;
+        tryingTheme = null;
+        await ThemeService.ApplyThemeAsync("nous");
+        profile = await Progress.GetProfileAsync();
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+    }
+
+    // Wears an unowned theme until it is tapped again, bought, or the shop is left.
+    private string? tryingTheme;
+
+    private async Task TryTheme(ShopItem item)
+    {
+        if (profile == null) return;
+        tryingTheme = tryingTheme == item.Id ? null : item.Id;
+        await JS.TryInvokeVoidAsync("applyTheme", tryingTheme?.Replace("theme-", "") ?? profile.SelectedTheme);
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (tryingTheme != null && profile != null) await JS.TryInvokeVoidAsync("applyTheme", profile.SelectedTheme);
+    }
+
     private async Task ActivateItem(ShopItem item)
     {
         if (profile == null) return;
+        tryingTheme = null;
         switch (item.Category)
         {
             case "theme":
@@ -533,7 +595,9 @@ else
     .shop-card-info strong { display: block; font-size: 0.95rem; }
     .shop-card-info small { display: block; color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
 
-    .shop-card-action { display: flex; justify-content: flex-end; }
+    .shop-card-action { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+    .try-btn { min-height: 36px; }
+    .shop-icon-wrap.swatch { width: 52px; height: 68px; padding: 0; background: none; overflow: hidden; border-radius: 10px; box-shadow: 0 0 0 1px var(--border); }
 
     /* Buy button */
     .buy-btn {
@@ -546,7 +610,7 @@ else
     .buy-btn:active:not(:disabled) { transform: scale(0.95); }
     .buy-btn.affordable {
         border-color: var(--primary); background: var(--primary);
-        color: white;
+        color: var(--on-primary);
     }
     .buy-btn.affordable .buy-price { color: rgba(255,255,255,0.9); }
     .buy-btn.unaffordable { opacity: 0.5; cursor: not-allowed; }
@@ -583,6 +647,6 @@ else
         display: flex; align-items: center; justify-content: center;
         width: 36px; height: 36px; border-radius: 50%;
         background: var(--primary);
-        color: white; font-weight: 800; font-size: 1rem;
+        color: var(--on-primary); font-weight: 800; font-size: 1rem;
     }
 </style>

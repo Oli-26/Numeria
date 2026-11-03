@@ -1,12 +1,14 @@
 @page "/market-sim"
 @using System.Globalization
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
     <h1>Market Sim</h1>
 </div>
 
+<div class="ms-page" @ref="pageRoot">
 <div class="card ms-intro">
     <Icon Name="coin" Size="22" Stroke="var(--accent)" />
     <p>Slide supply and demand to find the equilibrium. Then add a price ceiling, a price floor, a per-unit tax or a quota, and watch the surplus areas shift and the deadweight loss appear.</p>
@@ -67,6 +69,7 @@
     var supply = Clip(m.C, m.D);
     var taxed = kind == MarketIntervention.Tax && level > 0 ? Clip(m.C + level, m.D) : null;
     var (title, body) = Explain(r);
+    TrackDeadweight(r);
 }
 <div class="card ms-chart-card">
     <svg viewBox="0 0 320 232" class="ms-svg" role="img" aria-label="Supply and demand diagram with shaded surplus areas">
@@ -112,9 +115,18 @@
         }
         @if (r.DeadweightLoss > 1e-9)
         {
-            <polygon points="@Pts((q, m.DemandPrice(q)), (r.EquilibriumQuantity, r.EquilibriumPrice), (q, m.SupplyPrice(q)))" fill="url(#ms-hatch)" stroke="var(--text-secondary)" stroke-width="0.8">
+            <polygon class="ms-dwl" @key="drainKey" style="@($"--ms-after:{N(DrainSeconds)}s")" points="@Pts((q, m.DemandPrice(q)), (r.EquilibriumQuantity, r.EquilibriumPrice), (q, m.SupplyPrice(q)))" fill="url(#ms-hatch)" stroke="var(--text-secondary)" stroke-width="0.8">
                 <title>Deadweight loss @Ar(r.DeadweightLoss)</title>
             </polygon>
+        }
+        @if (drainTokens.Count > 0)
+        {
+            <g class="ms-drain" @key="@($"d{drainKey}")" pointer-events="none">
+                @foreach (var t in drainTokens)
+                {
+                    <circle cx="@N(t.X)" cy="@N(t.Y)" r="1.8" fill="@t.Color" style="@($"--fall:{N(B - t.Y)}px;animation-delay:{N(t.Delay)}s")" />
+                }
+            </g>
         }
 
         @if (!r.Binding)
@@ -220,15 +232,15 @@
     </svg>
 
     <div class="ms-legend">
-        <div class="ms-key"><i class="ms-sw" style="background: @CsColor"></i><span>Consumer surplus</span><strong>@Ar(r.ConsumerSurplus)</strong></div>
-        <div class="ms-key"><i class="ms-sw" style="background: @PsColor"></i><span>Producer surplus</span><strong>@Ar(r.ProducerSurplus)</strong></div>
+        <div class="ms-key"><i class="ms-sw" style="background: @CsColor"></i><span>Consumer surplus</span><strong data-tw="@Ar(r.ConsumerSurplus)"></strong></div>
+        <div class="ms-key"><i class="ms-sw" style="background: @PsColor"></i><span>Producer surplus</span><strong data-tw="@Ar(r.ProducerSurplus)"></strong></div>
         @if (kind is MarketIntervention.Tax or MarketIntervention.Quota && r.Binding)
         {
-            <div class="ms-key"><i class="ms-sw" style="background: @WedgeColor"></i><span>@WedgeName</span><strong>@Ar(r.TaxRevenue + r.QuotaRent)</strong></div>
+            <div class="ms-key"><i class="ms-sw" style="background: @WedgeColor"></i><span>@WedgeName</span><strong data-tw="@Ar(r.TaxRevenue + r.QuotaRent)"></strong></div>
         }
         @if (r.Binding)
         {
-            <div class="ms-key ms-key-loss"><i class="ms-sw ms-sw-hatch"></i><span>Deadweight loss</span><strong>@Ar(r.DeadweightLoss)</strong></div>
+            <div class="ms-key ms-key-loss"><i class="ms-sw ms-sw-hatch"></i><span>Deadweight loss</span><strong data-tw="@Ar(r.DeadweightLoss)"></strong></div>
         }
         <p class="ms-total">
             @if (r.Binding)
@@ -245,11 +257,12 @@
     <div class="ms-readouts">
         @foreach (var stat in Stats(r))
         {
-            <div class="ms-stat @(stat.Warn ? "ms-stat-warn" : "")"><span>@stat.Label</span><strong>@stat.Value</strong></div>
+            <div class="ms-stat @(stat.Warn ? "ms-stat-warn" : "")"><span>@stat.Label</span><strong data-tw="@stat.Value"></strong></div>
         }
     </div>
 
     <div class="ms-blurb"><strong>@title</strong> @body</div>
+</div>
 </div>
 
 @code {
@@ -268,6 +281,56 @@
     private double qMax = 1, qStep = 1, pMax = 1, pStep = 1;
 
     private MarketCurves Curves => new(demandIntercept, demandSlope, supplyIntercept, supplySlope);
+
+    private ElementReference pageRoot;
+    private bool hadDeadweight;
+    private MarketIntervention deadweightKind;
+    private int drainKey;
+    private int drainColumns;
+    private bool drainPending;
+    private double DrainSeconds => drainKey == 0 ? 0 : 0.2 + 0.07 * drainColumns + 0.5;
+    private sealed record Token(double X, double Y, string Color, double Delay);
+    private List<Token> drainTokens = new();
+
+    // When an intervention first opens a deadweight loss, the trades it prevents are drawn as tokens between the curves
+    // that drain away, outermost first, before the hatched triangle appears.
+    private void TrackDeadweight(MarketOutcome r)
+    {
+        var has = r.DeadweightLoss > 1e-9 && r.EquilibriumQuantity > r.Quantity;
+        if (has && (!hadDeadweight || deadweightKind != kind))
+        {
+            var m = Curves;
+            double q0 = r.Quantity, q1 = r.EquilibriumQuantity;
+            drainColumns = Math.Clamp((int)Math.Round((X(q1) - X(q0)) / 4.6), 3, 14);
+            drainTokens = new();
+            for (int j = 0; j < drainColumns; j++)
+            {
+                var qq = q0 + (j + 0.5) * (q1 - q0) / drainColumns;
+                double top = Y(m.DemandPrice(qq)), bottom = Y(m.SupplyPrice(qq)), eq = Y(r.EquilibriumPrice);
+                for (var y = top + 2.5; y <= bottom - 1.5; y += 4.4)
+                    drainTokens.Add(new Token(X(qq), y, y < eq ? CsColor : PsColor, 0.2 + 0.07 * (drainColumns - 1 - j) + (y - top) * 0.002));
+            }
+            drainKey++;
+            drainPending = true;
+        }
+        if (!has) drainTokens = new();
+        hadDeadweight = has;
+        deadweightKind = kind;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender) await JS.InvokeVoidAsync("MarketLab.attach", pageRoot);
+            if (drainPending)
+            {
+                drainPending = false;
+                await JS.InvokeVoidAsync("MarketLab.drain", drainColumns);
+            }
+        }
+        catch (JSException) { }
+    }
 
     private MarketIntervention Kind
     {
@@ -290,7 +353,7 @@
     };
 
     // Defaults start each intervention clearly binding: 40% of the way from equilibrium to the
-    // relevant intercept, a tax of a fifth of the intercept gap, a quota at 60% of Q*.
+    // relevant intercept, a tax of 30% of the intercept gap, a quota at 60% of Q*.
     private double DefaultLevel(MarketIntervention k)
     {
         var m = Curves;
@@ -300,7 +363,7 @@
         {
             MarketIntervention.Ceiling => Math.Floor(p - 0.4 * (p - m.C) + 1e-9),
             MarketIntervention.Floor => Math.Ceiling(p + 0.4 * (m.A - p) - 1e-9),
-            MarketIntervention.Tax => Math.Max(1, Math.Round(0.2 * (m.A - m.C))),
+            MarketIntervention.Tax => Math.Max(1, Math.Round(0.3 * (m.A - m.C))),
             MarketIntervention.Quota => Math.Floor(0.6 * free.EquilibriumQuantity + 1e-9),
             _ => 0,
         };
@@ -501,6 +564,16 @@
 }
 
 <style>
+    .ms-dwl { animation: ms-hatch-in 0.45s ease-out both; animation-delay: var(--ms-after, 0s); }
+    .ms-drain circle { animation: ms-drain 0.7s cubic-bezier(.55,0,.9,.5) both; }
+    @@keyframes ms-drain { 0% { opacity: 0.95; transform: none; } 25% { opacity: 0.95; } 100% { opacity: 0; transform: translateY(var(--fall)); } }
+    @@keyframes ms-hatch-in { from { opacity: 0; } to { opacity: 1; } }
+    .ms-key strong, .ms-stat strong { font-variant-numeric: tabular-nums; }
+    @@media (prefers-reduced-motion: reduce) {
+        .ms-dwl { animation: none; }
+        .ms-drain { display: none; }
+    }
+
     .ms-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
     .ms-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
 

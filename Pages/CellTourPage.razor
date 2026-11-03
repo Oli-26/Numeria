@@ -1,5 +1,6 @@
 @page "/cell-tour"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -38,7 +39,8 @@
 }
 
 @* Enter or Space on a focused part fires its click handler. Done inline because Blazor cannot preventDefault (page scroll on Space) for some keys only. *@
-<div class="ct-stage card" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target.getAttribute('role') === 'button') { event.preventDefault(); event.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }">
+<div class="ct-stage card @(selected != null ? "ct-focus" : "")" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target.getAttribute('role') === 'button') { event.preventDefault(); event.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }">
+    <div class="ct-cell" @key="cellType">
     @if (cellType == "animal")
     {
         <svg viewBox="0 0 400 320" class="ct-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
@@ -582,12 +584,13 @@
             </g>
         </svg>
     }
+    </div>
 </div>
 
 @if (selected != null && organelles.ContainsKey(selected))
 {
     var info = organelles[selected];
-    <div class="ct-panel card">
+    <div class="ct-panel card" @key="selected">
         <div class="ct-panel-head">
             <div>
                 <h3>@info.Name</h3>
@@ -667,11 +670,14 @@ else
         if (quizTarget == null)
         {
             selected = selected == id ? null : id;
+            if (selected != null) Fx("click", new { freq = 2400, gain = 0.09 }, "light");
             return;
         }
 
         selected = id;
         quizCorrect = id == quizTarget;
+        if (quizCorrect) Fx("chime", new { freq = 880, gain = 0.05 }, "success");
+        else Fx("tick", new { freq = 260, gain = 0.07, decay = 0.09 }, "light");
         if (quizCorrect)
         {
             quizScore++;
@@ -683,6 +689,12 @@ else
             quizMisses++;
             quizFeedback = $"That's the {organelles[id].Name}. Try again.";
         }
+    }
+
+    private void Fx(string voice, object opts, string haptic)
+    {
+        _ = JS.InvokeVoidAsync("SimFx.play", voice, opts);
+        _ = JS.InvokeVoidAsync("SimFx.haptic", haptic);
     }
 
     private void ToggleQuiz()
@@ -767,7 +779,7 @@ else
 
         ["golgi-animal"] = new("Golgi Apparatus", "Packaging and dispatch",
             "Modifies, sorts, and packages proteins and lipids from the ER into vesicles for delivery elsewhere in the cell or for secretion.",
-            "Discovered in 1898 by Camillo Golgi using a silver stain. For decades many scientists thought it was a staining artefact.",
+            "Discovered in 1898 by Camillo Golgi using a silver stain. For decades many scientists thought it was a staining artifact.",
             new[] { "Animal", "Plant" },
             "Protein sorting, glycosylation, vesicle transport"),
 
@@ -936,7 +948,7 @@ else
         font-size: 0.78rem; font-weight: 600; cursor: pointer;
         -webkit-tap-highlight-color: transparent;
     }
-    .ct-quiz-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+    .ct-quiz-btn.active { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 
     .ct-quiz { padding: 10px 14px; margin-bottom: 14px; }
     .ct-quiz-row { display: flex; align-items: center; gap: 10px; }
@@ -978,7 +990,7 @@ else
 
     .ct-organelle {
         cursor: pointer;
-        transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+        transition: filter 0.35s ease, opacity 0.35s ease, transform 0.35s cubic-bezier(.2, .9, .3, 1.2);
         transform-box: fill-box;
         transform-origin: center;
         -webkit-tap-highlight-color: transparent;
@@ -988,6 +1000,18 @@ else
     .ct-organelle:focus-visible { filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 2px var(--primary)); }
     .ct-organelle.ct-active {
         filter: drop-shadow(0 0 3px var(--accent)) brightness(1.05);
+    }
+    /* Microscope focus: everything but the chosen part drops out of the focal plane. */
+    .ct-focus .ct-organelle:not(.ct-active),
+    .ct-focus .ct-organelle:not(.ct-active):hover { filter: blur(1.6px) saturate(0.7); opacity: 0.5; }
+    .ct-focus .ct-organelle.ct-active {
+        transform: translateY(-3px) scale(1.04);
+        filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3)) brightness(1.06);
+    }
+    .ct-cell { animation: ctCellIn 0.4s ease; }
+    @@keyframes ctCellIn {
+        from { opacity: 0; transform: scale(0.97); filter: blur(3px); }
+        to { opacity: 1; transform: none; filter: none; }
     }
     .ct-organelle.ct-active line:not(.ct-hit),
     .ct-organelle.ct-active path:not(.ct-hit),
@@ -999,7 +1023,7 @@ else
 
     .ct-panel {
         padding: 14px 16px;
-        animation: ctSlideUp 0.25s ease;
+        animation: ctSlideUp 0.32s cubic-bezier(.2, .8, .3, 1);
     }
     .ct-panel-head {
         display: flex; justify-content: space-between; align-items: flex-start;
@@ -1063,10 +1087,11 @@ else
     }
 
     @@keyframes ctSlideUp {
-        from { opacity: 0; transform: translateY(8px); }
+        from { opacity: 0; transform: translateY(18px); }
         to   { opacity: 1; transform: translateY(0); }
     }
     @@media (prefers-reduced-motion: reduce) {
-        .ct-organelle, .ct-panel { transition: none; animation: none; }
+        .ct-organelle, .ct-panel, .ct-cell { transition: none; animation: none; }
+        .ct-focus .ct-organelle.ct-active { transform: none; }
     }
 </style>

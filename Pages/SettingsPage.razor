@@ -45,6 +45,19 @@
 
     <div class="card settings-item">
         <div class="settings-row">
+            <div class="settings-icon"><Icon Name="vibrate" Size="24" /></div>
+            <div class="settings-info">
+                <h3>Vibration</h3>
+                <p>@(hapticsEnabled ? "On" : "Off")</p>
+            </div>
+            <button class="toggle-btn @(hapticsEnabled ? "on" : "")" aria-label="@(hapticsEnabled ? "Disable vibration" : "Enable vibration")" @onclick="ToggleHaptics">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card settings-item">
+        <div class="settings-row">
             <div class="settings-icon"><Icon Name="pencil" Size="24" /></div>
             <div class="settings-info">
                 <h3>Display Name</h3>
@@ -81,7 +94,7 @@
 
     <div class="card settings-item">
         <div class="settings-row">
-            <div class="settings-icon"><Icon Name="search" Size="24" /></div>
+            <div class="settings-icon"><Icon Name="text-size" Size="24" /></div>
             <div class="settings-info">
                 <h3>Font Size</h3>
                 <p>@FormatFontSize(fontSize)</p>
@@ -342,10 +355,13 @@
             <img src="nous-icon.svg" alt="Nous" class="about-icon" />
             <div>
                 <h3>Nous</h3>
-                <p>v1.0</p>
+                @if (appVersion != null)
+                {
+                    <p>Version @appVersion</p>
+                }
             </div>
         </div>
-        <p class="about-desc">A visual math learning app. Built with Blazor WebAssembly.</p>
+        <p class="about-desc">Short, accurate lessons on the strange side of history, religion, science and philosophy.</p>
     </div>
 </div>
 
@@ -353,6 +369,8 @@
     private string activeTheme = "nous";
     private bool confirmReset;
     private bool soundEnabled = true;
+    private bool hapticsEnabled = true;
+    private string? appVersion;
     private bool shareUsage = true;
     private string currentName = "";
     private string newName = "";
@@ -403,6 +421,8 @@
             {
                 var muted = await JS.InvokeAsync<string>("localStorage.getItem", "nous-sound-muted");
                 soundEnabled = muted != "true";
+                hapticsEnabled = await JS.InvokeAsync<string>("localStorage.getItem", "nous-haptics-off") != "true";
+                appVersion = await JS.InvokeAsync<string?>("appVersion");
             }
             catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.readMuted", ex); }
             if (devTools) await RefreshErrorLog();
@@ -468,6 +488,19 @@
                 await JS.TryInvokeVoidAsync("Sounds.playClick");
         }
         catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.toggleSound", ex); }
+    }
+
+    private async Task ToggleHaptics()
+    {
+        hapticsEnabled = !hapticsEnabled;
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "nous-haptics-off", hapticsEnabled ? "false" : "true");
+            await JS.InvokeVoidAsync("Haptics.setEnabled", hapticsEnabled);
+            if (hapticsEnabled)
+                await JS.TryInvokeVoidAsync("Haptics.medium");
+        }
+        catch (Exception ex) { await JS.LogErrorAsync("SettingsPage.toggleHaptics", ex); }
     }
 
     private async Task SaveName()
@@ -650,7 +683,7 @@
         }
         catch
         {
-            await JS.InvokeVoidAsync("showToast", "Import cancelled", "");
+            await JS.InvokeVoidAsync("showToast", "Import canceled", "");
         }
     }
 

@@ -240,7 +240,6 @@ else if (state == ReviewState.Complete)
     {
         revealed = true;
         await JS.TryInvokeVoidAsync("Sounds.playReveal");
-        await JS.TryInvokeVoidAsync("Haptics.light");
     }
 
     private static bool HasScalarAnswer(Question q) =>
@@ -262,13 +261,11 @@ else if (state == ReviewState.Complete)
             xpEarned += earned;
             await Gamification.AwardXpAsync(earned);
             await JS.TryInvokeVoidAsync("Sounds.playCorrect");
-            await JS.TryInvokeVoidAsync("Haptics.success");
         }
         else
         {
             forgotCount++;
             await JS.TryInvokeVoidAsync("Sounds.playWrong");
-            await JS.TryInvokeVoidAsync("Haptics.warning");
         }
 
         currentIndex++;
@@ -276,7 +273,6 @@ else if (state == ReviewState.Complete)
         {
             state = ReviewState.Complete;
             await JS.TryInvokeVoidAsync("Sounds.playComplete");
-            await JS.TryInvokeVoidAsync("Haptics.medium");
         }
         else
         {

@@ -9,6 +9,9 @@ public class LeaderboardEntry
     public string Date { get; set; } = "";
     // A HallOfFame card id; anything that does not resolve to a known card is shown as the initial.
     public string? Avatar { get; set; }
+    // Added in the app by LeaderboardSeeds, never stored; such an entry is never "you" and never makes a name taken.
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsSeed { get; init; }
 }
 
 public interface ILeaderboardService

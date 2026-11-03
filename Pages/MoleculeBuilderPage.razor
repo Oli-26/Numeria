@@ -67,7 +67,8 @@ else
             <pattern id="mb-grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
                 <circle cx="10" cy="10" r="0.7" fill="var(--border)" opacity="0.55" />
             </pattern>
-            <filter id="mb-bond-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            @* Canvas-sized region: a bounding-box region is zero-height for a flat bond, which then never draws. *@
+            <filter id="mb-bond-shadow" filterUnits="userSpaceOnUse" x="-10" y="-10" width="420" height="320">
                 <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" />
                 <feOffset dx="0" dy="0.6" result="off" />
                 <feComponentTransfer><feFuncA type="linear" slope="0.55" /></feComponentTransfer>
@@ -99,10 +100,12 @@ else
 
         @foreach (var b in graph.Bonds)
         {
-            <g filter="url(#mb-bond-shadow)">
+            var bondDelay = Math.Max(Delay(graph.Atoms[b.A]), Delay(graph.Atoms[b.B]));
+            @* Keyed on its two atoms and order, so a new or changed bond draws itself in and the others stay put. *@
+            <g @key="(graph.Atoms[b.A], graph.Atoms[b.B], b.Order)" class="mb-bond" filter="url(#mb-bond-shadow)" style="--mb-delay: @(D(bondDelay))s">
                 @foreach (var ln in GetBondLines(graph.Atoms[b.A], graph.Atoms[b.B], b.Order))
                 {
-                    <line x1="@F(ln.X1)" y1="@F(ln.Y1)" x2="@F(ln.X2)" y2="@F(ln.Y2)"
+                    <line x1="@F(ln.X1)" y1="@F(ln.Y1)" x2="@F(ln.X2)" y2="@F(ln.Y2)" pathLength="1"
                           stroke="var(--text-secondary)" stroke-width="2.4" stroke-linecap="round" opacity="0.92" />
                 }
             </g>
@@ -118,6 +121,7 @@ else
             var isFirstBondPick = bondFirst == i;
             var isHetero = atom.Element is "O" or "N" or "S" or "P";
             <g @key="atom" class="mb-atom @(isFirstBondPick ? "selected" : "")">
+              <g class="mb-atom-in" style="--mb-delay: @(D(Delay(atom)))s">
                 @if (isHetero)
                 {
                     <circle cx="@F(atom.X)" cy="@F(atom.Y)" r="@(radius + 6)" fill="@elem.Color" opacity="0.18" filter="url(#mb-hetero-glow)" />
@@ -153,12 +157,13 @@ else
                         <text class="mb-open-num" x="@F(bx)" y="@F(by + 3)" text-anchor="middle">@open</text>
                     </g>
                 }
+              </g>
             </g>
         }
     </svg>
 </div>
 
-<div class="mb-status @StatusClass" role="status" aria-live="polite">
+<div class="mb-status @StatusClass" role="status" aria-live="polite" @key="StatusKey">
     @if (message != null)
     {
         <Icon Name="x-mark" Size="16" />
@@ -389,17 +394,20 @@ else
     {
         if (mode == "erase")
         {
+            delays.Remove(graph.Atoms[atom]);
             graph.RemoveAtom(atom);
+            Fx("tick", new { freq = 300, gain = 0.07, decay = 0.08 }, "light");
             Changed();
         }
         else if (mode == "bond")
         {
-            if (bondFirst == null) bondFirst = atom;
+            if (bondFirst == null) { bondFirst = atom; Fx("tick", new { freq = 1300, gain = 0.04, decay = 0.03 }, "select"); }
             else if (bondFirst == atom) bondFirst = null;
             else
             {
                 message = graph.SetBond(bondFirst.Value, atom, bondOrder);
                 bondFirst = null;
+                Snapped();
                 if (message == null) Changed();
             }
         }
@@ -410,6 +418,7 @@ else
         if (mode == "erase")
         {
             graph.RemoveBond(bond);
+            Fx("tick", new { freq = 300, gain = 0.07, decay = 0.08 }, "light");
             Changed();
         }
         else if (mode == "bond")
@@ -417,6 +426,7 @@ else
             var b = graph.Bonds[bond];
             bondFirst = null;
             message = graph.SetBond(b.A, b.B, bondOrder);
+            Snapped();
             if (message == null) Changed();
         }
     }
@@ -426,6 +436,8 @@ else
         bondFirst = null;
         if (mode != "atom") return;
         message = graph.AddAtom(selectedElement, ClampX(x), ClampY(y));
+        if (message == null) Fx("pop", new { from = 180, to = 420, gain = 0.09 }, "light");
+        else Fx("tick", new { freq = 220, gain = 0.07, decay = 0.1 }, "warning");
         if (message == null) Changed();
     }
 
@@ -434,7 +446,16 @@ else
     private void FillHydrogens()
     {
         bondFirst = null;
+        var before = graph.Atoms.Count;
         var unplaced = graph.FillHydrogens();
+        // The new hydrogens land one after another, each with its own click.
+        for (int i = before; i < graph.Atoms.Count; i++)
+        {
+            var d = (i - before) * 0.05;
+            delays[graph.Atoms[i]] = d;
+            _ = JS.InvokeVoidAsync("SimFx.play", "pop", new { from = 420, to = 1300, gain = 0.07, delay = d, key = "mb-h" + i });
+        }
+        if (graph.Atoms.Count > before) _ = JS.InvokeVoidAsync("SimFx.haptic", "light");
         message = unplaced > 0 ? $"No room for {unplaced} hydrogen{(unplaced == 1 ? "" : "s")}. Drag atoms apart and try again." : null;
         Changed();
     }
@@ -450,6 +471,8 @@ else
     private void LoadLibrary(LibraryMolecule m)
     {
         graph = m.Graph.Clone();
+        for (int i = 0; i < graph.Atoms.Count; i++) delays[graph.Atoms[i]] = i * 0.025;
+        Fx("tick", new { freq = 900, gain = 0.05 }, "light");
         bondFirst = null;
         message = null;
         Changed(fromLibrary: true);
@@ -459,8 +482,101 @@ else
     private void Changed(bool fromLibrary = false)
     {
         loaded = fromLibrary;
+        var was = recognition;
         recognition = MoleculeLibrary.Recognise(graph);
+        version++;
         if (!loaded && recognition.IsMatch && challenges.Contains(recognition.Molecule!.Name)) solved.Add(recognition.Molecule.Name);
+        if (!loaded && recognition.IsMatch && (!was.IsMatch || was.Molecule != recognition.Molecule))
+            _ = Recognised(recognition.Molecule!, version);
+    }
+
+    private readonly Dictionary<MolAtom, double> delays = new();
+    private int version;
+    private double Delay(MolAtom a) => delays.TryGetValue(a, out var d) ? d : 0;
+    private string StatusKey => message != null ? "warn" : recognition.IsMatch ? "ok:" + recognition.Molecule!.Name : recognition.Kind.ToString();
+
+    private void Fx(string voice, object opts, string haptic)
+    {
+        _ = JS.InvokeVoidAsync("SimFx.play", voice, opts);
+        _ = JS.InvokeVoidAsync("SimFx.haptic", haptic);
+    }
+
+    private void Snapped()
+    {
+        if (message == null) Fx("pop", new { gain = 0.14 }, "select");
+        else Fx("tick", new { freq = 220, gain = 0.07, decay = 0.1 }, "warning");
+    }
+
+    // Once the last atom has landed, the drawing eases into the library's tidy layout, turned to sit as close as
+    // possible to how it was drawn, and the molecule is named.
+    private async Task Recognised(LibraryMolecule m, int at)
+    {
+        var wait = graph.Atoms.Count == 0 ? 0 : graph.Atoms.Max(Delay);
+        var start = graph.Atoms.Select(a => (a.X, a.Y)).ToArray();
+        foreach (var a in graph.Atoms) delays.Remove(a);
+        if (wait > 0) await Task.Delay((int)(wait * 1000) + 180);
+        if (version != at) return;
+        _ = JS.InvokeVoidAsync("SimFx.play", "chime", new { freq = 784, gain = 0.07 });
+        _ = JS.InvokeVoidAsync("SimFx.haptic", "success");
+        var target = TidyLayout(m);
+        if (target == null) return;
+        var reduced = await JS.TryInvokeAsync<bool>("SimFx.reducedMotion");
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (version == at && press == null)
+        {
+            var u = reduced ? 1 : Math.Min(1, sw.ElapsedMilliseconds / 650.0);
+            var e = 1 - Math.Pow(1 - u, 3);
+            for (int i = 0; i < graph.Atoms.Count; i++)
+            {
+                graph.Atoms[i].X = start[i].X + (target[i].X - start[i].X) * e;
+                graph.Atoms[i].Y = start[i].Y + (target[i].Y - start[i].Y) * e;
+            }
+            StateHasChanged();
+            if (u >= 1) break;
+            await Task.Delay(16);
+        }
+    }
+
+    private (double X, double Y)[]? TidyLayout(LibraryMolecule m)
+    {
+        var map = graph.MapTo(m.Graph, recognition.Kind == MatchKind.Exact) ?? graph.MapTo(m.Graph, false);
+        if (map == null) return null;
+        var n = graph.Atoms.Count;
+        double ux = graph.Atoms.Average(a => a.X), uy = graph.Atoms.Average(a => a.Y);
+        double lx = m.Graph.Atoms.Average(a => a.X), ly = m.Graph.Atoms.Average(a => a.Y);
+        (double X, double Y)[]? best = null;
+        var bestErr = double.MaxValue;
+        foreach (var flip in new[] { 1.0, -1.0 })
+        {
+            var L = Enumerable.Range(0, n).Select(i => (X: m.Graph.Atoms[map[i]].X - lx, Y: (m.Graph.Atoms[map[i]].Y - ly) * flip)).ToArray();
+            var U = graph.Atoms.Select(a => (X: a.X - ux, Y: a.Y - uy)).ToArray();
+            double sxy = 0, sxx = 0;
+            for (int i = 0; i < n; i++) { sxy += L[i].X * U[i].Y - L[i].Y * U[i].X; sxx += L[i].X * U[i].X + L[i].Y * U[i].Y; }
+            var th = Math.Atan2(sxy, sxx);
+            var c = Math.Cos(th); var sn = Math.Sin(th);
+            var R = L.Select(p => (X: p.X * c - p.Y * sn, Y: p.X * sn + p.Y * c)).ToArray();
+            var err = Enumerable.Range(0, n).Sum(i => Math.Pow(R[i].X - U[i].X, 2) + Math.Pow(R[i].Y - U[i].Y, 2));
+            if (err < bestErr) { bestErr = err; best = R; }
+        }
+        var t = best!.Select(p => (X: p.X + ux, Y: p.Y + uy)).ToArray();
+        // Hydrogens on one atom are interchangeable, so give each the nearest of its siblings' targets.
+        for (int h = 0; h < n; h++)
+        {
+            if (graph.Atoms[h].Element == "H") continue;
+            var hs = graph.Bonds.Where(b => b.Joins(h)).Select(b => b.Other(h)).Where(o => graph.Atoms[o].Element == "H").ToList();
+            if (hs.Count < 2) continue;
+            var slots = hs.Select(o => t[o]).ToList();
+            foreach (var o in hs.OrderBy(o => o))
+            {
+                var k = slots.Select((p, j) => (j, d: Math.Pow(p.X - graph.Atoms[o].X, 2) + Math.Pow(p.Y - graph.Atoms[o].Y, 2))).MinBy(x => x.d).j;
+                t[o] = slots[k]; slots.RemoveAt(k);
+            }
+        }
+        double minX = t.Min(p => p.X), maxX = t.Max(p => p.X), minY = t.Min(p => p.Y), maxY = t.Max(p => p.Y);
+        double e = MoleculeGraph.Edge;
+        var dx = minX < e ? e - minX : maxX > MoleculeGraph.Width - e ? MoleculeGraph.Width - e - maxX : 0;
+        var dy = minY < e ? e - minY : maxY > MoleculeGraph.Height - e ? MoleculeGraph.Height - e - maxY : 0;
+        return t.Select(p => (p.X + dx, p.Y + dy)).ToArray();
     }
 
     private (double X, double Y) ToCanvas(PointerEventArgs e)
@@ -508,6 +624,7 @@ else
     }
 
     private static string F(double v) => v.ToString("0.#");
+    private static string D(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
 
     private static MarkupString Formula(string f) => new(Regex.Replace(f, @"\d+", "<sub>$0</sub>"));
 
@@ -570,8 +687,8 @@ else
         new("C",  "#3A3A3A", "#1B1B1B", "#FFF", "#7A7A7A", "#0E0E0E", 14),
         new("N",  "#3060E8", "#1E3FA8", "#FFF", "#7BA0FF", "#142776", 14),
         new("O",  "#E63946", "#A02530", "#FFF", "#FF8B85", "#7A1820", 13.5),
-        new("F",  "#2EB872", "#1F8650", "#FFF", "#74E2A6", "#155E36", 12),
-        new("P",  "#E89A2C", "#A86A18", "#FFF", "#FFC274", "#7A4A0E", 15),
+        new("F",  "#2EB872", "#1F8650", "#222", "#74E2A6", "#155E36", 12),
+        new("P",  "#E89A2C", "#A86A18", "#222", "#FFC274", "#7A4A0E", 15),
         new("S",  "#F4D03F", "#B89B1F", "#222", "#FFEE82", "#8B7615", 15),
         new("Cl", "#A8E6A1", "#6FB46A", "#222", "#D8F5D2", "#4F8A4A", 14),
     };
@@ -615,7 +732,7 @@ else
         font-size: 0.8rem; cursor: pointer; transition: all 0.15s ease;
         -webkit-tap-highlight-color: transparent;
     }
-    .mb-bond-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .mb-bond-btn.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
     .mb-canvas-wrap {
         padding: 8px; margin-bottom: 12px;
@@ -637,9 +754,13 @@ else
     .mb-open { fill: var(--accent); stroke: var(--bg-card); stroke-width: 1.2; }
     .mb-open-num { fill: #fff; font-size: 8.5px; font-weight: 800; font-family: system-ui, sans-serif; }
     @@keyframes mb-atom-pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
-    .mb-atom > g > circle { animation: mb-atom-pop 0.22s ease-out; }
+    .mb-atom-in { animation: mb-atom-pop 0.28s cubic-bezier(.2, .9, .3, 1.45) both; animation-delay: var(--mb-delay, 0s); transform-box: fill-box; transform-origin: center; }
+    @@keyframes mb-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+    .mb-bond line { stroke-dasharray: 1 1; animation: mb-draw 0.2s ease-out both; animation-delay: var(--mb-delay, 0s); }
+    .mb-status.ok { animation: mb-card-in 0.4s cubic-bezier(.2, .9, .3, 1.2); }
+    @@keyframes mb-card-in { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
     @@media (prefers-reduced-motion: reduce) {
-        .mb-atom > g > circle { animation: none; }
+        .mb-atom-in, .mb-bond line, .mb-status.ok { animation: none; }
         .mb-atom { transition: none; }
     }
 
@@ -702,7 +823,7 @@ else
         border: 2px solid var(--border); display: inline-flex; align-items: center; justify-content: center;
     }
     .mb-chal.done { border-color: var(--success); }
-    .mb-chal.done .mb-chal-tick { background: var(--success); border-color: var(--success); color: #fff; }
+    .mb-chal.done .mb-chal-tick { background: var(--success); border-color: var(--success); color: var(--on-success); }
 
     .mb-library { margin-top: 8px; }
     .mb-lib-grid {

@@ -21,6 +21,13 @@
     --radius-lg: 20px;
     --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --xp-text: #5a3e00;
+    /* Text on a primary, accent or success fill; themes with pale fills set these dark. */
+    --on-primary: #FFFFFF;
+    --on-accent: #FFFFFF;
+    --on-success: #FFFFFF;
+    --font-heading: var(--font-main);
+    --ink-l-min: 0;
+    --ink-l-max: 0.5;
 
     /* Motion system */
     --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -29,6 +36,14 @@
     --dur-normal: 250ms;
     --dur-slow: 400ms;
 }
+
+/* Theme typefaces (OFL, licences beside the files). Declared here so the shop's theme swatches can use them too;
+   a face only downloads once something on screen uses it. */
+@font-face { font-family: 'Cabin Sketch'; font-weight: 700; font-display: swap; src: url('../fonts/cabin-sketch-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'VT323'; font-weight: 400; font-display: swap; src: url('../fonts/vt323-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-weight: 400; font-display: swap; src: url('../fonts/im-fell-english-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-weight: 400; font-style: italic; font-display: swap; src: url('../fonts/im-fell-english-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Architects Daughter'; font-weight: 400; font-display: swap; src: url('../fonts/architects-daughter-latin-400-normal.woff2') format('woff2'); }
 
 @font-face {
     font-family: 'Cinzel';
@@ -43,13 +58,11 @@
     padding: 0;
 }
 
-html {
-    scroll-behavior: smooth;
-}
+/* The page colour sits on html alone, so a theme's fixed texture layer (body::before) shows through body. */
+html { background: var(--bg-main); }
 
 html, body {
     font-family: var(--font-main);
-    background: var(--bg-main);
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
@@ -117,6 +130,7 @@ body {
 }
 
 h1, h2, h3 {
+    font-family: var(--font-heading);
     color: var(--text-primary);
     line-height: 1.3;
     text-wrap: balance;
@@ -187,7 +201,7 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 
 .btn-primary {
     background: var(--primary);
-    color: white;
+    color: var(--on-primary);
 }
 
 .btn-primary:hover {
@@ -196,12 +210,12 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 
 .btn-accent {
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 .btn-success {
     background: var(--success);
-    color: white;
+    color: var(--on-success);
 }
 
 .btn-outline {
@@ -213,6 +227,7 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 .btn-sm {
     padding: 6px 14px;
     font-size: 0.85rem;
+    min-height: 36px;
 }
 
 .btn-lg {
@@ -563,6 +578,11 @@ a, button, .card-clickable, .option-btn, .tab, .nav-item {
 /* Topic colours as text: pulled toward the theme's text colour, so a dark brown title stays readable on a
    dark theme and a pale yellow one on a light theme. Set --topic-c to the topic's colour. */
 .topic-ink { color: color-mix(in oklab, var(--topic-c) 72%, var(--text-primary)); }
+/* Where supported, clamp the colour's lightness instead, so every topic colour clears 4.5:1 as text. Themes set the
+   bounds: light themes cap lightness, dark ones raise it. */
+@supports (color: oklch(from red l c h)) {
+    .topic-ink { color: oklch(from var(--topic-c) clamp(var(--ink-l-min), l, var(--ink-l-max)) min(c, 0.16) h); }
+}
 
 /* Rows of chips or tabs that scroll sideways: fade the right edge so a clipped label reads as "more this way". */
 .scroll-row {
@@ -1282,8 +1302,6 @@ button:focus-visible,
         transition-duration: 0.01ms !important;
     }
 
-    html { scroll-behavior: auto; }
-
     .skeleton::after {
         animation: none;
     }
@@ -1350,6 +1368,7 @@ button:focus-visible,
     max-height: 400px;
     object-fit: contain;
     background: #fff;
+    filter: var(--figure-filter, none);
 }
 
 .concept-figure figcaption {
@@ -1362,6 +1381,7 @@ button:focus-visible,
 /* Artworks keep their own edges, so no white matte; tall paintings get more room. Tapping opens js/figureZoom.js. */
 .concept-figure.art-figure img {
     background: transparent;
+    filter: none;
     max-height: 520px;
     cursor: zoom-in;
 }
@@ -1518,6 +1538,19 @@ html.sheet-open body {
     text-decoration: none;
 }
 
+/* Small chips, ticks and quiet links keep their look but get a touch area about 36px tall. */
+.era-tick, .etym-chip, button.chip, .tts-speed-btn, .ss-preset, .ss-law, .pd-sub, .pd-atm, .pg-chip, .ps-chip, .ct-quiz-btn,
+.btn-mini, .codex-filter, .feedback-link, .section-link, button.legend-item, .jump-chip, .bq-chip, .fp-tab, .mb-mode, .toggle-btn {
+    position: relative;
+}
+.era-tick::after, .etym-chip::after, button.chip::after, .tts-speed-btn::after, .ss-preset::after, .ss-law::after, .pd-sub::after,
+.pd-atm::after, .pg-chip::after, .ps-chip::after, .ct-quiz-btn::after, .btn-mini::after, .codex-filter::after, .feedback-link::after,
+.section-link::after, button.legend-item::after, .jump-chip::after, .bq-chip::after, .fp-tab::after, .mb-mode::after, .toggle-btn::after {
+    content: '';
+    position: absolute;
+    inset: -7px -2px;
+}
+
 /* ── Bottom sheet (avatar picker, unlock reveal, name editor) ── */
 .sheet-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 2000; animation: fadeIn .2s ease; }
 .bottom-sheet {
@@ -1540,7 +1573,7 @@ html.sheet-open body {
 .avatar-choice.on { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
 .avatar-choice small { font-size: .72rem; line-height: 1.2; text-align: center; color: var(--text-secondary); }
 .avatar-initial {
-    width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white;
+    width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: var(--on-primary);
     display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;
 }
 
@@ -1596,7 +1629,7 @@ html.sheet-open body {
 @keyframes xpRing { from { opacity: 1; } to { opacity: 0; scale: 2.2; } }
 .xp-hud-banner {
     position: absolute; top: calc(100% + 8px); right: 0; white-space: nowrap; padding: 6px 14px; border-radius: 14px;
-    background: var(--primary); color: #fff; font-weight: 800; font-size: .9rem; box-shadow: 0 6px 16px var(--shadow);
+    background: var(--primary); color: var(--on-primary); font-weight: 800; font-size: .9rem; box-shadow: 0 6px 16px var(--shadow);
     animation: xpBanner .4s cubic-bezier(.3, 1.6, .5, 1) backwards;
 }
 @keyframes xpBanner { from { opacity: 0; transform: translateY(-10px) scale(.8); } }
@@ -1681,3 +1714,55 @@ html.sheet-open body {
 .tcard.mini .tcard-inner { border-radius: 4px; }
 .tcard.mini .tcard-art { margin: 2px; border-radius: 3px; }
 .tcard.mini .tcard-icon { width: 70%; }
+
+/* Set by markScrollFade (index.html) on formulas that overflow their box. */
+.scroll-fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+.scroll-fade-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
+.scroll-fade-l.scroll-fade-r {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+}
+
+/* A switch's knob takes the on-colour when on, so it stays visible on themes whose primary is pale (Settings, Playground). */
+:root .toggle-btn.on .toggle-knob { background: var(--on-primary); }
+
+/* ── Shop theme swatches: a miniature page in each theme, independent of the theme being worn ── */
+.theme-swatch {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; height: 100%; font-family: var(--font-main);
+}
+.theme-swatch b { font-size: 1.35rem; line-height: 1; font-weight: 700; }
+.theme-swatch i { display: block; width: 26px; height: 7px; border-radius: 4px; }
+.ts-nous { background: radial-gradient(90% 60% at 50% 10%, #FBF8F2, #F4EFE6 60%, #EAE3D7); }
+.ts-nous b { color: #2A211B; font-family: Georgia, serif; }
+.ts-nous i { background: #B4552F; }
+.ts-dark { background: radial-gradient(90% 55% at 50% 0%, rgba(255, 186, 118, 0.28), transparent 70%), #17140F; }
+.ts-dark b { color: #F2E8D8; font-family: Georgia, serif; }
+.ts-dark i { background: #E07A4F; }
+.ts-chalkboard { background: radial-gradient(70% 25% at 30% 30%, rgba(243, 241, 231, 0.09), transparent 70%), #25352C; box-shadow: inset 0 -9px 0 #6E4C2F; }
+.ts-chalkboard b { color: #F3F1E7; font-family: 'Cabin Sketch', cursive; }
+.ts-chalkboard i { background: #F2D57E; margin-bottom: 6px; }
+.ts-neon { background: #131016; }
+.ts-neon b { color: #FFE3DA; text-shadow: 0 0 3px #FFB49E, 0 0 9px #FF6A45, 0 0 18px rgba(255, 106, 69, 0.6); }
+.ts-neon i { border: 1.5px solid #7CC0FF; box-shadow: 0 0 6px #7CC0FF; height: 8px; }
+.ts-blueprint {
+    background: linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px) -1px -1px / 13px 13px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px) -1px -1px / 13px 13px, #163F73;
+}
+.ts-blueprint b { color: #F5F9FF; font-family: 'Architects Daughter', cursive; font-weight: 400; }
+.ts-blueprint i { background: #F5F9FF; border-radius: 1px; }
+.ts-parchment { background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(120, 80, 30, 0.3)), #EDE0C2; }
+.ts-parchment b { color: #A3301B; font-family: 'IM Fell English', Georgia, serif; font-weight: 400; font-size: 1.55rem; }
+.ts-parchment i { background: #2B1E13; height: 2px; box-shadow: 0 5px 0 #2B1E13; margin-bottom: 5px; }
+.ts-terminal { background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0 1px, transparent 1px 3px), #070B07; }
+.ts-terminal b { color: #62FF8E; font-family: 'VT323', monospace; font-weight: 400; font-size: 1.7rem; text-shadow: 0 0 6px rgba(65, 255, 122, 0.6); }
+.ts-terminal i { background: #41FF7A; width: 10px; height: 13px; border-radius: 0; }
+.ts-solarized { background: linear-gradient(135deg, #FDF6E3 50%, #002B36 50%); }
+.ts-solarized b { color: #2AA198; }
+.ts-solarized i { background: linear-gradient(90deg, #B58900 0 25%, #DC322F 0 50%, #6C71C4 0 75%, #859900 0); border-radius: 1px; }
+.ts-aurora {
+    background: radial-gradient(1px 1px at 9px 50px, #fff, transparent 1.5px), radial-gradient(1px 1px at 40px 58px, #dfe6ff, transparent 1.5px),
+        linear-gradient(180deg, rgba(196, 90, 200, 0.35), rgba(91, 242, 176, 0.45) 35%, transparent 70%), #070B1C;
+}
+.ts-aurora b { color: #EAF0FF; }
+.ts-aurora i { background: #5BF2B0; }

@@ -65,7 +65,7 @@ else if (unlocked)
                 @if (activeExperiment.Id == "pi")
                 {
                     <label>p = @pNormLabel | pi = @LpPi(pNorm).ToString("F4")</label>
-                    <input type="range" min="0" max="100" value="@pNormSlider" @oninput="OnPiChange" />
+                    <input id="pi-slider" type="range" min="0" max="100" value="@pNormSlider" @oninput="OnPiChange" />
                     <div class="preset-row">
                         <button class="btn btn-sm btn-outline" @onclick="() => SetPNorm(0)">p = 1</button>
                         <button class="btn btn-sm btn-outline" @onclick="() => SetPNorm(25)">p = 2</button>
@@ -508,10 +508,39 @@ else if (unlocked)
         return total / 2;
     }
 
+    // The preset buttons glide the slider there, so pi visibly counts to its new value.
     private async Task SetPNorm(int slider)
     {
+        var id = ++piTween;
+        var from = pNormSlider;
+        if (from == slider) return;
+        if (!await ReducedMotion())
+        {
+            const int frames = 14;
+            for (int i = 1; i < frames && id == piTween; i++)
+            {
+                var u = 1 - Math.Pow(1 - i / (double)frames, 3);
+                pNormSlider = (int)Math.Round(from + (slider - from) * u);
+                StateHasChanged();
+                await DrawExperiment();
+                await Task.Delay(28);
+            }
+        }
+        if (id != piTween) return;
         pNormSlider = slider;
+        StateHasChanged();
         await DrawExperiment();
+        _ = JS.InvokeVoidAsync("PiLab.detent", slider);
+    }
+
+    private static readonly int[] PiDetents = { 0, 25, 100 };
+    private int piTween;
+    private bool? reducedMotion;
+    private async Task<bool> ReducedMotion()
+    {
+        try { reducedMotion ??= await JS.InvokeAsync<bool>("SimFx.reducedMotion"); }
+        catch (JSException) { reducedMotion = false; }
+        return reducedMotion.Value;
     }
 
     private async Task DrawGravity()
@@ -1938,7 +1967,18 @@ else if (unlocked)
     }
 
     // --- Input handlers ---
-    private async Task OnPiChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { pNormSlider = v; await DrawExperiment(); } }
+    // p = 1, 2 and infinity are detents: the slider is pulled onto them when it passes close by.
+    private async Task OnPiChange(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var v)) return;
+        piTween++;
+        var snap = PiDetents.FirstOrDefault(d => Math.Abs(v - d) <= 3, -1);
+        var to = snap >= 0 ? snap : v;
+        if (snap >= 0 && pNormSlider != snap) _ = JS.InvokeVoidAsync("PiLab.detent", snap);
+        if (to != v) _ = JS.InvokeVoidAsync("PiLab.pin", "pi-slider", to);
+        pNormSlider = to;
+        await DrawExperiment();
+    }
     private async Task OnGravityChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { gravitySlider = v; await DrawExperiment(); } }
     private async Task OnDivZeroChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { divZeroSlider = v; await DrawExperiment(); } }
     private async Task OnDimensionChange(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) { dimensionCount = v; await DrawExperiment(); } }

@@ -1,5 +1,6 @@
 @page "/reaction-bench"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -92,80 +93,8 @@
             <div class="rb-warning" role="alert"><strong>Never mix these at home.</strong> @rxn.Warning</div>
         }
         <div class="rb-viz">
-            @switch (rxn.Effect)
-            {
-                case "gas":
-                    <svg viewBox="0 0 200 120" class="rb-svg">
-                        <rect x="40" y="40" width="120" height="70" rx="6" fill="#cfe5ff" opacity="0.45" />
-                        <rect x="40" y="40" width="120" height="6" fill="#9fc8ff" opacity="0.6" />
-                        @for (int i = 0; i < 8; i++)
-                        {
-                            var cx = 50 + (i * 14);
-                            var delay = (i * 0.25).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                            <circle cx="@cx" cy="100" r="4" fill="#ffffff" opacity="0.85" class="bubble" style="animation-delay: @(delay)s"></circle>
-                        }
-                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Gas evolved</text>
-                    </svg>
-                    break;
-                case "precipitate":
-                    <svg viewBox="0 0 200 120" class="rb-svg">
-                        <rect x="40" y="40" width="120" height="70" rx="6" fill="#e9efff" opacity="0.45" />
-                        <rect x="40" y="40" width="120" height="6" fill="#bfd0ff" opacity="0.6" />
-                        @for (int i = 0; i < 14; i++)
-                        {
-                            var cx = 48 + ((i * 9) % 110);
-                            var delay = ((i % 5) * 0.2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                            var color = rxn.ColorHex ?? "#f6f6f6";
-                            <circle cx="@cx" cy="50" r="3" fill="@color" class="precip" style="animation-delay: @(delay)s"></circle>
-                        }
-                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Precipitate forms</text>
-                    </svg>
-                    break;
-                case "flame":
-                    <svg viewBox="0 0 200 120" class="rb-svg">
-                        <ellipse cx="100" cy="100" rx="60" ry="8" fill="#222" opacity="0.4" />
-                        <path d="M70 100 Q80 50 100 30 Q120 50 130 100 Z" fill="#ff8a1f" class="flame" />
-                        <path d="M82 100 Q90 65 100 50 Q110 65 118 100 Z" fill="#ffd24d" class="flame-inner" />
-                        <text x="100" y="20" text-anchor="middle" font-size="11" fill="var(--text-muted)">Combustion</text>
-                    </svg>
-                    break;
-                case "color":
-                    <div class="rb-color-box" style="background: @(rxn.ColorHex ?? "#888");">
-                        <span>Color change</span>
-                    </div>
-                    break;
-                case "heat":
-                    <svg viewBox="0 0 200 120" class="rb-svg">
-                        <rect x="40" y="40" width="120" height="70" rx="6" fill="#ffd9c2" opacity="0.45" />
-                        @for (int i = 0; i < 5; i++)
-                        {
-                            var x = 60 + i * 20;
-                            var delay = (i * 0.2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                            <path d="M@x 90 q-4 -8 0 -16 q4 -8 0 -16" stroke="#ff7847" stroke-width="2" fill="none" class="heat-wave" style="animation-delay: @(delay)s" />
-                        }
-                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Heat released</text>
-                    </svg>
-                    break;
-                case "rust":
-                    <svg viewBox="0 0 200 120" class="rb-svg">
-                        <rect x="40" y="50" width="120" height="40" rx="3" fill="#9aa3a8" />
-                        <rect x="40" y="50" width="120" height="40" rx="3" fill="#a0522d" opacity="0.0" class="rust-fade" />
-                        <text x="100" y="30" text-anchor="middle" font-size="11" fill="var(--text-muted)">Slow oxidation</text>
-                    </svg>
-                    break;
-                case "split":
-                    <svg viewBox="0 0 200 120" class="rb-svg">
-                        <circle cx="100" cy="60" r="14" fill="#6aa8ff" class="split-core" />
-                        <circle cx="60" cy="60" r="8" fill="#6aa8ff" class="split-left" />
-                        <circle cx="140" cy="60" r="8" fill="#ffaa55" class="split-right" />
-                        <text x="100" y="100" text-anchor="middle" font-size="11" fill="var(--text-muted)">Decomposition</text>
-                    </svg>
-                    break;
-                case "none":
-                default:
-                    <div class="rb-none-box">No visible reaction</div>
-                    break;
-            }
+            <canvas id="rb-stage" class="rb-stage" role="img" aria-label="@Caption(rxn)"></canvas>
+            <span class="rb-caption">@Caption(rxn)</span>
         </div>
 
         @if (!mysteryMode || revealed)
@@ -175,7 +104,7 @@
                 <div class="rb-products-title">Products</div>
                 <div>@rxn.Products</div>
             </div>
-            <div class="rb-explain">@rxn.Explanation</div>
+            <div class="rb-explain">@((MarkupString)rxn.Explanation)</div>
         }
         else
         {
@@ -198,7 +127,7 @@ else if (showNoMatch)
             else
             {
                 <strong>Not in this bench yet.</strong>
-                <p>This combination is not modelled here, which does not mean nothing happens. Try a classic acid + base, an active metal + acid, or a halide salt + silver nitrate.</p>
+                <p>This combination is not modeled here, which does not mean nothing happens. Try a classic acid + base, an active metal + acid, or a halide salt + silver nitrate.</p>
             }
         </div>
     </div>
@@ -239,6 +168,55 @@ else if (showNoMatch)
         foreach (var r in pick.Reagents) selected.Add(r);
     }
 
+    private bool playPending;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!playPending || currentResult == null) return;
+        playPending = false;
+        await JS.InvokeVoidAsync("RbLab.run", "rb-stage", Spec(currentResult));
+    }
+
+    private bool Has(Reaction r, string f) => r.Reagents.Contains(f);
+
+    // What the vessel shows, from what the reaction really looks like.
+    private object Spec(Reaction r)
+    {
+        if ((Has(r, "Na") || Has(r, "K")) && (Has(r, "H2O") || Has(r, "HCl")))
+            return new { scene = "skate", metal = Has(r, "K") ? "K" : "Na" };
+        return r.Effect switch
+        {
+            "flame" => new { scene = "flame", fuel = r.Reagents.First(f => f != "O2") },
+            "precipitate" when Has(r, "NH3") => new { scene = "smoke" },
+            "precipitate" => new { scene = "precip", color = r.ColorHex ?? "#f4f4f4", nail = Has(r, "Fe") },
+            "gas" => new
+            {
+                scene = "gas",
+                metal = Has(r, "Mg") ? "Mg" : Has(r, "Fe") ? "Fe" : Has(r, "Yeast") ? "Yeast" : "",
+                vigor = Has(r, "Mg") ? (Has(r, "HCl") ? 0.9 : 0.4) : Has(r, "Fe") ? 0.3 : Has(r, "Yeast") ? 0.15 : 0.5,
+                haze = Has(r, "NaOCl") && (Has(r, "HCl") || Has(r, "CH3COOH")),
+            },
+            "heat" => new { scene = "heat" },
+            "color" => new { scene = Has(r, "AgNO3") ? "copperSilver" : "copperBlack" },
+            "rust" => new { scene = "rust" },
+            "split" => new { scene = "split" },
+            _ => new { scene = "none", grains = Has(r, "NaCl") || Has(r, "Glu") },
+        };
+    }
+
+    private static string Caption(Reaction r) => r.Effect switch
+    {
+        "gas" => "Gas evolved",
+        "precipitate" when r.Reagents.Contains("NH3") => "White smoke forms",
+        "precipitate" => "Precipitate forms",
+        "flame" => "Combustion",
+        "color" => "Color change",
+        "heat" => "Heat released",
+        "rust" => "Slow oxidation",
+        "split" => "Decomposition",
+        _ => "No visible reaction",
+    };
+
     private void RunReaction()
     {
         revealed = false;
@@ -247,7 +225,7 @@ else if (showNoMatch)
         currentResult = null;
 
         var match = reactions.FirstOrDefault(r => SameSet(r.Reagents));
-        if (match != null) currentResult = match;
+        if (match != null) { currentResult = match; playPending = true; }
         else
         {
             noReaction = nonReactions.FirstOrDefault(n => SameSet(n.Reagents));
@@ -533,7 +511,7 @@ else if (showNoMatch)
             "Bleach and ammonia form chloramine, a toxic gas that damages the lungs. With more bleach it can go on to form more hazardous products.",
             "gas",
             null,
-            "Bleach plus ammonia (found in many cleaners) releases toxic chloramine vapour that can cause serious lung damage."),
+            "Bleach plus ammonia (found in many cleaners) releases toxic chloramine vapor that can cause serious lung damage."),
 
         // Cu + AgNO3 single replacement
         new(new[] { "Cu", "AgNO3" },
@@ -559,7 +537,7 @@ else if (showNoMatch)
     .rb-intro { padding: 12px 14px; margin-bottom: 14px; }
     .rb-intro-row { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.9rem; }
     .rb-mystery {
-        display: flex; align-items: center; gap: 6px; margin-top: 10px;
+        display: flex; align-items: center; gap: 6px; margin-top: 4px; min-height: 36px;
         font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;
     }
     .rb-mystery input { accent-color: var(--primary); }
@@ -621,14 +599,10 @@ else if (showNoMatch)
         padding: 10px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center;
         min-height: 130px;
     }
-    .rb-svg { width: 100%; max-width: 280px; height: auto; }
+    .rb-viz { flex-direction: column; gap: 4px; }
+    .rb-stage { width: 100%; max-width: 340px; aspect-ratio: 280 / 170; display: block; }
+    .rb-caption { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
 
-    .rb-color-box {
-        width: 100%; max-width: 280px; height: 110px; border-radius: var(--radius-sm);
-        display: flex; align-items: center; justify-content: center;
-        color: white; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
-    .rb-none-box { color: var(--text-muted); font-style: italic; }
 
     .rb-equation {
         font-family: 'Cinzel', serif; font-size: 1.05rem; text-align: center;
@@ -655,77 +629,13 @@ else if (showNoMatch)
     .rb-no-match strong { color: var(--error); display: block; margin-bottom: 6px; }
     .rb-no-match p { margin: 0; color: var(--text-secondary); font-size: 0.85rem; }
 
-    /* SVG animations */
-    .bubble {
-        animation: bubbleRise 2.6s ease-in infinite;
-        transform-origin: center;
-    }
-    @@keyframes bubbleRise {
-        0% { transform: translateY(0); opacity: 0; }
-        15% { opacity: 1; }
-        100% { transform: translateY(-55px); opacity: 0; }
-    }
-
-    .precip {
-        animation: precipFall 2.6s ease-in infinite;
-    }
-    @@keyframes precipFall {
-        0% { transform: translateY(0); opacity: 0; }
-        20% { opacity: 1; }
-        100% { transform: translateY(50px); opacity: 0.7; }
-    }
-
-    .flame, .flame-inner {
-        transform-origin: 100px 100px;
-        animation: flicker 2.2s ease-in-out infinite alternate;
-    }
-    .flame-inner { animation-duration: 1.7s; }
-    @@keyframes flicker {
-        from { transform: scale(1, 1); }
-        to { transform: scale(1.02, 0.97); }
-    }
-
-    .heat-wave {
-        animation: heatRise 3s ease-in-out infinite;
-    }
-    @@keyframes heatRise {
-        0% { opacity: 0; transform: translateY(10px); }
-        50% { opacity: 1; }
-        100% { opacity: 0; transform: translateY(-10px); }
-    }
-
-    .rust-fade { opacity: 0.85; animation: rustGrow 3s ease-out both; }
-    @@keyframes rustGrow {
-        from { opacity: 0; }
-        to { opacity: 0.85; }
-    }
-
-    .split-core { animation: splitPulse 3.6s ease-in-out infinite; transform-origin: 100px 60px; }
-    .split-left { animation: splitLeft 3.6s ease-in-out infinite; }
-    .split-right { animation: splitRight 3.6s ease-in-out infinite; }
-    @@keyframes splitPulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(0.4); opacity: 0.4; }
-    }
-    @@keyframes splitLeft {
-        0% { transform: translateX(40px); opacity: 0; }
-        50% { opacity: 1; }
-        100% { transform: translateX(0); opacity: 1; }
-    }
-    @@keyframes splitRight {
-        0% { transform: translateX(-40px); opacity: 0; }
-        50% { opacity: 1; }
-        100% { transform: translateX(0); opacity: 1; }
-    }
-
     @@keyframes rbFade {
         from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     @@media (prefers-reduced-motion: reduce) {
-        .rb-result, .bubble, .precip, .flame, .flame-inner, .heat-wave, .rust-fade,
-        .split-core, .split-left, .split-right { animation: none; }
+        .rb-result { animation: none; }
         .reagent-chip { transition: none; }
     }
 </style>

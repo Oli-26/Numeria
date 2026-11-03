@@ -10,7 +10,8 @@ public sealed class TraitSelection
 }
 
 // Trait values live in [0, 1]: lightness 0 = black, 1 = pale; size and speed 0 = smallest/slowest.
-public sealed record Organism(double[] Traits, double X, double Y)
+// ParentX/ParentY is where the parent stood (NaN in the founding generation), so offspring can be drawn leaving it.
+public sealed record Organism(double[] Traits, double X, double Y, double ParentX = double.NaN, double ParentY = double.NaN)
 {
     public double this[EvoTrait t] => Traits[(int)t];
 }
@@ -118,7 +119,7 @@ public sealed class EvolutionModel
                 traits[i] = MutationSd > 0 ? Reflect(parent.Traits[i] + MutationSd * Gaussian()) : parent.Traits[i];
             next.Add(new Organism(traits,
                 ReflectPosition(parent.X + PositionJitter * Gaussian()),
-                ReflectPosition(parent.Y + PositionJitter * Gaussian())));
+                ReflectPosition(parent.Y + PositionJitter * Gaussian()), parent.X, parent.Y));
         }
         Population = next;
         History.Add(Stats());

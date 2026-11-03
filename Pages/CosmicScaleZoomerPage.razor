@@ -39,8 +39,8 @@
 
     <div class="cosmic-display card @RegimeClass">
         <div class="cosmic-readout-row">
-            <div class="cosmic-magnitude">10<sup>@Cur.Exponent</sup> m</div>
-            <div class="cosmic-mono-readout">EXP @Cur.Exponent.ToString("+00;-00")</div>
+            <div class="cosmic-magnitude">10<sup id="cz-exp">@Cur.Exponent</sup> m</div>
+            <div class="cosmic-mono-readout">EXP <span id="cz-mono">@Cur.Exponent.ToString("+00;-00")</span></div>
         </div>
         <div class="cosmic-name">@Cur.Name</div>
         <div class="cosmic-readable">@FormatMeters(Cur.Exponent)</div>
@@ -49,7 +49,23 @@
             <div class="cosmic-bg-layer">
                 @((MarkupString)BackgroundForRegime(Cur.Exponent))
             </div>
-            <div class="cosmic-scene-layer" @key="currentIndex">
+            @if (transition > 0 && prevIndex >= 0 && !reducedMotion)
+            {
+                @if (zoomDir > 0)
+                {
+                    <div class="cosmic-scene-layer cz-old-out" @key="@($"o{transition}")" style="background: @scales[prevIndex].BackgroundTint">
+                        @((MarkupString)SceneSvgAt(prevIndex))
+                    </div>
+                }
+                else
+                {
+                    <div class="cosmic-scene-layer cz-old-in" @key="@($"o{transition}")">
+                        @((MarkupString)SceneSvgAt(prevIndex))
+                    </div>
+                    <div class="cz-window" @key="@($"w{transition}")" style="background: @Cur.BackgroundTint"></div>
+                }
+            }
+            <div class="cosmic-scene-layer @(transition > 0 && !reducedMotion ? (zoomDir > 0 ? "cz-new-out" : "cz-new-in") : "")" @key="transition">
                 @((MarkupString)SceneSvg)
             </div>
             <div class="cosmic-frame-chrome">
@@ -129,10 +145,13 @@
 @code {
     private bool reducedMotion;
     private int currentIndex;
+    private int prevIndex = -1, zoomDir, transition;
+    private bool rollPending;
 
     // CSS cannot pause SVG animate elements, so reduced-motion users get the scenes without them.
     private static readonly System.Text.RegularExpressions.Regex SvgAnimate = new(@"<animate\b[^>]*/>");
-    private string SceneSvg => reducedMotion ? SvgAnimate.Replace(Cur.Svg, "") : Cur.Svg;
+    private string SceneSvg => SceneSvgAt(currentIndex);
+    private string SceneSvgAt(int i) => reducedMotion ? SvgAnimate.Replace(scales[i].Svg, "") : scales[i].Svg;
 
     private Scale Cur => scales[currentIndex];
     private Scale? Prv => currentIndex > 0 ? scales[currentIndex - 1] : null;
@@ -184,19 +203,33 @@
             catch (JSException) { }
             StateHasChanged();
         }
+        if (rollPending)
+        {
+            rollPending = false;
+            try { await JS.InvokeVoidAsync("CosmicLab.roll", scales[prevIndex].Exponent, Cur.Exponent); } catch (JSException) { }
+        }
+    }
+
+    // Bigger index is a bigger scale: zooming out shrinks the old view into the new one, zooming in grows the new view out of it.
+    private void GoTo(int idx)
+    {
+        idx = Math.Clamp(idx, 0, scales.Count - 1);
+        if (idx == currentIndex) return;
+        prevIndex = currentIndex;
+        zoomDir = Math.Sign(idx - currentIndex);
+        currentIndex = idx;
+        transition++;
+        rollPending = true;
     }
 
     private void OnSliderInput(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value?.ToString(), out var v))
-        {
-            currentIndex = Math.Clamp(v, 0, scales.Count - 1);
-        }
+        if (int.TryParse(e.Value?.ToString(), out var v)) GoTo(v);
     }
 
-    private void ZoomIn() { if (currentIndex > 0) currentIndex--; }
-    private void ZoomOut() { if (currentIndex < scales.Count - 1) currentIndex++; }
-    private void JumpTo(int idx) { currentIndex = Math.Clamp(idx, 0, scales.Count - 1); }
+    private void ZoomIn() => GoTo(currentIndex - 1);
+    private void ZoomOut() => GoTo(currentIndex + 1);
+    private void JumpTo(int idx) => GoTo(idx);
 
     private static string FormatMeters(int exp)
     {
@@ -1484,7 +1517,7 @@
         display: flex; align-items: center; justify-content: center;
         transition: all 0.15s ease; -webkit-tap-highlight-color: transparent;
     }
-    .zoom-btn:hover:not(:disabled) { background: var(--primary); color: white; }
+    .zoom-btn:hover:not(:disabled) { background: var(--primary); color: var(--on-primary); }
     .zoom-btn:active:not(:disabled) { transform: scale(0.92); }
     .zoom-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
@@ -1584,9 +1617,33 @@
     .cosmic-bg-layer { z-index: 0; opacity: 0.85; }
     .cosmic-bg-layer svg { width: 100%; height: 100%; max-width: none; }
     .cosmic-scene-layer { z-index: 1; animation: sceneFade 0.25s ease-out; }
+    .cz-old-out, .cz-old-in { pointer-events: none; }
+    .cz-old-out { z-index: 2; border: 1px solid var(--accent); animation: czShrink 0.55s cubic-bezier(.5, 0, .7, .4) forwards; }
+    .cz-new-out { animation: czSettle 0.55s cubic-bezier(.2, .7, .3, 1) both; }
+    .cz-old-in { z-index: 0; animation: czPast 0.5s ease-in forwards; }
+    .cz-window { position: absolute; inset: 0; z-index: 1; border: 1px solid var(--accent); animation: czGrow 0.55s cubic-bezier(.3, .6, .3, 1) forwards; }
+    .cz-new-in { z-index: 1; animation: czGrowScene 0.55s cubic-bezier(.3, .6, .3, 1) both; }
+    @@keyframes czShrink {
+        0% { transform: scale(1); opacity: 1; }
+        80% { opacity: 1; }
+        100% { transform: scale(0.1); opacity: 0; }
+    }
+    @@keyframes czSettle { from { transform: scale(1.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @@keyframes czPast { from { transform: scale(1); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+    @@keyframes czGrow {
+        0% { transform: scale(0.1); opacity: 1; }
+        85% { opacity: 1; }
+        100% { transform: scale(1); opacity: 0; }
+    }
+    @@keyframes czGrowScene { from { transform: scale(0.1); } to { transform: scale(1); } }
+    #cz-exp { display: inline-block; }
+    .cz-roll-up { animation: czRollUp 0.12s ease-out; }
+    .cz-roll-down { animation: czRollDown 0.12s ease-out; }
+    @@keyframes czRollUp { from { transform: translateY(45%); opacity: 0.3; } to { transform: none; opacity: 1; } }
+    @@keyframes czRollDown { from { transform: translateY(-45%); opacity: 0.3; } to { transform: none; opacity: 1; } }
 
     .cosmic-frame-chrome {
-        position: absolute; inset: 0; pointer-events: none; z-index: 2;
+        position: absolute; inset: 0; pointer-events: none; z-index: 3;
     }
     .chrome-corner {
         position: absolute; width: 12px; height: 12px;
@@ -1679,7 +1736,7 @@
     .jump-chip:hover { border-color: var(--primary); color: var(--text-primary); }
     .jump-chip:active { transform: scale(0.95); }
     .jump-chip.jump-active {
-        background: var(--primary); color: white; border-color: var(--primary);
+        background: var(--primary); color: var(--on-primary); border-color: var(--primary);
     }
 
     /* muted regime hues, mixed toward --text-primary so they stay legible in light and dark themes */
@@ -1702,7 +1759,7 @@
 
     @@media (prefers-reduced-motion: reduce) {
         .cosmic-display { animation: none; }
-        .cosmic-scene-layer { animation: none; }
+        .cosmic-scene-layer, .cz-window, .cz-roll-up, .cz-roll-down { animation: none; }
         .axis-cursor, .zoom-btn, .jump-chip { transition: none; }
     }
 

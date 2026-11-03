@@ -1,19 +1,76 @@
+/* Chalkboard: a real slate board, half wiped, with chalk-drawn boxes, hand-lettered headings and the wooden chalk tray
+   along the bottom. */
 :root {
-    --primary: #D4D4A0;
-    --primary-light: #E8E8C8;
-    --primary-dark: #B0B070;
-    --accent: #F0C878;
-    --accent-light: #FFE0A0;
-    --bg-main: #2B4C2B;
-    --bg-card: #1D361D;
-    --bg-surface: #243824;
-    --text-primary: #E8E8D0;
-    --text-secondary: #B8B8A0;
-    --text-muted: #9E9E80;
-    --success: #90C890;
-    --error: #E88080;
-    --warning: #D4B060;
-    --border: #3A5C3A;
-    --shadow: rgba(0, 0, 0, 0.3);
-    --xp-text: #FFE0A0;
+    --primary: #F2D57E;
+    --primary-light: #F7E3A8;
+    --primary-dark: #D9B856;
+    --accent: #F4A9B4;
+    --accent-light: #F8C6CD;
+    --bg-main: #25352C;
+    --bg-card: #2B3D33;
+    --bg-surface: #31453A;
+    --text-primary: #F3F1E7;
+    --text-secondary: #DCDDD0;
+    --text-muted: #AEB5A6;
+    --success: #A9DCC2;
+    --error: #F59A8F;
+    --warning: #F2D57E;
+    --border: rgba(243, 241, 231, 0.32);
+    --shadow: rgba(0, 0, 0, 0.25);
+    --xp-text: #F7E3A8;
+    --on-primary: #25352C;
+    --on-accent: #25352C;
+    --on-success: #1E2D25;
+    --ink-l-min: 0.75;
+    --ink-l-max: 1;
+    --figure-filter: brightness(0.84) contrast(1.04);
+    --font-heading: 'Cabin Sketch', 'Comic Sans MS', cursive;
+    --radius-sm: 6px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
 }
+
+/* Chalk dust over the slate, and the wide pale arcs a board rubber leaves behind. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(60% 18% at 22% 18%, rgba(243, 241, 231, 0.05), transparent 70%),
+        radial-gradient(55% 15% at 78% 46%, rgba(243, 241, 231, 0.045), transparent 70%),
+        radial-gradient(70% 20% at 35% 78%, rgba(243, 241, 231, 0.04), transparent 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 .95 0 0 0 .09 -.01'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+:root h1, :root h2, :root h3 { font-weight: 700; letter-spacing: 0.01em; }
+
+/* Boxes are drawn on the board, not stuck on it: no fill, a slightly uneven chalk line. */
+:root .card {
+    background: rgba(243, 241, 231, 0.025);
+    border: 1.5px solid rgba(243, 241, 231, 0.5);
+    border-radius: 7px 5px 8px 4px / 5px 8px 4px 7px;
+    box-shadow: none;
+}
+:root .card-clickable:hover, :root .card-clickable:active { box-shadow: none; border-color: rgba(243, 241, 231, 0.8); }
+
+/* Buttons are shaded in with the side of the chalk, so the board shows through in specks. */
+:root .btn-primary, :root .btn-accent, :root .btn-success {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .15 0 0 0 0 .2 0 0 0 0 .17 0 0 0 1.6 -.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    border-radius: 6px 4px 7px 5px;
+}
+:root .btn-outline { border-style: solid; border-width: 1.5px; border-radius: 6px 4px 7px 5px; }
+
+/* The wooden tray the chalk sits in. */
+:root .bottom-nav {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 3px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 9px, rgba(255, 255, 255, 0.03) 9px 10px, transparent 10px 23px),
+        linear-gradient(180deg, #7A5534, #5C3E25);
+    border-top: 3px solid #8C6440;
+    box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.35);
+}
+:root .nav-item { color: #E9D9C2; }
+:root .nav-item.active { color: #FFF4D6; }
+:root .nav-hub-disc { box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), 0 0 0 4px #6A4A2D; }

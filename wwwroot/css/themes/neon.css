@@ -1,19 +1,90 @@
+/* Neon Glow: a sign shop at night. Real neon gas burns red-orange and argon burns blue, so those are the two tubes.
+   Only page titles and things you can press are lit; everything else is the dark wall the tubes are mounted on. */
 :root {
-    --primary: #00FFD0;
-    --primary-light: #66FFE0;
-    --primary-dark: #00CC99;
-    --accent: #FF00FF;
-    --accent-light: #FF66FF;
-    --bg-main: #0A0A1A;
-    --bg-card: #12122A;
-    --bg-surface: #1A1A3A;
-    --text-primary: #E0E0FF;
-    --text-secondary: #A0A0D0;
-    --text-muted: #8080C8;
-    --success: #00FF88;
-    --error: #FF3366;
-    --warning: #FFaa00;
-    --border: #2A2A5A;
-    --shadow: rgba(0, 255, 208, 0.1);
-    --xp-text: #FF66FF;
+    --primary: #FF6A45;
+    --primary-light: #FF9878;
+    --primary-dark: #E2492A;
+    --accent: #7CC0FF;
+    --accent-light: #A9D6FF;
+    --bg-main: #131016;
+    --bg-card: #1B171F;
+    --bg-surface: #241F29;
+    --text-primary: #F1EAF2;
+    --text-secondary: #D0C6D4;
+    --text-muted: #A497A8;
+    --success: #6FE3A6;
+    --error: #FF6F7D;
+    --warning: #FFC46B;
+    --border: #2E2734;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --xp-text: #A9D6FF;
+    --on-primary: #1A0B06;
+    --on-accent: #06121F;
+    --on-success: #04170D;
+    --ink-l-min: 0.75;
+    --ink-l-max: 1;
+    --figure-filter: brightness(0.84) contrast(1.04);
+    --radius-md: 16px;
+}
+
+/* Painted brick behind the tubes, kept very low so text sits on an even dark. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(80% 40% at 50% 0%, rgba(255, 106, 69, 0.07), transparent 70%),
+        linear-gradient(rgba(0, 0, 0, 0.28) 1px, transparent 1px) 0 0 / 64px 24px,
+        linear-gradient(90deg, rgba(0, 0, 0, 0.28) 1px, transparent 1px) 0 0 / 64px 48px,
+        linear-gradient(90deg, rgba(0, 0, 0, 0.28) 1px, transparent 1px) 32px 24px / 64px 48px;
+}
+
+/* A page title is a lit tube: pale core, coloured halo. It strikes with a flicker when the page opens, as a cold tube does. */
+:root h1 {
+    color: #FFE3DA;
+    text-shadow: 0 0 2px #FFB49E, 0 0 8px var(--primary), 0 0 22px rgba(255, 106, 69, 0.55), 0 0 44px rgba(255, 106, 69, 0.25);
+    animation: neon-strike 0.9s steps(1) both;
+}
+@keyframes neon-strike {
+    0% { opacity: 0.15; } 12% { opacity: 1; } 18% { opacity: 0.3; } 26% { opacity: 1; } 31% { opacity: 0.55; } 40%, 100% { opacity: 1; }
+}
+
+:root .card {
+    background: #1B171F;
+    border-color: #2E2734;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Pressable things are bent glass: round ends, a glowing outline, no fill. */
+:root .btn-primary, :root .btn-accent {
+    background: rgba(255, 106, 69, 0.08);
+    color: #FFE3DA;
+    border: 2px solid var(--primary);
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(255, 106, 69, 0.55), inset 0 0 8px rgba(255, 106, 69, 0.35);
+    text-shadow: 0 0 6px rgba(255, 106, 69, 0.8);
+}
+:root .btn-accent {
+    background: rgba(124, 192, 255, 0.08);
+    color: #E3F2FF;
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(124, 192, 255, 0.55), inset 0 0 8px rgba(124, 192, 255, 0.35);
+    text-shadow: 0 0 6px rgba(124, 192, 255, 0.8);
+}
+:root .btn-outline { border-radius: 999px; border-color: rgba(255, 106, 69, 0.55); }
+
+:root .bottom-nav { background: #100D13; border-top-color: #2A2330; box-shadow: none; }
+:root .nav-item.active { color: #FFE3DA; }
+:root .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px var(--primary)) drop-shadow(0 0 10px rgba(255, 106, 69, 0.6)); }
+:root .nav-hub-disc {
+    background: #1B171F;
+    color: #FFE3DA;
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 10px rgba(255, 106, 69, 0.6), inset 0 0 10px rgba(255, 106, 69, 0.4), 0 0 0 4px #100D13;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root h1 { animation: none; }
 }

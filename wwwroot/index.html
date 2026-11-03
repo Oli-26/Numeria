@@ -108,6 +108,15 @@
     <script src="js/drawPad.js"></script>
     <script src="js/sounds.js"></script>
     <script src="js/haptics.js"></script>
+    <script src="js/simfx.js"></script>
+    <script src="js/labs/algorithm-race.js"></script>
+    <script src="js/labs/particle-sandbox.js"></script>
+    <script src="js/labs/cosmic-scale.js"></script>
+    <script src="js/labs/playground.js"></script>
+    <script src="js/labs/reaction-bench.js"></script>
+    <script src="js/labs/phase-diagram.js"></script>
+    <script src="js/labs/market-sim.js"></script>
+    <script src="js/labs/trolley-lab.js"></script>
     <script src="js/motion.js"></script>
     <script src="js/navTransition.js"></script>
     <script src="js/topicGraph.js"></script>
@@ -119,6 +128,13 @@
     <script src="js/cite.js"></script>
     <script src="js/figureZoom.js"></script>
     <script>
+        // The installed version (versionName in android/app/build.gradle) for the About card; null on the web.
+        window.appVersion = function () {
+            var app = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+            if (!app || !app.getInfo) return Promise.resolve(null);
+            return app.getInfo().then(function (i) { return i.version; }).catch(function () { return null; });
+        };
+
         // Capacitor native polish: runs once if Capacitor is present.
         (function () {
             if (!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) return;
@@ -189,6 +205,9 @@
                 link.href = 'css/themes/nous.css';
             }
         }
+
+        // Solarized follows the phone's light or dark setting, so its background can change while the app is open.
+        if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { syncStatusBar(); });
 
         // Browser theme-color and the native status bar take the active theme's background.
         function syncStatusBar() {
@@ -433,7 +452,20 @@
                     throwOnError: false,
                     displayMode: displayMode !== false
                 });
+                if (el.classList.contains('math-display')) markScrollFade(el);
             }
+        }
+
+        // A formula wider than its box fades at the cut edge, so it reads as "scrolls sideways".
+        function markScrollFade(el) {
+            var update = function () {
+                el.classList.toggle('scroll-fade-r', el.scrollWidth - el.clientWidth - el.scrollLeft > 2);
+                el.classList.toggle('scroll-fade-l', el.scrollLeft > 2);
+            };
+            if (!el._scrollFade) { el.addEventListener('scroll', update, { passive: true }); el._scrollFade = true; }
+            update();
+            // KaTeX's fonts can arrive after the first measure and widen the formula.
+            if (document.fonts) document.fonts.ready.then(update);
         }
 
         // Typesets \( \), \[ \] and $$ $$ maths inside lesson text. A single $ is left alone so prices stay prices.

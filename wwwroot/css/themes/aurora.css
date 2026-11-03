@@ -1,19 +1,80 @@
+/* Aurora: a clear arctic night. Stars, and above the page a curtain of light in the colours the real thing shows:
+   oxygen green low down, fading to red-violet at its upper edge, hanging in slow vertical rays. */
 :root {
-    --primary: #7AE5C8;
-    --primary-light: #A8F0DC;
-    --primary-dark: #4AB89C;
-    --accent: #C880FF;
-    --accent-light: #E0B0FF;
-    --bg-main: #0A0E2A;
-    --bg-card: #131A38;
-    --bg-surface: #1C2548;
-    --text-primary: #E8ECFF;
-    --text-secondary: #A0B0E0;
-    --text-muted: #7080B0;
-    --success: #7AE5C8;
-    --error: #FF6B8A;
-    --warning: #FFD080;
-    --border: #2A3568;
-    --shadow: rgba(120, 80, 220, 0.3);
-    --xp-text: #C880FF;
+    --primary: #5BF2B0;
+    --primary-light: #8FF7CA;
+    --primary-dark: #34C98B;
+    --accent: #B794FF;
+    --accent-light: #D0B8FF;
+    --bg-main: #070B1C;
+    --bg-card: #0F1530;
+    --bg-surface: #161E3E;
+    --text-primary: #EAF0FF;
+    --text-secondary: #C6CFEC;
+    --text-muted: #97A3CC;
+    --success: #5BF2B0;
+    --error: #FF7D96;
+    --warning: #FFD48A;
+    --border: #232C52;
+    --shadow: rgba(0, 0, 0, 0.45);
+    --xp-text: #D0B8FF;
+    --on-primary: #04111A;
+    --on-accent: #12062A;
+    --on-success: #04111A;
+    --ink-l-min: 0.75;
+    --ink-l-max: 1;
+    --figure-filter: brightness(0.84) contrast(1.04);
+}
+
+/* Stars: two scattered layers at different spacings so no grid shows. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(1px 1px at 23px 41px, rgba(255, 255, 255, 0.85), transparent 1.5px) 0 0 / 137px 151px,
+        radial-gradient(1px 1px at 91px 17px, rgba(220, 230, 255, 0.6), transparent 1.5px) 0 0 / 211px 173px,
+        radial-gradient(1.4px 1.4px at 57px 103px, rgba(255, 255, 255, 0.75), transparent 2px) 0 0 / 263px 229px,
+        linear-gradient(180deg, #050816, #0A1026 70%, #0C1430);
+}
+
+/* The curtain: vertical rays masked into a band that fades out down the screen. */
+body::after {
+    content: '';
+    position: fixed;
+    left: -20%;
+    right: -20%;
+    top: 0;
+    height: 52vh;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0) 0 7px, rgba(255, 255, 255, 0.22) 9px, rgba(255, 255, 255, 0) 13px 22px),
+        linear-gradient(180deg, rgba(196, 90, 200, 0.0) 0%, rgba(196, 90, 200, 0.45) 12%, rgba(91, 242, 176, 0.6) 36%, rgba(91, 242, 176, 0.18) 68%, transparent);
+    -webkit-mask-image: radial-gradient(70% 90% at 45% 20%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(70% 90% at 45% 20%, #000 30%, transparent 75%);
+    filter: blur(5px);
+    opacity: 0.9;
+    transform-origin: 50% 0;
+    animation: aurora-sway 26s ease-in-out infinite alternate;
+}
+@keyframes aurora-sway {
+    0% { transform: translateX(-4%) skewX(-6deg) scaleY(0.95); opacity: 0.6; }
+    50% { transform: translateX(3%) skewX(4deg) scaleY(1.05); opacity: 0.85; }
+    100% { transform: translateX(6%) skewX(-3deg) scaleY(0.98); opacity: 0.7; }
+}
+
+:root .card {
+    background: rgba(15, 21, 48, 0.84);
+    border-color: #232C52;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+}
+
+:root .bottom-nav { background: #0A0F24; border-top-color: #1D2547; }
+:root .nav-item.active { color: var(--primary-light); }
+
+@media (prefers-reduced-motion: reduce) {
+    body::after { animation: none; }
 }

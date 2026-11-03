@@ -224,11 +224,11 @@ else if (quizState == QuizState.InProgress && currentIndex < questions.Count)
                 <p class="matching-hint">
                     @if (selectedLeft == null)
                     {
-                        <span>Tap an item on the left to start matching</span>
+                        <span>Tap an item to start matching</span>
                     }
                     else
                     {
-                        <span>Now tap the matching item on the right for <strong>@selectedLeft</strong></span>
+                        <span>Now pick the answer that matches <strong>@selectedLeft</strong></span>
                     }
                 </p>
 
@@ -900,7 +900,6 @@ else if (quizState == QuizState.Complete)
 
         await SaveQuizState();
         await JS.TryInvokeVoidAsync(lastCorrect ? "Sounds.playCorrect" : "Sounds.playWrong");
-        await JS.TryInvokeVoidAsync(lastCorrect ? "Haptics.success" : "Haptics.error");
     }
 
     private void ReviewConcept(string lessonId)
@@ -964,7 +963,6 @@ else if (quizState == QuizState.Complete)
         if (quizEvent.NewAchievements.Count > 0)
         {
             await JS.TryInvokeVoidAsync("Sounds.playAchievement");
-            await JS.TryInvokeVoidAsync("Haptics.medium");
         }
         if (score >= 80)
             await JS.TryInvokeVoidAsync("Confetti.launch", score == 100 ? 80 : 40);
@@ -1046,7 +1044,7 @@ else if (quizState == QuizState.Complete)
         width: 20px; height: 20px; border: 2px solid var(--border);
         border-radius: 4px; font-weight: 700; flex-shrink: 0; color: var(--primary);
     }
-    .ms-option.active .ms-checkbox { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .ms-option.active .ms-checkbox { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
 
     /* Numeric Input */
     .num-unit { color: var(--text-muted); font-weight: 600; align-self: center; }
@@ -1163,7 +1161,7 @@ else if (quizState == QuizState.Complete)
         height: 24px;
         border-radius: 50%;
         background: var(--primary);
-        color: white;
+        color: var(--on-primary);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1415,7 +1413,7 @@ else if (quizState == QuizState.Complete)
         font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
     }
     .error-step.selected .error-step-num { background: var(--warning); color: white; }
-    .error-step.correct .error-step-num { background: var(--success); color: white; }
+    .error-step.correct .error-step-num { background: var(--success); color: var(--on-success); }
     .error-step.incorrect .error-step-num { background: var(--error); color: white; }
 
 

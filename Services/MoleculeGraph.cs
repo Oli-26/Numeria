@@ -397,14 +397,17 @@ public sealed class MoleculeGraph
 
     // True when some one-to-one atom mapping preserves elements and bonds. With compareOrders false,
     // bond orders are ignored, so shifted double bonds in a ring (another resonance form) still match.
-    public bool IsIsomorphicTo(MoleculeGraph other, bool compareOrders = true)
+    public bool IsIsomorphicTo(MoleculeGraph other, bool compareOrders = true) => MapTo(other, compareOrders) != null;
+
+    // The mapping behind IsIsomorphicTo: map[i] is the atom of other that atom i corresponds to, or null if none exists.
+    public int[]? MapTo(MoleculeGraph other, bool compareOrders = true)
     {
         var n = atoms.Count;
-        if (n != other.atoms.Count || bonds.Count != other.bonds.Count) return false;
+        if (n != other.atoms.Count || bonds.Count != other.bonds.Count) return null;
         var sigA = Signatures(compareOrders);
         var sigB = other.Signatures(compareOrders);
         if (!sigA.OrderBy(s => s, StringComparer.Ordinal).SequenceEqual(sigB.OrderBy(s => s, StringComparer.Ordinal)))
-            return false;
+            return null;
 
         var ma = OrderMatrix(compareOrders);
         var mb = other.OrderMatrix(compareOrders);
@@ -434,7 +437,7 @@ public sealed class MoleculeGraph
             return false;
         }
 
-        return Extend(0);
+        return Extend(0) ? map : null;
     }
 
     private string[] Signatures(bool withOrders)

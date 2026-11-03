@@ -1,5 +1,6 @@
 @page "/algorithm-race"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <div class="page-header">
     <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
@@ -55,15 +56,15 @@
                         <option value="@a.Key">@a.Name</option>
                     }
                 </select>
-                <span class="ar-pill">@(r.Done ? "DONE" : (running ? "..." : "ready"))</span>
+                <span class="ar-pill @(r.Place == 1 ? "ar-pill-win" : "")">@(r.Place > 0 ? (r.Place == 1 ? "1st" : "2nd") : (running ? "..." : "ready"))</span>
             </div>
             <small class="ar-big">best @r.Algo.Best · avg @r.Algo.Avg · worst @r.Algo.Worst</small>
-            <div class="ar-bars">
+            <div class="ar-bars @(r.Done ? "ar-done" : "")" id="ar-lane-@li">
                 @for (int i = 0; i < r.Data.Length; i++)
                 {
                     var h = (int)(r.Data[i] * 100.0 / Math.Max(1, r.Max));
                     var col = (i == r.Cursor || i == r.Cursor2) ? "var(--accent)" : (r.Final[i] ? "var(--success)" : "var(--primary)");
-                    <span class="ar-bar" style="@($"height:{h}%;background:{col}")"></span>
+                    <span class="ar-bar" style="@($"height:{h}%;background:{col};--i:{i}")"></span>
                 }
             </div>
             <div class="ar-stats">
@@ -74,7 +75,7 @@
         </div>
     }
 </div>
-<p class="ar-note">Green marks elements already in their final place (for insertion sort, the sorted prefix so far). Merge sort writes are counted into the main array only.</p>
+<p class="ar-note">Green marks elements already in their final place (for insertion sort, the sorted prefix so far). Merge sort writes are counted into the main array only. Each step plays the value it touches as a pitch, so you can hear an array sort itself.</p>
 
 @code {
     private int size = 32;
@@ -85,6 +86,7 @@
     private int[] baseline = Array.Empty<int>();
     private string[] laneKeys = { "bubble", "quick" };
     private List<Racer> racers = new();
+    private int finished;
 
     private record Algo(string Key, string Name, string Best, string Avg, string Worst, Func<Racer, IEnumerable<int>> Run);
 
@@ -145,6 +147,7 @@
         if (running) return;
         Rebuild();
         running = true;
+        finished = 0;
         var id = runId;
         await Task.WhenAll(racers.Select(r => RunRacer(r, id)).ToArray());
         if (id == runId) { running = false; StateHasChanged(); }
@@ -153,18 +156,30 @@
     private async Task RunRacer(Racer r, int id)
     {
         var last = 0;
-        foreach (var _ in r.Algo.Run(r))
+        var lane = racers.IndexOf(r);
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var lastTone = -1000L;
+        foreach (var step in r.Algo.Run(r))
         {
             if (!running || id != runId) return;
             StateHasChanged();
+            // At most about 20 tones a second per lane, pitched by the value just touched.
+            if (r.Cursor >= 0 && clock.ElapsedMilliseconds - lastTone >= 50)
+            {
+                lastTone = clock.ElapsedMilliseconds;
+                var f = 200 + 1000.0 * r.Data[r.Cursor] / Math.Max(1, r.Max);
+                _ = JS.InvokeVoidAsync("SimFx.play", "tone", new { freq = f, type = lane == 0 ? "triangle" : "sine", gain = lane == 0 ? 0.07 : 0.09, dur = 0.07 }).AsTask().ContinueWith(_ => { });
+            }
             await Task.Delay(Math.Max(1, speedMs * Math.Max(1, r.Steps - last)));
             last = r.Steps;
         }
         if (id != runId) return;
         r.Done = true;
+        r.Place = ++finished;
         r.Cursor = -1; r.Cursor2 = -1;
         Array.Fill(r.Final, true);
         StateHasChanged();
+        _ = JS.InvokeVoidAsync("AlgoRaceLab.finish", $"ar-lane-{racers.IndexOf(r)}", r.Data.Select(v => v / (double)Math.Max(1, r.Max)).ToArray(), r.Place == 1);
     }
 
     private static IEnumerable<int> BubbleSort(Racer r)
@@ -341,6 +356,7 @@
         public int Cursor { get; set; } = -1;
         public int Cursor2 { get; set; } = -1;
         public bool Done { get; set; }
+        public int Place { get; set; }
 
         public Racer(Algo algo, int[] data, int max)
         {
@@ -390,7 +406,15 @@
     .ar-pill { padding: 1px 6px; background: var(--bg-surface); border-radius: 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); }
 
     .ar-bars { display: flex; align-items: flex-end; gap: 1px; height: 100px; background: var(--bg-surface); border-radius: var(--radius-sm); padding: 2px; }
-    .ar-bar { flex: 1; min-width: 1px; background: var(--primary); transition: height 0.06s linear, background 0.06s linear; border-radius: 1px 1px 0 0; }
+    .ar-bar { flex: 1; min-width: 1px; background: var(--primary); transition: height 0.06s linear, background 0.06s linear; border-radius: 1px 1px 0 0; transform-origin: 50% 100%; }
+    .ar-done .ar-bar { animation: arWave 0.45s ease-out both; animation-delay: calc(var(--i) * 9ms); }
+    .ar-pill-win { background: var(--success); color: var(--bg-card, #fff); }
+    @@keyframes arWave {
+        0% { transform: scaleY(1); filter: none; }
+        35% { transform: scaleY(1.12); filter: brightness(1.45) saturate(1.2); }
+        100% { transform: scaleY(1); filter: none; }
+    }
+    @@media (prefers-reduced-motion: reduce) { .ar-done .ar-bar { animation: none; } }
 
     .ar-stats { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.7rem; color: var(--text-muted); font-family: 'Roboto Mono', monospace; }
     .ar-stats strong { color: var(--text-primary); margin-left: 2px; }

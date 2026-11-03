@@ -66,7 +66,7 @@ public class LeaderboardService : ILeaderboardService
         {
             var url = $"{FirebaseUrl}/leaderboard.json?orderBy=\"score\"&limitToLast={count}";
             var json = await _http.GetStringAsync(url);
-            return ParseEntries(json);
+            return LeaderboardSeeds.Merge(ParseEntries(json), DateTime.Now, count);
         }
         catch
         {

@@ -1,19 +1,56 @@
+/* Dark Mode: the Nous page at night, read by a desk lamp. Warm paper-dark cards, a pool of lamplight at the top of the
+   screen, terracotta with dark lettering so buttons stay readable. */
 :root {
-    --primary: #D9774C;
-    --primary-light: #E8996F;
-    --primary-dark: #B4552F;
-    --accent: #D4955A;
-    --accent-light: #E0B080;
-    --bg-main: #1A1916;
-    --bg-card: #23211D;
-    --bg-surface: #2E2B26;
-    --text-primary: #E8E4DC;
-    --text-secondary: #9E978C;
-    --text-muted: #8A8478;
-    --success: #6DB872;
-    --error: #D4665F;
-    --warning: #D4955A;
-    --border: #3A3630;
-    --shadow: rgba(0, 0, 0, 0.35);
-    --xp-text: #E0B080;
+    --primary: #E07A4F;
+    --primary-light: #EA9670;
+    --primary-dark: #B95A33;
+    --accent: #D9A55A;
+    --accent-light: #E6BF83;
+    --bg-main: #17140F;
+    --bg-card: #221E18;
+    --bg-surface: #2C2720;
+    --text-primary: #F2E8D8;
+    --text-secondary: #D2C7B6;
+    --text-muted: #A89D8C;
+    --success: #7DBE7A;
+    --error: #E47A6E;
+    --warning: #D9A55A;
+    --border: #3A332A;
+    --shadow: rgba(0, 0, 0, 0.45);
+    --xp-text: #E6BF83;
+    --on-primary: #1A120C;
+    --on-accent: #1A120C;
+    --on-success: #0E1A0D;
+    --ink-l-min: 0.75;
+    --ink-l-max: 1;
+    --figure-filter: brightness(0.84) contrast(1.04);
+    --font-heading: Georgia, 'Noto Serif', serif;
 }
+
+/* The lamp: a warm pool of light falling from above, over a faint paper grain. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(90% 46% at 50% -6%, rgba(255, 186, 118, 0.13), rgba(255, 186, 118, 0.04) 55%, transparent 75%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .8 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+:root .card {
+    background: linear-gradient(180deg, #26221B, #201C17);
+    border-color: #3A332A;
+    box-shadow: inset 0 1px 0 rgba(255, 232, 200, 0.05), 0 8px 22px rgba(0, 0, 0, 0.38);
+}
+
+:root h1, :root h2 { letter-spacing: -0.01em; }
+
+:root .bottom-nav {
+    background: #1C1914;
+    border-top-color: #352F27;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+}
+
+:root .nav-item.active { color: var(--primary-light); }

@@ -9,7 +9,7 @@
 <div class="graph-page">
     <div class="graph-header">
         <button class="back-btn" aria-label="Back" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
-        <h1><span class="graph-title-icon"><Icon Name="graph" Size="16" /></span> Knowledge Graph</h1>
+        <h1><span class="graph-title-icon"><Icon Name="graph" Size="16" /></span> <span class="graph-title-text">Knowledge Graph</span></h1>
         <div class="gc-layout" role="group" aria-label="Layout">
             <button class="@(layout == "web" ? "on" : "")" aria-pressed="@(layout == "web" ? "true" : "false")" @onclick='() => SetLayout("web")'>Web</button>
             <button class="@(layout == "layers" ? "on" : "")" aria-pressed="@(layout == "layers" ? "true" : "false")" @onclick='() => SetLayout("layers")'>Layers</button>
@@ -389,6 +389,9 @@
         text-overflow: ellipsis;
     }
 
+    /* Ellipsis only applies inside a block, not to bare text in the flex h1. */
+    .graph-title-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
     .graph-title-icon {
         display: inline-flex;
         align-items: center;
@@ -398,8 +401,10 @@
         height: 26px;
         border-radius: 50%;
         background: var(--primary);
-        color: white;
+        color: var(--on-primary);
     }
+    /* At 360px the icon is what pushes the title under the Web/Layers toggle. */
+    @@media (max-width: 379px) { .graph-title-icon { display: none; } }
 
     .gc-layout {
         display: flex;
@@ -524,7 +529,7 @@
     .gc-mine.on .gc-check {
         background: var(--primary);
         border-color: var(--primary);
-        color: white;
+        color: var(--on-primary);
     }
 
     .graph-container {

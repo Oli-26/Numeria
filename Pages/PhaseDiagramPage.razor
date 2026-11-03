@@ -33,9 +33,12 @@
         var result = s.Classify(temperature, p);
     }
     <div class="pd-phase-readout" style="background:@PhaseColor(result.Kind)">
-        <strong>@PhaseName(result.Kind)</strong>
-        <span class="pd-state">@TempText(temperature), @PressureText(p)</span>
-        <small>@result.Why</small>
+        <canvas id="pd-vial" class="pd-vial" aria-hidden="true"></canvas>
+        <div class="pd-readout-text">
+            <strong class="pd-phase-name" @key="result.Kind">@PhaseName(result.Kind)</strong>
+            <span class="pd-state">@TempText(temperature), @PressureText(p)</span>
+            <small>@result.Why</small>
+        </div>
     </div>
 
     <svg @ref="svgEl" viewBox="0 0 320 242" class="pd-svg" aria-label="@($"Phase diagram of {s.Name}: temperature against pressure on a log scale")"
@@ -146,11 +149,26 @@
     private bool pointerHeld;
     private bool skipRender;
 
+    private PhaseKind? shownKind;
+    private PhaseSubstance? shownSubstance;
+    private double shownHeat = -1;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
-        try { svgModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/svgPoint.js"); }
-        catch (Exception ex) { await JS.LogErrorAsync("phase-diagram:import", ex); }
+        if (firstRender)
+        {
+            try { svgModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/svgPoint.js"); }
+            catch (Exception ex) { await JS.LogErrorAsync("phase-diagram:import", ex); }
+            await JS.InvokeVoidAsync("PdLab.mount", "pd-vial");
+        }
+        var kind = selected.Classify(temperature, Math.Pow(10, logP)).Kind;
+        var heat = Math.Round(Math.Clamp((temperature - selected.MinT) / (selected.MaxT - selected.MinT), 0, 1), 2);
+        if (kind == shownKind && heat == shownHeat) return;
+        // A new substance resets the vial quietly; only a crossing on the same diagram is heard and felt.
+        if (shownKind is { } from && kind != from && shownSubstance == selected)
+            await JS.InvokeVoidAsync("PdLab.cross", from.ToString(), kind.ToString());
+        await JS.InvokeVoidAsync("PdLab.set", kind.ToString(), heat);
+        shownKind = kind; shownSubstance = selected; shownHeat = heat;
     }
 
     protected override bool ShouldRender()
@@ -290,11 +308,19 @@
     .pd-label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; }
     .pd-subs { display: flex; gap: 6px; flex-wrap: wrap; }
     .pd-sub { padding: 6px 14px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
-    .pd-sub.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .pd-sub.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
     .pd-diagram-card { padding: 14px; }
-    .pd-phase-readout { padding: 10px 14px; border-radius: var(--radius-sm); color: white; margin-bottom: 12px; }
-    .pd-phase-readout strong { display: block; font-size: 1.05rem; }
+    .pd-phase-readout { padding: 10px 14px 10px 8px; border-radius: var(--radius-sm); color: white; margin-bottom: 12px;
+        display: flex; gap: 10px; align-items: stretch; transition: background-color 0.35s ease; }
+    .pd-vial { width: 58px; min-height: 96px; flex-shrink: 0; }
+    .pd-readout-text { flex: 1; min-width: 0; perspective: 400px; }
+    .pd-phase-readout strong { display: block; font-size: 1.15rem; transform-origin: 50% 100%; animation: pdFlip 0.45s cubic-bezier(.2, .9, .3, 1.15); }
+    @@keyframes pdFlip {
+        from { transform: rotateX(80deg); opacity: 0; }
+        to { transform: none; opacity: 1; }
+    }
+    @@media (prefers-reduced-motion: reduce) { .pd-phase-readout strong { animation: none; } }
     .pd-phase-readout .pd-state { display: block; font-size: 0.8rem; font-weight: 600; opacity: 0.95; margin-bottom: 2px; }
     .pd-phase-readout small { display: block; font-size: 0.78rem; opacity: 0.95; line-height: 1.45; }
 

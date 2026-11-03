@@ -137,6 +137,21 @@ public class MoleculeGraphTests
     }
 
     [Fact]
+    public void FillHydrogens_TurnsTwoBondedCarbonsIntoEthane()
+    {
+        var g = new MoleculeGraph();
+        g.AddAtom("C", 150, 150);
+        g.AddAtom("C", 200, 150);
+        g.SetBond(0, 1, 1);
+        Assert.Equal(0, g.FillHydrogens());
+
+        var r = MoleculeLibrary.Recognise(g);
+        Assert.Equal(MatchKind.Exact, r.Kind);
+        Assert.Equal("Ethane", r.Molecule!.Name);
+        Assert.Equal("C2H6", g.HillFormula());
+    }
+
+    [Fact]
     public void DimethylEther_IsAnIsomerOfEthanol()
     {
         var g = new MoleculeGraph();

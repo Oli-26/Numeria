@@ -1,5 +1,6 @@
 @page "/trolley-lab"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @{
     var dilemma = dilemmas[index];
@@ -21,16 +22,47 @@
 
     @if (dilemma.Tracks)
     {
+        var bridge = dilemma.OptionA.StartsWith("Push");
         <div class="tl-tracks">
-            <svg viewBox="0 0 320 120" class="tl-svg">
-                <line x1="20" y1="60" x2="160" y2="60" stroke="var(--text-secondary)" stroke-width="3"/>
-                <line x1="160" y1="60" x2="300" y2="30" stroke="var(--accent)" stroke-width="3"/>
-                <line x1="160" y1="60" x2="300" y2="90" stroke="var(--error)" stroke-width="3"/>
-                <circle cx="290" cy="30" r="6" fill="var(--accent)"/>
-                <circle cx="290" cy="90" r="6" fill="var(--error)"/>
-                <text x="296" y="22" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionACost</text>
-                <text x="296" y="108" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionBCost</text>
-                <rect x="20" y="50" width="24" height="20" rx="3" fill="var(--primary)"/>
+            <svg viewBox="0 0 320 120" class="tl-svg" @key="@($"{index}-{verdict}")" @ref="trackSvg">
+                @if (bridge)
+                {
+                    @Sleepers(14, 70, 306, 70)
+                    <line x1="14" y1="70" x2="306" y2="70" stroke="var(--text-secondary)" stroke-width="3" />
+                    <rect x="112" y="34" width="96" height="4" rx="1" fill="var(--text-muted)" />
+                    <line x1="118" y1="38" x2="118" y2="58" stroke="var(--text-muted)" stroke-width="2" />
+                    <line x1="202" y1="38" x2="202" y2="58" stroke="var(--text-muted)" stroke-width="2" />
+                    <g class="tl-fig tl-fig-a tl-stranger"><circle cx="160" cy="27" r="6.5" fill="var(--accent)" /></g>
+                    <g class="tl-fig tl-fig-b">@Figures(5, 268, 66, 7, 0)</g>
+                    <g><text x="160" y="12" text-anchor="middle" font-size="10" fill="var(--text-muted)">@dilemma.OptionACost</text></g>
+                    <g><text x="306" y="88" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionBCost</text></g>
+                }
+                else
+                {
+                    @Sleepers(14, 60, 150, 60)
+                    <line x1="14" y1="60" x2="150" y2="60" stroke="var(--text-secondary)" stroke-width="3" />
+                    <line x1="150" y1="60" x2="306" y2="28" stroke="var(--accent)" stroke-width="3" />
+                    <line x1="150" y1="60" x2="306" y2="92" stroke="var(--error)" stroke-width="3" />
+                    <line class="tl-blade tl-blade-a" x1="150" y1="60" x2="172" y2="55.5" stroke="var(--text-primary)" stroke-width="4.5" stroke-linecap="round" opacity="0" />
+                    <line class="tl-blade tl-blade-b" x1="150" y1="60" x2="172" y2="64.5" stroke="var(--text-primary)" stroke-width="4.5" stroke-linecap="round" />
+                    <g class="tl-fig tl-fig-a">@Figures(Count(dilemma.OptionACost), 294, 31, -6.6, 1.35)</g>
+                    <g class="tl-fig tl-fig-b">@Figures(Count(dilemma.OptionBCost), 294, 89, -6.6, -1.35)</g>
+                    <g><text x="300" y="16" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionACost</text></g>
+                    <g><text x="300" y="112" text-anchor="end" font-size="10" fill="var(--text-muted)">@dilemma.OptionBCost</text></g>
+                    <g class="tl-lever" transform="translate(122 104)">
+                        <rect x="-9" y="-2" width="18" height="6" rx="2" fill="var(--text-muted)" />
+                        <g class="tl-lever-arm" transform="rotate(-32)">
+                            <line x1="0" y1="0" x2="0" y2="-22" stroke="var(--text-secondary)" stroke-width="2.5" stroke-linecap="round" />
+                            <circle cx="0" cy="-23" r="3.6" fill="var(--accent)" />
+                        </g>
+                    </g>
+                }
+                <g class="tl-trolley" transform="@(bridge ? "translate(30 70)" : "translate(30 60)")">
+                    <rect x="-13" y="-17" width="26" height="13" rx="3" fill="var(--primary)" />
+                    <rect x="-9" y="-14" width="18" height="5" rx="1.5" fill="var(--bg-card)" opacity="0.85" />
+                    <circle cx="-7" cy="-2.5" r="2.6" fill="var(--text-primary)" />
+                    <circle cx="7" cy="-2.5" r="2.6" fill="var(--text-primary)" />
+                </g>
             </svg>
         </div>
     }
@@ -48,16 +80,17 @@
     }
     else
     {
-        <div class="tl-result">
+        var baseDelay = dilemma.Tracks ? 1.7 : 0.1;
+        <div class="tl-result" style="@($"--tl-base:{Sec(baseDelay)}")">
             <strong>You chose: @(verdict == 0 ? dilemma.OptionA : dilemma.OptionB)</strong>
             <p>@dilemma.Resolution</p>
             <div class="tl-frames">
                 @for (int f = 0; f < FrameworkNames.Length; f++)
                 {
-                    <div class="tl-frame">
+                    <div class="tl-frame" style="@($"--tl-d:{Sec(baseDelay + 0.14 * f)}")">
                         <div class="tl-frame-head">
                             <span>@FrameworkNames[f]</span>
-                            <strong>@LeanText(dilemma, f, verdict.Value)</strong>
+                            <strong class="tl-stamp tl-stamp-@LeanKind(dilemma, f, verdict.Value)">@LeanText(dilemma, f, verdict.Value)</strong>
                         </div>
                         <p>@dilemma.Why[f]</p>
                     </div>
@@ -77,7 +110,7 @@
 {
     <div class="card tl-profile">
         <h3>Your ethical profile</h3>
-        <p class="tl-stakes">How often your choices matched what each framework tends to favour. Dilemmas where a framework is divided are not counted for it.</p>
+        <p class="tl-stakes">How often your choices matched what each framework tends to favor. Dilemmas where a framework is divided are not counted for it.</p>
         <div class="tl-bars">
             @foreach (var (label, agree, total) in Scores())
             {
@@ -97,6 +130,8 @@
 
     private int index;
     private int? verdict;
+    private ElementReference trackSvg;
+    private bool animatePending;
     private bool showProfile;
     private readonly List<int> picks = new();
 
@@ -104,7 +139,47 @@
     {
         verdict = v;
         picks.Add(v);
+        animatePending = true;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!animatePending || verdict is not int v) return;
+        animatePending = false;
+        var d = dilemmas[index];
+        try
+        {
+            if (d.Tracks) await JS.InvokeVoidAsync("TrolleyLab.run", trackSvg, d.OptionA.StartsWith("Push") ? "bridge" : "switch", v);
+            var kinds = Enumerable.Range(0, FrameworkNames.Length).Select(f => LeanKind(d, f, v)).ToArray();
+            await JS.InvokeVoidAsync("TrolleyLab.verdicts", kinds, d.Tracks ? 1.7 : 0.1);
+        }
+        catch (JSException) { }
+    }
+
+    private static string LeanKind(Dilemma d, int f, int pick) => d.Lean[f] is not int lean ? "divided" : lean == pick ? "agrees" : "differs";
+
+    private static int Count(string cost) => int.TryParse(new string(cost.TakeWhile(char.IsDigit).ToArray()), out var n) ? Math.Clamp(n, 1, 5) : 1;
+
+    private static string N(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    private static string Sec(double s) => N(s) + "s";
+
+    private static RenderFragment Sleepers(double x1, double y1, double x2, double y2) => __builder =>
+    {
+        for (double x = x1 + 4; x < x2; x += 9)
+        {
+            var y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+            <line x1="@N(x)" y1="@N(y - 4)" x2="@N(x)" y2="@N(y + 4)" stroke="var(--border)" stroke-width="2" />
+        }
+    };
+
+    // n small figures from (x, y), each the next step (dx, dy) along the track.
+    private static RenderFragment Figures(int n, double x, double y, double dx, double dy) => __builder =>
+    {
+        for (int i = 0; i < n; i++)
+        {
+            <circle cx="@N(x + dx * i)" cy="@N(y + dy * i)" r="3.4" />
+        }
+    };
 
     private void Next()
     {
@@ -181,7 +256,7 @@
             new int?[] { 0, 1, 1, 1 },
             new[]
             {
-                "The bare sums favour harvesting, though rule utilitarians stress the damage to trust in medicine.",
+                "The bare sums favor harvesting, though rule utilitarians stress the damage to trust in medicine.",
                 "It treats a patient as spare parts and violates the duty not to kill.",
                 "It betrays the trust and care that define a doctor's role.",
                 "No one could accept a medical system that might sacrifice them; the objection is strongest here."
@@ -203,7 +278,7 @@
             new int?[] { null, 1, 1, 1 },
             new[]
             {
-                "Divided: the thought experiment favours torture, but real-world effects (unreliable information, abuse, lost trust) lead many utilitarians to reject it.",
+                "Divided: the thought experiment favors torture, but real-world effects (unreliable information, abuse, lost trust) lead many utilitarians to reject it.",
                 "Torture violates a person's dignity; many deontologists treat the ban as absolute.",
                 "Deliberate cruelty corrodes the character of the people and institutions that practise it.",
                 "A rule allowing torture could be abused against anyone, so it is hard to justify to all."
@@ -217,7 +292,7 @@
                 "Minimise deaths: one passenger rather than five pedestrians.",
                 "Divided: swerving deliberately kills the passenger, while staying the course kills the pedestrians; the doing/allowing line is unclear for a programmed car.",
                 "Divided: the designer must weigh care for the passenger against responsibility to others.",
-                "Divided: pedestrians and passengers can each claim a fair rule favours them, and jaywalking adds a further complication."
+                "Divided: pedestrians and passengers can each claim a fair rule favors them, and jaywalking adds a further complication."
             },
             "Bonnefon, Shariff and Rahwan (Science, 2016) found people approve of cars that sacrifice their passenger for the greater number, but prefer to buy cars that protect them. The Moral Machine experiment (Awad et al., Nature, 2018) later collected millions of such judgments worldwide. Markets respond accordingly."),
         new("Famine Relief", "Charity evaluators estimate that a few thousand dollars can save a child's life from preventable disease. You could donate that amount, or spend it on something for yourself.",
@@ -257,10 +332,27 @@
     .tl-actions { display: flex; gap: 8px; }
     .tl-actions button { flex: 1; }
 
+    .tl-fig-a circle { fill: var(--accent); }
+    .tl-fig-b circle { fill: var(--error); }
+    .tl-fig { transition: opacity 0.6s ease; }
+    .tl-fig-dim { opacity: 0.28; }
+    .tl-stranger { transform-box: fill-box; transform-origin: center; }
+
+    .tl-result > strong, .tl-result > p { animation: tl-rise 0.35s ease-out both; animation-delay: var(--tl-base, 0s); }
     .tl-result strong { display: block; font-size: 0.95rem; margin-bottom: 6px; }
     .tl-result p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; margin: 0 0 12px; }
-    .tl-frames { display: flex; flex-direction: column; gap: 6px; }
-    .tl-frame { background: var(--bg-surface); padding: 8px 10px; border-radius: var(--radius-sm); }
+    .tl-frames { display: flex; flex-direction: column; gap: 6px; perspective: 700px; }
+    .tl-frame { background: var(--bg-surface); padding: 8px 10px; border-radius: var(--radius-sm);
+        transform-origin: 50% 0; animation: tl-flip 0.42s cubic-bezier(.2,.8,.3,1.15) both; animation-delay: var(--tl-d, 0s); }
+    .tl-stamp { display: inline-block; padding: 1px 7px; border: 1.5px solid currentColor; border-radius: 4px; text-transform: uppercase;
+        letter-spacing: 0.04em; font-size: 0.66rem !important; transform: rotate(-3deg);
+        animation: tl-stamp 0.3s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(var(--tl-d, 0s) + 0.2s); }
+    .tl-result .tl-stamp-agrees { color: var(--success); }
+    .tl-result .tl-stamp-differs { color: var(--error); }
+    .tl-result .tl-stamp-divided { color: var(--text-muted); }
+    @@keyframes tl-flip { from { opacity: 0; transform: rotateX(-80deg); } to { opacity: 1; transform: none; } }
+    @@keyframes tl-stamp { from { opacity: 0; transform: scale(1.9) rotate(-10deg); } to { opacity: 1; transform: rotate(-3deg); } }
+    @@keyframes tl-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
     .tl-frame-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 2px; }
     .tl-frame-head span { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
     .tl-result .tl-frame-head strong { font-size: 0.8rem; margin: 0; color: var(--text-primary); }
@@ -277,6 +369,7 @@
     .tl-bar-row strong { text-align: right; font-weight: 700; color: var(--primary); }
 
     @@media (prefers-reduced-motion: reduce) {
-        .tl-bar-fill { transition: none; }
+        .tl-bar-fill, .tl-fig { transition: none; }
+        .tl-frame, .tl-stamp, .tl-result > strong, .tl-result > p { animation: none; }
     }
 </style>

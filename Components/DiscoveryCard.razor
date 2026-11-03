@@ -1,4 +1,5 @@
 @inject IQuizEngine QuizEngine
+@inject IJSRuntime JS
 
 <div class="discovery-card">
     <div class="discovery-label"><Icon Name="lightbulb" Size="14" /> Guess first</div>
@@ -29,7 +30,7 @@
         <div class="discovery-input-row">
             <input class="discovery-input" type="@(Question.Type == QuestionType.NumericInput ? "number" : "text")" step="any"
                    @bind="typed" @bind:event="oninput" disabled="@(result != null)"
-                   @onkeydown='e => { if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(typed)) Submit(typed); }'
+                   @onkeydown='async e => { if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(typed)) await Submit(typed); }'
                    placeholder="Your guess" aria-label="Your guess" />
             @if (!string.IsNullOrEmpty(Question.Unit))
             {
@@ -45,7 +46,8 @@
             <strong>@(result.IsCorrect ? "Good instinct." : $"Not quite: {Question.CorrectAnswer}{(string.IsNullOrEmpty(Question.Unit) ? "" : " " + Question.Unit)}.")</strong>
             @if (!string.IsNullOrEmpty(Question.Explanation))
             {
-                <span> @Question.Explanation</span>
+                @* Blazor drops a whitespace-only text node, so the separating space has to be part of the expression. *@
+                <span>@(" " + Question.Explanation)</span>
             }
         </div>
         <button class="btn btn-accent" style="width: 100%; margin-top: 10px" @onclick="() => OnDone.InvokeAsync(result.IsCorrect)">Read on</button>
@@ -73,11 +75,13 @@
         }
     }
 
-    private void Submit(string answer)
+    private async Task Submit(string answer)
     {
         if (result != null) return;
         picked = answer;
         result = QuizEngine.ValidateAnswer(Question, answer);
+        // A wrong guess is the point of guessing first, so it gets the soft reveal rather than the quiz's wrong-answer buzz.
+        await JS.TryInvokeVoidAsync(result.IsCorrect ? "Sounds.playCorrect" : "Sounds.playReveal");
     }
 
     private string OptionClass(string o)
@@ -113,5 +117,5 @@
     .discovery-unit { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
     .discovery-reveal { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--bg-surface); line-height: 1.55; color: var(--text-secondary); }
     .discovery-reveal.right strong { color: var(--success); }
-    .discovery-skip { margin-top: 10px; background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline; font-family: inherit; }
+    .discovery-skip { margin: 1px 0 -9px; padding: 9px 0; background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline; font-family: inherit; }
 </style>

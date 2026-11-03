@@ -1,19 +1,81 @@
+/* Blueprint: a cyanotype drawing sheet. Prussian blue paper, white line-work on a drafting grid, boxes marked with
+   corner ticks, hand-lettered capitals, and a red revision pencil for anything that needs your attention. */
 :root {
-    --primary: #5CACEE;
-    --primary-light: #8CC8FF;
-    --primary-dark: #3A7DBB;
-    --accent: #FFB347;
-    --accent-light: #FFD080;
-    --bg-main: #1A3A5C;
-    --bg-card: #1E4070;
-    --bg-surface: #254A7A;
-    --text-primary: #B0D4FF;
-    --text-secondary: #7AAAD4;
-    --text-muted: #4A80AA;
-    --success: #66CC99;
-    --error: #FF6B6B;
-    --warning: #FFaa44;
-    --border: #2A5A8C;
-    --shadow: rgba(0, 60, 120, 0.3);
-    --xp-text: #FFD080;
+    --primary: #FFFFFF;
+    --primary-light: #FFFFFF;
+    --primary-dark: #DCE7F7;
+    --accent: #FFB4A6;
+    --accent-light: #FFCFC6;
+    --bg-main: #163F73;
+    --bg-card: #1A4680;
+    --bg-surface: #1E4D8A;
+    --text-primary: #F5F9FF;
+    --text-secondary: #DCE7F7;
+    --text-muted: #B2C6E3;
+    --success: #9FE3C1;
+    --error: #FFB4A6;
+    --warning: #FFE08A;
+    --border: rgba(245, 249, 255, 0.42);
+    --shadow: transparent;
+    --xp-text: #FFE08A;
+    --on-primary: #163F73;
+    --on-accent: #3A1008;
+    --on-success: #0D3326;
+    --ink-l-min: 0.85;
+    --ink-l-max: 1;
+    --figure-filter: brightness(0.84) contrast(1.04);
+    --font-heading: 'Architects Daughter', 'Segoe Print', cursive;
+    --radius-sm: 2px;
+    --radius-md: 2px;
+    --radius-lg: 4px;
 }
+
+/* Drafting grid: fine lines every 12px, heavier every 60px. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.11) 1px, transparent 1px) -1px -1px / 60px 60px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.11) 1px, transparent 1px) -1px -1px / 60px 60px,
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px) -1px -1px / 12px 12px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px) -1px -1px / 12px 12px,
+        radial-gradient(120% 80% at 50% 40%, transparent 55%, rgba(5, 20, 45, 0.35));
+}
+
+:root h1, :root h2 { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 400; }
+:root h3 { font-weight: 400; letter-spacing: 0.03em; }
+
+/* Boxes are line drawings: a thin white outline with registration ticks just inside each corner. */
+:root .card {
+    --tick: rgba(245, 249, 255, 0.9);
+    background:
+        linear-gradient(var(--tick), var(--tick)) 5px 5px / 10px 1.5px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) 5px 5px / 1.5px 10px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) calc(100% - 5px) 5px / 10px 1.5px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) calc(100% - 5px) 5px / 1.5px 10px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) 5px calc(100% - 5px) / 10px 1.5px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) 5px calc(100% - 5px) / 1.5px 10px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) calc(100% - 5px) calc(100% - 5px) / 10px 1.5px no-repeat,
+        linear-gradient(var(--tick), var(--tick)) calc(100% - 5px) calc(100% - 5px) / 1.5px 10px no-repeat,
+        rgba(22, 63, 115, 0.72);
+    border: 1px solid rgba(245, 249, 255, 0.55);
+    box-shadow: none;
+}
+:root .card-clickable:hover, :root .card-clickable:active { box-shadow: none; border-color: #FFFFFF; }
+
+:root .btn-primary { background: #F5F9FF; color: var(--on-primary); }
+:root .btn-outline { border-width: 1.5px; }
+:root .btn { letter-spacing: 0.03em; }
+
+/* The title block's double rule along the bottom edge of the sheet. */
+:root .bottom-nav {
+    background: #143A6B;
+    border-top: 1px solid rgba(245, 249, 255, 0.7);
+    box-shadow: 0 -4px 0 -3px rgba(245, 249, 255, 0.45);
+}
+:root .nav-item { color: #B2C6E3; }
+:root .nav-item.active { color: #FFFFFF; }
+:root .nav-hub-disc { background: #F5F9FF; color: #163F73; box-shadow: 0 0 0 4px #143A6B, 0 0 0 5px rgba(245, 249, 255, 0.6); }

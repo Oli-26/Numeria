@@ -248,7 +248,6 @@
             if (streakUp)
             {
                 await JS.TryInvokeVoidAsync("Sounds.playStreak");
-                await JS.TryInvokeVoidAsync("Haptics.light");
             }
 
             foreach (var topic in topics)
@@ -368,7 +367,8 @@
         overflow: hidden;
     }
 
-    .topic-tile strong { font-size: 0.85rem; position: relative; }
+    /* Three tiles across leave ~90px of text, narrower than "Electromagnetism": hyphenate rather than clip. */
+    .topic-tile strong { font-size: 0.85rem; position: relative; max-width: 100%; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
     /* Long names ("Africa's Classical & Medieval Kingdoms") wrap to three lines rather than four. */
     .topic-tile strong.long-name { font-size: 0.76rem; }
     .topic-tile-meta { color: var(--text-muted); font-size: 0.75rem; position: relative; }

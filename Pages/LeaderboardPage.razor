@@ -223,7 +223,7 @@ else
         myIndex = -1; myRank = 0; above = null; belowXp = 0; nameTaken = false;
         if (profile == null) return;
         var key = LeaderboardRanks.Key(playerName);
-        var matched = entries.FindIndex(e => LeaderboardRanks.Key(e.Name) == key);
+        var matched = entries.FindIndex(e => !e.IsSeed && LeaderboardRanks.Key(e.Name) == key);
         // More XP under our name than we have means it is another player's entry, not ours.
         nameTaken = matched >= 0 && entries[matched].Score > profile.TotalXp;
         myIndex = nameTaken ? -1 : matched;

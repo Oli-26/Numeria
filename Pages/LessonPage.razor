@@ -346,6 +346,7 @@ else
         p.TryItsDone.Add(lesson.Id);
         await Progress.SaveProfileAsync(p);
         await Gamification.AwardXpAsync(FieldTaskXp);
+        await JS.TryInvokeVoidAsync("Sounds.playCorrect");
         profile = await Progress.GetProfileAsync();
     }
     private int currentConceptIndex;
@@ -824,7 +825,7 @@ else
     .sources { margin-top: 14px; font-size: 0.82rem; color: var(--text-secondary); }
     .sources summary { width: fit-content; font-weight: 600; color: var(--text-muted); cursor: pointer; }
     .sources ol { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 0; padding-left: 22px; }
-    .explain-toggle { background: none; border: none; padding: 0; color: var(--primary); font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+    .explain-toggle { background: none; border: none; padding: 9px 0; margin: -9px 0; color: var(--primary); font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
     .explain-input {
         width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
         background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.9rem; resize: vertical;
@@ -943,7 +944,7 @@ else
     .concept-dot.active {
         border-color: var(--primary);
         background: var(--primary);
-        color: white;
+        color: var(--on-primary);
         transform: scale(1.15);
         box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
     }
@@ -955,7 +956,7 @@ else
 
     .quiz-dot.active {
         background: var(--accent);
-        color: white;
+        color: var(--on-accent);
     }
 
     /* Slide animation */
@@ -1013,12 +1014,12 @@ else
 
     .tts-btn.active {
         background: var(--primary);
-        color: white;
+        color: var(--on-primary);
     }
 
     .tts-btn.active:hover {
         background: var(--primary);
-        color: white;
+        color: var(--on-primary);
         opacity: 0.9;
     }
 

@@ -356,24 +356,19 @@
     private async Task DrawLimitApproach()
     {
         await Viz.DrawAxesAsync(CanvasId, Scale, Scale);
+        // The canvas shows y up to about 3.5, so the limit is taken at x = 1 where the whole approach stays in view.
         var points = PlotFunction(x => x * x, -3, 3);
         await Viz.DrawFunctionAsync(CanvasId, points, Primary);
-        await Viz.DrawPointAsync(CanvasId, ToScreenX(2), ToScreenY(4), 7, Slate, "(2, 4)");
+        await Viz.DrawPointAsync(CanvasId, ToScreenX(1), ToScreenY(1), 7, Slate);
+        await Viz.DrawTextAsync(CanvasId, "(1, 1)", ToScreenX(1) + 10, ToScreenY(1) + 16, Slate, 13, "left");
 
-        // Approaching arrows
         for (int i = 1; i <= 3; i++)
         {
-            var x = 2 - i * 0.4;
-            var y = x * x;
-            await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(y), 4, Tint(Primary, 50));
+            foreach (var x in new[] { 1 - i * 0.25, 1 + i * 0.25 })
+                await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(x * x), 4, Tint(Primary, 50));
         }
-        for (int i = 1; i <= 3; i++)
-        {
-            var x = 2 + i * 0.4;
-            var y = x * x;
-            await Viz.DrawPointAsync(CanvasId, ToScreenX(x), ToScreenY(y), 4, Tint(Primary, 50));
-        }
-        await Viz.DrawTextAsync(CanvasId, "lim x² as x→2 = 4", Width / 2, 24, Primary, 13);
+        // Below the x-axis and right of the y-axis is empty, so the caption sits on neither the curve nor an axis there.
+        await Viz.DrawTextAsync(CanvasId, "lim x² as x→1 = 1", ToScreenX(2.3), ToScreenY(-1.5), Primary, 13);
     }
 
     private async Task DrawTangentLine()

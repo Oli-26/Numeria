@@ -52,12 +52,17 @@ window.Haptics = {
             else if (navigator.vibrate) navigator.vibrate([0, 50, 60, 50]);
         } catch (e) { }
     },
+    // A crisp tick, for detents and taps. On Android the plugin's selectionChanged does nothing until selectionStart has been
+    // called, and then gives a 100 ms buzz, so a short one-shot stands in for it there.
     select() {
         if (!this._enabled) return;
         try {
             var h = this._cap();
-            if (h && h.selectionChanged) h.selectionChanged();
+            if (h && h.vibrate && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android') h.vibrate({ duration: 10 });
+            else if (h && h.selectionChanged) { h.selectionStart(); h.selectionChanged(); }
             else if (navigator.vibrate) navigator.vibrate(5);
         } catch (e) { }
     }
 };
+
+try { Haptics._enabled = localStorage.getItem('nous-haptics-off') !== 'true'; } catch (e) { }

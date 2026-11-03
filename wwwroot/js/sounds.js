@@ -243,6 +243,21 @@ window.Sounds = {
 // Init mute state from localStorage
 try { Sounds._muted = localStorage.getItem('nous-sound-muted') === 'true'; } catch(e) {}
 
+// Each feedback sound has a matching vibration, which still plays when sound is muted (Haptics has its own setting).
+(function () {
+    var feel = {
+        playClick: 'select', playNav: 'select', playReveal: 'light', playStreak: 'light', playPurchase: 'medium',
+        playAchievement: 'medium', playCorrect: 'success', playComplete: 'success', playWrong: 'error', playLevelUp: 'heavy',
+    };
+    Object.keys(feel).forEach(function (name) {
+        var sound = Sounds[name];
+        Sounds[name] = function () {
+            if (window.Haptics) window.Haptics[feel[name]]();
+            return sound.apply(this, arguments);
+        };
+    });
+})();
+
 function prefersReducedMotion() {
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }

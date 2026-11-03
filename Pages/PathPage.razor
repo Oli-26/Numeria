@@ -80,7 +80,7 @@ else
                     @if (isDone) { <Icon Name="check" Size="14" /> } else { <span>@(i + 1)</span> }
                 </div>
                 <div class="path-step-body">
-                    <small style="color: @(info.topic?.Color ?? "var(--text-muted)")">@(info.topic?.Name ?? step.TopicId)</small>
+                    <small class="topic-ink" style="--topic-c: @(info.topic?.Color ?? "var(--text-muted)")">@(info.topic?.Name ?? step.TopicId)</small>
                     <strong>@(info.lesson?.Title ?? step.LessonId)</strong>
                     <p>@step.Note</p>
                 </div>
@@ -152,7 +152,7 @@ else
         width: 30px; height: 30px; border-radius: 50%; border: 2px solid; flex-shrink: 0; display: flex;
         align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
     }
-    .path-step.done .path-step-marker { background: var(--success); border-color: var(--success) !important; color: white; }
+    .path-step.done .path-step-marker { background: var(--success); border-color: var(--success) !important; color: var(--on-success); }
     .path-step-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .path-step-body small { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .path-step-body strong { color: var(--text-primary); }
