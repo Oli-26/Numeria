@@ -1,4 +1,4 @@
-# Builds out/memory.html: a 16.5 s "coming soon" teaser for the Memory Palace course, driven by window.setT(t).
+# Builds out/memory.html: a 16.5 s teaser for the Memory Palace course, driven by window.setT(t).
 # A shuffled spread of cards, each card walked into a room of a house, the card-to-picture system, the course map,
 # then the end card. Every claim is from the course's own cited lessons (memory-loci, memory-cards).
 # On-screen text uses US spelling, like the social posts (resources/social/README.md).
@@ -105,7 +105,7 @@ svg.plan{{position:absolute;left:{PX}px;top:{PY}px;opacity:0;overflow:visible}}
 <div id="course"><p class="sub">The 2,500-year-old trick behind memory champions, in eight skills</p>{chapters}
 <div id="meter"><div class="bar"><div class="fill" id="fill"></div></div><p><span>Deck in memory</span><span id="n">0 of 52 cards</span></p></div></div>
 <div id="end"><div class="icon"><img src="file://{HERE}/nous-icon.svg"></div><img class="word" src="file://{HERE}/nous-wordmark.svg">
-<h2>Memory Palace</h2><p>Build a palace in your head, then memorize a whole shuffled deck.</p><div class="cta">Coming soon</div></div>
+<h2>Memory Palace</h2><p>Build a palace in your head, then memorize a whole shuffled deck.</p><div class="cta">Free on Google Play</div></div>
 <script>
 const clamp = x => Math.min(1, Math.max(0, x)), lerp = (a, b, x) => a + (b - a) * x;
 const easeOut = x => 1 - Math.pow(1 - clamp(x), 3), easeInOut = x => {{ x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }};

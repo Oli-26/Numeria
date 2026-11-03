@@ -26,6 +26,22 @@ const SHOTS = [
   ['bigq', '/big-questions'],
   ['home', '/'],
 ];
+// Alternates for the listing (node capture.mjs extra): [name, route, sel, offset, wait, js, pre, after].
+// pre edits the stored profile before the page loads; after runs once the page is scrolled into place.
+const seed = (o, add = {}) => `(() => { const p = JSON.parse(localStorage.getItem('mathvoyager_profile')); const o = ${JSON.stringify(o)}, add = ${JSON.stringify(add)};
+  for (const k in add) p[k] = [...new Set([...(p[k] || []), ...add[k]])]; Object.assign(p, o); localStorage.setItem('mathvoyager_profile', JSON.stringify(p)); })()`;
+const range = (pre, n) => Array.from({ length: n }, (_, i) => `${pre}-0${i + 1}`);
+const EXTRA = [
+  ['magic', '/course/pick-a-card', null, 0, 3000, null,
+    seed({}, { lessonsCompleted: [...range('mkey', 5), ...range('mmath', 3), ...range('mmind', 5), ...range('mimg', 5), ...range('mloci', 2)], topicsCompleted: ['magic-keycard', 'memory-mind', 'memory-images'] })],
+  ['memory', '/course/memory-palace', null, 0, 3000],
+  ['orbitals', '/topic/chem-atoms/lesson/chem-atom-01', '!canvas', 300, 2200, null, null,
+    `(async () => { const c = document.querySelector('canvas'), b = c.getBoundingClientRect();
+      c.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: b.left + b.width * .9, clientY: b.top + b.height * .955 }));
+      await new Promise(r => setTimeout(r, 900)); })()`],
+  ['shop', '/shop', null, 0, 2600, null,
+    seed({ selectedTheme: 'neon', selectedFrame: 'holo', selectedFlame: 'rainbow', points: 1850 }, { shopPurchases: ['theme-chalkboard', 'theme-neon', 'theme-aurora', 'frame-holo', 'flame-rainbow'] })],
+];
 const settle = async (page, ms = 1800) => { await page.waitForSelector('#splash', { state: 'detached', timeout: 60000 }).catch(() => {}); await page.waitForTimeout(ms); };
 try {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
@@ -51,8 +67,9 @@ try {
     localStorage.setItem('mathvoyager_profile', JSON.stringify(p));
   });
   const css = '*:focus,*:focus-visible{outline:none!important}.web-banner{display:none!important}';
-  const shots = process.argv[2] === 'explore' ? JSON.parse(process.argv[3]) : SHOTS;
-  for (let [n, u, sel, off, wait, js] of shots) {
+  const shots = process.argv[2] === 'explore' ? JSON.parse(process.argv[3]) : process.argv[2] === 'extra' ? EXTRA : SHOTS;
+  for (let [n, u, sel, off, wait, js, pre, after] of shots) {
+    if (pre) await page.evaluate(pre);
     await page.goto(base + u); await settle(page, wait || 2200);
     if (js) { await page.evaluate(js); await page.waitForTimeout(400); }
     await page.addStyleTag({ content: css });
@@ -65,6 +82,7 @@ try {
       }
     }
     if (sel) { await page.evaluate(([s, o]) => { const e = document.querySelector(s); if (e) window.scrollTo(0, e.getBoundingClientRect().top + scrollY - (o || 80)); }, [sel, off]); await page.waitForTimeout(700); }
+    if (after) await page.evaluate(after);
     await shot(n, process.argv[2] === 'explore' && !sel);
   }
 } finally { await browser.close(); srv.close(); }

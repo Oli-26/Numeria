@@ -1,4 +1,4 @@
-# Builds out/magic.html: a 16.5 s "coming soon" teaser for the Pick a Card course, driven by window.setT(t).
+# Builds out/magic.html: a 16.5 s teaser for the Pick a Card course, driven by window.setT(t).
 # A card is chosen, the deck turns as a ring under two cuts while the key card stays beside it, the deal finds it,
 # then the course map and the end card. The method shown is the course's own (magic-keycard, lesson 1).
 # On-screen text uses US spelling, like the social posts (resources/social/README.md).
@@ -89,7 +89,7 @@ svg.ring{{position:absolute;left:0;top:0;opacity:0}}
 {deal}
 <div id="course"><p class="sub">Card magic and sleight of hand with an ordinary deck, and the science of why it fools people</p>{chapters}</div>
 <div id="end"><div class="icon"><img src="file://{HERE}/nous-icon.svg"></div><img class="word" src="file://{HERE}/nous-wordmark.svg">
-<h2>Pick a Card</h2><p>Learn real tricks with an ordinary deck, and why they fool people.</p><div class="cta">Coming soon</div></div>
+<h2>Pick a Card</h2><p>Learn real tricks with an ordinary deck, and why they fool people.</p><div class="cta">Free on Google Play</div></div>
 <script>
 const clamp = x => Math.min(1, Math.max(0, x)), lerp = (a, b, x) => a + (b - a) * x;
 const easeOut = x => 1 - Math.pow(1 - clamp(x), 3), easeInOut = x => {{ x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }};

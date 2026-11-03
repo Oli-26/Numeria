@@ -17,6 +17,7 @@ def smooth(x): x = min(max(x, 0), 1); return x * x * (3 - 2 * x)
 
 class Source:
     def __init__(self, folder):
+        self.folder = folder
         t = json.load(open(os.path.join(folder, 'times.json')))
         self.times, self.end = t['times'], t['end']
         self.files = sorted(glob.glob(os.path.join(folder, 'frames', '*.jpg')))

@@ -57,8 +57,11 @@ cmd = [FF, '-y', '-loglevel', 'error',
        '-f', 'concat', '-safe', '0', '-i', lst,
        '-loop', '1', '-framerate', '30', '-t', f'{dur:.3f}', '-i', frame_png,
        '-loop', '1', '-framerate', '30', '-t', f'{END}', '-i', end,
+       *(['-i', os.path.join(clip, 'audio.wav')] if os.path.exists(os.path.join(clip, 'audio.wav')) else []),
        '-f', 'lavfi', '-t', f'{total:.3f}', '-i', 'anullsrc=r=44100:cl=stereo',
-       '-filter_complex', fc, '-map', '[v]', '-map', '4:a',
+       '-filter_complex', fc + (';[4:a]aresample=44100,aformat=channel_layouts=stereo[sa];[sa][5:a]amix=inputs=2:duration=longest:normalize=0[aud]'
+                                if os.path.exists(os.path.join(clip, 'audio.wav')) else ''),
+       '-map', '[v]', '-map', '[aud]' if os.path.exists(os.path.join(clip, 'audio.wav')) else '4:a',
        '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', '30',
        '-c:a', 'aac', '-b:a', '96k', '-shortest', '-movflags', '+faststart', out]
 subprocess.run(cmd, check=True)

@@ -20,4 +20,11 @@ export default {
     { src: 'raw/bigq.png', title: 'Chase the *big questions*', sub: 'Where physics, biology and philosophy meet' },
     { src: 'raw/home.png', title: 'A fresh *pick every day*', sub: 'Streaks, XP and a daily challenge' },
   ],
+  // Candidates to swap into the eight above (Play allows eight phone screenshots).
+  extra: [
+    { name: 'magic', src: 'raw/magic.png', title: 'Learn real *card magic*', sub: 'A free course: 30 tricks with an ordinary deck' },
+    { name: 'memory', src: 'raw/memory.png', title: 'Memorize a *shuffled deck*', sub: 'A free course in the 2,500-year-old art of memory' },
+    { name: 'orbitals', src: 'raw/orbitals.png', title: 'Ideas you can *play with*', sub: 'Interactive diagrams inside the lessons' },
+    { name: 'unlocks', src: 'raw/shop.png', title: 'Earn it, *make it yours*', sub: 'Unlock themes, frames and flames as you learn' },
+  ],
 };
