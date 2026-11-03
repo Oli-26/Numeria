@@ -110,7 +110,7 @@ public static partial class HallOfFame
 
         new("Euler", "1707-1783", "Switzerland", "#2F6B66",
             "The most prolific mathematician in history",
-            "Contributed to virtually every branch of mathematics: calculus, number theory, graph theory, topology, mechanics, optics, astronomy. Popularised most modern notation: f(x), e, i, pi (introduced by William Jones in 1706), sigma notation. Published over 800 papers.",
+            "Contributed to virtually every branch of mathematics: calculus, number theory, graph theory, topology, mechanics, optics, astronomy. Popularized most modern notation: f(x), e, i, pi (introduced by William Jones in 1706), sigma notation. Published over 800 papers.",
             "He was so productive that journals were still publishing his backlog 50 years after his death. He could do enormous calculations in his head. Euler's identity e^(i*pi)+1=0 unites the five most important constants in one equation, often called the most beautiful equation in mathematics.",
             "Went blind in both eyes but his productivity INCREASED. He dictated papers from memory, producing more mathematics blind than most produce sighted."),
 
@@ -203,7 +203,7 @@ public static partial class HallOfFame
 
         new("Aristotle", "384-322 BC", "Stagira", "#5B6E3A",
             "The first systematic scientist",
-            "Founded formal logic (the syllogism), biology (cataloguing 500+ species), ethics (the Nicomachean Ethics), poetics, politics, metaphysics. Tutored Alexander the Great.",
+            "Founded formal logic (the syllogism), biology (cataloging 500+ species), ethics (the Nicomachean Ethics), poetics, politics, metaphysics. Tutored Alexander the Great.",
             "He was the operating system of Western and Islamic thought for 1,800 years. Aquinas just called him \"The Philosopher.\" His mistakes (geocentrism, four elements) had to be actively dismantled by the Scientific Revolution.",
             "Fled Athens in 323 BC, after Alexander's death, saying he wouldn't let the city \"sin twice against philosophy\" (a reference to Socrates). Died in exile the next year (322 BC)."),
 
@@ -322,7 +322,7 @@ public static partial class HallOfFame
     private static readonly List<Figure> biologyFigures = new()
     {
         new("Aristotle", "384-322 BC", "Stagira", "#5B6E3A",
-            "Catalogued the living world",
+            "Cataloged the living world",
             "First systematic biologist. Dissected and classified ~500 species, distinguishing vertebrates and invertebrates and getting cetacean mammalhood right 2,000 years before anyone else.",
             "He invented zoology as a discipline. His <strong>History of Animals</strong> remained the standard reference into the Renaissance.",
             "Some of his observations (octopus mating arms, cuttlefish behavior) were dismissed as fanciful for centuries before being confirmed by 19th-century marine biology."),
@@ -719,7 +719,7 @@ public static partial class HallOfFame
 
         new("Shannon", "1916-2001", "USA", "#5B6E3A",
             "Father of information theory",
-            "<strong>A Mathematical Theory of Communication</strong> (1948): defined channel capacity and entropy, and popularised the \"bit\" (a word credited to John Tukey). Master's thesis (1937) showed Boolean algebra could design any digital circuit.",
+            "<strong>A Mathematical Theory of Communication</strong> (1948): defined channel capacity and entropy, and popularized the \"bit\" (a word credited to John Tukey). Master's thesis (1937) showed Boolean algebra could design any digital circuit.",
             "Every modem, codec, hard drive, and wireless protocol obeys his channel capacity bound. He simultaneously founded information theory AND digital circuit design as a grad student and a Bell Labs employee.",
             "Built a juggling robot, a flame-throwing trumpet, and a maze-solving mouse called Theseus. Rode a unicycle through Bell Labs hallways while juggling."),
 
@@ -811,7 +811,7 @@ public static partial class HallOfFame
             "Tabloids called him \"the wickedest man in the world.\" He happily played the role: climbing K2, doing heroin, shocking everyone he met. Died broke in a Hastings boarding house."),
 
         new("Charles Fort", "1874-1932", "USA", "#6B4A35",
-            "Catalogued the impossible",
+            "Cataloged the impossible",
             "Spent 27 years in libraries collecting reports of anomalous phenomena: rains of frogs, ball lightning, mysterious disappearances. Published <strong>The Book of the Damned</strong> (1919) and three more.",
             "He invented \"Forteana\": the systematic study of weird data science ignores. Every UFO investigator, cryptozoologist, and X-Files writer descends from him.",
             "Refused to theorize. His point was that science excludes inconvenient data; he just kept piling it up to embarrass orthodoxy."),
@@ -901,7 +901,7 @@ public static partial class HallOfFame
             "Clash of civilizations",
             "<strong>The Soldier and the State</strong> (1957). <strong>Political Order in Changing Societies</strong> (1968): institutions matter more than democracy for development. <strong>Clash of Civilizations</strong> (1996).",
             "Set the agenda for decades of debate on civil-military relations, modernization, and post-Cold War conflict. Loved and loathed in roughly equal measure.",
-            "Clash of Civilizations was widely criticised when published, then quoted everywhere after September 11."),
+            "Clash of Civilizations was widely criticized when published, then quoted everywhere after September 11."),
 
         new("Kissinger", "1923-2023", "Germany/USA", "#7A3E5E",
             "Realpolitik incarnate",
@@ -1009,7 +1009,7 @@ public static partial class HallOfFame
             "Public opinion as engineering",
             "<strong>Public Opinion</strong> (1922): people respond to mental \"pictures in their heads,\" not to reality directly. <strong>The Phantom Public</strong>: ordinary citizens cannot meaningfully govern themselves on technical matters.",
             "He invented the modern critique of mass democracy and seeded the idea of \"manufactured consent.\" His framework still drives debates about media literacy and political polarization.",
-            "Friend and adviser to presidents from Wilson to LBJ. Popularised the term \"Cold War\" in 1947 (Orwell used it in 1945, and Baruch and Swope earlier). Broke with LBJ over Vietnam."),
+            "Friend and adviser to presidents from Wilson to LBJ. Popularized the term \"Cold War\" in 1947 (Orwell used it in 1945, and Baruch and Swope earlier). Broke with LBJ over Vietnam."),
 
         new("Bernays", "1891-1995", "USA/Austria", "#7A3E5E",
             "Father of PR",
@@ -1163,25 +1163,25 @@ public static partial class HallOfFame
 
         new("Rembrandt", "1606-1669", "Dutch Republic", "#5C4022",
             "Painter of the inner life",
-            "<strong>The Night Watch</strong> (1642) and dozens of self-portraits: light, shadow and ageing faces studied with unmatched honesty.",
+            "<strong>The Night Watch</strong> (1642) and dozens of self-portraits: light, shadow and aging faces studied with unmatched honesty.",
             "His self-portraits form an autobiography across four decades, from confident young success to bankrupt old age.",
             "He went bankrupt in 1656 and his house and collection were sold. The Night Watch was later trimmed on all four sides, in 1715, to fit a wall in Amsterdam's town hall."),
 
         new("Hokusai", "1760-1849", "Japan", "#2F5D8A",
             "The old man mad about painting",
             "<strong>Under the Wave off Kanagawa</strong> (about 1831), from Thirty-six Views of Mount Fuji: a woodblock print made in thousands of impressions.",
-            "Imported Prussian blue gave the Great Wave its colour, and Japanese prints like his helped spark Japonisme among Monet, Van Gogh and Degas.",
+            "Imported Prussian blue gave the Great Wave its color, and Japanese prints like his helped spark Japonisme among Monet, Van Gogh and Degas.",
             "He used more than 30 names in his career. In his seventies he wrote that by the age of 110 every dot and line he drew would be alive."),
 
         new("Claude Monet", "1840-1926", "France", "#4F7A5A",
             "Named a movement by accident",
             "<strong>Impression, Sunrise</strong> (1872) gave Impressionism its name; his haystacks, cathedrals and <strong>Water Lilies</strong> paint one subject in changing light.",
             "He took painting outdoors and made light itself the subject. The giant Water Lilies murals in Paris's Orangerie point the way to abstraction.",
-            "A critic coined \"Impressionists\" as a jibe after seeing Impression, Sunrise. In old age cataracts dulled and yellowed his colour vision, and he had surgery in 1923."),
+            "A critic coined \"Impressionists\" as a jibe after seeing Impression, Sunrise. In old age cataracts dulled and yellowed his color vision, and he had surgery in 1923."),
 
         new("Vincent van Gogh", "1853-1890", "Netherlands", "#C9952B",
             "A decade that changed painting",
-            "<strong>The Starry Night</strong> (1889) and the <strong>Sunflowers</strong>: thick, directional brushwork and colour pushed for feeling, in a career of barely ten years.",
+            "<strong>The Starry Night</strong> (1889) and the <strong>Sunflowers</strong>: thick, directional brushwork and color pushed for feeling, in a career of barely ten years.",
             "Hundreds of his letters to his brother Theo survive: one of the great records of an artist thinking aloud.",
             "He painted The Starry Night while staying at the asylum in Saint-Rémy, working from memory of the view from his bedroom window."),
 
@@ -1200,7 +1200,7 @@ public static partial class HallOfFame
         new("Frida Kahlo", "1907-1954", "Mexico", "#B23A48",
             "Herself as the subject",
             "<strong>The Two Fridas</strong> (1939) and dozens of self-portraits that mix Mexican folk art, Surrealist strangeness and pain.",
-            "She made her own body and identity the subject of modern art, and is now one of the most recognised painters of the 20th century.",
+            "She made her own body and identity the subject of modern art, and is now one of the most recognized painters of the 20th century.",
             "A bus crash in 1925, when she was 18, left her with lifelong injuries. She began painting in bed, with a mirror fixed above her."),
     };
 }

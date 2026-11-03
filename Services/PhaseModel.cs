@@ -52,7 +52,7 @@ public abstract class PhaseSubstance
         $"Hotter than the critical temperature ({PhaseModel.FormatTemperature(CriticalT)}), so no pressure can condense a separate liquid. Below {PhaseModel.FormatPressure(CriticalP)} it is an ordinary compressible gas.");
 
     protected PhaseResult Boiling(double pv) => new(PhaseKind.Gas,
-        $"Below the vapour pressure at this temperature ({PhaseModel.FormatPressure(pv)}), so any liquid would boil away: it is a gas.");
+        $"Below the vapor pressure at this temperature ({PhaseModel.FormatPressure(pv)}), so any liquid would boil away: it is a gas.");
 
     protected IEnumerable<PhaseCurve> CriticalEdges()
     {
@@ -136,8 +136,8 @@ public sealed class TriplePointSubstance : PhaseSubstance
         {
             var ps = SublimationPressure(t);
             return p > ps
-                ? new(PhaseKind.Solid, $"Above the solid's vapour pressure ({PhaseModel.FormatPressure(ps)}). Below the triple-point pressure no liquid can exist, so warming it makes it sublime.")
-                : new(PhaseKind.Gas, $"Below the solid's vapour pressure here ({PhaseModel.FormatPressure(ps)}), so the solid sublimes into gas.");
+                ? new(PhaseKind.Solid, $"Above the solid's vapor pressure ({PhaseModel.FormatPressure(ps)}). Below the triple-point pressure no liquid can exist, so warming it makes it sublime.")
+                : new(PhaseKind.Gas, $"Below the solid's vapor pressure here ({PhaseModel.FormatPressure(ps)}), so the solid sublimes into gas.");
         }
 
         if (t >= CriticalT) return p >= CriticalP ? Supercritical() : HotGas();
@@ -148,7 +148,7 @@ public sealed class TriplePointSubstance : PhaseSubstance
 
         var pv = LiquidVapourPressure(t);
         return p > pv
-            ? new(PhaseKind.Liquid, $"Warmer than the melting point and above the vapour pressure ({PhaseModel.FormatPressure(pv)}), so it stays condensed but flows.")
+            ? new(PhaseKind.Liquid, $"Warmer than the melting point and above the vapor pressure ({PhaseModel.FormatPressure(pv)}), so it stays condensed but flows.")
             : Boiling(pv);
     }
 
@@ -221,7 +221,7 @@ public sealed class Helium4 : PhaseSubstance
         var tl = LambdaTemperature(p);
         return t < tl
             ? new(PhaseKind.HeliumII, $"Colder than the lambda line ({PhaseModel.FormatTemperature(tl)} at this pressure): a superfluid that flows with zero viscosity and creeps up container walls.")
-            : new(PhaseKind.HeliumI, $"Above the vapour pressure ({PhaseModel.FormatPressure(pv)}) but warmer than the lambda line ({PhaseModel.FormatTemperature(tl)}): an ordinary, if very cold, liquid.");
+            : new(PhaseKind.HeliumI, $"Above the vapor pressure ({PhaseModel.FormatPressure(pv)}) but warmer than the lambda line ({PhaseModel.FormatTemperature(tl)}): an ordinary, if very cold, liquid.");
     }
 
     public override IReadOnlyList<PhaseCurve> Curves()
@@ -264,7 +264,7 @@ public static class PhaseModel
         [
             new(PhaseKind.Solid, "Ice", 229, 3e6),
             new(PhaseKind.Liquid, "Liquid", 390, 3e6),
-            new(PhaseKind.Gas, "Vapour", 520, 30),
+            new(PhaseKind.Gas, "Vapor", 520, 30),
             new(PhaseKind.Supercritical, "Supercritical", 790, 5e7),
         ],
     };
@@ -277,7 +277,7 @@ public static class PhaseModel
         SublimeT = 194.686,
         CriticalT = 304.128, CriticalP = 7.3773e6,
         MeltSlope = 4.7e6,
-        Note = "At 1 atm solid CO₂ never melts: dry ice sublimes straight to gas at 194.7 K (-78.5 °C). Liquid CO₂ only exists above its triple-point pressure of 5.18 bar (518 kPa), which is why it is stored in pressurised cylinders.",
+        Note = "At 1 atm solid CO₂ never melts: dry ice sublimes straight to gas at 194.7 K (-78.5 °C). Liquid CO₂ only exists above its triple-point pressure of 5.18 bar (518 kPa), which is why it is stored in pressurized cylinders.",
         Labels =
         [
             new(PhaseKind.Solid, "Dry ice", 182, 3e6),
@@ -292,7 +292,7 @@ public static class PhaseModel
         Name = "Helium-4",
         MinT = 0.5, MaxT = 6.5, TStep = 0.01, MinLogP = 0, MaxLogP = 7, DefaultT = 4.0,
         CriticalT = 5.1953, CriticalP = 227460,
-        Note = "Helium-4 has no point where solid, liquid and gas meet. Zero-point motion keeps it liquid down to absolute zero under its own vapour pressure; it only freezes when squeezed above about 25 bar (2.5 MPa). Below the lambda line the liquid becomes He II, a superfluid. The melting curve above 1.8 K is approximate.",
+        Note = "Helium-4 has no point where solid, liquid and gas meet. Zero-point motion keeps it liquid down to absolute zero under its own vapor pressure; it only freezes when squeezed above about 25 bar (2.5 MPa). Below the lambda line the liquid becomes He II, a superfluid. The melting curve above 1.8 K is approximate.",
         Labels =
         [
             new(PhaseKind.Solid, "Solid", 1.1, 5.6e6),

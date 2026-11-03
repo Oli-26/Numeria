@@ -147,7 +147,7 @@ public static class ParticleSandbox
         var moller = O("Møller scattering",
             new[] { T(e, -40), T(e, 140) },
             new[] { Pr(e, "Both electrons come out again. Charge −2 and lepton number +2 cannot change, and there is no antiparticle here to annihilate with.") },
-            "Two electrons can only repel: they swap a virtual photon and fly apart, back to back in the centre-of-mass frame. "
+            "Two electrons can only repel: they swap a virtual photon and fly apart, back to back in the center-of-mass frame. "
             + "Because the two are identical, quantum mechanics cannot tell which is which, and that changes the angles they come out at. "
             + "Christian Møller worked out the theory in 1932, and some of the first colliders, in the 1960s, collided electrons with electrons to test it. "
             + "A tiny contribution from the Z boson makes left- and right-spinning electrons scatter slightly differently, which precision Møller experiments use to measure the weak force.",
@@ -173,7 +173,7 @@ public static class ParticleSandbox
             + "Unlike Møller scattering there is a second route, in which the pair briefly annihilates into a virtual photon that turns straight back into an electron and a positron. "
             + "Now and then they annihilate for real in flight, and above about 0.2 GeV they can even turn into a muon pair. "
             + "Colliders use Bhabha scattering to count how many collisions they deliver.",
-            R("In-flight annihilation: two photons, back to back in the centre-of-mass frame.", new[] { ep, e }, new[] { g, g })),
+            R("In-flight annihilation: two photons, back to back in the center-of-mass frame.", new[] { ep, e }, new[] { g, g })),
             "A positron with MeV energy meets an electron.");
 
         On("e+", "e-", Band.GeV, O("Quark and gluon jets",
@@ -185,7 +185,7 @@ public static class ParticleSandbox
                 Pr(Particles.Gluon, "Gluon jet: the third jet, from a gluon radiated by the quark."),
             },
             "The electron and positron annihilate into a virtual photon or Z boson, which makes a new particle-antiparticle pair. "
-            + "Here it is a quark and an antiquark. Neither can escape alone (colour confinement), so each turns into a jet of hadrons. "
+            + "Here it is a quark and an antiquark. Neither can escape alone (color confinement), so each turns into a jet of hadrons. "
             + "Usually there are two back-to-back jets, but sometimes a quark radiates a hard gluon and a third jet appears: "
             + "three-jet events at the PETRA collider at DESY in 1979 were the first direct evidence for the gluon. "
             + "At a few GeV and below the quarks make only a handful of mesons rather than clear jets.",
@@ -237,7 +237,7 @@ public static class ParticleSandbox
             },
             "The electron bounces off the whole proton without breaking it. "
             + "Towards hundreds of MeV its wavelength becomes smaller than the proton, and fewer electrons scatter to wide angles than a point charge would allow: the proton has a size. "
-            + "Robert Hofstadter's team at Stanford measured it this way in the 1950s, finding a charge radius of about 0.8 femtometres (1961 Nobel Prize).",
+            + "Robert Hofstadter's team at Stanford measured it this way in the 1950s, finding a charge radius of about 0.8 femtometers (1961 Nobel Prize).",
             R("Above about 0.8 MeV the weak force can turn the pair into a neutron and a neutrino (electron capture). It is extremely rare here, but in a collapsing star's core it turns protons into neutrons.",
                 new[] { e, p }, new[] { nu, n }),
             R("From about 0.3 GeV the electron can lift the proton into the short-lived Delta resonance, which falls apart into a nucleon and a pion.",
@@ -273,7 +273,7 @@ public static class ParticleSandbox
         On("e-", "p", Band.GeV, Dis(e), "Electrons hit protons: SLAC in 1968 reached a few GeV of collision energy, HERA about 300 GeV.");
         Off("e-", "p", Band.TeV, noEpCollider);
 
-        const string mirror = "A proton hits an electron. In the centre-of-mass frame this is exactly the same collision as an electron hitting a proton: it does not matter which one you call the beam.";
+        const string mirror = "A proton hits an electron. In the center-of-mass frame this is exactly the same collision as an electron hitting a proton: it does not matter which one you call the beam.";
         On("p", "e-", Band.KeV, coulombEp, mirror);
         On("p", "e-", Band.MeV, elasticEp, mirror);
         On("p", "e-", Band.GeV, Dis(e), mirror + " HERA collided proton and electron beams head on.");
@@ -306,14 +306,14 @@ public static class ParticleSandbox
         Off("e+", "p", Band.TeV, noEpCollider);
 
         // ---- electron and positron on atoms ----
-        On("e-", "atom", Band.KeV, O("Ionisation and X-rays",
+        On("e-", "atom", Band.KeV, O("Ionization and X-rays",
             new[] { T(e, -30), T(e, 90), T(cIon, 210) },
             new[]
             {
                 Pr(e, "Two electrons leave: the incoming one, deflected and slowed, and one knocked out of the atom."),
                 Pr(cIon, "The carbon atom, now an ion with one electron missing."),
             },
-            "Most keV electrons lose energy by knocking electrons out of atoms (ionisation). "
+            "Most keV electrons lose energy by knocking electrons out of atoms (ionization). "
             + "If an innermost electron is knocked out, the atom refills the hole and either throws out another electron (the Auger effect, usual in light atoms like carbon) "
             + "or emits an X-ray whose energy fingerprints the element (usual in heavy atoms like tungsten). "
             + "Electrons braking in the nucleus's field also give off a smooth spread of X-rays (bremsstrahlung). "
@@ -364,7 +364,7 @@ public static class ParticleSandbox
             },
             "A positron entering matter first slows down, knocking electrons about. Nearly at rest, it often pairs up with an electron as positronium, a tiny atom with no nucleus, before the two annihilate. "
             + "Two 511 keV photons fly out back to back. A PET scanner rings the patient with detectors and places each annihilation on the line joining two simultaneous hits; "
-            + "the positrons come from a tracer such as a sugar labelled with fluorine-18. "
+            + "the positrons come from a tracer such as a sugar labeled with fluorine-18. "
             + "Lepton number balances: the positron's −1 cancels one of carbon's six electrons, leaving five.",
             R("Ortho-positronium (spins aligned) decays into three photons instead, though in matter it usually meets another electron first.",
                 new[] { ep, c }, new[] { g, g, g, cIon }));
@@ -466,7 +466,7 @@ public static class ParticleSandbox
             {
                 Pr(g, "The scattered photon, carrying on with less energy."),
                 Pr(e, "A Compton electron, knocked free."),
-                Pr(cIon, "The atom, ionised but otherwise untouched."),
+                Pr(cIon, "The atom, ionized but otherwise untouched."),
             },
             "At MeV energies the atom's electrons are so loosely bound by comparison that the photon scatters off one as if it were free. "
             + "This is the main way gamma rays of this energy interact in light materials like carbon, water and tissue. "
@@ -495,7 +495,7 @@ public static class ParticleSandbox
             new[] { T(p, -35), T(p, 145) },
             new[] { Pr(p, "Both protons fly apart again, turned back by their electric repulsion.") },
             "Two protons repel, and at keV energies they almost never get close enough for the strong force to grab them. "
-            + "Almost never is not never: quantum tunnelling occasionally gets them through the barrier, and then, far more rarely still, the weak force turns one proton into a neutron while they touch, making deuterium. "
+            + "Almost never is not never: quantum tunneling occasionally gets them through the barrier, and then, far more rarely still, the weak force turns one proton into a neutron while they touch, making deuterium. "
             + "This is the first step of the proton-proton chain that powers the Sun, whose core is about 15 million degrees (around 1 keV). "
             + "It is so slow that a proton in the Sun's core typically waits billions of years before it fuses, which is why the Sun lasts so long.",
             R("The fusion route, worked out by Hans Bethe and Charles Critchfield in 1938. The positron's lepton number −1 is balanced by the neutrino's +1.",
@@ -544,7 +544,7 @@ public static class ParticleSandbox
                 new[] { p, p }, new[] { g, g, Particles.RemnantUud, Particles.RemnantUud })),
             "Proton beams colliding head on at the LHC, 13.6 TeV.");
 
-        On("p", "atom", Band.KeV, O("Ionisation",
+        On("p", "atom", Band.KeV, O("Ionization",
             new[] { T(p, -20), T(e, 70), T(cIon, 200) },
             new[]
             {
@@ -568,7 +568,7 @@ public static class ParticleSandbox
             "MeV protons punch through the electron clouds. Most pass far from the nucleus and are barely deflected, but the rare close pass by the tiny, dense nucleus throws the proton through a large angle. "
             + "This is how Hans Geiger and Ernest Marsden, firing alpha particles at gold foil in 1909, revealed the nucleus, which Rutherford explained in 1911. "
             + "Along the way the proton loses energy to electrons faster and faster as it slows, so it stops at a sharp depth (the Bragg peak). "
-            + "Proton therapy, with beams of about 70 to 250 MeV, uses this to deliver its dose to a tumour and spare the tissue beyond.",
+            + "Proton therapy, with beams of about 70 to 250 MeV, uses this to deliver its dose to a tumor and spare the tissue beyond.",
             R("A few protons knock a neutron out of a nucleus, making carbon-11. It emits positrons, so a PET scan can check where the beam went.",
                 new[] { p, c }, new[] { p, n, Particles.Carbon11 })),
             "Protons with tens to hundreds of MeV enter carbon, as in proton therapy.");
@@ -599,7 +599,7 @@ public static class ParticleSandbox
                 Pr(Particles.CarbonDebris, "What is left of the nucleus breaks into fragments."),
             },
             "Cosmic-ray protons with TeV energies and beyond hit nuclei of nitrogen and oxygen (much like carbon) high in the atmosphere. "
-            + "Each collision makes a burst of pions, which hit more nuclei or decay, and the cascade grows into an air shower: at the very highest energies, billions of particles spread over many square kilometres. "
+            + "Each collision makes a burst of pions, which hit more nuclei or decay, and the cascade grows into an air shower: at the very highest energies, billions of particles spread over many square kilometers. "
             + "Victor Hess discovered cosmic rays on balloon flights in 1912, and the muon was discovered in cosmic-ray showers in 1936.",
             R("Each neutral pion decays into two photons.", new[] { Particles.PiZero }, new[] { g, g })),
             "A cosmic-ray proton with tens of TeV or more hits a nucleus high in the atmosphere.");
@@ -628,7 +628,7 @@ public static class ParticleSandbox
             },
             "An electron antineutrino and an electron can merge into a single W⁻ boson, which needs the collision energy to match the W's mass, about 80 GeV: a resonance, predicted by Sheldon Glashow in 1960. "
             + "With the electron at rest that takes an antineutrino of about 6.3 PeV (6.3 × 10¹⁵ eV). "
-            + "In 2021 the IceCube detector, a cubic kilometre of Antarctic ice, reported a particle shower of about that energy, consistent with this process. "
+            + "In 2021 the IceCube detector, a cubic kilometer of Antarctic ice, reported a particle shower of about that energy, consistent with this process. "
             + "The W⁻ lives about 10⁻²⁵ s. Away from 80 GeV the pair simply scatters again.",
             R("About one time in nine the W⁻ decays back into an electron and an electron antineutrino.", new[] { nub, e }, new[] { e, nub })),
             "The collision energy is tuned to the W boson's mass, about 80 GeV.");
