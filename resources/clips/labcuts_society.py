@@ -12,6 +12,21 @@ def cuts(S):
                  cam=((0, 390, 670, 770), (1, 390, 690, 760))),
         ])
 
+    # The camera frames the seat score and the map; the mode chips stay above the crop.
+    def gerrymander():
+        s = S('gerrymander')
+        cam = lambda w0, w1: ((0, 390, 648, w0), (1, 390, 648, w1))
+        return dict(kicker='Politics', accent='#9C3D45', title='Gerrymander', line='Same voters. Redraw the lines, flip the seats.', beats=[
+            Beat(s, 0.35, 5.6, 'A 50/50 state, <em>neutral lines</em>', '25 Blue voters, 24 Red. Blue wins 4 seats to 3', dur=4.4,
+                 cam=cam(630, 672)),
+            Beat(s, 5.75, 11.1, 'Blue draws the map: <em style="color:#4A5FE0">6 seats to 1</em>', 'Red packed into one corner, cracked everywhere else', dur=4.4,
+                 cam=cam(672, 672)),
+            Beat(s, 11.15, 16.6, 'Red draws the map: <em style="color:#E74C3C">6 seats to 1</em>', 'The same voters. Blue\'s city packed into one district', dur=4.6,
+                 cam=cam(672, 672)),
+            Beat(s, 16.6, 17.7, 'Same voters. <em>Opposite result.</em>', 'Whoever draws the lines picks the winner', dur=2.2,
+                 cam=cam(672, 640)),
+        ])
+
     def front_page():
         s = S('front-page')
         return dict(kicker='Media', accent='#3E4650', title='Front Page Builder', line='One event, three choices, very different front pages.', beats=[
@@ -35,4 +50,4 @@ def cuts(S):
                  cam=((0, 390, 760, 780), (1, 390, 840, 760))),
         ])
 
-    return {'power-map': power_map, 'front-page': front_page, 'plot-geometry': plot_geometry}
+    return {'power-map': power_map, 'gerrymander': gerrymander, 'front-page': front_page, 'plot-geometry': plot_geometry}

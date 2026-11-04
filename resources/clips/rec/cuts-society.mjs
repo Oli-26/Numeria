@@ -19,6 +19,17 @@ export default {
     await choose(h, '.pm-row select', 2, 'irv'); await h.wait(3100);
     await choose(h, '.pm-row select', 2, 'proportional'); await h.wait(3500);
   } },
+  // Starts on Red's map so the first tap, Neutral, redraws the lines on camera; each count takes about 4.5 s.
+  'cut-gerrymander': { route: '/gerrymander', async setup(h) {
+    await h.wait(5200);
+    await h.tap('.gm-mode:has-text("Red draws")', 5200);
+    await h.scrollTo('.gm-stage', 12, 1); await h.wait(500);
+  }, async run(h) {
+    await h.wait(400);
+    await h.tap('.gm-mode:has-text("Neutral")', 5300);
+    await h.tap('.gm-mode:has-text("Blue draws")', 5300);
+    await h.tap('.gm-mode:has-text("Red draws")', 6200);
+  } },
   'cut-front-page': { route: '/front-page', async setup(h) {
     await h.wait(600);
     await h.tap('.fp-option:has-text("CITIZENS GATHER FOR RALLY")', 300);
