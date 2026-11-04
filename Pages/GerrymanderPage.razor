@@ -1,0 +1,280 @@
+@page "/gerrymander"
+@implements IDisposable
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Gerrymander</h1>
+</div>
+
+<div class="card gm-intro">
+    <Icon Name="districts" Size="22" Stroke="var(--accent)" />
+    <p>A state of 49 voters, 25 Blue and 24 Red, elects 7 representatives. The voters never move. Only the district lines do.</p>
+</div>
+
+<div class="card gm-stage @(mode == "draw" ? "gm-drawing" : "")" @ref="stageEl">
+    <div class="gm-modes" role="group" aria-label="Who draws the map">
+        @foreach (var (key, label) in Modes)
+        {
+            <button class="gm-mode @(mode == key ? "active" : "") @("gm-mode-" + key)" aria-pressed="@(mode == key)" @onclick="() => SetMode(key)">@label</button>
+        }
+    </div>
+
+    @{ var tallies = DistrictMap.Tallies(map); var shades = DistrictMap.Shades(map); var o = DistrictMap.Score(map); }
+    <div class="gm-board">
+        @if (valid)
+        {
+            <div class="gm-score gm-call"><span style="color:@BlueColor">Blue @o.BlueSeats</span><span class="gm-dash">–</span><span style="color:@RedColor">@o.RedSeats Red</span></div>
+        }
+        else
+        {
+            <div class="gm-score gm-unfinished">Not a legal map yet</div>
+        }
+        <div class="gm-seats" aria-hidden="true">
+            @for (int d = 0; d < DistrictMap.Districts; d++)
+            {
+                <span class="gm-seat" data-order="@d" style="background:@(valid ? (tallies[d].Winner == 'b' ? BlueColor : RedColor) : "var(--bg-surface)")"></span>
+            }
+        </div>
+    </div>
+
+    <svg viewBox="-6 -6 712 712" class="gm-svg" role="img" aria-label="@AriaSummary">
+        <defs><clipPath id="gm-sweep"><rect class="gm-sweep" x="-10" y="-10" width="720" height="720" /></clipPath></defs>
+        @for (int i = 0; i < DistrictMap.Cells; i++)
+        {
+            var x = Num(i % DistrictMap.Side * Cell);
+            var y = Num(i / DistrictMap.Side * Cell);
+            var d = map[i];
+            <rect class="@CellClass(tallies[d], shades[d], d)" data-i="@i" data-d="@d" x="@x" y="@y" width="@Cell" height="@Cell" />
+        }
+        <path class="gm-grid" d="@GridPath" />
+        @for (int i = 0; i < DistrictMap.Cells; i++)
+        {
+            var cx = Num(i % DistrictMap.Side * Cell + Cell / 2.0);
+            var cy = Num(i / DistrictMap.Side * Cell + Cell / 2.0);
+            <circle class="gm-voter" data-i="@i" cx="@cx" cy="@cy" r="27" fill="@(DistrictMap.Blue[i] ? BlueColor : RedColor)" />
+        }
+        <g clip-path="url(#gm-sweep)"><path class="gm-lines" d="@DistrictMap.BorderPath(map, Cell)" /></g>
+    </svg>
+
+    <div class="gm-legend">
+        <span><i style="background:@BlueColor"></i>Blue voter · 25</span>
+        <span><i style="background:@RedColor"></i>Red voter · 24</span>
+    </div>
+
+    @if (mode == "draw")
+    {
+        <p class="gm-hint">Drag from inside a district across its border to pull voters in. Every district needs exactly 7 voters, in one piece.</p>
+    }
+</div>
+
+<div class="card gm-results" @ref="resultsEl">
+    @if (valid)
+    {
+        var winner = o.BlueSeats > o.RedSeats ? "Blue" : "Red";
+        var share = winner == "Blue" ? DistrictMap.BlueVoters : DistrictMap.Cells - DistrictMap.BlueVoters;
+        <strong class="gm-headline gm-call">@winner wins @Math.Max(o.BlueSeats, o.RedSeats) of 7 seats with @Pct(share)% of the votes</strong>
+        <div class="gm-districts">
+            @for (int d = 0; d < DistrictMap.Districts; d++)
+            {
+                var t = tallies[d];
+                <div class="gm-dtile" style="border-top-color:@(t.Winner == 'b' ? BlueColor : RedColor)">
+                    <span class="gm-dnum">D@(d + 1)</span>
+                    <span class="gm-dscore"><b style="color:@BlueColor">@t.Blue</b>–<b style="color:@RedColor">@t.Red</b></span>
+                    <span class="gm-dtag">@Tag(t)</span>
+                </div>
+            }
+        </div>
+        <div class="gm-readout gm-call">
+            <p>@Blurb</p>
+            <p class="gm-waste">Wasted votes: Blue @o.WastedBlue, Red @o.WastedRed. @GapText(o.EfficiencyGap)</p>
+            <p class="gm-note">A wasted vote is one cast for a loser, or for a winner beyond the 4 they needed.</p>
+        </div>
+    }
+    else
+    {
+        <ul class="gm-problems">
+            @foreach (var p in DistrictMap.Problems(map)) { <li>@p</li> }
+        </ul>
+        <p class="gm-note">Fix these and the map is counted. Or pick a map above to start again.</p>
+    }
+</div>
+
+@code {
+    private const int Cell = 100;
+    private const string BlueColor = "#4A5FE0", RedColor = "#E74C3C";
+
+    private static readonly (string Key, string Label)[] Modes =
+        { ("neutral", "Neutral"), ("blue", "Blue draws"), ("red", "Red draws"), ("draw", "Your map") };
+
+    private string mode = "neutral";
+    private int[] map = (int[])DistrictMap.Presets["neutral"].Clone();
+    private bool valid = true, moved, countPending = true, sweep = true;
+    private int brush = -1;
+    private ElementReference stageEl, resultsEl;
+    private DotNetObjectReference<GerrymanderPage>? selfRef;
+
+    private string CellClass(DistrictMap.Tally t, int shade, int d) =>
+        $"gm-cell w-{(t.Winner == '=' ? 'n' : t.Winner)}{shade}{(brush == d ? " brush" : "")}";
+
+    private static string Num(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    private static string Pct(int votes) => Math.Round(votes * 100.0 / DistrictMap.Cells).ToString("0");
+
+    private static readonly string GridPath = string.Concat(Enumerable.Range(1, DistrictMap.Side - 1).Select(k =>
+        $"M{k * Cell} 0V{DistrictMap.Side * Cell}M0 {k * Cell}H{DistrictMap.Side * Cell}"));
+
+    // "Packed" implies someone meant it, so the map drawn blind calls its lopsided districts safe instead.
+    private string Tag(DistrictMap.Tally t) => Math.Max(t.Blue, t.Red) >= 6 ? (mode == "neutral" ? "safe" : "packed") : Math.Abs(t.Blue - t.Red) == 1 ? "close" : "";
+
+    private static string GapText(double gap)
+    {
+        var pct = Math.Round(Math.Abs(gap) * 100);
+        return pct < 1 ? "Efficiency gap: none." : $"Efficiency gap: {pct:0}% toward {(gap > 0 ? "Blue" : "Red")}.";
+    }
+
+    private string Blurb => mode switch
+    {
+        "neutral" => "Compact districts drawn without looking at who lives where. Most races are close, and Blue's narrow majority of votes becomes a narrow majority of seats.",
+        "blue" => "Blue cracks Red's voters across six districts that Red loses by one vote, and packs the rest into a single district Red wins 6 to 1.",
+        "red" => "Red packs Blue's city into one district Blue wins 7 to 0, then cracks the rest: Blue loses six districts by one vote each.",
+        _ => "Packing crowds the other side into a few districts it wins by a mile. Cracking spreads it thin so it loses everywhere else by a little.",
+    };
+
+    private string AriaSummary
+    {
+        get
+        {
+            if (!valid) return "District map, unfinished";
+            var o = DistrictMap.Score(map);
+            return $"District map: Blue wins {o.BlueSeats} seats, Red wins {o.RedSeats}";
+        }
+    }
+
+    private void SetMode(string key)
+    {
+        if (key == mode) return;
+        mode = key;
+        if (key != "draw")
+        {
+            map = (int[])DistrictMap.Presets[key].Clone();
+            valid = true;
+            sweep = countPending = true;
+        }
+    }
+
+    [JSInvokable]
+    public void StrokeStart(int cell)
+    {
+        if (mode != "draw" || cell < 0 || cell >= DistrictMap.Cells) return;
+        brush = map[cell];
+        moved = false;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public bool StrokeOver(int cell)
+    {
+        if (mode != "draw" || brush < 0 || !DistrictMap.TryMove(map, cell, brush)) return false;
+        moved = true;
+        valid = DistrictMap.IsValid(map);
+        StateHasChanged();
+        return true;
+    }
+
+    [JSInvokable]
+    public void StrokeEnd()
+    {
+        brush = -1;
+        if (moved && valid) { sweep = false; countPending = true; }
+        moved = false;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            selfRef = DotNetObjectReference.Create(this);
+            await JS.TryInvokeVoidAsync("Gerrymander.attach", stageEl, selfRef);
+        }
+        if (!countPending) return;
+        countPending = false;
+        await JS.TryInvokeVoidAsync("Gerrymander.count", stageEl, resultsEl, CountPlan());
+    }
+
+    // Each district's voters in reading order with its winner, counted in district order.
+    private object CountPlan() => new
+    {
+        sweep,
+        districts = Enumerable.Range(0, DistrictMap.Districts).Select(d =>
+        {
+            var cells = Enumerable.Range(0, DistrictMap.Cells).Where(i => map[i] == d).ToArray();
+            var t = DistrictMap.Tallies(map)[d];
+            return new { cells, blue = cells.Select(i => DistrictMap.Blue[i]).ToArray(), winner = t.Winner.ToString(), packed = Math.Max(t.Blue, t.Red) >= 6 };
+        }).ToArray(),
+    };
+
+    public void Dispose()
+    {
+        _ = JS.TryInvokeVoidAsync("Gerrymander.stop");
+        selfRef?.Dispose();
+    }
+}
+
+<style>
+    .gm-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .gm-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .gm-stage { padding: 14px; }
+    .gm-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+    .gm-mode { min-height: 40px; padding: 6px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+        font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+    .gm-mode.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+    .gm-mode-blue.active { background: #4A5FE0; border-color: #4A5FE0; color: #fff; }
+    .gm-mode-red.active { background: #E74C3C; border-color: #E74C3C; color: #fff; }
+
+    .gm-svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+    .gm-drawing .gm-svg { touch-action: none; }
+    .gm-cell { transition: fill 0.25s ease-out; fill: var(--bg-surface); }
+    .gm-cell.w-b0 { fill: color-mix(in srgb, #4A5FE0 22%, var(--bg-card)); }
+    .gm-cell.w-b1 { fill: color-mix(in srgb, #4A5FE0 34%, var(--bg-card)); }
+    .gm-cell.w-b2 { fill: color-mix(in srgb, #4A5FE0 14%, var(--bg-card)); }
+    .gm-cell.w-r0 { fill: color-mix(in srgb, #E74C3C 22%, var(--bg-card)); }
+    .gm-cell.w-r1 { fill: color-mix(in srgb, #E74C3C 34%, var(--bg-card)); }
+    .gm-cell.w-r2 { fill: color-mix(in srgb, #E74C3C 14%, var(--bg-card)); }
+    .gm-drawing .gm-cell { cursor: crosshair; }
+    .gm-cell.brush { filter: brightness(1.08) saturate(1.3); }
+    .gm-grid { stroke: color-mix(in srgb, var(--text-primary) 10%, transparent); stroke-width: 2; fill: none; pointer-events: none; }
+    .gm-voter { stroke: var(--bg-card); stroke-width: 4; pointer-events: none; transform-box: fill-box; transform-origin: center; }
+    .gm-lines { fill: none; stroke: var(--text-primary); stroke-width: 9; stroke-linecap: square; pointer-events: none; }
+
+    .gm-legend { display: flex; justify-content: center; gap: 16px; margin-top: 10px; font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; }
+    .gm-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+    .gm-hint { margin: 10px 0 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; text-align: center; }
+
+    .gm-board { margin-bottom: 10px; }
+    .gm-score { display: flex; justify-content: center; align-items: baseline; gap: 10px; font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; }
+    .gm-unfinished { font-size: 1.05rem; color: var(--text-muted); font-weight: 700; padding: 5px 0; }
+    .gm-dash { color: var(--text-muted); font-weight: 600; }
+    .gm-seats { display: flex; justify-content: center; gap: 8px; margin-top: 6px; }
+
+    .gm-results { padding: 14px; }
+    .gm-headline { display: block; text-align: center; font-size: 0.95rem; margin-bottom: 10px; }
+    .gm-seat { width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-primary) 18%, transparent); }
+
+    .gm-districts { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .gm-dtile { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 0 4px; background: var(--bg-surface); border-radius: 6px;
+        border-top: 3px solid transparent; font-variant-numeric: tabular-nums; }
+    .gm-dnum { font-size: 0.66rem; font-weight: 700; color: var(--text-muted); }
+    .gm-dscore { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); }
+    .gm-dtag { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); min-height: 0.8rem; }
+
+    .gm-readout { margin-top: 12px; padding: 10px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); }
+    .gm-readout p { margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+    .gm-readout p + p { margin-top: 6px; }
+    .gm-waste { font-weight: 600; color: var(--text-primary) !important; }
+    .gm-note { font-size: 0.74rem !important; color: var(--text-muted) !important; }
+    .gm-problems { margin: 10px 0 6px; padding-left: 20px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+    .gm-results > .gm-note { margin: 0; font-size: 0.78rem; color: var(--text-muted); }
+</style>
