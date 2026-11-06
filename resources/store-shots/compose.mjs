@@ -1,6 +1,7 @@
 // Composes captioned 1080x1920 Play Store phone screenshots from raw captures.
 // Usage: node compose.mjs            (reads ./config.mjs, writes ./out/N.png and copies to config.deliver)
 //        node compose.mjs --extra    (config.extra alternates to ./out-extra/<name>.png, never delivered)
+//        node compose.mjs --set politics   (any other list in config, to ./out-<name>/, never delivered)
 // Needs playwright-core (npx cache) + its headless Chromium, and sharp (Math/node_modules) to flatten alpha.
 import { createRequire } from 'module';
 import fs from 'fs'; import path from 'path'; import { fileURLToPath, pathToFileURL } from 'url';
@@ -43,9 +44,9 @@ function html(shot, imgW) {
   </body></html>`;
 }
 
-const EXTRA = process.argv[2] === '--extra';
-if (EXTRA) cfg.shots = cfg.extra;
-const outDir = path.join(HERE, EXTRA ? 'out-extra' : 'out');
+const SET = process.argv[2] === '--extra' ? 'extra' : process.argv[2] === '--set' ? process.argv[3] : null;
+if (SET) cfg.shots = cfg[SET];
+const outDir = path.join(HERE, SET ? `out-${SET}` : 'out');
 fs.mkdirSync(outDir, { recursive: true });
 for (const f of fs.readdirSync(outDir)) fs.unlinkSync(path.join(outDir, f));
 const browser = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell' });
@@ -54,9 +55,11 @@ try {
   for (const [i, shot] of cfg.shots.entries()) {
     // A poster is a finished full-frame page (its own caption and artwork) rather than a phone screen.
     if (shot.poster) {
+      await page.setViewportSize({ width: shot.w || W, height: shot.h || H });
       await page.goto(pathToFileURL(path.resolve(HERE, shot.poster)).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
       await sharp(await page.screenshot({ type: 'png' })).flatten({ background: '#000' }).removeAlpha().png().toFile(path.join(outDir, `${shot.name || i + 1}.png`));
       console.log(`${shot.name || i + 1}.png  ${shot.title.replace(/\*/g, '')} (poster)`);
+      await page.setViewportSize({ width: W, height: H });
       continue;
     }
     const meta = await sharp(path.resolve(HERE, shot.src)).metadata();
@@ -71,7 +74,7 @@ try {
     console.log(`${shot.name || i + 1}.png  ${shot.title.replace(/\*/g, '')}`);
   }
 } finally { await browser.close(); }
-if (cfg.deliver && !EXTRA && process.argv[2] !== '--no-deliver') {
+if (cfg.deliver && !SET && process.argv[2] !== '--no-deliver') {
   fs.mkdirSync(cfg.deliver, { recursive: true });
   for (const f of fs.readdirSync(cfg.deliver)) if (/\.(png|jpe?g)$/i.test(f)) fs.unlinkSync(path.join(cfg.deliver, f));
   cfg.shots.forEach((_, i) => fs.copyFileSync(path.join(outDir, `${i + 1}.png`), path.join(cfg.deliver, `${i + 1}.png`)));

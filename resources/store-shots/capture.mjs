@@ -42,6 +42,25 @@ const EXTRA = [
   ['shop', '/shop', null, 0, 2600, null,
     seed({ selectedTheme: 'neon', selectedFrame: 'holo', selectedFlame: 'rainbow', points: 1850 }, { shopPurchases: ['theme-chalkboard', 'theme-neon', 'theme-aurora', 'frame-holo', 'flame-rainbow'] })],
 ];
+// Labs at their signature moment (node capture.mjs labs). Each js runs the lab and waits for its animation to finish.
+// text is a JS expression, so a loop variable works as well as a quoted label.
+const tap = (sel, text) => `[...document.querySelectorAll('${sel}')].find(b => b.textContent.includes(${text})).click()`;
+const pause = ms => `await new Promise(r => setTimeout(r, ${ms}))`;
+const pick = (i, v) => `(s => { s.value = '${v}'; s.dispatchEvent(new Event('change', { bubbles: true })); })(document.querySelectorAll('.pm-row select')[${i}])`;
+// Seed 25 at 60%: mixed rounds until the faction takes the last vote and the doge.
+const doge = `(async () => { const i = document.querySelector('.dg-council input'); i.value = 60; i.dispatchEvent(new Event('input', { bubbles: true }));
+  ${pause(600)}; document.querySelector('.dg-go').click(); ${pause(13000)}; })()`;
+const LABS = [
+  ['lab-gerrymander', '/gerrymander', '.gm-stage', 12, 6000, `(async () => { ${tap('.gm-mode', "'Red draws'")}; ${pause(6500)}; })()`],
+  ['lab-doge', '/doge-machine?seed=25', '.dg-council', 12, 2500, doge],
+  ['lab-doge-ladder', '/doge-machine?seed=25', '.dg-row:nth-child(2)', 8, 2500, doge],
+  // The page ends soon after the stage, so pad it to let the stage scroll to the top.
+  ['lab-power-map', '/power-map', '.pm-stage', 12, 2600, `(async () => { document.querySelector('main, body').style.paddingBottom = '700px'; ${pick(1, '3')}; ${pause(2600)}; ${pick(2, 'proportional')}; ${pause(3500)}; })()`],
+  ['lab-front-page', '/front-page', '.fp-mock', 12, 2600, `(async () => {
+    for (const t of ['CITIZENS GATHER FOR RALLY', 'Crowd assembles ahead', 'RIOT POLICE CONFRONT MOB', 'Vandals smash storefronts', 'They were destroying everything']) { ${tap('.fp-option', 't')}; ${pause(500)}; }
+    ${pause(2500)}; })()`],
+  ['strange-topic', '/topic/politics-strange'],
+];
 const settle = async (page, ms = 1800) => { await page.waitForSelector('#splash', { state: 'detached', timeout: 60000 }).catch(() => {}); await page.waitForTimeout(ms); };
 try {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
@@ -67,7 +86,7 @@ try {
     localStorage.setItem('mathvoyager_profile', JSON.stringify(p));
   });
   const css = '*:focus,*:focus-visible{outline:none!important}.web-banner{display:none!important}';
-  const shots = process.argv[2] === 'explore' ? JSON.parse(process.argv[3]) : process.argv[2] === 'extra' ? EXTRA : SHOTS;
+  const shots = process.argv[2] === 'explore' ? JSON.parse(process.argv[3]) : process.argv[2] === 'extra' ? EXTRA : process.argv[2] === 'labs' ? LABS : SHOTS;
   for (let [n, u, sel, off, wait, js, pre, after] of shots) {
     if (pre) await page.evaluate(pre);
     await page.goto(base + u); await settle(page, wait || 2200);

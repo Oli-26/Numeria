@@ -84,7 +84,7 @@ const SCRIPTS = {
   // Guess first: commit to an answer, see how far off intuition is, then read on.
   lesson: { route: '/topic/chem-atoms/lesson/chem-atom-01', async run(h) {
     await h.wait(800);
-    await h.tap('text=About 1 metre', 2600);
+    await h.tap('text=/About 1 met(re|er)$/', 2600);
     await h.tap('text=Read on', 1000);
     await h.scroll(220, 900); await h.wait(300);
     await h.scroll(-220, 400);
@@ -154,8 +154,8 @@ try {
       }
     })();
     await page.evaluate(() => { window.__simfxRecord = true; window.__sfxLog = []; });
-    await sc.run(h);
-    stop = true; await grab;
+    // Stop the grab loop even when the script throws, or its failure on the closed page hides the script's own error.
+    try { await sc.run(h); } finally { stop = true; await grab; }
     const end = Date.now() / 1000 - t0;
     // The labs' sound effects were logged instead of played; render them into a track that lines up with the frames.
     const wav = await page.evaluate(([a, b]) => window.SimFx && window.__sfxLog.length ? SimFx.renderLog(a, b) : null, [t0, end]);
