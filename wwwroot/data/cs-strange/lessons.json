@@ -1,0 +1,134 @@
+[
+  {
+    "id": "cs-odd-01",
+    "topicId": "cs-strange",
+    "order": 1,
+    "title": "Bugs, Literal and Legendary",
+    "description": "A moth in the Mark II logbook, Mel's loop with no exit, and the Y2K and 2038 date bugs",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "cs-odd-01-c1",
+        "title": "The Moth in the Logbook",
+        "contentHtml": "<p>On 9 September 1947, operators testing the Mark II Aiken Relay Calculator at Harvard traced a fault to Relay #70 on Panel F. Trapped between its points was a moth. They taped it into the log beside the entry \"First actual case of bug being found.\" The Navy's photo caption adds that the team \"put out the word that they had debugged the machine, thus introducing the term debugging a computer program.\"<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>That last part is legend. The logbook, moth still taped in, now belongs to the Smithsonian's National Museum of American History, and the museum's own description says American engineers had been calling small flaws in machines \"bugs\" for over a century: Thomas Edison talked about bugs in electrical circuits in the 1870s. It adds that the log was probably not Grace Hopper's, though Hopper, a mathematician on the Mark II team who later became a Navy rear admiral, helped popularize the term along with her colleagues.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>By 1981 a history-of-computing journal was calling it \"Grace Murray Hopper's famous 'bug' story.\" But the paper trail runs well past the moth. In an 1878 letter Edison wrote of \"'Bugs' as such little faults and difficulties are called.\" In 1889 the <em>Pall Mall Gazette</em> reported that he had been up two nights discovering a \"bug\" in his phonograph, and \"debug\" appears in a British aeronautics journal in 1945. So the joke in the log only works because the operators already knew the slang: this was the first <em>actual</em> bug. Strictly, it still was not one. To an entomologist a true bug belongs to the order Hemiptera, and a moth is a lepidopteran.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>What the moth does show is how physical early computing was. A relay calculator did its arithmetic by snapping switches open and shut, so one insect in the wrong place could stop a calculation. Today's bugs live in logic rather than hardware, but the word stuck.</p>"
+      },
+      {
+        "id": "cs-odd-01-c2",
+        "title": "Mel and the Loop With No Exit",
+        "contentHtml": "<p>\"I'll call him Mel, because that was his name.\" So begins a story that Ed Nather posted to Usenet on 21 May 1983, about a programmer he had worked beside at Royal McBee Computer Corp. On the company's RPC-4000, a drum-memory computer, every instruction carried the address of the next one on the spinning drum. Mel refused the optimizing assembler and placed each instruction himself, so the next arrived under the read head just as the last one finished, and his hand-placed code always ran faster.</p><p>Salesmen wanted his blackjack program to have a switch on the console that let customers win. Mel thought this dishonest and wrote the test backwards, so the switch made the program cheat. After Mel left, the boss asked Nather to reverse it. Instead he found a loop with no test in it, yet the program passed safely through. It took him two weeks to see why. Mel had put his data at the very top of memory. Each pass added one to an instruction's address, and after the last item the address overflowed: the carry spilled into the operation code, turned the instruction into a jump, and the next instruction sat at address zero. The Jargon File, which keeps the story, later found his surname in an LGP-30 manual crediting \"Mel Kaye of Royal McBee.\"<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>As Bob Lilley and Tom Jennings have pointed out, Mel's name and initials are on many coding sheets in the LGP-30 and LGP-21 subroutine manual.<sup class=\"cite\" data-cite=\"2\">2</sup> A fan project, Mel's Loop, has traced his life: Melvin Kaye (1931–2018) wrote the blackjack game and ported it to the RPC-4000. Asked by email in 2012 if he had worked there, he replied, \"Yes, I did, many, many years ago I worked for both of them.\"<sup class=\"cite\" data-cite=\"3\">3</sup> Nather went to the University of Texas at Austin in 1968 as an electronics engineer and became an astronomer.<sup class=\"cite\" data-cite=\"4\">4</sup></p>"
+      },
+      {
+        "id": "cs-odd-01-c3",
+        "title": "Two Digits, and a Clock That Ends in 2038",
+        "contentHtml": "<p>For decades, programs saved memory by storing years as two digits, so \"80\" meant 1980. At the millennium such a program could decide the year was 1900, not 2000. The best repair was to store all four digits. Where that was impossible, programmers used a window: read 00 to 50 as the 2000s and 51 to 99 as the 1900s, which keeps old systems running but quietly schedules the same problem for 2050.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The hunt went far beyond mainframes: chips in elevators, building climate controls and medical equipment all had to be checked for sensitivity to dates. When 1 January 2000 arrived with systems intact, accusations followed that the danger had been greatly exaggerated, while those who had done the work insisted the threat was real and the quiet night was proof the effort had succeeded.<sup class=\"cite\" data-cite=\"2\">2</sup> Estimates of the bill vary: the Commerce Department put US spending at about $100 billion. The Senate's Y2K committee found the problems \"minor, localized, and short-lived\": Medicare payment delays, double-billing by some credit card companies, the degradation of a spy satellite system. It credited, among other things, the unprecedented level of effort.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>The next date bug is already on the calendar. Unix-like systems count time as seconds since 1 January 1970 UTC, and many store that count as a signed 32-bit number, which cannot go past +2,147,483,647. The limit arrives at 03:14:07 UTC on 19 January 2038, when the clock can roll over and throw the date back to 13 December 1901. Some software will trip early: a job scheduled five days ahead on 16 January 2038 hits the same wall.<sup class=\"cite\" data-cite=\"4\">4</sup> The fix is a 64-bit count. Debian decided to switch nearly all its 32-bit versions to one, warning that plenty of systems that will have problems have already been shipped.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "cs-odd-q01",
+      "cs-odd-q02",
+      "cs-odd-q03",
+      "cs-odd-q04",
+      "cs-odd-q05"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "cs-odd-02",
+    "topicId": "cs-strange",
+    "order": 2,
+    "title": "Small Numbers, Big Crashes",
+    "description": "Ariane 5's oversized number, the Patriot's drifting clock and Vancouver's shrinking index",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "cs-odd-02-c1",
+        "title": "Ariane 5: A Number Too Big for 16 Bits",
+        "contentHtml": "<p>On 4 June 1996, Europe's new Ariane 5 rocket made its first flight. About 40 seconds after the flight sequence began, at an altitude of about 3,700 meters, it veered off its path, broke up and exploded. The inquiry board traced it to a complete loss of guidance and attitude information 37 seconds after the start of the main engine ignition sequence (30 seconds after lift-off), caused by specification and design errors in the software of the inertial reference system.<sup class=\"cite\" data-cite=\"1\">1</sup> Lost with it were the four Cluster satellites, built to study how the Sun interacts with Earth; ESA rebuilt the mission, partly from spares.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The guilty code had worked fine on Ariane 4, whose inertial reference system (SRI) Ariane 5 copied almost unchanged. An alignment routine that is useful only before lift-off kept running for about 40 seconds of flight, an Ariane 4 requirement. In it, a value called BH, the horizontal bias, was converted from a 64-bit floating-point number to a 16-bit signed integer. Ariane 5's early trajectory gave much higher horizontal velocities, BH grew too big to fit, and the conversion raised an Operand Error. Seven variables had been flagged as at risk; three were left unprotected, partly to keep the computer under an 80% workload target.</p><p>Then the spare failed too. The SRI was specified to shut down on any exception, as if a random hardware fault had struck, leaving the job to its twin. But the twin ran identical software and had died one data cycle (72 milliseconds) earlier. The flight computer read a diagnostic bit pattern as flight data and swung the nozzles to full deflection. About two seconds later, aerodynamic loads tore the boosters away, triggering the self-destruct system. The board, chaired by Jacques-Louis Lions, spelled out why the spare could not help: the same software runs in both units.<sup class=\"cite\" data-cite=\"3\">3</sup></p>"
+      },
+      {
+        "id": "cs-odd-02-c2",
+        "title": "The Patriot's Drifting Clock",
+        "contentHtml": "<p>On 25 February 1991, during the Gulf War, a Patriot missile battery defending Dhahran, Saudi Arabia, failed to track an incoming Iraqi Scud. The Scud struck an Army barracks and killed 28 American soldiers. The General Accounting Office traced the failure to software. The Patriot's clock counted time in tenths of a second as a whole number, and to predict where the Scud would appear next the computer converted that count to a real number in registers only 24 bits long, losing a little precision. The error grew the longer the system ran. Alpha Battery had been on for over 100 consecutive hours; by GAO's table its time was off by 0.3433 seconds and its tracking window, the range gate, had shifted about 687 meters from the target. A reboot, which takes about 60 to 90 seconds, sets the clock back to zero.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The root is a fact of binary. One tenth has no exact binary form: it is 0.000110011001100... repeating forever. The Patriot chopped it at 24 bits, an error of about 0.000000095 for every tenth of a second counted. Over 100 hours that adds up to about 0.34 seconds, and a Scud, traveling at about 1,676 meters per second, covers more than half a kilometer in that time. Worse, the time calculation had been improved in some parts of the code but not others, so the errors no longer cancelled.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The danger had been spotted. The Patriot had never before defended against a Scud, and was not expected to run for long periods without stopping. Two weeks before the attack, the Army received Israeli data showing a loss of accuracy after 8 consecutive hours, and modified the software. The new version reached Dhahran on 26 February 1991, the day after the attack.<sup class=\"cite\" data-cite=\"3\">3</sup></p>"
+      },
+      {
+        "id": "cs-odd-02-c3",
+        "title": "The Index That Lost Half Its Value",
+        "contentHtml": "<p>In 1982 the Vancouver Stock Exchange launched a new index, set at 1000.000 and updated after every transaction. Twenty-two months later it had fallen to about 520. The market had not crashed. Each updated value had been truncated rather than rounded.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The index was computed to four decimal places and cut to three, with the extra digit simply thrown away, some 3,000 times a day. The losses came to about a point a day. On Friday 25 November 1983 the index stood at 524.811. Consultants from Toronto and California spent three weeks computing the corrections for 22 months of compounded error, and on Monday morning the index began at 1,098.892, up 574.081 points on unchanged stock prices.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Why does dropping one digit matter so much? Rounding sends some values up and some down, so its tiny errors mostly cancel. Truncation always goes down. If the dropped fourth decimal is equally likely to be anything from 0 to 9, each update loses about 0.00045 on average; do that 3,000 times a day and the index sheds more than a point daily, always in the same direction. Meanwhile the true index had risen by almost 10%. Small errors are harmless when they scatter. A bias that always points one way adds up.</p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "cs-odd-q06",
+      "cs-odd-q07",
+      "cs-odd-q08",
+      "cs-odd-q09",
+      "cs-odd-q10"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "cs-odd-03",
+    "topicId": "cs-strange",
+    "order": 3,
+    "title": "Code That Got Loose",
+    "description": "A radiation machine's deadly race condition, the 1988 internet worm and a self-hiding backdoor",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "cs-odd-03-c1",
+        "title": "Therac-25: A Race Inside the Machine",
+        "contentHtml": "<p>On March 21, 1986, at the East Texas Cancer Center in Tyler, an experienced operator was setting up a patient's ninth radiation treatment. She noticed she had typed \"x\" for X-ray instead of \"e\" for electron, moved the cursor up, fixed it and started the beam. The machine stopped with a message nobody could explain, \"Malfunction 54\", and showed only a tiny dose. In fact the patient had received a massive overdose. He died of its complications five months later.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The machine was the <strong>Therac-25</strong>, a computer-controlled accelerator that treated cancer with electron beams or X-rays. Between June 1985 and January 1987 it was involved in six massive radiation overdoses; several people died and others were seriously injured.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The hospital physicist, Fritz Hager, worked with the operator until they could trigger the fault at will. The key was speed: when the settings were edited fast, as a practiced operator naturally would, the overdose occurred. The software ran several tasks at once that shared data with no real coordination, so a quick edit could slip between them unnoticed. Investigators concluded that such <strong>race conditions</strong> played an important part in the accidents.<sup class=\"cite\" data-cite=\"3\">3</sup> A second bug lived in a one-byte counter, which can only hold numbers up to 255. On every 256th pass it rolled back to zero and a safety check was skipped, and in January 1987 an operator in Yakima, Washington, pressed a button at exactly such a moment.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>Much of the software came from an earlier model, the Therac-20, where the same flaws hurt no one because its hardware safety interlocks stopped them. The Therac-25 had swapped many of those interlocks for software checks. Thirty years on, Nancy Leveson, co-author of the investigation, warned that engineers still trust software enough to strip out hardware protection.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "cs-odd-03-c2",
+        "title": "The Worm That Asked Too Often",
+        "contentHtml": "<p>At around 8:30 p.m. on November 2, 1988, a program was set loose on the internet from a computer at MIT. It deleted no files, yet within 24 hours an estimated 6,000 of the roughly 60,000 computers then connected, about one in ten, had been hit, from Harvard and Stanford to NASA. Its author was Robert Tappan Morris, a 23-year-old Cornell graduate student who had broken into the MIT machine from Cornell to cover his tracks.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The worm was meant to spread quietly, so Morris gave it a check: before copying itself onto a machine, it asked whether a copy was already there. Fearing that people would fake a \"yes\" to stop it, he made it copy itself anyway every seventh time it heard yes. He badly underestimated how often each machine would be asked, and the one-in-seven rule produced far more copies than he expected. Machines clogged with copies until many crashed or froze. Morris and a friend sent an anonymous message explaining how to kill the worm, but the jammed network delivered it too late.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>In 1990 a jury found him guilty under the 1986 Computer Fraud and Abuse Act, the first conviction under that law. He was sentenced to three years of probation, 400 hours of community service and a $10,050 fine.<sup class=\"cite\" data-cite=\"3\">3</sup> That November, the Defense Department's research agency DARPA had Carnegie Mellon's Software Engineering Institute set up a center to coordinate experts during security emergencies, the <strong>CERT Coordination Center</strong>.<sup class=\"cite\" data-cite=\"4\">4</sup> Morris went on to co-found the web company Viaweb and became a professor at MIT.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "cs-odd-03-c3",
+        "title": "The Compiler That Hid a Backdoor",
+        "contentHtml": "<p>When Ken Thompson and Dennis Ritchie received the 1983 Turing Award for creating Unix,<sup class=\"cite\" data-cite=\"1\">1</sup> Thompson used his lecture to describe what he called \"the cutest program I ever wrote\": a way to plant a backdoor that leaves no trace in any source code. It was published in 1984 as \"Reflections on Trusting Trust\".<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The trick rests on an odd fact. A C compiler is written in C, so each new version is compiled by the old one, and some knowledge can end up living only in the compiled program. Thompson's compiler carried two hidden additions. One recognized the Unix login program and compiled it to accept a secret password as well as the real one. The other recognized the compiler's own source code and slipped both additions into the new compiler, using the trick behind a program that prints its own source. Compile it once, install the result and delete the additions from the source: the new binary reinserts them every time it is rebuilt, and login stays bugged \"with no trace in source anywhere.\"<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>His moral: \"You can't trust code that you did not totally create yourself.\" Reading source code cannot protect you if the tools that build it are compromised, and the same trick could hide in an assembler, a loader or even hardware microcode.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>Was it real? In 2023 Thompson said he still had the code and that nobody had ever asked for it. The programmer Russ Cox asked, got it and ran it: 99 lines of code plus a 20-line shell script, written around 1975. Thompson says the bugged compiler was never distributed, and a popular story that it escaped Bell Labs does not fit the code. There is now a defense, <strong>diverse double-compiling</strong>: build the compiler from source in two independent ways and check that the results match.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "cs-odd-q11",
+      "cs-odd-q12",
+      "cs-odd-q13",
+      "cs-odd-q14",
+      "cs-odd-q15"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "cs-odd-04",
+    "topicId": "cs-strange",
+    "order": 4,
+    "title": "Machines That Fooled Us, or Didn't",
+    "description": "ELIZA and the secretary, Apollo 11's 1202 alarm, and reCAPTCHA reading old books",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "cs-odd-04-c1",
+        "title": "ELIZA and the Secretary",
+        "contentHtml": "<p>A user typed: \"Men are all alike.\" The computer answered: \"IN WHAT WAY\". \"They're always bugging us about something or other.\" \"CAN YOU THINK OF A SPECIFIC EXAMPLE\". In 1966 the MIT professor Joseph Weizenbaum published this exchange with his program ELIZA, which he cast as a psychotherapist and named after Eliza Doolittle in <em>Pygmalion</em>, the flower seller who learns to pass for a duchess.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>ELIZA understood nothing. It scanned each sentence for key words, took it apart with rules attached to those words and reassembled the pieces into a reply, so \"my boyfriend made me come here\" came back as \"YOUR BOYFRIEND MADE YOU COME HERE\".<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>People confided in it anyway. Weizenbaum's secretary had watched him work on it for a long time and knew it was a machine. Yet after typing a few sentences she turned to him and said, \"Would you mind leaving the room, please?\" He saw it as worrying evidence that brief exposure to a simple program could induce powerful delusional thinking in quite normal people. Her name never made the record: a historian who searched his papers at MIT found mentions of a secretary, but no name.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Weizenbaum became one of AI's sharpest critics. His 1976 book <em>Computer Power and Human Reason</em> argued that a computer should never replace a human function that involves \"interpersonal respect, understanding and love\". The habit he had stumbled on, crediting software with understanding and empathy, came to be called the <strong>ELIZA effect</strong>, though he never used the term himself.<sup class=\"cite\" data-cite=\"4\">4</sup> Decades later, researchers found a printout of the original code in Weizenbaum's MIT archives, with an early version of its famous DOCTOR script, and in 2025 they had it running again on an emulated IBM 7094, the mainframe it was written for.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "cs-odd-04-c2",
+        "title": "1202: The Alarm That Meant Keep Going",
+        "contentHtml": "<p>Five minutes into Apollo 11's powered descent to the Moon in July 1969, the guidance computer's alarm light came on. Neil Armstrong radioed, \"It's a 1202,\" and then: \"Give us a reading on the 1202 Program Alarm.\" The crew had not been told what it meant, and in simulations they were used to aborting when trouble struck.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>In Houston the decision fell to Steve Bales, a 26-year-old guidance officer. He had recently taken part in a review of the computer's alarms that judged a 1202 safe unless it came too often or the trajectory went wrong. Backed by Jack Garman of NASA and Russ Larson of MIT, he said go, and the call went up to the crew. More alarms followed, a 1201 and more 1202s, and each time Houston said go.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The computer was overloaded, and not by the landing: a problem in the rendezvous radar's interface was stealing about 13% of its working time.<sup class=\"cite\" data-cite=\"3\">3</sup> Its operating system, designed by Hal Laning, ran work as jobs with priorities. The longest job, which ran navigation, guidance and throttle every two seconds, had low priority because of its size, so with time short it kept failing to finish before its next copy was due. Unfinished copies piled up until the computer ran out of slots to hold them and raised the alarm. Then the restart design did its work: the software rebooted, rebuilt only the most recent copy of that job and dropped work not judged vital, so each time the logjam cleared, at least for a while.<sup class=\"cite\" data-cite=\"4\">4</sup></p><p>The code came from the MIT Instrumentation Laboratory, where Margaret Hamilton led the Software Engineering Division and is credited with popularizing the very idea of software engineering. \"There was no second chance,\" she recalled. \"We knew that.\"<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "cs-odd-04-c3",
+        "title": "reCAPTCHA: Proving You're Human by Reading Old Books",
+        "contentHtml": "<p>By 2008, people were typing about 200 million squiggly-letter puzzles a day to prove to websites that they were human. Luis von Ahn, the Carnegie Mellon computer scientist who had helped develop these tests, did the sum: at about 10 seconds each, humanity was spending around 500,000 hours a day on them.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The puzzles are <strong>CAPTCHAs</strong>, short for \"Completely Automated Public Turing test to tell Computers and Humans Apart\". They ask for something computers cannot yet do, such as reading distorted characters. Von Ahn's team asked whether that effort could be put to use digitizing old printed material, by showing people scanned words from books that character-recognition software had failed to read.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The result, <strong>reCAPTCHA</strong>, showed two words. One was a known control word: type it correctly and you were in. The other had stumped the scanner. If several people agreed on what it said, their answer went into the digital copy of the book or newspaper. Partners included The New York Times, digitizing issues back to 1851. In <em>Science</em> the team reported that in a year, web users had transcribed enough text to fill more than 17,600 books, with better than 99% accuracy.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Google bought reCAPTCHA in 2009 to help scan its books and newspaper archives.<sup class=\"cite\" data-cite=\"4\">4</sup> Then the machines caught up. By 2014 Google's own research showed that AI could read even the hardest distorted text with 99.8% accuracy, so reCAPTCHA began judging how people behave instead, and many people could now simply click a box to confirm they are not a robot.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "cs-odd-q16",
+      "cs-odd-q17",
+      "cs-odd-q18",
+      "cs-odd-q19",
+      "cs-odd-q20"
+    ],
+    "puzzleId": null
+  }
+]

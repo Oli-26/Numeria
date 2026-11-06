@@ -1,0 +1,314 @@
+@page "/doge-machine"
+@implements IDisposable
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="page-header">
+    <button class="back-btn" aria-label="Back to home" @onclick='() => Nav.NavigateTo("/")'><Icon Name="arrow-left" Size="18" /></button>
+    <h1>Doge Machine</h1>
+</div>
+
+<div class="card dg-intro">
+    <Icon Name="doge" Size="22" Stroke="var(--accent)" />
+    <p>Venice chose its doge, its ruler for life, in ten rounds: names drawn by lot, then a vote, then lots again. The same machine ran from 1268 until the republic fell in 1797.</p>
+</div>
+
+<div class="card dg-stage" @ref="stageEl">
+    <div class="dg-council">
+        <div class="dg-council-head">
+            <span>Great Council · @DogeElection.Council members</span>
+            <b style="color:@Gold">Your faction @percent%</b>
+        </div>
+        <div class="dg-bar" aria-hidden="true"><i style="width:@(percent)%"></i></div>
+        <input type="range" min="10" max="90" step="5" aria-label="Your faction's share of the Great Council"
+               value="@percent" @oninput="OnShare" />
+    </div>
+    <button class="btn btn-primary dg-go" @onclick="Hold">Hold an election</button>
+
+    <ol class="dg-ladder">
+        @for (int i = 0; i < DogeElection.Steps.Length - 1; i++)
+        {
+            var s = DogeElection.Steps[i];
+            var r = election?.Rounds[i];
+            <li class="dg-row dg-@(s.Kind == DogeElection.Kind.Lot ? "lot" : "vote")" data-r="@i">
+                <span class="dg-num">@(i + 1)</span>
+                <span class="dg-kind">@(s.Kind == DogeElection.Kind.Lot ? "Lot" : "Vote")</span>
+                <div class="dg-body">
+                    <div class="dg-dots" aria-hidden="true">
+                        @for (int k = 0; k < s.Size; k++)
+                        {
+                            <i class="dg-dot @(r == null ? "e" : r.Members[k] ? "f" : "o")"></i>
+                        }
+                    </div>
+                    <div class="dg-note">@Note(i)</div>
+                    @if (r != null && s.Kind == DogeElection.Kind.Vote)
+                    {
+                        <div class="dg-verdict dg-v-@r.Rule.ToString().ToLowerInvariant()">@Verdict(i)</div>
+                    }
+                </div>
+                <span class="dg-count">@if (r != null) { <b style="color:@Gold">@r.FactionCount</b><span>/@s.Size</span> }</span>
+            </li>
+        }
+        <li class="dg-row dg-final" data-r="@(DogeElection.Steps.Length - 1)">
+            <span class="dg-num">10</span>
+            <span class="dg-kind">Doge</span>
+            <div class="dg-body">
+                <div class="dg-note">The 41 elect the doge. He needs 25 votes.</div>
+            </div>
+        </li>
+    </ol>
+
+    <div class="dg-doge @(election == null ? "dg-doge-wait" : "")">
+        <svg viewBox="0 0 64 64" class="dg-medal" aria-hidden="true">
+            <circle cx="32" cy="32" r="30" style="fill:@MedalFill" />
+            <path d="M16 44 C16 33 19 25 26 20 C31 16.5 38 13.5 45 11.5 C47 18 48 28 48 44 Z" class="dg-cap" />
+            <path d="M14 44h38v6H14z" class="dg-cap" />
+        </svg>
+        <div class="dg-doge-text">
+            @if (election == null)
+            {
+                <strong>No doge yet</strong>
+                <span>Set your faction's share, then hold the election.</span>
+            }
+            else
+            {
+                <strong class="dg-call">@Headline</strong>
+                <span class="dg-call">@Subline</span>
+            }
+        </div>
+    </div>
+
+</div>
+
+<div class="card dg-results">
+    <strong class="dg-headline">Who the machine favors</strong>
+    <div class="dg-odds">
+        <div><b style="color:@Gold">@Pct(odds.Faction)%</b><span>your doge</span></div>
+        <div><b style="color:@Slate">@Pct(odds.Rival)%</b><span>a rival's</span></div>
+        <div><b>@Pct(odds.Compromise)%</b><span>a compromise</span></div>
+    </div>
+    <p class="dg-sub">Out of @Runs.ToString("N0") elections with @percent% of the council.</p>
+
+    <svg viewBox="0 0 320 190" class="dg-chart" role="img" aria-label="@ChartLabel">
+        @for (int g = 0; g <= 4; g++)
+        {
+            var y = Y(g / 4.0);
+            <g><line x1="@X(0)" x2="@X(100)" y1="@y" y2="@y" class="dg-grid" />
+            <text x="@(X(0) - 6)" y="@(y + 3.5)" class="dg-axis" text-anchor="end">@(g * 25)%</text></g>
+        }
+        @foreach (var p in new[] { 10, 50, 90 })
+        {
+            <g><text x="@X(p)" y="182" class="dg-axis" text-anchor="middle">@p%</text></g>
+        }
+        <path d="@VotePath" class="dg-line dg-line-vote" />
+        <path d="@LotPath" class="dg-line dg-line-lot" />
+        <path d="@CurvePath" class="dg-line dg-line-venice" style="stroke:@Gold" />
+        <circle cx="@X(percent)" cy="@Y(CurveAt(percent))" r="6" style="fill:@Gold" class="dg-marker" />
+    </svg>
+    <div class="dg-legend">
+        <span><i style="background:@Gold"></i>Venice's machine</span>
+        <span><i class="dg-sw-vote"></i>A straight vote</span>
+        <span><i class="dg-sw-lot"></i>Pure lottery</span>
+    </div>
+    <p class="dg-axis-label">Your faction's share of the council, against its chance of its own doge</p>
+
+    <div class="dg-readout">
+        <p>@Readout</p>
+        <p>Nobody knew who the electors would be until the balls came out of the urn, so there was no one to bribe in advance. And every name needed a supermajority, so a bare majority was never enough.</p>
+        <p class="dg-note2">A simple model: a bloc with enough electors to approve names on its own picks only its own people; otherwise the names come out mixed, like the electors who chose them.</p>
+    </div>
+</div>
+
+@code {
+    private const string Gold = "#C9962B", Slate = "#6F7F99";
+    private const int Runs = 2000;
+
+    [SupplyParameterFromQuery] public int? Seed { get; set; }
+
+    private int percent = 55;
+    private DogeElection.Election? election;
+    private DogeElection.Odds odds = DogeElection.Simulate(DogeElection.Seats(55), Runs, 55);
+    private bool playPending;
+    private Random rng = new();
+    private ElementReference stageEl;
+
+    protected override void OnInitialized()
+    {
+        if (Seed is int s) rng = new Random(s);
+    }
+
+    private async Task OnShare(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var p)) return;
+        await JS.TryInvokeVoidAsync("DogeMachine.stop");
+        percent = Math.Clamp(p, 10, 90);
+        odds = DogeElection.Simulate(DogeElection.Seats(percent), Runs, percent);
+        election = null;
+    }
+
+    private void Hold()
+    {
+        election = DogeElection.Run(DogeElection.Seats(percent), rng);
+        playPending = true;
+    }
+
+    private static readonly string[] Notes =
+    {
+        "30 drawn from the whole council", "9 of the 30 drawn", "The 9 name 40. Each name needs 7 of their votes.",
+        "12 of the 40 drawn", "The 12 name 25. Each needs 9 votes.", "9 of the 25 drawn",
+        "The 9 name 45. Each needs 7 votes.", "11 of the 45 drawn", "The 11 name 41. Each needs 9 votes.",
+    };
+
+    private static string Note(int i) => Notes[i];
+
+    private string Verdict(int i)
+    {
+        var r = election!.Rounds[i];
+        var need = r.Step.Need;
+        var electors = election.Rounds[i - 1].Members.Length;
+        return r.Rule switch
+        {
+            DogeElection.Rule.Faction => $"Your faction holds {need} of {electors}: it names all {r.Step.Size}",
+            DogeElection.Rule.Rivals => $"Rivals hold {need} of {electors}: they name all {r.Step.Size}",
+            _ => $"Neither side holds {need} of {electors}: a mix",
+        };
+    }
+
+    private string Headline => election?.Doge switch
+    {
+        DogeElection.Winner.Faction => "Your faction's doge",
+        DogeElection.Winner.Rival => "A rival's doge",
+        _ => "A compromise doge",
+    };
+
+    private string Subline
+    {
+        get
+        {
+            var f = election!.Rounds[^2].FactionCount;
+            return election.Doge switch
+            {
+                DogeElection.Winner.Faction => $"Your faction holds {f} of the 41, enough to choose him alone.",
+                DogeElection.Winner.Rival => $"Your faction holds only {f} of the 41.",
+                _ => $"Your faction holds {f} of the 41 and neither side has 25, so they settle on a man both can accept.",
+            };
+        }
+    }
+
+    private string MedalFill => election?.Doge switch
+    {
+        null => "var(--bg-surface)",
+        DogeElection.Winner.Faction => Gold,
+        DogeElection.Winner.Rival => Slate,
+        _ => "color-mix(in srgb, " + Gold + " 50%, " + Slate + ")",
+    };
+
+    private string Readout
+    {
+        get
+        {
+            var straight = percent > 50 ? "every time" : percent == 50 ? "half the time" : "never";
+            return $"With {percent}% of the council, your faction gets its own doge in about {Pct(odds.Faction)} elections out of 100. A straight vote of the whole council would give it the doge {straight}.";
+        }
+    }
+
+    private static string Pct(double v) => Math.Round(v * 100).ToString("0");
+
+    private static double X(double p) => 34 + p / 100 * 278;
+    private static double Y(double v) => 162 - v * 150;
+
+    private static readonly string VotePath = $"M{Num(X(0))} {Num(Y(0))} H{Num(X(50))} V{Num(Y(1))} H{Num(X(100))}";
+    private static readonly string LotPath = $"M{Num(X(0))} {Num(Y(0))} L{Num(X(100))} {Num(Y(1))}";
+
+    private static readonly string CurvePath = "M" + string.Join(" L", DogeElection.CurveShares.Select((p, i) =>
+        $"{Num(X(p))} {Num(Y(DogeElection.Curve[i]))}"));
+
+    private static double CurveAt(int p) => DogeElection.Curve[Math.Clamp(Array.IndexOf(DogeElection.CurveShares, p), 0, DogeElection.Curve.Length - 1)];
+
+    private static string Num(double v) => v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+
+    private string ChartLabel => $"Chart: with {percent}% of the council, Venice's machine gives your faction its doge about {Pct(CurveAt(percent))}% of the time; a straight vote gives {(percent > 50 ? 100 : percent == 50 ? 50 : 0)}%; a pure lottery gives {percent}%.";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!playPending || election == null) return;
+        playPending = false;
+        await JS.TryInvokeVoidAsync("DogeMachine.play", stageEl, Plan());
+    }
+
+    private object Plan() => new
+    {
+        rounds = election!.Rounds.SkipLast(1).Select(r => new { kind = r.Step.Kind.ToString().ToLowerInvariant(), members = r.Members, rule = r.Rule.ToString().ToLowerInvariant() }).ToArray(),
+        doge = election.Doge.ToString().ToLowerInvariant(),
+    };
+
+    public void Dispose() => _ = JS.TryInvokeVoidAsync("DogeMachine.stop");
+}
+
+<style>
+    .dg-intro { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+    .dg-intro p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .dg-stage { padding: 14px; }
+    .dg-council-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+    .dg-council-head b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+    .dg-bar { height: 8px; margin: 6px 0 4px; border-radius: 4px; background: #6F7F99; overflow: hidden; }
+    .dg-bar i { display: block; height: 100%; background: #C9962B; transition: width 0.2s ease-out; }
+    .dg-council input[type=range] { width: 100%; accent-color: #C9962B; margin: 4px 0 0; }
+
+    .dg-ladder { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+    .dg-row { display: grid; grid-template-columns: 18px 38px 1fr 40px; align-items: start; gap: 6px; padding: 7px 0; border-top: 1px solid var(--border); }
+    .dg-num { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); padding-top: 1px; font-variant-numeric: tabular-nums; }
+    .dg-kind { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 1px; }
+    .dg-lot .dg-kind { color: var(--accent); }
+    .dg-vote .dg-kind, .dg-final .dg-kind { color: var(--primary); }
+    .dg-dots { display: flex; flex-wrap: wrap; gap: 3px; }
+    .dg-dot { width: 9px; height: 9px; border-radius: 50%; display: block; transform-origin: center; }
+    .dg-dot.e { background: var(--bg-surface); box-shadow: inset 0 0 0 1px var(--border); }
+    .dg-dot.f { background: #C9962B; }
+    .dg-dot.o { background: #6F7F99; }
+    .dg-note { margin-top: 4px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; }
+    .dg-final .dg-note { margin-top: 0; }
+    .dg-verdict { margin-top: 3px; font-size: 0.74rem; font-weight: 700; line-height: 1.35; }
+    .dg-v-faction { color: #A87A17; }
+    .dg-v-rivals { color: #56647D; }
+    .dg-v-mixed { color: var(--text-secondary); }
+    .dg-count { text-align: right; font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--text-muted); padding-top: 0; }
+    .dg-count b { font-size: 0.9rem; }
+
+    .dg-doge { display: flex; align-items: center; gap: 14px; margin: 12px 0 0; padding: 12px; background: var(--bg-surface); border-radius: var(--radius-md); }
+    .dg-medal { width: 64px; height: 64px; flex: none; transform-origin: center; }
+    .dg-medal circle { transition: fill 0.3s ease-out; }
+    .dg-cap { fill: var(--bg-card); }
+    .dg-doge-wait .dg-cap { fill: var(--border); }
+    .dg-doge-text { display: flex; flex-direction: column; gap: 3px; }
+    .dg-doge-text strong { font-size: 1.1rem; }
+    .dg-doge-text span { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
+    .dg-go { width: 100%; margin-top: 10px; }
+
+    .dg-results { padding: 14px; }
+    .dg-headline { display: block; font-size: 0.95rem; margin-bottom: 10px; }
+    .dg-odds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .dg-odds div { display: flex; flex-direction: column; align-items: center; padding: 8px 0 6px; background: var(--bg-surface); border-radius: var(--radius-sm); }
+    .dg-odds b { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+    .dg-odds span { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+    .dg-sub { margin: 6px 0 8px; font-size: 0.74rem; color: var(--text-muted); text-align: center; }
+    .dg-chart { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
+    .dg-grid { stroke: var(--border); stroke-width: 1; }
+    .dg-axis { font-size: 10px; fill: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .dg-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .dg-line-vote { stroke: var(--text-secondary); stroke-dasharray: 6 4; stroke-width: 2; }
+    .dg-line-lot { stroke: var(--text-muted); stroke-dasharray: 2 4; stroke-width: 2; }
+    .dg-line-venice { stroke-width: 3.5; }
+    .dg-marker { stroke: var(--bg-card); stroke-width: 2.5; transition: cx 0.2s ease-out, cy 0.2s ease-out; }
+    .dg-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin-top: 4px; font-size: 0.74rem; color: var(--text-secondary); font-weight: 600; }
+    .dg-legend i { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: 2px; }
+    .dg-sw-vote { background: repeating-linear-gradient(90deg, var(--text-secondary) 0 5px, transparent 5px 8px); }
+    .dg-sw-lot { background: repeating-linear-gradient(90deg, var(--text-muted) 0 2px, transparent 2px 5px); }
+    .dg-axis-label { margin: 4px 0 0; font-size: 0.7rem; color: var(--text-muted); text-align: center; }
+    .dg-readout { margin-top: 12px; padding: 10px 12px; background: var(--bg-surface); border-radius: var(--radius-sm); }
+    .dg-readout p { margin: 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+    .dg-readout p + p { margin-top: 6px; }
+    .dg-readout p:first-child { font-weight: 600; color: var(--text-primary); }
+    .dg-note2 { font-size: 0.72rem !important; color: var(--text-muted) !important; }
+</style>

@@ -1,0 +1,134 @@
+[
+  {
+    "id": "math-odd-01",
+    "topicId": "math-strange",
+    "order": 1,
+    "title": "Math Meets the Law",
+    "description": "Indiana's pi bill, a prime number that was illegal, and the Pentium chip that couldn't divide",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "math-odd-01-c1",
+        "title": "The State That Tried to Legislate Pi",
+        "contentHtml": "<p>In January 1897 a bill reached the Indiana House of Representatives under a grand title: \"A bill for an act introducing a new mathematical truth\". Its author, E. J. Goodwin, a country doctor from Solitude in Posey County, offered the state free use of his discovery in its school textbooks. The House sent it to the Committee on Canals, then to Education, and on 5 February passed it by 67 votes to 0.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>What Goodwin claimed was a way to <strong>square the circle</strong>: to construct, with compass and straightedge alone, a square with exactly the area of a given circle. That was already known to be impossible. In 1882 Ferdinand von Lindemann proved that pi is <em>transcendental</em>, so it cannot be built from whole numbers with arithmetic and square roots, the only operations a compass and straightedge can perform. Goodwin's method only seemed to work because it quietly swapped pi for a tidy fraction.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Which fraction depends on where you look. The bill's tangled text implies several values at once. One line gives the ratio of diameter to circumference as \"five-fourths to four\", which makes pi 3.2; another makes it 4; a third about 3.23. The mathematician David Singmaster counted six different values in the bill.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>It died in the Senate, thanks to a coincidence. Clarence A. Waldo, a Purdue mathematics professor, had come to the statehouse about funding for the Indiana Academy of Science and walked in on the debate. Offered an introduction to the learned doctor, he declined, remarking that he already knew as many crazy people as he cared to. That evening, he wrote, the senators were \"properly coached\". They mocked the bill for half an hour, one senator saying they might as well legislate water to run uphill as establish mathematical truth by law, and postponed it indefinitely.<sup class=\"cite\" data-cite=\"4\">4</sup></p>"
+      },
+      {
+        "id": "math-odd-01-c2",
+        "title": "The Prime Number That Was Illegal",
+        "contentHtml": "<p>In March 2001 Phil Carmody found a prime number 1,401 digits long. Write it out in base 16 and it becomes a compressed file of the source code of <strong>DeCSS</strong>, a program for unscrambling DVDs (minus some tables the code needs to run). It was illegal to distribute that code in the United States. So was the number illegal too?<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>DVD films are scrambled with an encryption scheme called CSS. In September 1999 Jon Johansen, a Norwegian teenager, and two people he had met online took apart a licensed DVD player, pulled out the keys and wrote DeCSS, apparently to watch DVDs on Linux, which had no licensed player. Eight film studios sued the publisher of the hacker magazine <em>2600</em> under the 1998 Digital Millennium Copyright Act, and a court barred it from posting DeCSS or even linking to sites that did. In 2001 an appeals court upheld the ban. It agreed that code can be speech, noting that \"mathematical formulae and musical scores are written in 'code'\", but held that DeCSS could be restricted for what it does.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Carmody's point was that any computer file is a string of bits, and so is a number. He compressed the DeCSS code with gzip and read the result as one huge number. Gzip ignores anything after the end of its data, so he could tack extra bytes onto the end, changing the number without changing what it unzips to, until the number came out prime.<sup class=\"cite\" data-cite=\"3\">3</sup> That search is short: by the prime number theorem, about one in every 3,200 numbers with 1,400 digits is prime.</p><p>In September 2001 he went further, proving prime an 1,811-digit number that, written in base 256, works as a compiled DeCSS program in its own right.<sup class=\"cite\" data-cite=\"4\">4</sup> Johansen, meanwhile, was charged in Norway at the film industry's request for unscrambling DVDs at 15. In January 2003 a three-judge court in Oslo unanimously acquitted him.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-01-c3",
+        "title": "The Chip That Could Not Divide",
+        "contentHtml": "<p>On 30 October 1994 Thomas Nicely, a mathematics professor at Lynchburg College in Virginia, sent an email headed \"Bug in the Pentium FPU\". The new chip, he reported, was getting some divisions wrong: on a Pentium, 1 divided by 824633702441 was wrong in every digit beyond the eighth.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>He found it doing pure mathematics. His program listed twin primes (pairs such as 11 and 13) and summed their reciprocals, which converge to a limit known only roughly. As a check, every reciprocal was computed two ways. When they disagreed, in October, a binary search narrowed the fault to a single twin pair, 824633702441 and 824633702443, which an older 486 computer handled correctly. Tim Coe soon found a cleaner test: 4195835 divided by 3145727 is 1.3338204491..., but a flawed Pentium said 1.3337390689....<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Intel already knew. Its own tests had found the flaw in May 1994, and since only about one division in 9 billion went wrong, it quietly fixed new chips. It called Nicely's discovery \"an extremely minor technical problem\", claimed a typical user would meet the error once in 27,000 years, and at first replaced chips only for customers who could convince it they needed the accuracy. Then CNN ran the story, and on 12 December IBM stopped shipping Pentium computers. On 19 December Intel offered every customer a new chip. The recall cost it $475 million.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>The fault sat in a lookup table. The Pentium divided in base 4 with a method called <strong>SRT</strong>, producing two bits of the answer per step. Each digit of the quotient, from -2 to 2, is read from a table of 2,048 cells indexed by leading bits of the divisor and the running remainder. Five cells that should have held 2 held 0. Almost no division reaches them, but one that does cannot recover; the error usually lands in the ninth or tenth decimal digit. In 2024 the engineer Ken Shirriff examined the chip itself and found 16 missing entries, of which only those five matter.<sup class=\"cite\" data-cite=\"4\">4</sup></p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "math-odd-q01",
+      "math-odd-q02",
+      "math-odd-q03",
+      "math-odd-q04",
+      "math-odd-q05"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "math-odd-02",
+    "topicId": "math-strange",
+    "order": 2,
+    "title": "Strange Lives",
+    "description": "Erdős and his suitcase, Ramanujan's goddess and taxicab, and Grothendieck's vanishing act",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "math-odd-02-c1",
+        "title": "The Man Who Lived Out of a Suitcase",
+        "contentHtml": "<p>Paul Erdős had no wife, no children, no job and no home. He lived out of a shabby suitcase and an orange plastic bag from a Budapest department store, crisscrossing four continents from one university to the next. He would turn up on the doorstep, announce \"My brain is open\", work with his host for a day or two until he was bored or his host was exhausted, and move on. In his private language children were \"epsilons\", a person who had stopped doing mathematics had \"died\", and a person who had died had \"left\".<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>For the last 25 years of his life, after his mother died, he put in 19-hour days on strong espresso, caffeine tablets and 10 to 20 milligrams of Benzedrine or Ritalin. \"A mathematician,\" he liked to say, \"is a machine for turning coffee into theorems.\" In 1979 his friend Ron Graham, worried about the pills, bet him $500 that he could not stop taking amphetamines for a month. Erdős went thirty days without them and won, then complained that he had stared at blank paper with no ideas, \"just like an ordinary person\". \"You've set mathematics back a month,\" he told Graham, and went straight back to the pills. He kept up the pace until he died in 1996, at 83.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>The work kept appearing even after that. His publication list has grown to 1,526 items, the latest from 2022, apparently more than any other mathematician, Euler included.<sup class=\"cite\" data-cite=\"3\">3</sup> He had more than 500 coauthors, and mathematicians made a game of it. Erdős has <strong>Erdős number</strong> 0 and his coauthors have 1; anyone else who wrote a paper with one of them has 2, and so on. In graph theory terms, your Erdős number is the length of the shortest chain of joint papers linking you to him. The idea first appeared in print in 1969.<sup class=\"cite\" data-cite=\"4\">4</sup> Of the mathematicians with a finite Erdős number, almost all have one below 8, and the average is less than 5.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-02-c2",
+        "title": "Formulas From a Goddess",
+        "contentHtml": "<p>In January 1913 the Cambridge mathematician G. H. Hardy received a letter from a clerk in the accounts office of the Madras Port Trust. The writer, Srinivasa Ramanujan, had taught himself from an out-of-date textbook and had failed his college exams in every subject but mathematics. Enclosed was a long list of theorems without proofs, which Hardy worked through with his colleague Littlewood.<sup class=\"cite\" data-cite=\"1\">1</sup> Some of the formulas, Hardy later said, defeated him completely: he had never seen anything like them.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Ramanujan's own account of their source was stranger. He was devoted to Namagiri, the goddess of the temple at Namakkal, and, as the story is told, she came to him in dreams with formulas, which he would get up in the night to write on a slate. Even his 1914 voyage to England waited on her: his mother gave way only after dreaming that the goddess told her not to stand in his way. Hardy, an agnostic, dismissed such stories as fables.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Hardy told the best-known story himself. Visiting Ramanujan when he was ill in Putney, Hardy remarked that his taxi's number, 1729, seemed \"rather a dull one\". \"No,\" Ramanujan replied, \"it is a very interesting number; it is the smallest number expressible as the sum of two cubes in two different ways.\"<sup class=\"cite\" data-cite=\"4\">4</sup> Indeed, 1729 = 1³ + 12³ = 9³ + 10³.</p><p>He sailed home in 1919 and died the next year, aged 32, probably of a curable liver infection. Pages from his last year sat unread until 1976, when the American mathematician George Andrews opened a box in the Wren Library of Trinity College, Cambridge, and knew the handwriting. This <strong>lost notebook</strong>, full of what he called mock theta functions, still keeps mathematicians busy. Bruce Berndt, who has spent decades proving Ramanujan's claims, found no more than half a dozen errors among more than 3,200 results in the earlier notebooks, though the lost notebook has more. To him the goddess is simply inspiration, like an idea that strikes while jogging or in the shower.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-02-c3",
+        "title": "The Genius Who Vanished",
+        "contentHtml": "<p>When Alexander Grothendieck died in November 2014, aged 86, he had lived as a hermit since 1991 in Lasserre, a small village in the Pyrenees. He left a mountain of handwriting, including 60,000 pages written in Lasserre in the 1990s (about 3,500 of them mathematics), and had insisted that nothing be published while he lived. Decades earlier he had been a prodigy. At 22 he was handed 14 problems that Jean Dieudonné and Laurent Schwartz had been unable to solve, and solved them all in a few months.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>His mathematics was famously abstract. In one story, perhaps improved in the retelling, he was asked to name a prime number and answered 57. That is 3 × 19, and it has been jokingly called the \"Grothendieck prime\" ever since.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>From 1959, at the Institut des Hautes Études Scientifiques (IHES) near Paris, he spent 12 years rebuilding <strong>algebraic geometry</strong>, the study of shapes defined by polynomial equations, in thousands of pages that changed the subject. He won the Fields Medal in 1966 and refused to travel to Moscow to collect it, in protest at Soviet militarism. In 1970 he discovered that the IHES was funded partly, and indirectly, by the French Ministry of Defense; when he could not get the subsidy stopped, he resigned.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>He turned to anti-war and environmental activism and grew estranged from the mathematical world. In 1991, after burning thousands of pages of manuscript, he left his home without warning and cut off friends, family and colleagues. In 2010 he wrote to a former student demanding that his work be removed from libraries and refusing any republication.<sup class=\"cite\" data-cite=\"4\">4</sup></p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "math-odd-q06",
+      "math-odd-q07",
+      "math-odd-q08",
+      "math-odd-q09",
+      "math-odd-q10"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "math-odd-03",
+    "topicId": "math-strange",
+    "order": 3,
+    "title": "Proofs on Trial",
+    "description": "Mochizuki's disputed abc proof, Kepler's stacked oranges and a 200-terabyte computer proof",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "math-odd-03-c1",
+        "title": "A Theorem Only in Kyoto",
+        "contentHtml": "<p>In 2012 Shinichi Mochizuki, a celebrated mathematician in Kyoto, posted papers claiming to prove the <strong>abc conjecture</strong>. The conjecture starts from the simplest equation imaginable. Take a + b = c, where the three whole numbers share no prime factor, and multiply together every prime dividing any of them. For 5 + 16 = 21 the primes 5, 2, 3 and 7 multiply to 210, far more than 21. For 5 + 27 = 32 they multiply to just 30. That second kind is rare: of the 3,044 such triples with a and b between 1 and 100, only seven do it. The conjecture says that once you raise the prime product to any power above 1, c can beat it only finitely many times.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The papers run to more than 500 pages and lean on about 500 more of Mochizuki's earlier work. Experts struggled for years. When a rumor spread in late 2017 that a journal had accepted them, Frank Calegari complained that abc was now \"a theorem in Kyoto but a conjecture everywhere else.\" In March 2018 Peter Scholze and Jakob Stix spent a week in Kyoto with Mochizuki and came away reporting a \"serious, unfixable gap\" in Corollary 3.12, the step at the core of the proof. Mochizuki put their objection down to \"certain fundamental misunderstandings.\"<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>In 2020 the papers were accepted anyway, by the journal of Mochizuki's own institute, which he edits, though he stayed out of the review. Scholze said his judgment had not changed.<sup class=\"cite\" data-cite=\"3\">3</sup> They appeared in a special issue in March 2021.<sup class=\"cite\" data-cite=\"4\">4</sup> Mochizuki now hopes that Lean, a language in which computers check every logical step, will break the deadlock. In April 2026 he reported his group was in the early, \"skeletal\" stage of formalizing the disputed step.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-03-c2",
+        "title": "Kepler's Oranges, 99% Certain",
+        "contentHtml": "<p>Stack oranges on a market stall and you will probably build a pyramid, each orange sitting in a hollow of the layer below. The modern study of sphere stacking goes back to cannonballs: Sir Walter Raleigh asked his mathematical assistant Thomas Harriot to work out how many balls sat in a stacked pile, and Harriot later wrote to Johannes Kepler. In a 1611 essay Kepler asserted that the pyramid arrangement was the tightest possible, \"so that in no other arrangement could more pellets be stuffed into the same container.\"<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>That pyramid fills about 74% of space. Proving that nothing beats it took until 1998, when Samuel Ferguson and Thomas Hales did it with heavy help from computers.<sup class=\"cite\" data-cite=\"2\">2</sup> Hales broke the infinite possibilities down into a few thousand types of sphere arrangement and had software check them all. The proof ran to 300 pages, and 12 reviewers spent four years on it. When the <em>Annals of Mathematics</em> published it in 2005, they would say only that they were \"99 per cent certain\" it was correct.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Hales's answer was to take human judgment out of the check. In 2003 he started <strong>Flyspeck</strong>, named for FPK, the Formal Proof of Kepler.<sup class=\"cite\" data-cite=\"4\">4</sup> His team rewrote every step for two proof assistants, HOL Light and Isabelle, programs built on a tiny, heavily scrutinized core of logic that accept a step only if it follows from the rules. In August 2014 they announced that the whole proof had been checked. \"This technology cuts the mathematical referees out of the verification process,\" Hales said.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-03-c3",
+        "title": "The 200-Terabyte Proof",
+        "contentHtml": "<p>Paint every whole number red or blue. Can you do it so that no Pythagorean triple, three numbers with a² + b² = c² such as 3, 4 and 5, is all one color? It is harder than it sounds, because numbers belong to many triples at once: 5 sits in both 3-4-5 and 5-12-13. Ronald Graham posed the problem in the 1980s and promised $100 to whoever solved it. In 2016 Marijn Heule, Oliver Kullmann and Victor Marek did. The numbers 1 to 7,824 can be colored with no one-color triple; 1 to 7,825 cannot, however you try. Graham paid up.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>No human checked the cases. A <strong>SAT solver</strong>, software that hunts for true-or-false settings satisfying an enormous logical formula, split the problem into a million pieces and ran on 800 cores of the Stampede supercomputer in Texas for about two days. Its proof that no coloring of 1 to 7,825 exists is almost 200 terabytes, so the team released a 68-gigabyte certificate from which anyone can rebuild and recheck it.<sup class=\"cite\" data-cite=\"2\">2</sup></p><p>Is that understanding? The authors call such proofs, \"from a human point of view, a giant heap of random information (no direct understanding is involved).\"<sup class=\"cite\" data-cite=\"3\">3</sup> The output does hold one clue. In every valid coloring of 1 to 7,824, the numbers 5,180 and 5,865 share a color, and 625 and 7,800 share the other. Since 5,180² + 5,865² = 7,825² and 625² + 7,800² = 7,825², either color for 7,825 completes a one-color triple.<sup class=\"cite\" data-cite=\"4\">4</sup> Why those four numbers are forced, the proof does not say.</p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "math-odd-q11",
+      "math-odd-q12",
+      "math-odd-q13",
+      "math-odd-q14",
+      "math-odd-q15"
+    ],
+    "puzzleId": null
+  },
+  {
+    "id": "math-odd-04",
+    "topicId": "math-strange",
+    "order": 4,
+    "title": "Hidden Authors and Lost Texts",
+    "description": "Bourbaki, who never existed; Archimedes under a prayer book; and Euler's \"proof\" of God",
+    "xpReward": 100,
+    "concepts": [
+      {
+        "id": "math-odd-04-c1",
+        "title": "Nicolas Bourbaki, Who Never Existed",
+        "contentHtml": "<p>At noon on December 10, 1934, a few young mathematicians met at the Café Capoulade in Paris, near the Luxembourg Gardens. Henri Cartan and André Weil, both teaching at Strasbourg, disliked the recommended calculus text, and the friends agreed to write a modern one together: 1,000 pages, out within six months. They wanted a pen name. When Weil was a first-year student at the École Normale Supérieure, an older student, Raoul Husson, had given a hoax lecture in a false beard, ending with a ridiculous \"Bourbaki's theorem\" named after a general of the Franco-Prussian War. The group took the joke as its author: <strong>Nicolas Bourbaki</strong>.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>Later Bourbaki had to defend his own existence. When R. P. Boas, executive editor of <em>Mathematical Reviews</em>, wrote that Bourbaki was the pseudonym of a group of young French mathematicians, a strongly worded letter from Bourbaki objected that his right to exist had been questioned, and suggested that BOAS was a pseudonym for the editors of <em>Mathematical Reviews</em>.<sup class=\"cite\" data-cite=\"2\">2</sup> Bourbaki even had family. The group circulated a formal wedding invitation for a Betty Bourbaki, packed with mathematical jokes, whose groom came from another imaginary family of mathematicians dreamed up at Princeton.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>The 1,000-page book became a whole series, the <em>Éléments de mathématique</em>, published from 1939, its title singular on purpose to stress the unity of mathematics. It was read worldwide and became a scientific best seller.<sup class=\"cite\" data-cite=\"4\">4</sup> And Bourbaki is still at work: a new volume on topological vector spaces appeared in 2026, and the Séminaire Bourbaki, founded in 1948, still meets in Paris.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-04-c2",
+        "title": "Archimedes Under a Prayer Book",
+        "contentHtml": "<p>On October 29, 1998, Christie's in New York auctioned a mildewed 13th-century Greek prayer book with little going for it but its age. It sold for $2 million. The bidders were not after the prayers. Under them, scraped away but faintly visible, lay seven works of Archimedes, including <em>The Method</em>, a treatise of which no other copy exists.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>The damage was done around 1229, when a priest named Ioannes Myronas needed parchment for a new prayer book. He took apart a 10th-century copy of Archimedes, scrubbed its pages with natural acid and pumice, cut them in half, turned them sideways and wrote his prayers across the faded mathematics.<sup class=\"cite\" data-cite=\"2\">2</sup> In 1906 the Danish scholar Johan Ludwig Heiberg spotted the Archimedes in a library in Istanbul and transcribed what he could through a magnifying glass. The book then vanished into private hands, and in the 20th century someone painted forged portraits of the four evangelists onto it, wiping out four pages of Archimedes.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>The anonymous buyer deposited the book at the Walters Art Museum in Baltimore and paid for its study. Conservators took it apart, and scientists from the Rochester Institute of Technology, Xerox and Johns Hopkins built a multispectral imaging system that made the Archimedes text show up red while the prayers stayed black.<sup class=\"cite\" data-cite=\"4\">4</sup> Reading the new images, Reviel Netz argued that <em>The Method</em> shows Archimedes reasoning with actual infinity. He also suspected that the <em>Stomachion</em>, a puzzle of 14 pieces forming a square, was about counting arrangements. A computer search and a team of mathematicians found 17,152 ways; whether Archimedes counted them nobody knows, because the text breaks off.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      },
+      {
+        "id": "math-odd-04-c3",
+        "title": "Euler, Diderot and an Algebraic God",
+        "contentHtml": "<p>The story goes like this. Denis Diderot, the freethinking editor of the <em>Encyclopédie</em>, visited Catherine the Great in Russia and amused her court with lively atheism. Older courtiers wanted him quieted, so a plot was hatched: a mathematician would present an algebraic proof of God before the whole court. Leonhard Euler stepped up and said gravely, \"Monsieur, (a + bⁿ)/n = x, donc Dieu existe; répondez!\" (\"... so God exists; answer!\"). Diderot, \"to whom algebra was Hebrew,\" was left speechless amid laughter and next day asked to go home.<sup class=\"cite\" data-cite=\"1\">1</sup></p><p>That is Augustus De Morgan's 1872 version, later spread by E. T. Bell's <em>Men of Mathematics</em>. Euler and Diderot were both in St Petersburg in 1773–74, so they could have met. But the only source is the 1804 memoir of Dieudonné Thiébault, a French writer living in Berlin. His mathematician is unnamed, his Diderot leaves only \"sometime afterwards,\" and his formula divides by z, not n. Thiébault added: \"I do not assert the truth of any one of these facts.\"<sup class=\"cite\" data-cite=\"2\">2</sup> In 1954 R. J. Gillings showed that the name Euler, the \"next day\" and \"algebra was Hebrew\" were De Morgan's additions, though he granted that Thiébault's \"learned mathematician\" seems to mean Euler.<sup class=\"cite\" data-cite=\"3\">3</sup></p><p>Diderot was no stranger to algebra. In 1748 he published five essays on mathematics and mechanics, from acoustics and involutes to air resistance on pendulums, and in later work he corrected an error by d'Alembert in a famous probability puzzle.<sup class=\"cite\" data-cite=\"4\">4</sup> Dirk Struik called the tale \"a good example of a bad historical anecdote,\" one that obscures the character of both men, and blamed De Morgan for making it up. That overshoots: the rumor came first, and De Morgan embroidered it.<sup class=\"cite\" data-cite=\"5\">5</sup></p>"
+      }
+    ],
+    "quizQuestionIds": [
+      "math-odd-q16",
+      "math-odd-q17",
+      "math-odd-q18",
+      "math-odd-q19",
+      "math-odd-q20"
+    ],
+    "puzzleId": null
+  }
+]

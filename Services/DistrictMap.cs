@@ -101,7 +101,7 @@ public static class DistrictMap
 
     public sealed record Outcome(int BlueSeats, int RedSeats, int WastedBlue, int WastedRed)
     {
-        // Positive favours Blue: Red wasted more votes than Blue, as a share of all votes cast.
+        // Positive favors Blue: Red wasted more votes than Blue, as a share of all votes cast.
         public double EfficiencyGap => (WastedRed - WastedBlue) / (double)Cells;
     }
 
