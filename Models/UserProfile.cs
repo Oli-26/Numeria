@@ -106,6 +106,8 @@ public class UserProfile
     public string DailyReminderTime { get; set; } = "19:00"; // HH:mm
     public bool StreakReminderEnabled { get; set; } = true;
     public bool ReviewReminderEnabled { get; set; } = true;
+    // The one-time "Remind me tomorrow?" offer after a passed lesson; set once the player picks either button.
+    public bool ReminderOfferAnswered { get; set; }
 
     // TTS (audio mode)
     public bool TtsEnabled { get; set; } = true;

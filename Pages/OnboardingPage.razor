@@ -1,252 +1,134 @@
 @page "/welcome"
 @inject IContentRepository Content
 @inject IProgressService Progress
+@inject IUsageCounter Usage
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
 <div class="onboarding">
-    @if (step < 5)
-    {
-        <button class="ob-skip" @onclick="SkipSetup">Skip</button>
-    }
-    @if (step == 1)
-    {
-        <div class="ob-step ob-fade-in">
-            <img class="ob-mark" src="nous-mark.svg" alt="" />
-            <h1 class="ob-welcome-title">Stories the textbooks skip</h1>
-            <p class="ob-tagline">Short, accurate lessons on the strange side of history, religion, science and philosophy. Free, and no account needed.</p>
-            <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep2">Get Started</button>
-        </div>
-    }
-    else if (step == 2)
-    {
-        <div class="ob-step ob-fade-in">
-            <div class="ob-icon"><Icon Name="pencil" Size="40" /></div>
-            <h1>What should we call you?</h1>
-            <input type="text" class="ob-input" @bind="userName" @bind:event="oninput"
-                   placeholder="Enter your name..." maxlength="30" @onkeydown="HandleKeydown" />
-            <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep3"
-                    disabled="@string.IsNullOrWhiteSpace(userName)">Next</button>
-        </div>
-    }
-    else if (step == 3)
-    {
-        <div class="ob-step ob-fade-in">
-            <div class="ob-icon"><Icon Name="compass-rose" Size="40" /></div>
-            <h1>What do you want to learn?</h1>
-            <p class="ob-tagline">Pick a domain. You can switch and explore others any time.</p>
-            @if (domains != null)
-            {
-                <div class="ob-scroll">
-                    <div class="ob-domains">
-                        @foreach (var d in domains)
-                        {
-                            var hue = DomainHue(d.Id);
-                            var isSelected = selectedDomainId == d.Id;
-                            <div class="ob-domain-card @(isSelected ? "selected" : "")"
-                                 style="--domain-hue: @hue; border-color: @(isSelected ? hue : "transparent")"
-                                 @onclick="() => SelectDomain(d.Id)">
-                                <div class="ob-domain-icon" style="color: @hue; background: @(hue)1F">
-                                    <Icon Name="@d.Icon" Size="22" />
-                                </div>
-                                <div class="ob-domain-text">
-                                    <strong>@d.Name</strong>
-                                    <small>@d.Description</small>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            <button class="btn btn-primary btn-lg ob-btn" @onclick="GoToStep4"
-                    disabled="@(selectedDomainId == null)">Next</button>
-        </div>
-    }
-    else if (step == 4)
-    {
-        <div class="ob-step ob-fade-in">
-            <div class="ob-icon"><Icon Name="book" Size="40" /></div>
-            <h1>Pick your first topic</h1>
-            <p class="ob-tagline">@(SelectedDomainName): choose one to start. You can explore the rest later.</p>
-            @if (filteredTopics != null)
-            {
-                <div class="ob-scroll">
-                    <div class="ob-topics">
-                        @foreach (var topic in filteredTopics)
-                        {
-                            var isSelected = selectedTopicId == topic.Id;
-                            <div class="ob-topic-card @(isSelected ? "selected" : "")"
-                                 style="border-color: @(isSelected ? topic.Color : "transparent")"
-                                 @onclick="() => SelectTopic(topic.Id)">
-                                <span class="ob-topic-icon" style="color: @topic.Color"><TopicIcon TopicId="@topic.Id" Size="32" /></span>
-                                <strong>@topic.Name</strong>
-                                <small>@topic.Difficulty</small>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            <div class="ob-row">
-                <button class="btn btn-secondary ob-back" @onclick="BackToStep3">Back</button>
-                <button class="btn btn-primary btn-lg ob-btn ob-grow" @onclick="GoToStep5"
-                        disabled="@(selectedTopicId == null)">Next</button>
-            </div>
-        </div>
-    }
-    else if (step == 5)
-    {
-        <div class="ob-step ob-fade-in">
-            <div class="ob-icon"><Icon Name="gift" Size="40" /></div>
-            <h1>You're all set, @userName!</h1>
-            <p class="ob-tagline">Earn XP, keep a streak going, and follow whatever catches your interest. Every subject is open to explore.</p>
-            <button class="btn btn-primary btn-lg ob-btn" @onclick="StartLearning">Start Learning</button>
-        </div>
-    }
+    <div class="ob-step ob-fade-in">
+        <img class="ob-mark" src="nous-mark.svg" alt="" />
+        <h1 class="ob-welcome-title">Stories the textbooks skip</h1>
+        <p class="ob-tagline">Short, accurate lessons on the strange side of every subject. No account needed. Tap one to start.</p>
 
-    <div class="ob-dots">
-        @for (int i = 1; i <= 5; i++)
-        {
-            var dotStep = i;
-            <span class="ob-dot @(dotStep == step ? "active" : dotStep < step ? "done" : "")"></span>
-        }
+        <div class="ob-starters">
+            @foreach (var (topic, hook) in starters)
+            {
+                <button class="ob-starter" style="--topic-color: @topic.Color" disabled="@starting" @onclick="() => Start(topic)">
+                    <span class="ob-starter-icon">@((MarkupString)TopicArt.For(topic.Id))</span>
+                    <strong>@topic.Name.Replace("Strange ", "")</strong>
+                    <small>@hook</small>
+                </button>
+            }
+        </div>
+
+        <button class="ob-link" disabled="@starting" @onclick="BrowseAll">Or browse all subjects</button>
+
+        <div class="ob-name">
+            @if (editingName)
+            {
+                <input @ref="nameInput" class="ob-input" @bind="userName" @bind:event="oninput" maxlength="30"
+                       aria-label="Your name" @onkeydown="NameKeydown" @onblur="FinishEditing" />
+            }
+            else
+            {
+                <span>Playing as <strong>@userName</strong></span>
+                <button class="ob-link" @onclick="EditName">Change</button>
+            }
+        </div>
     </div>
 </div>
 
 @code {
-    private int step = 1;
-    private string userName = "";
-    private string? selectedTopicId;
-    private string? selectedDomainId;
-    private List<Topic>? topics;
-    private List<Topic>? filteredTopics;
-    private List<Domain>? domains;
+    // Lesson 1 of each delivers the hook on its card.
+    private static readonly (string TopicId, string Hook)[] StarterPicks =
+    {
+        ("history-strange", "The 1518 dancing plague"),
+        ("bio-strange", "A shark that may be 400 years old"),
+        ("physics-strange", "The world's slowest experiments"),
+        ("psych-strange", "A woman sure she had no brain"),
+        ("math-strange", "The “illegal” prime number"),
+        ("geology-strange", "The town above the fire"),
+    };
 
-    private string SelectedDomainName =>
-        domains?.FirstOrDefault(d => d.Id == selectedDomainId)?.Name ?? "";
+    private readonly string generatedName = StarterName.Generate(Random.Shared);
+    private string userName = "";
+    private bool editingName;
+    private bool focusName;
+    private bool starting;
+    private ElementReference nameInput;
+    private List<(Topic Topic, string Hook)> starters = new();
+
+    protected override void OnInitialized() => userName = generatedName;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            topics = await Content.GetTopicsAsync();
-            domains = await Content.GetDomainsAsync();
-            domains = domains.OrderBy(d => DomainOrder(d.Id)).ThenBy(d => d.Name).ToList();
+            var topics = await Content.GetTopicsAsync();
+            starters = StarterPicks
+                .Select(p => (Topic: topics.FirstOrDefault(t => t.Id == p.TopicId), p.Hook))
+                .Where(p => p.Topic != null)
+                .Select(p => (p.Topic!, p.Hook))
+                .ToList();
             StateHasChanged();
         }
+        if (focusName)
+        {
+            focusName = false;
+            try { await nameInput.FocusAsync(); } catch { }
+        }
     }
 
-    private async Task GoToStep2()
+    private void EditName()
     {
+        editingName = true;
+        focusName = true;
+    }
+
+    private void FinishEditing()
+    {
+        userName = userName.Trim();
+        if (userName.Length == 0) userName = generatedName;
+        editingName = false;
+    }
+
+    private void NameKeydown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") FinishEditing();
+    }
+
+    // One tap from first launch to the first lesson; onboarding is replaced in history so Back lands on home.
+    private async Task Start(Topic topic)
+    {
+        if (starting) return;
+        starting = true;
         await JS.TryInvokeVoidAsync("Sounds.playClick");
-        step = 2;
+        var first = (await Content.GetLessonsAsync(topic.Id)).OrderBy(l => l.Order).FirstOrDefault();
+        await SaveChoices(topic.Domain, topic.Id);
+        await Usage.CountAsync("topic", topic.Id);
+        Nav.NavigateTo(first != null ? $"/topic/{topic.Id}/lesson/{first.Id}" : $"/topic/{topic.Id}", replace: true);
     }
 
-    private async Task GoToStep3()
+    private async Task BrowseAll()
     {
-        if (string.IsNullOrWhiteSpace(userName)) return;
+        if (starting) return;
+        starting = true;
         await JS.TryInvokeVoidAsync("Sounds.playClick");
-        step = 3;
+        await SaveChoices("history", null);
+        Nav.NavigateTo("/domains", replace: true);
     }
 
-    private async Task GoToStep4()
+    private async Task SaveChoices(string domain, string? topicId)
     {
-        if (selectedDomainId == null) return;
-        filteredTopics = topics?.Where(t => string.Equals(t.Domain, selectedDomainId, StringComparison.OrdinalIgnoreCase)).ToList();
-        selectedTopicId = null;
-        await JS.TryInvokeVoidAsync("Sounds.playClick");
-        step = 4;
-    }
-
-    private async Task GoToStep5()
-    {
-        if (selectedTopicId == null) return;
-        await JS.TryInvokeVoidAsync("Sounds.playClick");
-        step = 5;
-    }
-
-    private async Task BackToStep3()
-    {
-        await JS.TryInvokeVoidAsync("Sounds.playClick");
-        step = 3;
-    }
-
-    private async Task SelectDomain(string domainId)
-    {
-        selectedDomainId = domainId;
-        await JS.TryInvokeVoidAsync("applyDomain", domainId);
-    }
-
-    private void SelectTopic(string topicId)
-    {
-        selectedTopicId = topicId;
-    }
-
-    private async Task HandleKeydown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter") await GoToStep3();
-    }
-
-    // Keeps whatever was already chosen; otherwise starts on History, the subject the welcome pitch leads with.
-    private async Task SkipSetup()
-    {
-        if (string.IsNullOrWhiteSpace(userName)) userName = "Explorer";
-        if (selectedTopicId == null && selectedDomainId == null) selectedDomainId = "history";
-        await SaveChoices();
-        Nav.NavigateTo("/");
-    }
-
-    private async Task StartLearning()
-    {
-        await SaveChoices();
-        await JS.TryInvokeVoidAsync("Sounds.playLevelUp");
-        Nav.NavigateTo("/");
-    }
-
-    private async Task SaveChoices()
-    {
+        FinishEditing();
         var profile = await Progress.GetProfileAsync();
-        profile.DisplayName = userName.Trim();
-        if (selectedTopicId != null)
-        {
-            profile.SuggestedTopicIds = new List<string> { selectedTopicId };
-            var picked = topics?.FirstOrDefault(t => t.Id == selectedTopicId);
-            var domain = !string.IsNullOrEmpty(picked?.Domain) ? picked.Domain : selectedDomainId;
-            if (!string.IsNullOrEmpty(domain))
-            {
-                profile.CurrentDomain = domain;
-                await JS.TryInvokeVoidAsync("applyDomain", domain);
-            }
-        }
-        else if (selectedDomainId != null)
-        {
-            profile.CurrentDomain = selectedDomainId;
-            await JS.TryInvokeVoidAsync("applyDomain", selectedDomainId);
-        }
+        profile.DisplayName = userName;
+        if (topicId != null) profile.SuggestedTopicIds = new List<string> { topicId };
+        profile.CurrentDomain = domain;
+        await JS.TryInvokeVoidAsync("applyDomain", domain);
         await Progress.SaveProfileAsync(profile);
     }
-
-    private static int DomainOrder(string id) => id switch
-    {
-        "math" => 0,
-        "physics" => 1,
-        "chemistry" => 2,
-        "biology" => 3,
-        "cs" => 4,
-        "geology" => 5,
-        "materials" => 6,
-        "economics" => 7,
-        "politics" => 8,
-        "media" => 9,
-        "history" => 10,
-        "philosophy" => 11,
-        "linguistics" => 12,
-        "literature" => 13,
-        "religion" => 14,
-        "art" => 15,
-        _ => 99
-    };
-
-    private static string DomainHue(string id) => SubjectHues.For(id);
 }
 
 <style>
@@ -256,23 +138,15 @@
         align-items: center;
         justify-content: center;
         min-height: calc(100vh - 100px);
-        padding: 24px;
+        padding: 20px 16px;
         text-align: center;
     }
-
-    .ob-skip {
-        position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 8px; z-index: 5;
-        min-width: 44px; min-height: 44px; padding: 0 14px;
-        background: none; border: none; border-radius: var(--radius-sm);
-        font: inherit; font-size: 0.95rem; color: var(--text-muted); cursor: pointer;
-    }
-    .ob-skip:hover { color: var(--text-primary); background: var(--bg-surface); }
 
     .ob-step {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
         max-width: 560px;
         width: 100%;
     }
@@ -281,208 +155,117 @@
         animation: obFadeIn 0.25s ease-out;
     }
 
-    .ob-icon {
-        font-size: 3.5rem;
-        margin-bottom: 8px;
-    }
-
-    .ob-mark { height: 84px; margin-bottom: 8px; }
-    .ob-step h1.ob-welcome-title { font-family: Georgia, 'Noto Serif', serif; font-size: 1.85rem; line-height: 1.2; text-wrap: balance; }
-
-    .ob-step h1 {
-        font-size: 1.6rem;
-        margin: 0;
-        color: var(--text-primary);
+    .ob-mark { height: 64px; }
+    .ob-step h1.ob-welcome-title {
+        font-family: Georgia, 'Noto Serif', serif; font-size: 1.85rem; line-height: 1.2; text-wrap: balance;
+        margin: 0; color: var(--text-primary);
     }
 
     .ob-tagline {
         color: var(--text-secondary);
         font-size: 1rem;
-        line-height: 1.6;
-        margin: 0;
+        line-height: 1.5;
+        margin: 0 0 4px;
+        text-wrap: balance;
     }
 
-    .ob-input {
-        width: 100%;
-        padding: 14px 18px;
-        border: 2px solid var(--border);
-        border-radius: var(--radius-sm);
-        font-size: 1.1rem;
-        font-family: var(--font-main);
-        background: var(--bg-card);
-        color: var(--text-primary);
-        outline: none;
-        transition: border-color 0.2s ease;
-        text-align: center;
-        box-sizing: border-box;
-    }
-
-    .ob-input:focus {
-        border-color: var(--primary);
-    }
-
-    .ob-btn {
-        width: 100%;
-        margin-top: 8px;
-    }
-
-    .ob-scroll {
-        width: 100%;
-        max-height: min(52vh, 460px);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 4px 4px 12px;
-        margin: -4px -4px 0;
-        mask-image: linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%);
-    }
-
-    .ob-topics {
+    .ob-starters {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
         width: 100%;
     }
 
-    .ob-domains {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-    }
-
-    .ob-domain-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
-        background: var(--bg-card);
-        border: 2px solid transparent;
-        border-radius: var(--radius-md);
-        cursor: pointer;
-        transition: all 0.15s ease;
-        -webkit-tap-highlight-color: transparent;
-        text-align: left;
-    }
-
-    .ob-domain-card:hover { background: var(--bg-surface); }
-
-    .ob-domain-card.selected {
-        background: color-mix(in srgb, var(--domain-hue) 10%, var(--bg-card));
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--domain-hue) 30%, transparent);
-    }
-
-    .ob-domain-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .ob-domain-text { flex: 1; min-width: 0; }
-    .ob-domain-text strong { display: block; font-size: 0.95rem; color: var(--text-primary); }
-    .ob-domain-text small {
-        display: block;
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        line-height: 1.3;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .ob-row {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        align-items: stretch;
-    }
-
-    .ob-back {
-        flex: 0 0 auto;
-        margin-top: 8px;
-    }
-
-    .ob-grow { flex: 1; }
-
-    .ob-topic-card {
+    .ob-starter {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
-        padding: 16px 10px;
+        padding: 12px 8px;
         background: var(--bg-card);
         border: 2px solid transparent;
         border-radius: var(--radius-md);
+        font: inherit;
+        color: var(--text-primary);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
         -webkit-tap-highlight-color: transparent;
     }
+    .ob-starter:hover { background: var(--bg-surface); border-color: color-mix(in srgb, var(--topic-color) 45%, transparent); }
+    .ob-starter:active { transform: scale(0.97); }
+    .ob-starter:disabled { cursor: default; }
 
-    .ob-topic-card:hover {
-        background: var(--bg-surface);
-    }
-
-    .ob-topic-card.selected {
-        background: color-mix(in srgb, var(--primary) 8%, transparent);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
-    }
-
-    .ob-topic-icon {
+    .ob-starter-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        height: 32px;
+        width: 44px;
+        height: 44px;
+        padding: 8px;
+        box-sizing: border-box;
+        border-radius: 12px;
+        color: var(--topic-color);
+        background: color-mix(in srgb, var(--topic-color) 14%, transparent);
     }
 
-    .ob-topic-card strong {
+    .ob-starter strong { font-size: 0.95rem; }
+    .ob-starter small { font-size: 0.78rem; line-height: 1.3; color: var(--text-muted); text-wrap: balance; }
+
+    .ob-link {
+        min-height: 44px;
+        padding: 0 10px;
+        background: none;
+        border: none;
+        border-radius: var(--radius-sm);
+        font: inherit;
+        font-size: 0.95rem;
+        color: var(--primary);
+        cursor: pointer;
+    }
+    .ob-link:hover { background: var(--bg-surface); }
+
+    .ob-name {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        min-height: 48px;
+        width: 100%;
         font-size: 0.9rem;
-        color: var(--text-primary);
-    }
-
-    .ob-topic-card small {
-        font-size: 0.75rem;
         color: var(--text-muted);
     }
+    .ob-name strong { color: var(--text-secondary); }
 
-    .ob-dots {
-        display: flex;
-        gap: 8px;
-        margin-top: 32px;
+    .ob-input {
+        width: 100%;
+        max-width: 320px;
+        padding: 10px 14px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 1rem;
+        font-family: var(--font-main);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        outline: none;
+        text-align: center;
+        box-sizing: border-box;
     }
-
-    .ob-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--border);
-        transition: all 0.3s ease;
-    }
-
-    .ob-dot.active {
-        background: var(--primary);
-        transform: scale(1.2);
-    }
-
-    .ob-dot.done {
-        background: var(--primary-light);
-    }
+    .ob-input:focus { border-color: var(--primary); }
 
     @@keyframes obFadeIn {
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    @@media (max-width: 400px) {
-        .ob-topics {
-            grid-template-columns: 1fr;
-        }
+    @@media (max-height: 780px) {
+        .ob-mark { display: none; }
+        .ob-starter-icon { width: 38px; height: 38px; padding: 7px; }
+    }
 
-        .ob-step h1 {
-            font-size: 1.3rem;
-        }
+    @@media (max-width: 400px) {
+        .ob-step h1.ob-welcome-title { font-size: 1.5rem; }
+        .ob-mark { height: 48px; }
+        .ob-step { gap: 10px; }
+        .ob-tagline { font-size: 0.92rem; }
     }
 </style>

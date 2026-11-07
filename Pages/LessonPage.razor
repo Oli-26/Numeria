@@ -8,6 +8,7 @@
 @inject NavigationManager Nav
 @inject IConnectionsService Connections
 @inject IUsageCounter Usage
+@inject INotificationService NotificationSvc
 @inject ICourseService Courses
 @implements IDisposable
 
@@ -254,6 +255,21 @@
                 </div>
             </div>
 
+            @if (showReminderOffer)
+            {
+                <div class="reminder-offer anim-slide">
+                    <span class="reminder-offer-icon"><Icon Name="bell" Size="20" /></span>
+                    <div class="reminder-offer-text">
+                        <strong>Come back tomorrow?</strong>
+                        <small>One reminder a day at @reminderLabel to keep your streak going. You can change it in Settings.</small>
+                    </div>
+                    <div class="reminder-offer-actions">
+                        <button class="btn btn-primary btn-sm" @onclick="() => AnswerReminderOffer(true)">Remind me</button>
+                        <button class="btn btn-outline btn-sm" @onclick="() => AnswerReminderOffer(false)">Not now</button>
+                    </div>
+                </div>
+            }
+
             @if (echoes.Count > 0)
             {
                 <div class="echoes">
@@ -358,6 +374,8 @@ else
     private int lastCorrect, lastTotal, quizAttempt;
     private List<int> missedConcepts = new();
     private List<Echo> echoes = new();
+    private bool showReminderOffer;
+    private string reminderLabel = "7pm";
     private Lesson? nextLesson;
     private LearningPath? pathForLesson;
 
@@ -715,17 +733,54 @@ else
         var paths = await Connections.GetPathsAsync();
         pathForLesson = paths.FirstOrDefault(pa => p.PathsStarted.Contains(pa.Id) && pa.Steps.Any(st => st.LessonId == lesson.Id && st.TopicId == TopicId));
         echoes = await Connections.GetEchoesAsync(TopicId);
+        await MaybeOfferReminderAsync(p);
         outcome = LessonOutcome.Passed;
         _ = MaybeAskForReviewAsync();
     }
 
-    // Google decides whether the review sheet actually shows; we only ask after a passed lesson, from the fifth on, every 120 days at most.
+    // Reminders are off until asked for, so the app offers one after a passed lesson, in the installed app only
+    // (appVersion is null on the web), until the player answers once.
+    private async Task MaybeOfferReminderAsync(UserProfile profile)
+    {
+        showReminderOffer = false;
+        if (profile.NotificationsEnabled || profile.ReminderOfferAnswered) return;
+        try { if (await JS.InvokeAsync<string?>("appVersion") == null) return; }
+        catch { return; }
+        reminderLabel = TimeSpan.TryParse(profile.DailyReminderTime, out var t)
+            ? DateTime.Today.Add(t).ToString(t.Minutes == 0 ? "h tt" : "h:mm tt", System.Globalization.CultureInfo.InvariantCulture).Replace(" ", "").ToLowerInvariant()
+            : "7pm";
+        showReminderOffer = true;
+    }
+
+    private async Task AnswerReminderOffer(bool accept)
+    {
+        showReminderOffer = false;
+        var granted = accept && await NotificationSvc.RequestPermissionAsync();
+        var profile = await Progress.GetProfileAsync();
+        profile.ReminderOfferAnswered = true;
+        if (granted) profile.NotificationsEnabled = true;
+        await Progress.SaveProfileAsync(profile);
+        await JS.TryInvokeVoidAsync("Sounds.playClick");
+        if (granted)
+        {
+            await NotificationSvc.RefreshSchedulesAsync();
+            await JS.TryInvokeVoidAsync("showToast", $"Reminder set for {reminderLabel}", "");
+        }
+        else if (accept)
+        {
+            await JS.TryInvokeVoidAsync("showToast", "Notifications are blocked. You can allow them in Settings.", "");
+        }
+    }
+
+    // Google decides whether the review sheet actually shows; we only ask after a passed lesson, from the second on, every 120 days at most,
+    // and never over the reminder offer.
     private async Task MaybeAskForReviewAsync()
     {
         try
         {
+            if (showReminderOffer) return;
             var profile = await Progress.GetProfileAsync();
-            if (profile.LessonsCompleted.Count < 5) return;
+            if (profile.LessonsCompleted.Count < 2) return;
             if (DateTime.TryParse(profile.StoreReviewAskedDate, out var last) && (DateTime.Now - last).TotalDays < 120) return;
             await Task.Delay(1500);
             if (!await JS.InvokeAsync<bool>("requestStoreReview")) return;
@@ -838,6 +893,12 @@ else
 
     .post-quiz { max-width: 640px; margin: 0 auto; padding: 20px; }
     .post-quiz-head { display: flex; align-items: center; gap: 12px; color: var(--success); margin-bottom: 12px; }
+    .reminder-offer { display: grid; grid-template-columns: auto 1fr; gap: 10px 12px; align-items: start; margin: 4px 0 16px; padding: 14px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 8%, var(--bg-card)); }
+    .reminder-offer-icon { display: inline-flex; padding: 8px; border-radius: 10px; color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, transparent); }
+    .reminder-offer-text strong { display: block; color: var(--text-primary); }
+    .reminder-offer-text small { display: block; margin-top: 2px; color: var(--text-secondary); line-height: 1.4; }
+    .reminder-offer-actions { grid-column: 1 / -1; display: flex; gap: 8px; }
+    .reminder-offer-actions .btn { flex: 1; }
     .post-quiz-head h2 { margin: 0; color: var(--text-primary); }
     .post-quiz-head small { color: var(--text-muted); }
     .echoes h3 { margin: 8px 0 0; }
